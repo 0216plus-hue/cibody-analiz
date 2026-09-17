@@ -1,0 +1,22 @@
+/* Tailwind kullanıldığı için CSS dosyası şu an neredeyse boş bırakılabilir,
+   istenirse ek özel stiller buraya yazılabilir. */
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Markdown içeriğindeki tablolar vb. için ek dokunuşlar */
+#reportContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+#reportContent th, #reportContent td {
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem;
+    text-align: left;
+}
+#reportContent th {
+    background-color: #f8fafc;
+}
+

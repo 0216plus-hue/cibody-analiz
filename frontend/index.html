@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIBODY AI v2.1 Postür Analizi</title>
+    <meta name="description" content="CIBODY AI Klinik Biyomekanik Postür ve Ayak Basınç Analiz Sistemi">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="/assets/favicon.png" type="image/png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-btn.active { border-bottom: 4px solid #312e81; color: #312e81; font-weight: bold; } /* indigo-900 */
+        .digital-skeleton-bg { background-color: #f8fafc; }
+    
+        /* AI Detaylı Analiz Metni - Ekran Görünümü (Kart Tasarımı) */
+        #footReportContent { font-size: 0.95rem; line-height: 1.7; color: #475569; }
+        #footReportContent h3 { color: #1e1b4b; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #e0e7ff; padding-bottom: 0.4rem; margin-top: 2rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        #footReportContent > p { background-color: #f8fafc; border-left: 4px solid #6366f1; padding: 1rem; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 1.5rem; color: #334155; }
+        #footReportContent ul { list-style: none; padding-left: 0; margin: 0; }
+        #footReportContent > ul > li { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        #footReportContent > ul > li > p > strong, #footReportContent > ul > li > strong { display: inline-block; font-size: 1rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.4rem; margin-bottom: 0.6rem; width: 100%; }
+        #footReportContent > ul > li > ul { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.6rem; }
+        #footReportContent > ul > li > ul > li { background: #f8fafc; border-radius: 0.5rem; padding: 0.75rem 1rem; border-left: 3px solid #818cf8; font-size: 0.9rem; }
+        #footReportContent > ul > li > ul > li strong { color: #4338ca; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.02em; margin-right: 0.3rem; }
+
+    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans" onload="initApp()">
+
+    <!-- ═══════════════════════════════════════ LOGIN VIEW ═══════════════════════════════════════ -->
+    <div id="loginView" class="hidden min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900">
+        <div class="w-full max-w-md mx-4">
+            <!-- Logo -->
+            <div class="text-center mb-10">
+                <img src="/assets/logo.png" class="h-16 w-auto object-contain mx-auto mb-4" alt="CIBODY Logo">
+                <h1 class="text-3xl font-black text-white">CIBODY AI</h1>
+                <p class="text-indigo-300 text-sm mt-1">v2.1 — Klinik Biyomekanik Analiz Sistemi</p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <h2 class="text-xl font-bold text-slate-800 mb-6">Sisteme Giriş</h2>
+
+                <!-- Dil Seçimi (UI Placeholder) -->
+                <div class="mb-5">
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Dil / Language</label>
+                    <select id="langSelect" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900">
+                        <option value="tr">🇹🇷 Türkçe</option>
+                        <option value="en">🇬🇧 English</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="ar">🇸🇦 العربية</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                    </select>
+                </div>
+
+                <form onsubmit="login(event)">
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">E-posta</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="email" id="loginEmail" autocomplete="email"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 transition-all text-sm"
+                                placeholder="ornek@cibody.tr">
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Şifre</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="password" id="loginPassword" autocomplete="current-password"
+                                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 transition-all text-sm"
+                                placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <div id="loginError" class="hidden mb-4 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+                    </div>
+
+                    <button type="submit" id="loginBtn"
+                        class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap
+                    </button>
+                </form>
+            </div>
+            <p class="text-center text-indigo-400 text-xs mt-6">© 2024 CIBODY — Tüm hakları saklıdır.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ ADMIN VIEW ═══════════════════════════════════════ -->
+    <div id="adminView" class="hidden min-h-screen bg-slate-50">
+        <!-- Admin Navbar -->
+        <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="/assets/logo.png" class="h-10 w-auto object-contain" alt="CIBODY Logo">
+                    <div>
+                        <h1 class="text-lg font-bold text-indigo-900">CIBODY AI <span class="text-xs text-slate-400 font-normal">v2.1</span></h1>
+                        <p class="text-xs text-red-500 font-bold">SÜPER ADMİN PANELİ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-slate-600">Merhaba, <span id="adminWelcomeName" class="font-bold text-indigo-900"></span></span>
+                    <button onclick="logout()" class="text-sm text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıkış
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 py-8">
+            <!-- İstatistik Kartları -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center">
+                    <div class="text-3xl font-black text-indigo-900" id="adminStatTherapists">0</div>
+                    <div class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">Terapist</div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center">
+                    <div class="text-3xl font-black text-slate-800" id="adminStatPatients">0</div>
+                    <div class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">Toplam Hasta</div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center">
+                    <div class="text-3xl font-black text-emerald-600" id="adminStatMonthly">0</div>
+                    <div class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">Bu Ay Analiz</div>
+                </div>
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center">
+                    <div class="text-3xl font-black text-amber-500" id="adminStatYearly">0</div>
+                    <div class="text-xs text-slate-500 font-bold mt-1 uppercase tracking-wider">Bu Yıl Analiz</div>
+                </div>
+            </div>
+
+            <!-- Terapist Tablosu -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-users text-indigo-600 mr-2"></i>Terapistler</h2>
+                    <button onclick="document.getElementById('newTherapistModal').classList.remove('hidden')"
+                        class="bg-indigo-900 hover:bg-indigo-800 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-sm transition">
+                        <i class="fa-solid fa-user-plus"></i> Yeni Terapist Ekle
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-xs text-slate-400 uppercase font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="pb-3 px-3">Ad Soyad</th>
+                                <th class="pb-3 px-3">E-posta</th>
+                                <th class="pb-3 px-3 text-center">Durum</th>
+                                <th class="pb-3 px-3 text-center">Hasta</th>
+                                <th class="pb-3 px-3 text-center">Bu Ay / Limit</th>
+                                <th class="pb-3 px-3">Kayıt Tarihi</th>
+                                <th class="pb-3 px-3 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="therapistTableBody">
+                            <tr><td colspan="7" class="text-center py-8 text-slate-400">Yükleniyor...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yeni Terapist Modal -->
+        <div id="newTherapistModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Yeni Terapist Ekle</h3>
+                    <button onclick="document.getElementById('newTherapistModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Ad Soyad</label>
+                    <input id="newTherapistName" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900" placeholder="Dr. Ahmet Yılmaz"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">E-posta</label>
+                    <input id="newTherapistEmail" type="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900" placeholder="terapist@klinik.com"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Şifre</label>
+                    <input id="newTherapistPassword" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900" placeholder="En az 8 karakter"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Aylık Rapor Limiti</label>
+                    <input id="newTherapistLimit" type="number" value="100" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900"></div>
+                </div>
+                <button onclick="createTherapist()" class="mt-6 w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-save mr-2"></i>Terapist Oluştur
+                </button>
+            </div>
+        </div>
+
+        <!-- Düzenle Modal -->
+        <div id="editTherapistModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Terapist Düzenle</h3>
+                    <button onclick="document.getElementById('editTherapistModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Ad Soyad</label>
+                    <input id="editTherapistName" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">E-posta</label>
+                    <input id="editTherapistEmail" type="email" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Yeni Şifre (boş bırakılırsa değişmez)</label>
+                    <input id="editTherapistPassword" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900" placeholder="Değiştirmek için yazın"></div>
+
+                    <div><label class="text-xs font-bold text-slate-500 block mb-1">Aylık Rapor Limiti</label>
+                    <input id="editTherapistLimit" type="number" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900"></div>
+
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input id="editTherapistActive" type="checkbox" class="w-4 h-4 text-indigo-900 rounded">
+                        <span class="text-sm font-medium text-slate-700">Hesap Aktif</span>
+                    </label>
+                </div>
+                <button onclick="saveTherapist()" class="mt-6 w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 rounded-xl transition shadow-sm">
+                    <i class="fa-solid fa-save mr-2"></i>Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- Terapist Detay Modal -->
+        <div id="therapistDetailModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-3xl mx-4 max-h-[85vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800" id="detailModalName"></h3>
+                        <p class="text-sm text-slate-500" id="detailModalEmail"></p>
+                    </div>
+                    <button onclick="document.getElementById('therapistDetailModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <h4 class="font-bold text-slate-700 mb-3">Kayıtlı Hastalar</h4>
+                <table class="w-full text-left text-sm">
+                    <thead class="text-xs text-slate-400 uppercase border-b border-slate-200">
+                        <tr>
+                            <th class="pb-2 px-3">Ad</th>
+                            <th class="pb-2 px-3">Profil</th>
+                            <th class="pb-2 px-3">Telefon</th>
+                            <th class="pb-2 px-3 text-center">Analiz</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailPatientTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ APP VIEW ═══════════════════════════════════════ -->
+    <div id="appView" class="hidden">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showDashboard()">
+                <img src="/assets/logo.png" class="h-10 w-auto object-contain" alt="CIBODY Logo">
+                <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-900 to-indigo-600">
+                    CIBODY AI <span class="text-sm text-slate-400 font-normal">v2.1 CRM</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-2 md:gap-3">
+                <div id="navPatientName" class="hidden font-semibold text-indigo-800 bg-indigo-100 px-4 py-1 rounded-full text-sm"></div>
+                <button onclick="document.getElementById('newPatientModal').classList.remove('hidden')" class="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 text-sm">
+                    <i class="fa-solid fa-user-plus"></i> <span class="hidden md:inline">Yeni Kayıt (Analizi Başlat)</span>
+                </button>
+                <!-- Profil Dropdown -->
+                <div class="relative">
+                    <button onclick="document.getElementById('profileDropdown').classList.toggle('hidden')" class="w-9 h-9 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-900 flex items-center justify-center font-bold transition" title="Hesabım">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </button>
+                    <div id="profileDropdown" class="hidden absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                        <div class="px-4 py-3 bg-indigo-50 border-b border-slate-100">
+                            <p class="text-xs text-slate-500 font-medium">Giriş yapan hesap</p>
+                            <p id="navUserName" class="text-sm font-bold text-indigo-900 truncate">—</p>
+                        </div>
+                        <button onclick="openProfileModal(); document.getElementById('profileDropdown').classList.add('hidden');" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-pen-to-square text-indigo-500 w-4"></i> Bilgilerimi Düzenle
+                        </button>
+                        <hr class="border-slate-100">
+                        <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-right-from-bracket w-4"></i> Çıkış Yap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        
+        <!-- DASHBOARD (Hasta Listesi ve Kayıt) -->
+        <div id="dashboardView">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-users text-indigo-900 text-xl"></i>
+                        <h2 class="text-2xl font-bold text-slate-800">Kayıtlı Hastalar</h2>
+                    </div>
+                    
+                    <div class="flex w-full md:w-auto items-center gap-3">
+                        <div class="relative w-full md:w-96">
+                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="patientSearch" oninput="renderPatients()" placeholder="Hasta Ara (İsim veya Tel)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                <th class="pb-4 font-semibold px-2 w-10 text-center">Sil</th>
+                                <th class="pb-4 font-semibold px-2">ID</th>
+                                <th class="pb-4 font-semibold px-2">Hasta Adı</th>
+                                <th class="pb-4 font-semibold px-2">Profil</th>
+                                <th class="pb-4 font-semibold px-2">İletişim</th>
+                                <th class="pb-4 font-semibold px-2 text-right">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientTableBody" class="divide-y divide-slate-100 text-sm">
+                            <!-- JS ile doldurulacak -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button id="loadMoreBtn" onclick="loadMorePatients()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2 rounded-xl text-sm font-medium transition-colors">
+                        Daha Fazla Göster
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Yeni Hasta Modal -->
+            <div id="newPatientModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-xl relative animate-fade-in">
+                    <button type="button" onclick="document.getElementById('newPatientModal').classList.add('hidden')" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-indigo-900"></i> Yeni Hasta Kaydı
+                    </h3>
+                    
+                    <form id="newPatientForm" onsubmit="createPatient(event)" class="flex flex-col gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Ad Soyad</label>
+                            <input type="text" id="p_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: Ahmet Yılmaz">
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Yaş</label>
+                                <input type="number" id="p_age" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Kilo (kg)</label>
+                                <input type="number" id="p_weight" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Cinsiyet</label>
+                            <select id="p_gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm appearance-none">
+                                <option>Erkek</option>
+                                <option>Kadın</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">İletişim (Telefon)</label>
+                            <input type="text" id="p_phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="05XX XXX XX XX">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Cinsiyet</label>
+                            <select id="p_gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                                <option value="Erkek">Erkek</option>
+                                <option value="Kadın">Kadın</option>
+                                <option value="Diğer">Diğer</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex items-start gap-3 mt-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <input type="checkbox" id="kvkk_consent" required class="mt-0.5 w-4 h-4 text-indigo-900 bg-white border-slate-300 rounded focus:ring-indigo-900 cursor-pointer">
+                            <label for="kvkk_consent" class="text-[10px] text-slate-500 leading-tight cursor-pointer">
+                                Hastanın <strong>KVKK</strong> kapsamında aydınlatıldığı ve biyometrik postür/ayak verilerinin işlenmesine yönelik <span class="text-indigo-600 font-bold">Açık Rıza Beyanı'nın</span> alındığını onaylıyorum.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="mt-2 w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                            Kaydet ve Profili Aç <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- PATIENT PROFILE (Hasta Detayı) -->
+        <div id="patientView" class="hidden">
+            <button onclick="showDashboard()" class="mb-6 text-slate-500 hover:text-indigo-900 font-medium transition">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Tüm Kayıtlı Kişiler'e Dön
+            </button>
+
+            <!-- Profil Başlığı -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex justify-between items-center">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800" id="detailName">Hasta Adı</h2>
+                    <p class="text-slate-500 text-sm mt-1" id="detailInfo">Yaş: 0 | Kilo: 0kg | Cinsiyet: - | Tel: -</p>
+                </div>
+                <div class="text-right">
+                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded border border-green-200">Sistemde Kayıtlı</span>
+                </div>
+            </div>
+
+            <!-- Sekmeler -->
+            <div class="flex space-x-6 border-b border-slate-200 mb-8">
+                <button onclick="switchTab('postureTab')" id="btn_postureTab" class="tab-btn active pb-3 text-slate-600 font-medium px-2 whitespace-nowrap">
+                    <i class="fa-solid fa-person-walking mr-2 text-indigo-500"></i> Postür Analizi (AI)
+                </button>
+                <button onclick="switchTab('spineTab')" id="btn_spineTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap">
+                    <i class="fa-solid fa-bone mr-2 text-orange-500"></i> Klinik Omurga & Skolyoz (AI)
+                </button>
+                <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap">
+                    <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Ayak Basınç Analizi (AI)
+                </button>
+            </div>
+
+            <!-- SEKME 1: POSTÜR ANALİZİ -->
+            <div id="postureTab">
+                
+                <!-- Eğer analiz yoksa Fotoğraf Yükleme Ekranı gösterilecek -->
+                <div id="postureUploadSection" class="mb-8">
+
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <!-- 1. ÖN -->
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 p-2 text-center hover:border-indigo-500 cursor-pointer relative h-full flex flex-col justify-center aspect-[3/4] overflow-hidden" onclick="document.getElementById('img_front').click()">
+                                <input type="file" id="img_front" accept="image/*" class="hidden" onchange="previewImage(this, 'preview_front')">
+                                <img id="preview_front" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl z-10">
+                                <div id="placeholder_front" class="py-4 flex flex-col items-center justify-center relative z-0">
+                                    <span class="text-xs font-black text-indigo-400 block mb-1">1.</span>
+                                    <span class="text-2xl">🧍‍♂️</span>
+                                    <h4 class="font-bold text-sm mt-2">Ön</h4>
+                                </div>
+                            </div>
+                            <button onclick="openScanner('front')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs shadow-sm transition border border-slate-200">
+                                <i class="fa-solid fa-circle-dot mr-1 text-red-500 animate-pulse"></i> Taramayı Başlat
+                            </button>
+                        </div>
+                        <!-- 2. SAĞ YAN -->
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 p-2 text-center hover:border-indigo-500 cursor-pointer relative h-full flex flex-col justify-center aspect-[3/4] overflow-hidden" onclick="document.getElementById('img_right').click()">
+                                <input type="file" id="img_right" accept="image/*" class="hidden" onchange="previewImage(this, 'preview_right')">
+                                <img id="preview_right" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl z-10">
+                                <div id="placeholder_right" class="py-4 flex flex-col items-center justify-center relative z-0">
+                                    <span class="text-xs font-black text-indigo-400 block mb-1">2.</span>
+                                    <span class="text-2xl" style="display: inline-block; transform: scaleX(-1);">🚶‍♂️</span>
+                                    <h4 class="font-bold text-sm mt-2">Sağ Yan</h4>
+                                </div>
+                            </div>
+                            <button onclick="openScanner('right')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs shadow-sm transition border border-slate-200">
+                                <i class="fa-solid fa-circle-dot mr-1 text-red-500 animate-pulse"></i> Taramayı Başlat
+                            </button>
+                        </div>
+                        <!-- 3. ARKA -->
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 p-2 text-center hover:border-indigo-500 cursor-pointer relative h-full flex flex-col justify-center aspect-[3/4] overflow-hidden" onclick="document.getElementById('img_back').click()">
+                                <input type="file" id="img_back" accept="image/*" class="hidden" onchange="previewImage(this, 'preview_back')">
+                                <img id="preview_back" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl z-10">
+                                <div id="placeholder_back" class="py-4 flex flex-col items-center justify-center relative z-0">
+                                    <span class="text-xs font-black text-indigo-400 block mb-1">3.</span>
+                                    <span class="text-2xl">🧍</span>
+                                    <h4 class="font-bold text-sm mt-2">Arka</h4>
+                                </div>
+                            </div>
+                            <button onclick="openScanner('back')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs shadow-sm transition border border-slate-200">
+                                <i class="fa-solid fa-circle-dot mr-1 text-red-500 animate-pulse"></i> Taramayı Başlat
+                            </button>
+                        </div>
+                        <!-- 4. SOL YAN -->
+                        <div class="flex flex-col gap-2">
+                            <div class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 p-2 text-center hover:border-indigo-500 cursor-pointer relative h-full flex flex-col justify-center aspect-[3/4] overflow-hidden" onclick="document.getElementById('img_left').click()">
+                                <input type="file" id="img_left" accept="image/*" class="hidden" onchange="previewImage(this, 'preview_left')">
+                                <img id="preview_left" class="hidden absolute inset-0 w-full h-full object-cover rounded-xl z-10">
+                                <div id="placeholder_left" class="py-4 flex flex-col items-center justify-center relative z-0">
+                                    <span class="text-xs font-black text-indigo-400 block mb-1">4.</span>
+                                    <span class="text-2xl">🚶‍♂️</span>
+                                    <h4 class="font-bold text-sm mt-2">Sol Yan</h4>
+                                </div>
+                            </div>
+                            <button onclick="openScanner('left')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs shadow-sm transition border border-slate-200">
+                                <i class="fa-solid fa-circle-dot mr-1 text-red-500 animate-pulse"></i> Taramayı Başlat
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button onclick="runPostureAnalysis()" class="w-full py-4 bg-indigo-900 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-800 transition">
+                        <i class="fa-solid fa-microchip mr-2"></i> Postür Analizini Başlat
+                    </button>
+                    
+                    <div id="postureLoadingState" class="hidden mt-8 text-center">
+                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-4 border-indigo-900 mb-4"></div>
+                        <p class="font-semibold text-slate-700">Yapay zeka iskelet sistemini çıkarıyor...</p>
+                    </div>
+                </div>
+
+                <!-- 4'LÜ DİJİTAL İSKELET RAPOR KARTLARI (Analiz Sonucu) -->
+                <div id="postureResultsSection" class="hidden">
+                    
+                    <!-- Rapor Başlığı ve Uyarı -->
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-file-medical mr-2 text-indigo-900"></i>Biyomekanik&nbsp;Postür&nbsp;Analiz&nbsp;Raporu</h3>
+                            <p class="text-sm text-slate-500 mt-1 font-medium" id="reportDate">Oluşturma Tarihi: Yükleniyor...</p>
+                        </div>
+                        <div class="flex items-center gap-3" data-html2canvas-ignore="true">
+                            <button onclick="showPatientQr()" class="bg-indigo-100 text-indigo-900 hover:bg-indigo-200 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
+                                <i class="fa-solid fa-qrcode"></i> Karekod
+                            </button>
+                            <button onclick="downloadPdf()" class="bg-indigo-900 text-white hover:bg-indigo-800 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
+                                <i class="fa-solid fa-file-pdf"></i> PDF İndir
+                            </button>
+                            <select id="analysisHistorySelect" onchange="loadHistoricalAnalysis(this.value)" class="text-sm bg-white border border-slate-200 px-4 py-2 rounded-lg font-bold text-indigo-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-900 cursor-pointer">
+                                <!-- Seçenekler JS ile dolacak -->
+                            </select>
+                            <button onclick="document.getElementById('postureUploadSection').classList.toggle('hidden')" class="text-sm bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg font-bold text-slate-700 shadow-sm transition">Yeni Analiz Yükle</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 mt-4">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 mr-3 text-lg"></i>
+                            <p class="text-xs text-amber-800 leading-relaxed font-medium">
+                                <strong>Önemli:</strong> Bu rapor bir tıbbi teşhis değildir. Sistem, taranan fotoğraflardaki anatomik referans noktalarını ölçerek biyomekanik bir ön değerlendirme sunar. Ölçümler tarama kalitesine bağlı tahminlerdir ve bağımsız klinik doğrulama sürecinden geçmemiştir. Nihai değerlendirme ve tedavi kararı için lütfen bir hekime başvurun.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Özet Skor Kartları -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-center items-center text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Genel Ölçüm Kalitesi</span>
+                            <div class="flex items-baseline">
+                                <span class="text-4xl font-black text-indigo-900" id="stat_generalScore">0</span>
+                                <span class="text-sm text-slate-400 font-bold ml-1">/100</span>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-center items-center text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tespit Edilen Bulgu</span>
+                            <div class="flex items-baseline">
+                                <span class="text-4xl font-black text-rose-500" id="stat_findingsCount">0</span>
+                                <span class="text-sm text-slate-400 font-bold ml-1">Adet</span>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-center items-center text-center">
+                            <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Postür Stabilize Endeksi</span>
+                            <div class="flex items-baseline">
+                                <span class="text-4xl font-black text-emerald-500" id="stat_stabilityIndex">%0</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="flex flex-col gap-6">
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 avoid-break">
+                            
+                        
+                        <!-- ÖN KART -->
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[300px]">
+                                <canvas id="canvas_front" class="max-w-full h-auto cursor-crosshair"></canvas>
+                                <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">ÖN CEPHE</div>
+                            </div>
+                            <div class="w-full sm:w-7/12 p-5 bg-white" id="report_front">
+                                <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                                <div id="table_front" class="space-y-3 text-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- ARKA KART -->
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[300px]">
+                                <canvas id="canvas_back" class="max-w-full h-auto cursor-crosshair"></canvas>
+                                <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">ARKA CEPHE</div>
+                            </div>
+                            <div class="w-full sm:w-7/12 p-5 bg-white" id="report_back">
+                                <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                                <div id="table_back" class="space-y-3 text-sm"></div>
+                            </div>
+                        </div>
+
+                        
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 avoid-break">
+                            <!-- SOL KART -->
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[300px]">
+                                <canvas id="canvas_left" class="max-w-full h-auto cursor-crosshair"></canvas>
+                                <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">SOL YAN</div>
+                            </div>
+                            <div class="w-full sm:w-7/12 p-5 bg-white" id="report_left">
+                                <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                                <div id="table_left" class="space-y-3 text-sm"></div>
+                            </div>
+                        </div>
+
+                        <!-- SAĞ KART -->
+                        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row">
+                            <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[300px]">
+                                <canvas id="canvas_right" class="max-w-full h-auto cursor-crosshair"></canvas>
+                                <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">SAĞ YAN</div>
+                            </div>
+                            <div class="w-full sm:w-7/12 p-5 bg-white" id="report_right">
+                                <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                                <div id="table_right" class="space-y-3 text-sm"></div>
+                            </div>
+                        </div>
+
+                    
+                        </div>
+                    </div>
+                    <!-- Olası Riskler Bölümü -->
+                    <div id="risksSection" class="mt-12 hidden">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Bu Postür Zamanla Neye Yol Açabilir? <span class="text-sm font-normal text-slate-500">— önlem alınmazsa oluşabilecek olası riskler</span></h2>
+                        <p class="text-sm text-slate-600 mb-6 leading-relaxed max-w-4xl">Aşağıdaki görseller, tespit edilen duruşun bugünkü hâlini ve önlem alınmadığında zamanla nasıl belirginleşebileceğini temsilî olarak gösterir. Kesin bir öngörü değildir; erken önlem ve egzersizle bu risklerin çoğu azaltılabilir.</p>
+                        
+                        <div id="risksContainer" class="flex flex-col gap-8">
+                            <!-- Risk Kartları JS ile buraya basılacak -->
+                        </div>
+                    </div>
+
+                    <!-- Klinik Bulgu Detayları Bölümü -->
+                    <div id="clinicalDetailsSection" class="mt-12 hidden">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-2">Bulgu Detayları <span class="text-sm font-normal text-slate-500">— Klinik Analiz ve Biyomekanik Rapor</span></h2>
+                        
+                        <div id="clinicalDetailsContainer" class="flex flex-col gap-8">
+                            <!-- Klinik Kartlar JS ile buraya basılacak -->
+                        </div>
+                    </div>
+
+                    <!-- Terapist / Doktor Notları -->
+                    <div id="clinicalNotesSection" class="mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-4">
+                            <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-user-doctor text-indigo-600 mr-2"></i>Uzman Klinik Notları</h2>
+                            <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">Sadece bu analize özel</span>
+                        </div>
+                        <p class="text-sm text-slate-500 mb-4" data-html2canvas-ignore="true">Bu alana gireceğiniz notlar hastanın bu tarihli analiz raporuna eklenecektir ve PDF çıktısında görünecektir.</p>
+                        <textarea id="clinicalNotesInput" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 transition-all resize-y" placeholder="Hasta şikayetleri, manuel test bulguları, uygulanacak protokol veya tavsiyelerinizi buraya yazabilirsiniz..."></textarea>
+                        <div class="mt-4 flex justify-end">
+                            <button onclick="saveClinicalNotes()" class="bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-2 px-6 rounded-lg shadow-sm transition-all flex items-center gap-2">
+                                <i class="fa-solid fa-save"></i> Notları Kaydet
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- Egzersiz Planlaması Bölümü -->
+                    <div id="exercisePlanSection" class="mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-person-running text-indigo-600 mr-2"></i>Egzersiz Reçetesi <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-1 rounded ml-2">Kişiselleştirilmiş</span></h2>
+                                <p class="text-sm text-slate-500 mt-2">Bu analize özel egzersizleri planlayın. QR kod ile hasta kolayca izleyebilecektir.</p>
+                            </div>
+                            <button onclick="suggestExercises()" id="btnSuggest" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center gap-2 shadow-md transition-all">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Egzersiz Öner
+                            </button>
+                        </div>
+                        
+                        <!-- Egzersiz Listesi -->
+                        <div class="overflow-x-auto border border-slate-200 rounded-xl mb-6">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase font-bold">
+                                    <tr>
+                                        <th class="p-3 w-16 text-center">Görsel</th>
+                                        <th class="p-3">Egzersiz Adı & Kategori</th>
+                                        <th class="p-3 w-24 text-center">Set</th>
+                                        <th class="p-3 w-24 text-center">Tekrar</th>
+                                        <th class="p-3 w-16 text-center">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="exerciseTableBody">
+                                    <!-- JS tarafından doldurulacak -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- İşlem Butonları -->
+                        <div class="flex justify-start">
+                            <button onclick="openExerciseModal()" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors">
+                                <i class="fa-solid fa-plus"></i> Kütüphaneden Manuel Ekle
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Egzersiz Ekleme Modalı -->
+                    <div id="exerciseModal" class="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+                        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col h-[80vh]">
+                            <!-- Header -->
+                            <div class="flex items-center justify-between p-6 border-b border-slate-100">
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-book-medical text-indigo-600 mr-2"></i>Egzersiz Kütüphanesi</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Sisteme kayıtlı 1155 egzersiz arasından arama yapın.</p>
+                                </div>
+                                <button onclick="closeExerciseModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Search -->
+                            <div class="p-4 border-b border-slate-100 bg-slate-50">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fa-solid fa-search text-slate-400"></i>
+                                    </div>
+                                    <input type="text" id="exerciseSearch" onkeyup="filterExercises()" placeholder="Egzersiz adı veya kategori ara (Örn: Boyun, Skolyoz)..." class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm">
+                                </div>
+                            </div>
+                            
+                            <!-- List -->
+                            <div class="flex-1 overflow-y-auto p-4 bg-slate-50">
+                                <div id="libraryList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Egzersizler buraya gelecek -->
+                                    <div class="text-center py-10 col-span-full text-slate-500">
+                                        <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Kütüphane yükleniyor...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- End of postureResultsSection -->
+            </div> <!-- End of postureTab -->
+
+            <!-- SEKME 2: AYAK ANALİZİ -->
+            
+                <!-- ================= SPINE & SCOLIOSIS TAB ================= -->
+                <div id="spineTab" class="hidden">
+
+                    <!-- ░ KILAVUZ ░ -->
+                    <div class="bg-gradient-to-r from-indigo-50 to-slate-50 border border-indigo-100 rounded-2xl p-6 mb-6">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-1">
+                                <h3 class="text-lg font-black text-indigo-900 mb-3">
+                                    <i class="fa-solid fa-circle-info mr-2 text-indigo-400"></i>Klinik Marker Kullanım Kılavuzu
+                                </h3>
+                                <p class="text-sm text-slate-600 mb-4">Milimetrik doğrulukta Skolyoz, Kifoz ve Lordoz analizi için hastanın anatomik noktalarına <b>renkli yapışkan etiketler (marker)</b> yapıştırın. Dar kıyafet veya sırt açık olmalı.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs font-black text-indigo-700 uppercase mb-2">📸 Arka Fotoğraf (Koronal)</p>
+                                        <ul class="text-sm text-slate-700 space-y-1.5">
+                                            <li><span class="inline-flex w-6 h-6 bg-red-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">1</span><b>C7:</b> Boyun bitişi, en çıkıntılı kemik</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-orange-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">2</span><b>T7/T8:</b> Kürek kemiği alt ucu hizası</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-yellow-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">3</span><b>L3/L4:</b> Bel çukurunun en derin noktası</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-green-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">4</span><b>S1:</b> Kuyruk sokumu başlangıcı</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-black text-indigo-700 uppercase mb-2">📸 Yan Fotoğraf (Sagital)</p>
+                                        <ul class="text-sm text-slate-700 space-y-1.5">
+                                            <li><span class="inline-flex w-6 h-6 bg-red-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">A</span><b>EAM:</b> Kulak deliği</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-orange-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">B</span><b>Akromiyon:</b> Omuz başı</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-yellow-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">C</span><b>Trokanter:</b> Kalça dışı çıkıntısı</li>
+                                            <li><span class="inline-flex w-6 h-6 bg-green-500 text-white text-xs items-center justify-center rounded-full mr-2 font-bold">D</span><b>Malleol:</b> Dış ayak bileği</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ░ YÜKLEME ALANLARI ░ -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                        <!-- ARKA PROFİL -->
+                        <div id="spineBackBox" class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 hover:border-indigo-500 cursor-pointer transition-all relative overflow-hidden" onclick="document.getElementById('file_spine_back').click()">
+                            <input type="file" id="file_spine_back" accept="image/*" class="hidden" onchange="spinePreview(this, 'spineBackPreview', 'spineBackPlaceholder')">
+                            <div id="spineBackPlaceholder" class="p-8 text-center">
+                                <i class="fa-solid fa-camera text-4xl text-indigo-200 block mb-3"></i>
+                                <span class="text-sm font-black text-slate-700 block mb-1">📌 Markerlı Arka Profil</span>
+                                <span class="text-xs text-slate-400">Koronal Düzlem — Skolyoz Analizi için</span>
+                            </div>
+                            <img id="spineBackPreview" class="hidden w-full max-h-64 object-contain p-2">
+                        </div>
+                        <!-- YAN PROFİL -->
+                        <div id="spineSideBox" class="bg-white rounded-xl shadow-sm border-2 border-dashed border-slate-300 hover:border-indigo-500 cursor-pointer transition-all relative overflow-hidden" onclick="document.getElementById('file_spine_side').click()">
+                            <input type="file" id="file_spine_side" accept="image/*" class="hidden" onchange="spinePreview(this, 'spineSidePreview', 'spineSidePlaceholder')">
+                            <div id="spineSidePlaceholder" class="p-8 text-center">
+                                <i class="fa-solid fa-camera text-4xl text-indigo-200 block mb-3"></i>
+                                <span class="text-sm font-black text-slate-700 block mb-1">📌 Markerlı Yan Profil</span>
+                                <span class="text-xs text-slate-400">Sagital Düzlem — Kifoz / Lordoz / Boyun Analizi için</span>
+                            </div>
+                            <img id="spineSidePreview" class="hidden w-full max-h-64 object-contain p-2">
+                        </div>
+                    </div>
+
+                    <!-- ░ ANALİZ BUTONU ░ -->
+                    <button onclick="runSpineAnalysis()" id="btnSpineAnalyze"
+                        class="w-full py-4 bg-indigo-900 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-800 transition flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-bone"></i> Klinik Omurga & Skolyoz Analizini Başlat
+                    </button>
+
+                    <!-- ░ LOADING ░ -->
+                    <div id="spineLoadingState" class="hidden mt-8 text-center py-12">
+                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-900 mb-4"></div>
+                        <p class="font-bold text-slate-700 text-lg">Gemini Vision markerları analiz ediyor...</p>
+                        <p class="text-sm text-slate-400 mt-2">Koronal sapma ve sagital açılar hesaplanıyor</p>
+                    </div>
+
+                    <!-- ░ SONUÇLAR ░ -->
+                    <div id="spineResultsSection" class="hidden mt-8">
+
+                        <!-- Başlık -->
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-2xl font-black text-slate-800">
+                                <i class="fa-solid fa-bone mr-2 text-indigo-600"></i>Klinik Omurga Analiz Raporu
+                            </h3>
+                            <span id="spineAnalysisDate" class="text-sm text-slate-400 font-medium"></span>
+                        </div>
+
+                        <!-- Metrik Kartlar -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Kifoz Açısı</div>
+                                <div class="text-3xl font-black text-indigo-900" id="metricKyphosis">—</div>
+                                <div id="metricKyphosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Lordoz Açısı</div>
+                                <div class="text-3xl font-black text-indigo-900" id="metricLordosis">—</div>
+                                <div id="metricLordosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Boyun Sapması</div>
+                                <div class="text-3xl font-black text-indigo-900" id="metricFHP">—</div>
+                                <div id="metricFHPStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
+                            </div>
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Skolyoz Riski</div>
+                                <div class="text-xl font-black" id="metricScoliosis">—</div>
+                            </div>
+                        </div>
+
+                        <!-- Koronal Tablo -->
+                        <div id="coronalSection" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-5">
+                            <h4 class="font-black text-slate-800 mb-4 text-lg">
+                                <i class="fa-solid fa-arrows-left-right mr-2 text-blue-500"></i>Koronal Düzlem — Omurga Sapma Tablosu
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.</p>
+                            <table class="w-full text-sm">
+                                <thead class="text-xs text-slate-400 uppercase font-bold border-b border-slate-100">
+                                    <tr>
+                                        <th class="pb-2 text-left">Marker Noktası</th>
+                                        <th class="pb-2 text-center">Sapma (mm)</th>
+                                        <th class="pb-2 text-center">Yön</th>
+                                        <th class="pb-2 text-center">Durum</th>
+                                        <th class="pb-2 text-center">Görsel</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="coronalTableBody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                            <div class="mt-4 grid grid-cols-2 gap-4">
+                                <div class="bg-blue-50 rounded-xl p-3 text-sm">
+                                    <span class="font-bold text-blue-800">Omuz Seviye Farkı: </span>
+                                    <span id="shoulderDiff" class="font-black text-blue-900">—</span>
+                                </div>
+                                <div class="bg-purple-50 rounded-xl p-3 text-sm">
+                                    <span class="font-bold text-purple-800">Pelvis Tilt: </span>
+                                    <span id="pelvisTilt" class="font-black text-purple-900">—</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sagital Özet -->
+                        <div id="sagittalSection" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-5">
+                            <h4 class="font-black text-slate-800 mb-4 text-lg">
+                                <i class="fa-solid fa-arrows-up-down mr-2 text-orange-500"></i>Sagital Düzlem — Eğrilik Analizi
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-orange-50 rounded-xl p-4">
+                                    <div class="text-xs font-black text-orange-600 uppercase mb-1">Kifoz (Kamburluk)</div>
+                                    <div class="text-2xl font-black text-orange-900" id="sagKyphosis">—</div>
+                                    <div class="text-xs text-orange-600 mt-1">Normal: 20-45°</div>
+                                </div>
+                                <div class="bg-yellow-50 rounded-xl p-4">
+                                    <div class="text-xs font-black text-yellow-600 uppercase mb-1">Lordoz (Bel Çukuru)</div>
+                                    <div class="text-2xl font-black text-yellow-900" id="sagLordosis">—</div>
+                                    <div class="text-xs text-yellow-600 mt-1">Normal: 20-45°</div>
+                                </div>
+                                <div class="bg-red-50 rounded-xl p-4">
+                                    <div class="text-xs font-black text-red-600 uppercase mb-1">İleri Baş Postürü</div>
+                                    <div class="text-2xl font-black text-red-900" id="sagFHP">—</div>
+                                    <div class="text-xs text-red-600 mt-1">Normal: 0-15 mm</div>
+                                </div>
+                            </div>
+                            <p id="sagittalSummaryText" class="text-sm text-slate-600 mt-4 bg-slate-50 rounded-xl p-4 italic"></p>
+                        </div>
+
+                        <!-- AI Klinik Raporu -->
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+                            <h4 class="font-black text-slate-800 mb-4 text-lg">
+                                <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i>Yapay Zeka Klinik Değerlendirmesi
+                            </h4>
+                            <div id="spineAiReport" class="prose prose-sm max-w-none text-slate-700 leading-relaxed"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="footTab" class="hidden">
+                <!-- Üst Bilgi ve İşlem Çubuğu (Şeffaf Zemin) -->
+                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-shoe-prints mr-2 text-indigo-900"></i>Biyomekanik Ayak Analiz Raporu</h3>
+                        <p class="text-sm text-slate-500 mt-1 font-medium" id="footReportDate">Oluşturma Tarihi: Bekleniyor...</p>
+                    </div>
+                    
+                    <div class="flex flex-wrap items-center gap-3">
+                        <form id="footAnalysisForm" onsubmit="runFootAnalysis(event)" class="flex items-center gap-2 m-0 pr-4 border-r border-slate-200">
+                            <input type="file" id="pdf_file" accept="application/pdf" required class="block w-auto max-w-[200px] text-sm text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-800 hover:file:bg-indigo-100 bg-white border border-slate-200 rounded-lg p-0 cursor-pointer">
+                            <button type="submit" id="btnFootSubmit" class="px-4 py-2 bg-indigo-900 text-white rounded-lg font-bold hover:bg-indigo-800 transition whitespace-nowrap shadow-sm"><i class="fa-solid fa-bolt mr-1"></i> Analiz Et</button>
+                        </form>
+                        
+                        <div id="footActionButtons" class="hidden flex items-center gap-2" data-html2canvas-ignore="true">
+                            <button onclick="showFootQr()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
+                                <i class="fa-solid fa-qrcode text-indigo-600"></i> Karekod
+                            </button>
+                            <button onclick="downloadFootPdf()" class="bg-indigo-100 text-indigo-900 hover:bg-indigo-200 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
+                                <i class="fa-solid fa-file-pdf text-red-600"></i> PDF İndir
+                            </button>
+                            <a id="btnDownloadPdf" href="#" target="_blank" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap hidden">
+                                Orijinal PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="footLoadingState" class="hidden mb-6 text-center text-indigo-900">
+                    <i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i>
+                    <p class="font-medium">PDF Tıbbi Literatüre Göre Yapay Zeka Tarafından Okunuyor...</p>
+                </div>
+
+                <!-- AYAK BASINÇ ANALİZİ SONUÇLARI -->
+                <div id="footResultsSection" class="hidden avoid-break bg-slate-50">
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 mr-3 text-lg"></i>
+                            <p class="text-xs text-amber-800 leading-relaxed font-medium">
+                                <strong>Önemli:</strong> Bu rapor bir tıbbi teşhis değildir. Sistem, yüklenen baropodometrik basınç verilerini literatürdeki standartlara göre analiz ederek biyomekanik bir ön değerlendirme sunar. Nihai teşhis ve tabanlık reçetesi için uzmanınıza danışın.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mb-8">
+                        <h2 class="text-xl font-bold text-slate-800 mb-4 ml-1"><i class="fa-solid fa-robot text-indigo-600 mr-2"></i>Yapay Zeka Klinik Değerlendirmesi</h2>
+                        <div class="prose prose-slate max-w-none prose-h3:text-indigo-900 prose-h3:mt-0 prose-h3:mb-4 prose-p:text-slate-600 prose-ul:text-slate-600" id="footReportContent">
+                            <!-- AI Markdown Sonucu Buraya Düşer -->
+                        </div>
+                    </div>
+
+                    <!-- Ayak Riskler Bölümü -->
+                    <div id="footRisksSection" class="mt-8 hidden avoid-break">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Bu Durum Zamanla Neye Yol Açabilir? <span class="text-sm font-normal text-slate-500">— önlem alınmazsa oluşabilecek olası riskler</span></h2>
+                        <p class="text-sm text-slate-600 mb-6 leading-relaxed max-w-4xl">Aşağıdaki tablolar, tespit edilen taban basış bozukluklarının kinetik zincir (bacak ve omurga) üzerindeki potansiyel uzun vadeli etkilerini gösterir. Kişiye özel tabanlık (ortez) ve egzersizlerle bu riskler yönetilebilir.</p>
+                        
+                        <div id="footRisksContainer" class="flex flex-col gap-6">
+                            <!-- Ayak Risk Kartları JS ile buraya basılacak -->
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Zoom Paneli -->
+    <div id="zoomPanel" class="fixed top-1/4 right-8 w-64 h-64 bg-slate-900 border-4 border-indigo-500 rounded-full shadow-2xl hidden z-50 pointer-events-none flex items-center justify-center transition-opacity duration-200">
+        <!-- Zoom canvas'ı dijital backgrounda uyumlu olsun diye siyah arka planlı olabilir -->
+        <canvas id="zoomCanvas" width="256" height="256" class="absolute top-0 left-0 rounded-full bg-slate-900"></canvas>
+        <div class="absolute w-full h-[2px] bg-red-500 opacity-60"></div>
+        <div class="absolute h-full w-[2px] bg-red-500 opacity-60"></div>
+        <div class="absolute top-4 w-full text-center"><span class="text-xs font-bold text-white bg-indigo-900 px-2 py-1 rounded-full shadow">İnce Ayar (3x)</span></div>
+    </div>
+
+    <!-- Hata Bildirimi -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity duration-300">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i><span id="toastMessage">Hata!</span>
+    </div>
+
+    </div><!-- end appView -->
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js?v=9.3"></script>
+
+    <!-- ─── Profil Düzenleme Modal ─── -->
+    <div id="profileModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
+            <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold text-indigo-900 mb-1"><i class="fa-solid fa-user-pen mr-2"></i>Bilgilerimi Düzenle</h3>
+            <p class="text-sm text-slate-500 mb-6">Hesap bilgilerinizi güncelleyin.</p>
+            <form id="profileEditForm" onsubmit="saveProfile(event)" class="flex flex-col gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ad Soyad</label>
+                        <input type="text" id="profileName" class="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="Ad Soyad">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">E-posta</label>
+                        <input type="email" id="profileEmail" class="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="ornek@email.com">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Telefon</label>
+                        <input type="tel" id="profilePhone" class="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="05XX XXX XX XX">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Yeni Şifre <span class="text-slate-400 normal-case font-normal">(boş = değişmez)</span></label>
+                        <input type="password" id="profilePassword" class="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300" placeholder="••••••••">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Adres / Klinik Adresi</label>
+                    <textarea id="profileAddress" rows="2" class="w-full border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" placeholder="Klinik adresi, şehir..."></textarea>
+                </div>
+                <div id="profileSaveMsg" class="hidden text-sm text-emerald-600 font-medium text-center"></div>
+                <button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white py-2.5 rounded-xl font-bold transition shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Kaydet
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── Kamera Tarama Modalı ─── -->
+    <div id="scannerModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl p-6 max-w-4xl w-full h-[85vh] mx-4 shadow-2xl relative flex flex-col">
+            <button onclick="closeScanner()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 z-10 bg-white/50 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h3 class="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-2"><i class="fa-solid fa-camera text-indigo-500"></i> Kameradan Tara <span id="scannerViewName" class="text-sm font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md"></span></h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Kamera Seç</label>
+                    <select id="cameraSelect" onchange="startCamera()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Görüntü Rotasyonu</label>
+                    <select id="cameraRotation" onchange="applyCameraRotation()" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                        <option value="0">Döndürme Yok (0°)</option>
+                        <option value="90">Saat Yönünde 90° Döndür</option>
+                        <option value="180">180° Döndür (Baş Aşağı)</option>
+                        <option value="270">Saat Yönü Tersine 90° Döndür (270°)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-6 flex-1 min-h-0 justify-center items-center bg-slate-100/50 rounded-xl p-4 overflow-hidden">
+                <!-- Sol: Referans Görsel -->
+                <div id="refGuidePanel" class="hidden h-full aspect-[3/4] bg-slate-800 rounded-xl flex flex-col items-center justify-center p-3 border border-slate-600 shadow-inner max-w-full">
+                    <p class="text-slate-300 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i> Doğru Pozisyon
+                    </p>
+                    <div id="refGuideSvg" class="flex-1 flex items-center justify-center w-full min-h-0"></div>
+                    <p id="refGuideLabel" class="text-slate-400 text-xs mt-2 text-center px-4 leading-relaxed"></p>
+                </div>
+
+                <!-- Sağ: Canlı Kamera -->
+                <div id="cameraFeedPanel" class="relative h-full aspect-[3/4] bg-black rounded-xl overflow-hidden flex items-center justify-center border-4 border-slate-800 shadow-2xl max-w-full">
+                    <p class="absolute top-2 left-3 text-white text-xs font-bold bg-black/50 px-2 py-1 rounded-md z-10 flex items-center gap-1">
+                        <i class="fa-solid fa-circle text-red-500 animate-pulse text-xs"></i> CANLI
+                    </p>
+                    <video id="webcamVideo" autoplay playsinline class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 object-cover transition-transform duration-300 w-full h-full"></video>
+                    <div id="scannerLoading" class="absolute inset-0 flex items-center justify-center bg-black/70 text-white flex-col gap-2 z-10">
+                        <i class="fa-solid fa-spinner fa-spin text-3xl"></i>
+                        <span class="text-sm">Kamera başlatılıyor...</span>
+                    </div>
+                    <!-- Geri sayım overlay -->
+                    <div id="countdownOverlay" class="hidden absolute inset-0 flex items-center justify-center bg-black/60 z-20">
+                        <span id="countdownNum" class="text-white font-black drop-shadow-2xl transition-transform duration-200 text-center" style="font-size: 8rem; line-height:1;"></span>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="webcamCanvas" class="hidden"></canvas>
+
+            <!-- Otomatik geri sayım başlar, buton yok -->
+            <div class="mt-4 flex justify-center h-12 items-center">
+                <p id="scanStatusText" class="text-sm text-slate-500 flex items-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin text-indigo-500"></i> Kamera hazırlanıyor...
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

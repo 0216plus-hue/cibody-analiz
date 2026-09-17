@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIBODY - Hasta Raporu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans pb-10">
+
+    <div class="bg-indigo-900 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-black">CIBODY AI</h1>
+            <p class="text-xs text-indigo-200">Biyomekanik Postür Analiz Raporu</p>
+        </div>
+
+    </div>
+
+    <div class="max-w-3xl mx-auto p-4" id="content" data-public-report="true">
+        <div class="text-center py-20">
+            <i class="fa-solid fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
+            <p class="text-slate-500">Raporunuz yükleniyor...</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const reportId = urlParams.get('id');
+
+        if(!reportId) {
+            document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Geçersiz veya eksik rapor linki.</div>';
+        } else {
+            fetch('/api/public/report/' + reportId)
+            .then(res => res.json())
+            .then(data => {
+                if(data.detail) {
+                    document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Rapor bulunamadı.</div>';
+                    return;
+                }
+                renderReport(data);
+                // Auto-download PDF after content renders
+                setTimeout(() => downloadPublicPosturePdf(), 1000);
+            })
+            .catch(err => {
+                document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Sunucu bağlantı hatası.</div>';
+            });
+        }
+
+        function renderReport(data) {
+            let html = `
+                <div class="bg-white rounded-2xl shadow-sm p-5 mb-6 border border-slate-200">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Klinik Notlar</h2>
+                    <p class="text-sm text-slate-600 whitespace-pre-wrap">${data.clinical_notes || 'Not girilmemiş.'}</p>
+                </div>
+                
+                <h2 class="text-xl font-bold text-slate-800 mb-4 mt-8"><i class="fa-solid fa-dumbbell text-indigo-600 mr-2"></i>Kişiselleştirilmiş Egzersizleriniz</h2>
+                <div class="grid grid-cols-1 gap-4">
+            `;
+
+            if(data.exercises && data.exercises.length > 0) {
+                data.exercises.forEach(ex => {
+                    html += `
+                        <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex flex-col sm:flex-row gap-4">
+                            <div class="w-full sm:w-1/3 flex-shrink-0 flex items-center justify-center bg-slate-50 rounded-xl p-2">
+                                <img src="/${ex.image_path}" onerror="this.src='https://via.placeholder.com/150'" class="max-h-32 object-contain mix-blend-multiply">
+                            </div>
+                            <div class="flex-1 flex flex-col justify-between">
+                                <div>
+                                    <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded mb-2">${ex.category}</span>
+                                    <h3 class="font-bold text-lg text-slate-800 leading-tight mb-1">${ex.name}</h3>
+                                    <p class="text-sm text-slate-500 mb-3">${ex.description}</p>
+                                </div>
+                                
+                                <div class="flex flex-wrap gap-2 items-center justify-between border-t border-slate-100 pt-3">
+                                    <div class="text-sm font-semibold text-slate-700">
+                                        <i class="fa-solid fa-rotate-right text-indigo-400 mr-1"></i> Set: ${ex.sets} | Tekrar: ${ex.reps}
+                                    </div>
+                                    ${ex.video_url ? `
+                                        <a href="${ex.video_url}" target="_blank" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                            <i class="fa-brands fa-youtube"></i> Nasıl Yapılır?
+                                        </a>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `<div class="p-4 bg-slate-100 text-slate-500 rounded-xl text-center">Bu analiz için henüz egzersiz atanmamış.</div>`;
+            }
+            
+            html += `</div>`;
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function downloadPublicPosturePdf() {
+            const element = document.getElementById('content');
+            html2pdf().set({
+                margin: [0.5, 0.4, 0.5, 0.4],
+                filename: 'postur-analiz-raporum.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            }).from(element).save();
+        }
+    </script>
+</body>
+</html>

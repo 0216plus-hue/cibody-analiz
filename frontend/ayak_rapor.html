@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klinik Ayak Analiz Raporu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        /* Özel Markdown Tasarımı - SADE YAPI */
+        .prose-custom { font-size: 0.95rem; line-height: 1.6; color: #334155; }
+        .prose-custom h3 { color: #1e1b4b; font-weight: 800; font-size: 1.15rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; text-transform: uppercase; page-break-after: avoid; }
+        .prose-custom p { margin-bottom: 1rem; page-break-inside: avoid; }
+        .prose-custom ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; page-break-inside: auto; }
+        .prose-custom li { margin-bottom: 0.5rem; page-break-inside: avoid; }
+        .prose-custom strong { color: #0f172a; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans pb-12">
+    <div class="bg-indigo-950 text-white p-6 shadow-md mb-6 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-black tracking-wide">CIBODY AI</h1>
+                <p class="text-indigo-200 text-sm">Dijital Ayak & Biyomekanik Analiz Raporu</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <h2 id="patientName" class="text-xl font-bold uppercase tracking-wider">-</h2>
+                    <p id="patientInfo" class="text-sm text-indigo-200">Yükleniyor...</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="publicReportBody" class="max-w-4xl mx-auto px-4">
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            <div class="flex items-start">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 mr-3 text-lg"></i>
+                <p class="text-xs text-amber-800 leading-relaxed font-medium">
+                    <strong>Önemli:</strong> Bu rapor bir tıbbi teşhis değildir. Sistem, yüklenen baropodometrik basınç verilerini literatürdeki standartlara göre analiz ederek biyomekanik bir ön değerlendirme sunar. Nihai teşhis ve tabanlık reçetesi için uzmanınıza danışın.
+                </p>
+            </div>
+        </div>
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-2"><i class="fa-solid fa-robot text-indigo-600 mr-2"></i>AI Detaylı Analiz Metni</h2>
+            <div id="reportContent" class="prose-custom">
+                <p class="text-center text-slate-500 py-10"><i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i><br>Rapor yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadReport() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if(!id) {
+                document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Geçersiz rapor bağlantısı.</p>";
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/public/foot_report/' + id);
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('patientName').innerText = data.patient.name;
+                    document.getElementById('patientInfo').innerText = `Yaş: ${data.patient.age} | Boy: - | Kilo: ${data.patient.weight}kg`;
+                    
+                    let aiText = data.analysis.ai_report_text;
+                    const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**\n([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
+                    const match = aiText.match(patientInfoRegex);
+                    if(match) {
+                        let infoText = match[1];
+                        infoText = infoText.replace(/\n+/g, ' <span class="text-indigo-300 mx-2">|</span> ').replace(/\*\*/g, '').replace(/\|\s*\|/g, '|').trim();
+                        if(infoText.endsWith('|</span>')) infoText = infoText.substring(0, infoText.lastIndexOf('<span')).trim();
+                        
+                        const htmlReplacement = `<div class="bg-indigo-50 border border-indigo-100 text-indigo-900 px-4 py-3 rounded-xl flex flex-wrap items-center text-sm font-semibold mb-4 shadow-sm"><i class="fa-solid fa-user-injured mr-3 text-indigo-500"></i> ${infoText}</div>\n\n`;
+                        aiText = aiText.replace(patientInfoRegex, htmlReplacement);
+                    }
+                    
+                    document.getElementById('reportContent').innerHTML = marked.parse(aiText);
+            // Auto-download PDF after content renders
+            setTimeout(() => downloadPublicFootPdf(), 1200);
+                } else {
+                    document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Rapor bulunamadı veya silinmiş.</p>";
+                }
+            } catch(e) {
+                document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Sunucu hatası oluştu.</p>";
+            }
+        }
+        loadReport();
+
+    function downloadPublicFootPdf() {
+        const element = document.getElementById('publicReportBody');
+        const nameEl = document.getElementById('patientName');
+        const pName = (nameEl ? nameEl.innerText : 'hasta').replace(/[ığşçöüİĞŞÇÖÜ]/g, m => ({'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'})[m]);
+        
+        html2pdf().set({
+            margin: [0.5, 0.4, 0.5, 0.4],
+            filename: 'ayak-analiz-raporum.pdf',
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['css', 'legacy'] }
+        }).from(element).save();
+    }
+    </script>
+</body>
+</html>
