@@ -440,6 +440,33 @@ function previewImage(input, previewId) {
     }
 }
 
+async function compressImage(file, maxWidth = 1080) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    resolve(new File([blob], file.name, { type: "image/jpeg", lastModified: Date.now() }));
+                }, "image/jpeg", 0.8);
+            };
+        };
+    });
+}
+
 async function runPostureAnalysis() {
     const formData = new FormData();
     formData.append('patient_id', currentPatientId);
@@ -451,10 +478,10 @@ async function runPostureAnalysis() {
 
     if(!f && !b && !l && !r) return showToast("En az 1 fotoğraf yükleyin.");
     
-    if(f) formData.append('front_image', f);
-    if(b) formData.append('back_image', b);
-    if(l) formData.append('left_image', l);
-    if(r) formData.append('right_image', r);
+    if(f) formData.append('front_image', await compressImage(f));
+    if(b) formData.append('back_image', await compressImage(b));
+    if(l) formData.append('left_image', await compressImage(l));
+    if(r) formData.append('right_image', await compressImage(r));
 
     document.getElementById('postureLoadingState').classList.remove('hidden');
     
