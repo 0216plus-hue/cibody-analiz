@@ -2170,3 +2170,22 @@ function showRefGuide(view) {
         panel.classList.add('hidden');
     }
 }
+
+// --- INFO POPUP LOGIC ---
+function showInfoPopup(type) {
+    const modal = document.getElementById('infoModal');
+    const title = document.getElementById('infoModalTitle');
+    const content = document.getElementById('infoModalContent');
+    
+    if(!modal) return;
+
+    if (type === 'quality') {
+        title.textContent = 'Genel Ölçüm Kalitesi Nasıl Hesaplanır?';
+        content.innerHTML = `Sistemimiz her bir referans noktasındaki (omuz, kalça, diz, boyun vb.) sapma açılarını milimetrik olarak toplar.<br><br>Bulunan toplam sapma değeri, 100 tam puan üzerinden matematiksel bir formülle düşülerek hesaplanır. Yani vücuttaki asimetri ve postural sapmalar ne kadar azsa, puan 100'e o kadar yakın olur.<br><br>Bu skor, hastanın duruşunun ideal anatomik hizalamaya ne kadar yakın olduğu hakkında genel bir fikir vermek için tasarlanmıştır.`;
+    } else if (type === 'stability') {
+        title.textContent = 'Postür Stabilize Endeksi Nedir?';
+        content.innerHTML = `Bu endeks, vücudun genel denge ve duruş stabilizasyonunu gösterir.<br><br>Sistem tarafından tespit edilen majör bulgu (anomali) sayısı üzerinden hesaplanır. Bulunan her bir belirgin duruş bozukluğu (örneğin; başın öne eğikliği, pelvik asimetri, omuz düşüklüğü vb.) stabilite oranını belirli bir yüzdede düşürür.<br><br>Yüksek oran, vücut ağırlık merkezinin dengeli dağıldığını; düşük oran ise telafi edici (kompansatuar) kas yüklenmelerinin fazla olduğunu işaret eder.`;
+    }
+    
+    modal.classList.remove('hidden');
+}
