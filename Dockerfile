@@ -26,3 +26,5 @@ EXPOSE 8000
 # Backend dizinine geçip uygulamayı başlat
 WORKDIR /app/backend
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+ENV CACHE_BUST=2026-09-22
+ENV CACHE_BUST=2024
