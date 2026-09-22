@@ -853,9 +853,9 @@ function setupDragEvents(canvasId, viewType) {
     if(!canvas) return;
 
     const newCanvas = canvas.cloneNode(true);
-    canvas.parentNode.replaceChild(newCanvas, canvas);
+    canvas.parentNode.replaceChild(newCanvas, canvas);\n    newCanvas.style.touchAction = 'none';
 
-    newCanvas.addEventListener('mousedown', (e) => {
+    newCanvas.addEventListener('pointerdown', (e) => {\n        e.preventDefault(); // prevent scroll
         const state = globalPostureState[viewType];
         if(!state || state.error) return;
         
@@ -884,11 +884,11 @@ function setupDragEvents(canvasId, viewType) {
             isDragging = true;
             draggedPointKey = closestKey;
             currentDragView = viewType;
-            newCanvas.style.cursor = 'crosshair';
+            newCanvas.style.cursor = 'crosshair';\n            newCanvas.style.touchAction = 'none';
         }
     });
 
-    newCanvas.addEventListener('mousemove', (e) => {
+    newCanvas.addEventListener('pointermove', (e) => {\n        e.preventDefault(); // prevent scroll
         if(!isDragging || currentDragView !== viewType) return;
         
         const state = globalPostureState[viewType];
@@ -938,8 +938,8 @@ function setupDragEvents(canvasId, viewType) {
         if(zPanel) zPanel.classList.add('hidden'); 
     };
 
-    newCanvas.addEventListener('mouseup', stopDrag);
-    newCanvas.addEventListener('mouseleave', stopDrag);
+    newCanvas.addEventListener('pointerup', stopDrag);
+    newCanvas.addEventListener('pointerleave', stopDrag);\n    newCanvas.addEventListener('pointercancel', stopDrag);
 }
 
 function drawCanvas(canvasId, imgId, analysisData, viewType) {
