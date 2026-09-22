@@ -2108,151 +2108,44 @@ const POSTURE_REF_SVG = {
   right: `
     <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       <text x="110" y="16" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="bold" letter-spacing="2">SAĞ YAN CEPHE</text>
-      <!-- Baş -->
-      <circle cx="110" cy="46" r="22" fill="none" stroke="#0ea5e9" stroke-width="2.5"/>
-      <!-- Burun (Sağa dönük) -->
-      <path d="M 129 42 Q 138 46 130 52" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="118" cy="43" r="2.5" fill="#0ea5e9"/>
-      <!-- Boyun -->
-      <line x1="110" y1="68" x2="110" y2="86" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Omurga eğrisi (S-Curve) -->
-      <path d="M 110 86 Q 100 120 110 160 T 110 192" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Kol (Aşağı serbest sarkık) -->
-      <line x1="110" y1="90" x2="110" y2="150" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="110" cy="155" r="5" fill="none" stroke="#38bdf8" stroke-width="2"/>
-      <!-- Bacak -->
-      <line x1="110" y1="192" x2="110" y2="290" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Ayak (Sağa dönük) -->
-      <line x1="110" y1="290" x2="128" y2="298" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="110" y1="290" x2="105" y2="298" stroke="#0ea5e9" stroke-width="2.5" stroke-linecap="round"/>
-      
-      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar serbest aşağıda</text>
+      <circle cx="110" cy="46" r="22" fill="none" stroke="#0ea5e9" stroke-width="3"/>
+      <line x1="110" y1="68" x2="110" y2="290" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="100" x2="170" y2="100" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar öne doğru uzatılmış</text>
       <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Sağ profiliniz kameraya dönük olsun</text>
     </svg>`,
   left: `
     <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       <text x="110" y="16" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="bold" letter-spacing="2">SOL YAN CEPHE</text>
-      <!-- Baş -->
-      <circle cx="110" cy="46" r="22" fill="none" stroke="#a855f7" stroke-width="2.5"/>
-      <!-- Burun (Sola dönük) -->
-      <path d="M 91 42 Q 82 46 90 52" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="102" cy="43" r="2.5" fill="#a855f7"/>
-      <!-- Boyun -->
-      <line x1="110" y1="68" x2="110" y2="86" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Omurga eğrisi (S-Curve) -->
-      <path d="M 110 86 Q 120 120 110 160 T 110 192" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Kol (Aşağı serbest sarkık) -->
-      <line x1="110" y1="90" x2="110" y2="150" stroke="#c084fc" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="110" cy="155" r="5" fill="none" stroke="#c084fc" stroke-width="2"/>
-      <!-- Bacak -->
-      <line x1="110" y1="192" x2="110" y2="290" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Ayak (Sola dönük) -->
-      <line x1="110" y1="290" x2="92" y2="298" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="110" y1="290" x2="115" y2="298" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round"/>
-      
-      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar serbest aşağıda</text>
+      <circle cx="110" cy="46" r="22" fill="none" stroke="#a855f7" stroke-width="3"/>
+      <line x1="110" y1="68" x2="110" y2="290" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="100" x2="50" y2="100" stroke="#c084fc" stroke-width="3" stroke-linecap="round"/>
+      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar öne doğru uzatılmış</text>
       <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Sol profiliniz kameraya dönük olsun</text>
     </svg>`,
   front: `
     <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
-      <!-- Başlık -->
       <text x="110" y="16" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="bold" letter-spacing="2">ÖN CEPHE</text>
-      <!-- Kafa -->
-      <circle cx="110" cy="46" r="22" fill="none" stroke="#6366f1" stroke-width="2.5"/>
-      <!-- Yüz detay — gözler -->
-      <circle cx="103" cy="43" r="2.5" fill="#6366f1"/>
-      <circle cx="117" cy="43" r="2.5" fill="#6366f1"/>
-      <path d="M104 52 Q110 57 116 52" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
-      <!-- Boyun -->
-      <line x1="110" y1="68" x2="110" y2="86" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- OMUZ ÇUBUGU — tam yatay -->
-      <line x1="2" y1="100" x2="218" y2="100" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
-      <!-- Gövde -->
-      <line x1="110" y1="86" x2="110" y2="192" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Dirsekler (orta noktalar, omuzla tam aynı y'de) -->
-      <circle cx="44" cy="100" r="4" fill="#818cf8"/>
-      <circle cx="176" cy="100" r="4" fill="#818cf8"/>
-      <!-- Ön kol — omuz noktasından elle tamamen yatay devam -->
-      <line x1="2" y1="100" x2="2" y2="100" stroke="#6366f1" stroke-width="2.5"/>
-      <!-- Sol el (bizim bakışımızda sağ) -->
-      <circle cx="3" cy="100" r="6" fill="none" stroke="#6366f1" stroke-width="2"/>
-      <!-- Sağ el -->
-      <circle cx="217" cy="100" r="6" fill="none" stroke="#6366f1" stroke-width="2"/>
-      <!-- Kalça -->
-      <line x1="82" y1="192" x2="138" y2="192" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sol bacak -->
-      <line x1="88" y1="192" x2="80" y2="290" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sağ bacak -->
-      <line x1="132" y1="192" x2="140" y2="290" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sol ayak -->
-      <line x1="80" y1="290" x2="62" y2="298" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="80" y1="290" x2="93" y2="298" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
-      <!-- Sağ ayak -->
-      <line x1="140" y1="290" x2="158" y2="298" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="140" y1="290" x2="127" y2="298" stroke="#6366f1" stroke-width="2" stroke-linecap="round"/>
-      <!-- YEŞİL OK: Kollar yatay açık -->
-      <defs>
-        <marker id="arrowL" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-          <path d="M6,0 L0,3 L6,6" fill="none" stroke="#34d399" stroke-width="1.5"/>
-        </marker>
-        <marker id="arrowR" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6" fill="none" stroke="#34d399" stroke-width="1.5"/>
-        </marker>
-      </defs>
-      <line x1="20" y1="76" x2="3" y2="76" stroke="#34d399" stroke-width="1.5" marker-start="url(#arrowL)" stroke-dasharray="3,2"/>
-      <line x1="200" y1="76" x2="217" y2="76" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowR)" stroke-dasharray="3,2"/>
-      <!-- Yatay referans çizgisi (kol hizası) -->
-      <line x1="2" y1="100" x2="218" y2="100" stroke="#34d399" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.5"/>
-      <!-- Alt açıklama -->
-      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar tam yatay — omuz hizasında</text>
-      <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Kameraya düz bakın, ayaklar omuz genişliğinde</text>
+      <circle cx="110" cy="46" r="22" fill="none" stroke="#6366f1" stroke-width="3"/>
+      <line x1="110" y1="68" x2="110" y2="180" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="90" x2="50" y2="140" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="90" x2="170" y2="140" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="180" x2="70" y2="290" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="180" x2="150" y2="290" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
+      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar ve bacaklar hafif açık</text>
+      <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Kameraya düz bakın</text>
     </svg>`,
   back: `
     <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       <text x="110" y="16" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="sans-serif" font-weight="bold" letter-spacing="2">ARKA CEPHE</text>
-      <!-- Kafa (arka — sadece dış çember, içi boş) -->
-      <circle cx="110" cy="46" r="22" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
-      <!-- Saç çizgisi (arka görünüm işareti) -->
-      <path d="M91 40 Q110 30 129 40" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-      <!-- Boyun -->
-      <line x1="110" y1="68" x2="110" y2="86" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- OMUZ ÇUBUGU — tam yatay -->
-      <line x1="2" y1="100" x2="218" y2="100" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
-      <!-- Gövde -->
-      <line x1="110" y1="86" x2="110" y2="192" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Dirsekler -->
-      <circle cx="44" cy="100" r="4" fill="#fbbf24"/>
-      <circle cx="176" cy="100" r="4" fill="#fbbf24"/>
-      <!-- Sol el -->
-      <circle cx="3" cy="100" r="6" fill="none" stroke="#f59e0b" stroke-width="2"/>
-      <!-- Sağ el -->
-      <circle cx="217" cy="100" r="6" fill="none" stroke="#f59e0b" stroke-width="2"/>
-      <!-- Kalça -->
-      <line x1="82" y1="192" x2="138" y2="192" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sol bacak -->
-      <line x1="88" y1="192" x2="80" y2="290" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sağ bacak -->
-      <line x1="132" y1="192" x2="140" y2="290" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <!-- Sol ayak -->
-      <line x1="80" y1="290" x2="62" y2="298" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="80" y1="290" x2="93" y2="298" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-      <!-- Sağ ayak -->
-      <line x1="140" y1="290" x2="158" y2="298" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="140" y1="290" x2="127" y2="298" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-      <!-- YEŞİL OK: Kollar yatay açık -->
-      <defs>
-        <marker id="arrowLb" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto">
-          <path d="M6,0 L0,3 L6,6" fill="none" stroke="#34d399" stroke-width="1.5"/>
-        </marker>
-        <marker id="arrowRb" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6" fill="none" stroke="#34d399" stroke-width="1.5"/>
-        </marker>
-      </defs>
-      <line x1="20" y1="76" x2="3" y2="76" stroke="#34d399" stroke-width="1.5" marker-start="url(#arrowLb)" stroke-dasharray="3,2"/>
-      <line x1="200" y1="76" x2="217" y2="76" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrowRb)" stroke-dasharray="3,2"/>
-      <line x1="2" y1="100" x2="218" y2="100" stroke="#34d399" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.5"/>
-      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar tam yatay — omuz hizasında</text>
-      <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Kameraya sırtınızı dönün, ayaklar omuz genişliğinde</text>
+      <circle cx="110" cy="46" r="22" fill="none" stroke="#f59e0b" stroke-width="3"/>
+      <line x1="110" y1="68" x2="110" y2="180" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="90" x2="50" y2="140" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="90" x2="170" y2="140" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="180" x2="70" y2="290" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="180" x2="150" y2="290" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
+      <text x="110" y="318" text-anchor="middle" fill="#34d399" font-size="9.5" font-family="sans-serif" font-weight="bold">Kollar ve bacaklar hafif açık</text>
+      <text x="110" y="332" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="sans-serif">Kameraya sırtınızı dönün</text>
     </svg>`
 };
 
@@ -2267,10 +2160,10 @@ function showRefGuide(view) {
 
     if (POSTURE_REF_SVG[view]) {
         svgEl.innerHTML = POSTURE_REF_SVG[view];
-        if (view === 'front') label.textContent = 'Kollarınızı T şeklinde açın, kameraya bakın';
-        else if (view === 'back') label.textContent = 'Kollarınızı T şeklinde açın, kameraya sırtınızı dönün';
-        else if (view === 'right') label.textContent = 'Kollar serbest, sağ yanınız kameraya dönük';
-        else if (view === 'left') label.textContent = 'Kollar serbest, sol yanınız kameraya dönük';
+        if (view === 'front') label.textContent = 'Kollar ve bacaklar hafif açık, kameraya bakın';
+        else if (view === 'back') label.textContent = 'Kollar ve bacaklar hafif açık, kameraya sırtınızı dönün';
+        else if (view === 'right') label.textContent = 'Kollar öne doğru uzatılmış, sağ yanınız kameraya dönük';
+        else if (view === 'left') label.textContent = 'Kollar öne doğru uzatılmış, sol yanınız kameraya dönük';
         
         panel.classList.remove('hidden');
     } else {
