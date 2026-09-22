@@ -49,6 +49,7 @@ class PostureAnalysis(Base):
 
     analysis_data = Column(Text, nullable=True)
     clinical_notes = Column(Text, nullable=True)
+    ai_report_text = Column(Text, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

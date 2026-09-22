@@ -1,13 +1,20 @@
 import re
 
-with open('/Users/dijimotasarim/Desktop/Server/ai.ayakanaliz.com.tr/frontend/index.html', 'r') as f:
-    html = f.read()
+# Update app.js
+with open("frontend/app.js", "r") as f:
+    app_content = f.read()
+    
+app_content = app_content.replace('Profili Aç <i class="fa-solid fa-arrow-right ml-2"></i>', 'Hasta Kartını Aç <i class="fa-solid fa-arrow-right ml-2"></i>')
 
-# Replace texts
-html = html.replace("yüklenen fotoğraflardaki", "taranan fotoğraflardaki")
-html = html.replace("Ölçümler fotoğraf kalitesine", "Ölçümler tarama kalitesine")
-html = html.replace("fizyoterapist veya hekime", "hekime")
+with open("frontend/app.js", "w") as f:
+    f.write(app_content)
 
-with open('/Users/dijimotasarim/Desktop/Server/ai.ayakanaliz.com.tr/frontend/index.html', 'w') as f:
-    f.write(html)
-print("Disclaimer text updated.")
+
+# Update index.html
+with open("frontend/index.html", "r") as f:
+    index_content = f.read()
+
+index_content = index_content.replace('Kaydet ve Profili Aç <i class="fa-solid fa-arrow-right"></i>', 'Kaydet ve Hasta Kartını Aç <i class="fa-solid fa-arrow-right"></i>')
+
+with open("frontend/index.html", "w") as f:
+    f.write(index_content)

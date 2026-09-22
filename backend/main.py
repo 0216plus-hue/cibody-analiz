@@ -100,7 +100,10 @@ class NoteUpdate(BaseModel):
 # ────────────────────────────────
 @app.post("/api/auth/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == req.email).first()
+    print(f"LOGIN ATTEMPT: {req.email.strip()}")
+    req.email = req.email.strip().lower()
+
+    user = db.query(models.User).filter(models.User.email == req.email.strip()).first()
     if not user or not verify_password(req.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
     if not user.is_active:
@@ -146,10 +149,10 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
 @app.post("/api/admin/users")
 def admin_create_user(req: UserCreate, db: Session = Depends(get_db),
                       _: models.User = Depends(require_superadmin)):
-    if db.query(models.User).filter(models.User.email == req.email).first():
+    if db.query(models.User).filter(models.User.email == req.email.strip()).first():
         raise HTTPException(status_code=400, detail="Bu e-posta zaten kayıtlı")
     user = models.User(
-        name=req.name, email=req.email,
+        name=req.name, email=req.email.strip(),
         hashed_password=hash_password(req.password),
         role="therapist", monthly_limit=req.monthly_limit
     )
@@ -212,7 +215,7 @@ def admin_update_user(user_id: int, req: UserUpdate, db: Session = Depends(get_d
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     if req.name is not None: user.name = req.name
-    if req.email is not None: user.email = req.email
+    if req.email.strip() is not None: user.email = req.email.strip()
     if req.password is not None: user.hashed_password = hash_password(req.password)
     if req.monthly_limit is not None: user.monthly_limit = req.monthly_limit
     if req.is_active is not None: user.is_active = req.is_active
