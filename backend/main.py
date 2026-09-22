@@ -28,7 +28,7 @@ load_dotenv()
 #  Uygulama & CORS
 # ────────────────────────────────
 app = FastAPI(title="CIBODY AI API v2.1")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False,
                    allow_methods=["*"], allow_headers=["*"])
 
 API_KEY = os.getenv("GEMINI_API_KEY")
@@ -411,8 +411,10 @@ async def analyze_posture(
 
     async def process_img(img_file, view_name):
         if img_file and img_file.filename:
+            ext = img_file.filename.split('.')[-1].lower()
+            if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+                raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
             bytes_data = await img_file.read()
-            ext = img_file.filename.split('.')[-1]
             img_path = os.path.join("uploads", "posture", f"{uuid.uuid4()}_{view_name}.{ext}")
             with open(img_path, "wb") as out_file:
                 out_file.write(bytes_data)
@@ -553,14 +555,18 @@ async def analyze_spine(
     back_path = side_path = None
 
     if back_image and back_image.filename:
+        ext = back_image.filename.split('.')[-1].lower()
+        if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+            raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
         back_bytes = await back_image.read()
-        ext = back_image.filename.split('.')[-1]
         back_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_back.{ext}")
         with open(back_path, "wb") as f: f.write(back_bytes)
 
     if side_image and side_image.filename:
+        ext = side_image.filename.split('.')[-1].lower()
+        if ext not in ['jpg', 'jpeg', 'png', 'webp']:
+            raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
         side_bytes = await side_image.read()
-        ext = side_image.filename.split('.')[-1]
         side_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_side.{ext}")
         with open(side_path, "wb") as f: f.write(side_bytes)
 
