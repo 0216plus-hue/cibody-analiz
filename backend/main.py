@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from pydantic import BaseModel
 
 import models
@@ -40,11 +40,22 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY", "cibody-super-secret-key-2024-change-in
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
-def verify_password(plain, hashed): return pwd_context.verify(plain, hashed)
-def hash_password(password): return pwd_context.hash(password)
+def verify_password(plain, hashed):
+    try:
+        if isinstance(hashed, str):
+            hashed = hashed.encode('utf-8')
+        if isinstance(plain, str):
+            plain = plain.encode('utf-8')
+        return bcrypt.checkpw(plain, hashed)
+    except Exception:
+        return False
+
+def hash_password(password):
+    if isinstance(password, str):
+        password = password.encode('utf-8')
+    return bcrypt.hashpw(password, bcrypt.gensalt()).decode('utf-8')
 
 def create_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
@@ -136,8 +147,8 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
     if "email" in req and req["email"]:
         current_user.email = req["email"]
     if "password" in req and req["password"]:
-        from passlib.context import CryptContext
-        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        import bcrypt
+        
         current_user.hashed_password = pwd_context.hash(req["password"])
     db.commit()
     db.refresh(current_user)
