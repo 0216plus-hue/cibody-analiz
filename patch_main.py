@@ -71,7 +71,7 @@ async def analyze_pdf(patient_id: int = Form(...), file: UploadFile = File(...),
             
         encoded_pdf = base64.b64encode(file_bytes).decode('utf-8')
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         headers = {"Content-Type": "application/json"}
         payload = {
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},

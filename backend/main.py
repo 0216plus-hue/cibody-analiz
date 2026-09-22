@@ -365,7 +365,7 @@ async def analyze_pdf(
         with open(pdf_path, "wb") as f:
             f.write(file_bytes)
         encoded_pdf = base64.b64encode(file_bytes).decode('utf-8')
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         payload = {
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
             "contents": [{"parts": [
@@ -568,7 +568,7 @@ async def analyze_spine(
         raise HTTPException(status_code=400, detail="En az bir görsel yükleyin.")
 
     def call_gemini(prompt, image_bytes, mime="image/jpeg"):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         encoded = base64.b64encode(image_bytes).decode()
         payload = {
             "contents": [{"parts": [
@@ -606,7 +606,7 @@ async def analyze_spine(
         report_prompt = SPINE_REPORT_PROMPT + f"\n\nANALİZ VERİLERİ:\n{summary_data}"
 
         # Use a text-only call for the report
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         report_payload = {"contents": [{"parts": [{"text": report_prompt}]}]}
         rr = requests.post(url, json=report_payload, timeout=90)
         rr.raise_for_status()
@@ -743,7 +743,7 @@ def suggest_exercises(analysis_id: int, db: Session = Depends(get_db), current_u
         prompt = f"""Sen uzman bir fizyoterapistsin..."""
         
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
             
             rr = requests.post(url, json=payload, timeout=60)
