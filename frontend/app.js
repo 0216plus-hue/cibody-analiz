@@ -1957,7 +1957,7 @@ function applyCameraRotation() {
     localStorage.setItem(ROTATION_PREF_KEY, String(_scannerRotation));
 
     const video = document.getElementById('webcamVideo');
-    video.className = "absolute top-1/2 left-1/2 object-cover transition-transform duration-300";
+    video.className = "absolute top-1/2 left-1/2 object-contain transition-transform duration-300";
 
     const container = video.parentElement;
 
