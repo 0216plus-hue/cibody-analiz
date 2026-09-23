@@ -63,7 +63,7 @@ def startup_event():
             db.execute(text("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER"))
             db.commit()
         except Exception as e:
-            pass # Column already exists or other error
+            print("SQLite Alter Table Error:", e)
 
 
         if db.query(models.Exercise).count() == 0:
@@ -1080,7 +1080,11 @@ def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), c
         db.commit()
         return {"status": "success", "report": analysis.ai_report_text}
     except Exception as e:
+        import traceback
         print("Gemini Scoliosis Error:", e)
+        if hasattr(e, 'response') and e.response is not None:
+            print("Response Body:", e.response.text)
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail="Yapay zeka servisi yanıt vermedi.")
 
 
