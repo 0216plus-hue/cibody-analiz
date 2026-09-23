@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r backend/requirements.txt
 COPY backend /app/backend
 COPY frontend /app/frontend
 COPY egzersiz-gorsel /app/egzersiz-gorsel
+COPY xlsx_egzersizler_temizlenmis.xlsx /app/xlsx_egzersizler_temizlenmis.xlsx
+
 
 # Veritabanı ve resim kayıtlarının tutulacağı alanlar
 # (Bunları Coolify panelinden volume olarak bağlayacağız)
