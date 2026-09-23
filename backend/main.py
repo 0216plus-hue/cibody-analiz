@@ -15,7 +15,7 @@ import bcrypt
 from pydantic import BaseModel
 
 import models
-from database import engine, get_db
+from database import engine, get_db, SessionLocal
 from yolo_service import analyze_image
 
 # ────────────────────────────────
