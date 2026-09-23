@@ -291,6 +291,7 @@
             
             html += `</div></div>`;
             document.getElementById('content').innerHTML = html;
+document.getElementById('mobileDownloadBar').classList.remove('hidden');
 
             if (parsed) {
                 const pFront = data.front_image ? drawCanvas(document.getElementById('qr_canvas_front'), 'table_front', data.front_image, parsed.front, 'front') : Promise.resolve({});
