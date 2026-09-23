@@ -1595,12 +1595,14 @@ function downloadPdf() {
     
     let currentUserName = "Uzman";
     let currentUserEmail = "";
+    let currentUserPhone = "";
     try {
         const storedUser = localStorage.getItem('cibody_user');
         if(storedUser) {
             const parsed = JSON.parse(storedUser);
             currentUserName = parsed.name || "Uzman";
             currentUserEmail = parsed.email || "";
+            currentUserPhone = parsed.phone || "";
             if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
         }
     } catch(e) {}
@@ -1649,7 +1651,7 @@ function downloadPdf() {
             pdf.setTextColor(100, 116, 139); // slate-500
             pdf.setFontSize(9);
             pdf.setFont('helvetica', 'bold');
-            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Iletisim: ${currentUserEmail}` : ''), 0.3, pageHeight - 0.18);
+            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
             
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
@@ -1720,12 +1722,14 @@ function downloadFootPdf() {
     
     let currentUserName = "Uzman";
     let currentUserEmail = "";
+    let currentUserPhone = "";
     try {
         const storedUser = localStorage.getItem('cibody_user');
         if(storedUser) {
             const parsed = JSON.parse(storedUser);
             currentUserName = parsed.name || "Uzman";
             currentUserEmail = parsed.email || "";
+            currentUserPhone = parsed.phone || "";
             if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
         }
     } catch(e) {}
@@ -1768,7 +1772,7 @@ function downloadFootPdf() {
             pdf.setTextColor(100, 100, 100);
             pdf.setFontSize(8);
             pdf.setFont('helvetica', 'bold');
-            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Iletisim: ${currentUserEmail}` : ''), 0.3, pageHeight - 0.18);
+            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
             
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
