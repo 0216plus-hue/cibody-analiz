@@ -2111,7 +2111,7 @@ function startScanCountdown() {
 
 const POSTURE_REF_SVG = {
   right: `
-    <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
+    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       
       <circle cx="110" cy="46" r="22" fill="none" stroke="#0ea5e9" stroke-width="3"/>
       <line x1="110" y1="68" x2="110" y2="290" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
@@ -2120,7 +2120,7 @@ const POSTURE_REF_SVG = {
       
     </svg>`,
   left: `
-    <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
+    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       
       <circle cx="110" cy="46" r="22" fill="none" stroke="#a855f7" stroke-width="3"/>
       <line x1="110" y1="68" x2="110" y2="290" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
@@ -2129,7 +2129,7 @@ const POSTURE_REF_SVG = {
       
     </svg>`,
   front: `
-    <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
+    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       
       <circle cx="110" cy="46" r="22" fill="none" stroke="#6366f1" stroke-width="3"/>
       <line x1="110" y1="68" x2="110" y2="180" stroke="#6366f1" stroke-width="3" stroke-linecap="round"/>
@@ -2141,7 +2141,7 @@ const POSTURE_REF_SVG = {
       
     </svg>`,
   back: `
-    <svg viewBox="0 0 220 340" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
+    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       
       <circle cx="110" cy="46" r="22" fill="none" stroke="#f59e0b" stroke-width="3"/>
       <line x1="110" y1="68" x2="110" y2="180" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/>
