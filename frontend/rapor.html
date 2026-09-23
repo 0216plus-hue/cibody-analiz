@@ -330,6 +330,18 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
 
                     
 
+                    
+                    let generalScore = Math.max(0, Math.round(100 - (totalDev * 0.7)));
+                    let stability = Math.max(0, Math.round(100 - (findings.size * 6)));
+                    
+                    const elScore = document.getElementById('qr_score');
+                    const elFind = document.getElementById('qr_findings');
+                    const elStab = document.getElementById('qr_stability');
+                    
+                    if(elScore) elScore.innerText = generalScore;
+                    if(elFind) elFind.innerText = findings.size;
+                    if(elStab) elStab.innerText = "%" + stability;
+
                     let risksHtml = "";
                     if(findings.size > 0 && typeof RISK_DATA !== 'undefined') {
                         risksHtml += `<div class="avoid-break page-break mt-8 mb-8" id="qrRisksSection">
@@ -400,6 +412,30 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
                 
                 for (let i = 1; i <= totalPages; i++) {
                     pdf.setPage(i);
+                    
+                    // --- HEADER ---
+                    pdf.setFillColor(30, 27, 75); // indigo-950
+                    pdf.rect(0, 0, pageWidth, 0.55, 'F');
+                    
+                    pdf.setTextColor(255, 255, 255);
+                    pdf.setFontSize(16);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text("CIBODY AI", 0.3, 0.35);
+                    
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text("Biyomekanik Postür Analizi", 1.8, 0.35);
+                    
+                    // Patient Info in Header
+                    pdf.setFontSize(9);
+                    pdf.setFont('helvetica', 'bold');
+                    let pInfo = "Hasta Bilgisi Yok";
+                    if(data && data.patient) {
+                        pInfo = `Yaş: ${data.patient.age || '-'} | Kilo: ${data.patient.weight || '-'} | Cinsiyet: ${data.patient.gender || '-'}`;
+                    }
+                    pdf.text(pInfo, pageWidth - 0.3, 0.35, { align: 'right' });
+                    
+                    // --- FOOTER ---
                     pdf.setDrawColor(200, 200, 200);
                     pdf.setLineWidth(0.01);
                     pdf.line(0.3, pageHeight - 0.3, pageWidth - 0.3, pageHeight - 0.3);
