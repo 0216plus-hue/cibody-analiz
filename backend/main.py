@@ -59,7 +59,8 @@ def startup_event():
 
         # ALTER TABLE to add scoliosis_analysis_id if not exists
         try:
-            db.execute("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)")
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)"))
             db.commit()
         except Exception as e:
             pass # Column already exists or other error
