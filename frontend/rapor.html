@@ -10,18 +10,12 @@
     <style>
         .page-break { page-break-before: always; }
         .avoid-break { page-break-inside: avoid; }
+        .digital-skeleton-bg { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
     </style>
 </head>
-<body class="bg-white text-slate-800 font-sans pb-10">
+<body class="bg-slate-50 text-slate-800 font-sans pb-10">
 
-    <div class="bg-indigo-900 text-white p-6 shadow-md flex justify-between items-center" id="headerSection">
-        <div>
-            <h1 class="text-2xl font-black">CIBODY AI</h1>
-            <p class="text-sm text-indigo-200">Biyomekanik Postür Analiz Raporu</p>
-        </div>
-    </div>
-
-    <div class="max-w-4xl mx-auto p-8" id="content" data-public-report="true">
+    <div class="max-w-4xl mx-auto p-4 sm:p-8" id="content" data-public-report="true">
         <div class="text-center py-20" id="loadingDiv">
             <i class="fa-solid fa-spinner fa-spin text-4xl text-indigo-500 mb-4"></i>
             <p class="text-slate-500">Raporunuz hazırlanıyor...</p>
@@ -66,7 +60,22 @@
             return { val: theta.toFixed(1), higher: higher };
         }
 
-        function drawCanvas(canvas, imgUrl, analysisData, viewType) {
+        function generateTableHtml(res, viewType) {
+            let html = '';
+            if(viewType === 'front' || viewType === 'back') {
+                if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Omuz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '(Normal - '+res.shoulderSym.higher+' Yüksek)' : '(Skolyoz Riski - '+res.shoulderSym.higher+' Yüksek)'}</span></div>`;
+                if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Kalça Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '(Normal - '+res.hipSym.higher+' Yüksek)' : '(Pelvik Asimetri - '+res.hipSym.higher+' Yüksek)'}</span></div>`;
+                if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Diz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '(Normal - '+res.kneeSym.higher+' Yüksek)' : '('+res.kneeSym.higher+' Yüksek)'}</span></div>`;
+            } else {
+                if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Servikal Açı</span> <span class="font-bold text-sm leading-tight ${res.cervical<45 ? 'text-red-600' : 'text-green-600'}">${res.cervical}° ${res.cervical<45 ? '(Boyun Düzleşmesi/FHP Riski)' : '(Normal)'}</span></div>`;
+                if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Torakal Açı</span> <span class="font-bold text-sm leading-tight ${res.thoracic>50 ? 'text-red-600' : 'text-green-600'}">${res.thoracic}° ${res.thoracic>50 ? '(Artmış Kifoz - Kamburluk)' : '(Normal)'}</span></div>`;
+                if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Pelvik Tilt</span> <span class="font-bold text-sm leading-tight ${res.pelvic>15 ? 'text-red-600' : 'text-green-600'}">${res.pelvic}° ${res.pelvic>15 ? '(Anterior Tilt Şüphesi)' : '(Normal)'}</span></div>`;
+            }
+            if(!html) html = '<div class="text-slate-400 italic">Yeterli referans noktası tespit edilemedi.</div>';
+            return html;
+        }
+
+        function drawCanvas(canvas, tableId, imgUrl, analysisData, viewType) {
             if(!canvas || !analysisData) return {};
             const ctx = canvas.getContext('2d');
             
@@ -168,6 +177,8 @@
                             ctx.fillStyle = "#fef08a"; ctx.fill();
                         }
                     }
+                    
+                    document.getElementById(tableId).innerHTML = generateTableHtml(results, viewType);
                     resolve(results);
                 };
                 img.src = "/" + imgUrl;
@@ -179,28 +190,67 @@
             try { parsed = JSON.parse(data.analysis_data); } catch(e) {}
             
             let html = `
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center">
-                        <canvas id="qr_canvas_front" class="h-full w-auto object-contain"></canvas>
-                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">ÖN</div>
-                    </div>
-                    <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center">
-                        <canvas id="qr_canvas_back" class="h-full w-auto object-contain"></canvas>
-                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">ARKA</div>
-                    </div>
-                    <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center">
-                        <canvas id="qr_canvas_left" class="h-full w-auto object-contain"></canvas>
-                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">SOL</div>
-                    </div>
-                    <div class="relative bg-slate-900 rounded-xl overflow-hidden aspect-[3/4] flex items-center justify-center">
-                        <canvas id="qr_canvas_right" class="h-full w-auto object-contain"></canvas>
-                        <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">SAĞ</div>
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-file-medical mr-2 text-indigo-900"></i>Biyomekanik Postür Analiz Raporu</h3>
                     </div>
                 </div>
 
                 <div class="bg-indigo-50 rounded-2xl shadow-sm p-6 mb-8 border border-indigo-100 avoid-break">
                     <h2 class="text-xl font-bold text-indigo-900 mb-4 border-b border-indigo-200 pb-2"><i class="fa-solid fa-robot mr-2"></i>Yapay Zeka Analiz Raporu</h2>
                     <div class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">${data.ai_report_text || 'Rapor oluşturulmamış.'}</div>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-ruler-combined text-indigo-600 mr-2"></i>Açısal Bozukluklar ve Simetri Analizi</h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- ÖN KART -->
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row avoid-break">
+                        <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[250px]">
+                            <canvas id="qr_canvas_front" class="max-w-full h-auto"></canvas>
+                            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">ÖN CEPHE</div>
+                        </div>
+                        <div class="w-full sm:w-7/12 p-5 bg-white">
+                            <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                            <div id="table_front" class="space-y-3 text-sm"></div>
+                        </div>
+                    </div>
+
+                    <!-- ARKA KART -->
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row avoid-break">
+                        <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[250px]">
+                            <canvas id="qr_canvas_back" class="max-w-full h-auto"></canvas>
+                            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">ARKA CEPHE</div>
+                        </div>
+                        <div class="w-full sm:w-7/12 p-5 bg-white">
+                            <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                            <div id="table_back" class="space-y-3 text-sm"></div>
+                        </div>
+                    </div>
+
+                    <!-- SOL KART -->
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row avoid-break">
+                        <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[250px]">
+                            <canvas id="qr_canvas_left" class="max-w-full h-auto"></canvas>
+                            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">SOL YAN</div>
+                        </div>
+                        <div class="w-full sm:w-7/12 p-5 bg-white">
+                            <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                            <div id="table_left" class="space-y-3 text-sm"></div>
+                        </div>
+                    </div>
+
+                    <!-- SAĞ KART -->
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col sm:flex-row avoid-break">
+                        <div class="w-full sm:w-5/12 digital-skeleton-bg relative flex justify-center items-center p-4 min-h-[250px]">
+                            <canvas id="qr_canvas_right" class="max-w-full h-auto"></canvas>
+                            <div class="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">SAĞ YAN</div>
+                        </div>
+                        <div class="w-full sm:w-7/12 p-5 bg-white">
+                            <h4 class="font-bold text-slate-700 border-b pb-2 mb-4">Klinik Bulgular</h4>
+                            <div id="table_right" class="space-y-3 text-sm"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-slate-200 avoid-break">
@@ -243,10 +293,10 @@
             document.getElementById('content').innerHTML = html;
 
             if (parsed) {
-                const pFront = data.front_image ? drawCanvas(document.getElementById('qr_canvas_front'), data.front_image, parsed.front, 'front') : Promise.resolve({});
-                const pBack = data.back_image ? drawCanvas(document.getElementById('qr_canvas_back'), data.back_image, parsed.back, 'back') : Promise.resolve({});
-                const pLeft = data.left_image ? drawCanvas(document.getElementById('qr_canvas_left'), data.left_image, parsed.left, 'left') : Promise.resolve({});
-                const pRight = data.right_image ? drawCanvas(document.getElementById('qr_canvas_right'), data.right_image, parsed.right, 'right') : Promise.resolve({});
+                const pFront = data.front_image ? drawCanvas(document.getElementById('qr_canvas_front'), 'table_front', data.front_image, parsed.front, 'front') : Promise.resolve({});
+                const pBack = data.back_image ? drawCanvas(document.getElementById('qr_canvas_back'), 'table_back', data.back_image, parsed.back, 'back') : Promise.resolve({});
+                const pLeft = data.left_image ? drawCanvas(document.getElementById('qr_canvas_left'), 'table_left', data.left_image, parsed.left, 'left') : Promise.resolve({});
+                const pRight = data.right_image ? drawCanvas(document.getElementById('qr_canvas_right'), 'table_right', data.right_image, parsed.right, 'right') : Promise.resolve({});
                 
                 Promise.all([pFront, pBack, pLeft, pRight]).then(() => {
                     setTimeout(() => downloadPublicPosturePdf(), 1000);
@@ -257,14 +307,14 @@
         }
 
         function downloadPublicPosturePdf() {
-            const element = document.body;
+            const element = document.getElementById('content');
             html2pdf().set({
                 margin: [0.5, 0.4, 0.5, 0.4],
                 filename: 'postur-analiz-raporum.pdf',
                 image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-break'] }
+                pagebreak: { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'canvas'] }
             }).from(element).save();
         }
     </script>
