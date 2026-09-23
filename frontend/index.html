@@ -305,8 +305,6 @@
                         <div class="relative w-full md:w-96">
                             <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
                             <input type="text" id="patientSearch" oninput="renderPatients()" placeholder="Hasta Ara (İsim veya Tel)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
-
-                    </div>
                         </div>
                     </div>
                 </div>
@@ -415,30 +413,31 @@
                 </div>
             </div>
 
-            <!-- Sekmeler -->
+                        <!-- Sekmeler -->
             <div class="flex space-x-6 border-b border-slate-200 mb-8 overflow-x-auto" style="scrollbar-width: none;">
-                <button onclick="switchTab('postureTab')" id="btn_postureTab" class="tab-btn active pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
+                <button onclick="switchTab('postureTab')" id="btn_postureTab" class="tab-btn active pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-indigo-600 text-indigo-600 focus:outline-none">
                     <i class="fa-solid fa-person-walking mr-2 text-indigo-500"></i> Postür Analizi (AI)
                 </button>
-                <button onclick="switchTab('spineTab')" id="btn_spineTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
+                <button onclick="switchTab('spineTab')" id="btn_spineTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
                     <i class="fa-solid fa-ruler-combined mr-2 text-orange-500"></i> Klinik Omurga & Skolyoz (AI)
                 </button>
-                <button onclick="switchTab('scoliosisTab')" id="btn_scoliosisTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
-                    <i class="fa-solid fa-bone text-lg"></i> Cobb Analizi (AI)
+                <button onclick="switchTab('scoliosisTab')" id="btn_scoliosisTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-bone mr-2 text-blue-500"></i> Cobb Analizi (AI)
                 </button>
-                <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
-                    <i class="fa-solid fa-mobile-screen text-indigo-500 mr-2"></i> Skolyometre
+                <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-mobile-screen mr-2 text-indigo-500"></i> Skolyometre
                 </button>
-                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
-                    <i class="fa-solid fa-cube text-emerald-500 mr-2"></i> 3D Simülasyon
+                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> 3D Simülasyon
                 </button>
-                <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="border-top:none;border-left:none;border-right:none;">
+                <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
                     <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Ayak Basınç Analizi (AI)
                 </button>
             </div>
+<!-- SEKME 1: POSTÜR ANALİZİ -->
 
-            <!-- SEKME 1: POSTÜR ANALİZİ -->
-            <div id="postureTab">
+
+<div id="postureTab">
                 
                 <!-- Eğer analiz yoksa Fotoğraf Yükleme Ekranı gösterilecek -->
                 <div id="postureUploadSection" class="mb-8">
@@ -747,10 +746,7 @@
                 </div> <!-- End of postureResultsSection -->
             </div> <!-- End of postureTab -->
 
-            <!-- SEKME 2: AYAK ANALİZİ -->
-            
-                <!-- ================= SPINE & SCOLIOSIS TAB ================= -->
-                <div id="spineTab" class="hidden">
+<div id="spineTab" class="hidden">
 
                     <!-- ░ KILAVUZ ░ -->
                     <div class="bg-gradient-to-r from-indigo-50 to-slate-50 border border-indigo-100 rounded-2xl p-6 mb-6">
@@ -916,16 +912,173 @@
                                 <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i>Yapay Zeka Klinik Değerlendirmesi
                             </h4>
                             <div id="spineAiReport" class="prose prose-sm max-w-none text-slate-700 leading-relaxed"></div>
-
-                    </div>
                         </div>
                     </div>
                 </div>
 
+<div id="scoliosisTab" class="hidden">
+        
+        <!-- ÜST BÖLÜM: Sol - Sağ -->
+        <div class="flex flex-col md:flex-row gap-6 mb-6">
+            
+            <!-- SOL PANEL: Röntgen Yükleme -->
+            <div class="w-full md:w-7/12 flex flex-col">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-x-ray text-indigo-600 mr-2"></i>Röntgen (X-Ray) Yükleme</h2>
+                        <input type="file" id="scoliosisImg" accept="image/*" class="hidden" onchange="previewScoliosis(event)">
+                        <button onclick="document.getElementById('scoliosisImg').click()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium py-2 px-4 rounded-xl transition-colors">
+                            <i class="fa-solid fa-upload mr-2"></i>Görüntü Seç
+                        </button>
+                    </div>
+                    
+                    <div class="relative digital-skeleton-bg rounded-xl flex items-center justify-center min-h-[500px] border-2 border-dashed border-slate-300 overflow-hidden flex-1" id="scoliosisContainer">
+                        <div id="scoliosisPlaceholder" class="text-slate-400 text-center pointer-events-none p-4">
+                            <i class="fa-solid fa-image text-5xl mb-3 opacity-50"></i>
+                            <p>Röntgen görüntüsü yükleyin</p>
+                        </div>
+                        <canvas id="scoliosisCanvas" class="absolute top-0 left-0 w-full h-full object-contain cursor-crosshair hidden" style="z-index: 10;"></canvas>
+                        <img id="scoliosisPreview" class="absolute top-0 left-0 w-full h-full object-contain hidden" />
+                    </div>
+                    
+                    <div class="mt-6 flex flex-wrap gap-3 justify-center">
+                        <button onclick="uploadScoliosisImage()" id="btnSaveScoliosis" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all hidden shadow-md text-lg w-full sm:w-auto">
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Kaydet & Analizi Başlat
+                        </button>
+                        <button onclick="resetScoliosisCanvas()" id="btnResetScoliosis" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-8 rounded-xl transition-all hidden text-lg w-full sm:w-auto">
+                            <i class="fa-solid fa-rotate-left mr-2"></i>Çizimi Sıfırla
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SAĞ PANEL: Not, Skor, Geçmiş -->
+            <div class="w-full md:w-5/12 flex flex-col gap-6">
+                <!-- Uyarı Notu -->
+                <div class="p-5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl shadow-sm">
+                    <p class="font-bold mb-2 text-base"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Önemli: Ölçüm Nasıl Yapılır?</p>
+                    <p class="mb-3 text-sm">Röntgeni yükledikten sonra sistemin açıyı hesaplayabilmesi için <strong>görüntü üzerine 4 adet nokta tıklamanız</strong> gerekmektedir:</p>
+                    <ol class="list-decimal pl-5 space-y-1.5 font-medium text-sm mb-3">
+                        <li>Eğriliğin en <strong>üstündeki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
+                        <li>Eğriliğin en <strong>altındaki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
+                    </ol>
+                    <div class="text-indigo-700 font-bold bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100 text-xs">
+                        <i class="fa-solid fa-circle-info mr-1"></i> Not: 4 noktayı tamamladığınızda sistem Cobb açısını otomatik hesaplar!
+                    </div>
+                </div>
+
+                <!-- Hesaplanan Değer -->
+                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl shadow-md p-6 text-white relative overflow-hidden flex flex-col justify-center">
+                    <i class="fa-solid fa-angle-right absolute -right-4 -bottom-4 text-white/10 text-8xl"></i>
+                    <h3 class="text-indigo-100 font-bold uppercase tracking-wider text-sm mb-3">Hesaplanan Cobb Açısı</h3>
+                    <div class="flex items-baseline gap-2 mb-4">
+                        <span id="scoliosisCobbAngle" class="text-6xl font-black">0</span>
+                        <span class="text-3xl font-medium text-indigo-200">Derece</span>
+                    </div>
+                    <div class="bg-white/20 px-4 py-2 rounded-xl inline-block backdrop-blur-sm self-start">
+                        <span id="scoliosisSeverity" class="font-bold text-lg">Bekleniyor...</span>
+                    </div>
+                </div>
+
+                <!-- Klinik Notlar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-1 flex flex-col w-full">
+                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
+                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex-1 resize-none" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
+                <div class="flex justify-end mt-3">
+                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
+                        Notları Kaydet
+                    </button>
+                </div>
+            </div>
+                </div>
+            </div>
+            
+
+        
+        
+        <!-- ALT BÖLÜM: Tam Sayfa -->
+        <div class="w-full flex flex-col gap-6 mb-8">
+            
+            <!-- Geçmiş Analizler -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col overflow-hidden">
+                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş (Before/After)</span>
+                        
+                    </h2>
+                    <div id="scoliosisHistoryList" class="flex flex-wrap gap-4 pb-3">
+                        <div class="text-center text-slate-400 py-4 w-full">Kayıt bulunamadı.</div>
+                    </div>
+
+            <!-- Aksiyon Butonları -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full">
+                <button onclick="downloadScoliosisPdf()" class="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
+                </button>
+                <button onclick="showScoliosisQr()" class="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
+                    <i class="fa-solid fa-qrcode"></i> Karekod Paylaş
+                </button>
+            </div>
+            
+        </div>
+    </div>
 
 
-                <!-- 3D SİMÜLASYON TAB -->
-                <div id="simulationTab" class="hidden">
+
+        </div> <!-- End of scoliosisTab -->
+
+<div id="scoliometerTab" class="hidden">
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
+                            
+                            <div class="flex-1 text-center md:text-left">
+                                <h2 class="text-2xl font-black text-slate-800 mb-3 flex items-center justify-center md:justify-start gap-3">
+                                    <i class="fa-solid fa-mobile-screen text-indigo-600"></i> Dijital Skolyometre
+                                </h2>
+                                <p class="text-slate-600 mb-6 leading-relaxed">Uzman olarak telefonunuzun sensörlerini kullanarak hassas <b>Angle of Trunk Rotation (ATR)</b> ölçümü yapabilirsiniz. Eşleşmek için yandaki QR kodu telefonunuzun kamerasına okutun.</p>
+                                
+                                <button onclick="generateScoliometerQR()" id="btnGenerateQR" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-indigo-200">
+                                    <i class="fa-solid fa-qrcode mr-2"></i> QR Kod Oluştur ve Bağlan
+                                </button>
+                                
+                                <div id="scoliometerStatus" class="hidden mt-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium flex items-center">
+                                    <i class="fa-solid fa-circle-notch fa-spin mr-3 text-lg"></i> Telefonla eşleşme bekleniyor veya ölçüm yapılıyor...
+                                </div>
+                            </div>
+                            
+                            <div class="shrink-0 bg-slate-50 p-6 rounded-3xl border border-slate-200 flex flex-col items-center justify-center w-64 h-64 relative">
+                                <div id="scoliometerQR" class="w-48 h-48 flex items-center justify-center">
+                                    <i class="fa-solid fa-qrcode text-6xl text-slate-300"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 border-b border-slate-200 p-4">
+                            <h3 class="font-black text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ölçüm Geçmişi
+                            </h3>
+                        </div>
+                        <div class="p-4">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3">Tarih</th>
+                                        <th class="px-4 py-3 text-center">Torakal Açı (ATR)</th>
+                                        <th class="px-4 py-3 text-center">Lumbar Açı (ATR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoliometerHistoryList" class="divide-y divide-slate-100">
+                                    <tr><td colspan="3" class="text-center py-8 text-slate-400">Henüz ölçüm bulunmuyor.</td></tr>
+                                </tbody>
+                            </table>
+
+                    </div>
+                        </div>
+                    </div>
+
+<div id="simulationTab" class="hidden">
                     <div class="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 overflow-hidden mb-8 text-white relative">
                         <div class="flex flex-col lg:flex-row h-[700px]">
                             <!-- 3D Canvas Area -->
@@ -1063,7 +1216,7 @@
                     </div>
                 </div>
 
-                <div id="footTab" class="hidden">
+<div id="footTab" class="hidden">
                 <!-- Üst Bilgi ve İşlem Çubuğu (Şeffaf Zemin) -->
                 <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
                     <div>
@@ -1087,8 +1240,6 @@
                             <a id="btnDownloadPdf" href="#" target="_blank" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap hidden">
                                 Orijinal PDF
                             </a>
-
-                    </div>
                         </div>
                     </div>
                 </div>
@@ -1126,174 +1277,11 @@
                     </div>
                     </div>
                 </div>
-            </div>
 
-                        <!-- SKOLYOZ ANALİZİ TAB'I -->
-    <div id="scoliosisTab" class="hidden">
-        
-        <!-- ÜST BÖLÜM: Sol - Sağ -->
-        <div class="flex flex-col md:flex-row gap-6 mb-6">
-            
-            <!-- SOL PANEL: Röntgen Yükleme -->
-            <div class="w-full md:w-7/12 flex flex-col">
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-full flex flex-col">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-x-ray text-indigo-600 mr-2"></i>Röntgen (X-Ray) Yükleme</h2>
-                        <input type="file" id="scoliosisImg" accept="image/*" class="hidden" onchange="previewScoliosis(event)">
-                        <button onclick="document.getElementById('scoliosisImg').click()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium py-2 px-4 rounded-xl transition-colors">
-                            <i class="fa-solid fa-upload mr-2"></i>Görüntü Seç
-                        </button>
-                    </div>
-                    
-                    <div class="relative digital-skeleton-bg rounded-xl flex items-center justify-center min-h-[500px] border-2 border-dashed border-slate-300 overflow-hidden flex-1" id="scoliosisContainer">
-                        <div id="scoliosisPlaceholder" class="text-slate-400 text-center pointer-events-none p-4">
-                            <i class="fa-solid fa-image text-5xl mb-3 opacity-50"></i>
-                            <p>Röntgen görüntüsü yükleyin</p>
-                        </div>
-                        <canvas id="scoliosisCanvas" class="absolute top-0 left-0 w-full h-full object-contain cursor-crosshair hidden" style="z-index: 10;"></canvas>
-                        <img id="scoliosisPreview" class="absolute top-0 left-0 w-full h-full object-contain hidden" />
-                    </div>
-                    
-                    <div class="mt-6 flex flex-wrap gap-3 justify-center">
-                        <button onclick="uploadScoliosisImage()" id="btnSaveScoliosis" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all hidden shadow-md text-lg w-full sm:w-auto">
-                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Kaydet & Analizi Başlat
-                        </button>
-                        <button onclick="resetScoliosisCanvas()" id="btnResetScoliosis" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-8 rounded-xl transition-all hidden text-lg w-full sm:w-auto">
-                            <i class="fa-solid fa-rotate-left mr-2"></i>Çizimi Sıfırla
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- SAĞ PANEL: Not, Skor, Geçmiş -->
-            <div class="w-full md:w-5/12 flex flex-col gap-6">
-                <!-- Uyarı Notu -->
-                <div class="p-5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl shadow-sm">
-                    <p class="font-bold mb-2 text-base"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Önemli: Ölçüm Nasıl Yapılır?</p>
-                    <p class="mb-3 text-sm">Röntgeni yükledikten sonra sistemin açıyı hesaplayabilmesi için <strong>görüntü üzerine 4 adet nokta tıklamanız</strong> gerekmektedir:</p>
-                    <ol class="list-decimal pl-5 space-y-1.5 font-medium text-sm mb-3">
-                        <li>Eğriliğin en <strong>üstündeki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
-                        <li>Eğriliğin en <strong>altındaki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
-                    </ol>
-                    <div class="text-indigo-700 font-bold bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100 text-xs">
-                        <i class="fa-solid fa-circle-info mr-1"></i> Not: 4 noktayı tamamladığınızda sistem Cobb açısını otomatik hesaplar!
-                    </div>
-                </div>
-
-                <!-- Hesaplanan Değer -->
-                <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl shadow-md p-6 text-white relative overflow-hidden flex flex-col justify-center">
-                    <i class="fa-solid fa-angle-right absolute -right-4 -bottom-4 text-white/10 text-8xl"></i>
-                    <h3 class="text-indigo-100 font-bold uppercase tracking-wider text-sm mb-3">Hesaplanan Cobb Açısı</h3>
-                    <div class="flex items-baseline gap-2 mb-4">
-                        <span id="scoliosisCobbAngle" class="text-6xl font-black">0</span>
-                        <span class="text-3xl font-medium text-indigo-200">Derece</span>
-                    </div>
-                    <div class="bg-white/20 px-4 py-2 rounded-xl inline-block backdrop-blur-sm self-start">
-                        <span id="scoliosisSeverity" class="font-bold text-lg">Bekleniyor...</span>
-                    </div>
-                </div>
-
-                <!-- Klinik Notlar -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-1 flex flex-col w-full">
-                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
-                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex-1 resize-none" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
-                <div class="flex justify-end mt-3">
-                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
-                        Notları Kaydet
-                    </button>
-                </div>
-            </div>
-                </div>
-            </div>
-            
-
-        
-        
-        <!-- ALT BÖLÜM: Tam Sayfa -->
-        <div class="w-full flex flex-col gap-6 mb-8">
-            
-            <!-- Geçmiş Analizler -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col overflow-hidden">
-                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
-                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş (Before/After)</span>
-                        
-                    </h2>
-                    <div id="scoliosisHistoryList" class="flex flex-wrap gap-4 pb-3">
-                        <div class="text-center text-slate-400 py-4 w-full">Kayıt bulunamadı.</div>
-                    </div>
-
-            <!-- Aksiyon Butonları -->
-            <div class="flex flex-col sm:flex-row gap-4 w-full">
-                <button onclick="downloadScoliosisPdf()" class="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
-                    <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
-                </button>
-                <button onclick="showScoliosisQr()" class="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
-                    <i class="fa-solid fa-qrcode"></i> Karekod Paylaş
-                </button>
-            </div>
-            
-        </div>
+        </div> <!-- /patientView -->
     </div>
 
-
-
-        </div> <!-- End of scoliosisTab -->
-                <!-- SKOLYOMETRE TAB -->
-                <div id="scoliometerTab" class="hidden">
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-                        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
-                            
-                            <div class="flex-1 text-center md:text-left">
-                                <h2 class="text-2xl font-black text-slate-800 mb-3 flex items-center justify-center md:justify-start gap-3">
-                                    <i class="fa-solid fa-mobile-screen text-indigo-600"></i> Dijital Skolyometre
-                                </h2>
-                                <p class="text-slate-600 mb-6 leading-relaxed">Uzman olarak telefonunuzun sensörlerini kullanarak hassas <b>Angle of Trunk Rotation (ATR)</b> ölçümü yapabilirsiniz. Eşleşmek için yandaki QR kodu telefonunuzun kamerasına okutun.</p>
-                                
-                                <button onclick="generateScoliometerQR()" id="btnGenerateQR" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-indigo-200">
-                                    <i class="fa-solid fa-qrcode mr-2"></i> QR Kod Oluştur ve Bağlan
-                                </button>
-                                
-                                <div id="scoliometerStatus" class="hidden mt-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium flex items-center">
-                                    <i class="fa-solid fa-circle-notch fa-spin mr-3 text-lg"></i> Telefonla eşleşme bekleniyor veya ölçüm yapılıyor...
-                                </div>
-                            </div>
-                            
-                            <div class="shrink-0 bg-slate-50 p-6 rounded-3xl border border-slate-200 flex flex-col items-center justify-center w-64 h-64 relative">
-                                <div id="scoliometerQR" class="w-48 h-48 flex items-center justify-center">
-                                    <i class="fa-solid fa-qrcode text-6xl text-slate-300"></i>
-                                </div>
-                            </div>
-                            
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 border-b border-slate-200 p-4">
-                            <h3 class="font-black text-slate-800 flex items-center gap-2">
-                                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ölçüm Geçmişi
-                            </h3>
-                        </div>
-                        <div class="p-4">
-                            <table class="w-full text-sm text-left">
-                                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
-                                    <tr>
-                                        <th class="px-4 py-3">Tarih</th>
-                                        <th class="px-4 py-3 text-center">Torakal Açı (ATR)</th>
-                                        <th class="px-4 py-3 text-center">Lumbar Açı (ATR)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="scoliometerHistoryList" class="divide-y divide-slate-100">
-                                    <tr><td colspan="3" class="text-center py-8 text-slate-400">Henüz ölçüm bulunmuyor.</td></tr>
-                                </tbody>
-                            </table>
-
-                    </div>
-                        </div>
-                    </div>
-                </div>
-
-
-        <!-- Zoom Paneli -->
+            <!-- Zoom Paneli -->
     <div id="zoomPanel" class="fixed top-1/4 right-8 w-64 h-64 bg-slate-900 border-4 border-indigo-500 rounded-full shadow-2xl hidden z-50 pointer-events-none flex items-center justify-center transition-opacity duration-200">
         <!-- Zoom canvas'ı dijital backgrounda uyumlu olsun diye siyah arka planlı olabilir -->
         <canvas id="zoomCanvas" width="256" height="256" class="absolute top-0 left-0 rounded-full bg-slate-900"></canvas>
@@ -1311,7 +1299,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js"></script>
-    <script src="app.js?v=9.7"></script>
+    <script src="app.js?v=9.8"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -1437,12 +1425,12 @@
         </div>
     </div>
 </div>
-    <script src="scoliosis.js?v=9.7"></script>
+    <script src="scoliosis.js?v=9.8"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js"></script>
+    <script src="simulation.js?v=9.8"></script>
 
 </body>
 </html>
