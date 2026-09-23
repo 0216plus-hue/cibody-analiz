@@ -74,32 +74,31 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 
 function switchTab(tabId) {
     // Hide all tabs
-    document.getElementById('postureTab').classList.add('hidden');
-    document.getElementById('footTab').classList.add('hidden');
-    const spineTab = document.getElementById('spineTab');
-    if (spineTab) spineTab.classList.add('hidden');
-    const scoliosisTab = document.getElementById('scoliosisTab');
-    if (scoliosisTab) scoliosisTab.classList.add('hidden');
-    const scoliometerTab = document.getElementById('scoliometerTab');
-    if (scoliometerTab) scoliometerTab.classList.add('hidden');
-    const simulationTab = document.getElementById('simulationTab');
-    if (simulationTab) simulationTab.classList.add('hidden');
+    const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'];
+    tabs.forEach(t => {
+        const el = document.getElementById(t);
+        if (el) el.classList.add('hidden');
+    });
     
-    // Remove active class from all buttons
-    document.getElementById('btn_postureTab').classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-    document.getElementById('btn_footTab').classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-    const btnSpine = document.getElementById('btn_spineTab');
-    if (btnSpine) btnSpine.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-    const btnScoliosis = document.getElementById('btn_scoliosisTab');
-    if (btnScoliosis) btnScoliosis.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-    const btnScoliometer = document.getElementById('btn_scoliometerTab');
-    if (btnScoliometer) btnScoliometer.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-    const btnSimulation = document.getElementById('btn_simulationTab');
-    if (btnSimulation) btnSimulation.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+    // Remove active styles from ALL buttons
+    const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab'];
+    btns.forEach(b => {
+        const el = document.getElementById(b);
+        if (el) {
+            el.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+            el.style.borderBottomColor = 'transparent';
+        }
+    });
     
     // Show selected tab and set button active
-    document.getElementById(tabId).classList.remove('hidden');
-    document.getElementById('btn_' + tabId).classList.add('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+    const activeTab = document.getElementById(tabId);
+    if(activeTab) activeTab.classList.remove('hidden');
+    
+    const activeBtn = document.getElementById('btn_' + tabId);
+    if(activeBtn) {
+        activeBtn.classList.add('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+        activeBtn.style.borderBottomColor = '#4f46e5';
+    }
     
     // If switching to simulation, we might need to trigger resize for canvas
     if(tabId === 'simulationTab' && window.resizeSimulation) {
