@@ -1090,13 +1090,10 @@ def generate_scoliosis_exercises(analysis_id: int, db: Session = Depends(get_db)
         
         # Append to existing ai_report_text
         if analysis.ai_report_text:
-            analysis.ai_report_text += "
+            analysis.ai_report_text += "\n\n### 🏃‍♂️ Önerilen Egzersiz Programı\n" + text
 
-### 🏃‍♂️ Önerilen Egzersiz Programı
-" + text
         else:
-            analysis.ai_report_text = "### 🏃‍♂️ Önerilen Egzersiz Programı
-" + text
+            analysis.ai_report_text = "### 🏃‍♂️ Önerilen Egzersiz Programı\n" + text
             
         db.commit()
         return {"status": "success", "report": analysis.ai_report_text}
