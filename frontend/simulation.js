@@ -213,3 +213,86 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 500);
 });
+
+async function saveSimulationRecord() {
+    if (!currentPatientId) {
+        showToast("Lütfen bir hasta seçin.");
+        return;
+    }
+    
+    const cobb = parseFloat(document.getElementById('sim_cobb').value);
+    const rot = parseFloat(document.getElementById('sim_rot').value);
+    const torsion = parseFloat(document.getElementById('sim_torsion').value);
+    const shift = parseFloat(document.getElementById('sim_shift').value);
+    
+    const startSel = document.getElementById('sim_start');
+    const endSel = document.getElementById('sim_end');
+    const startVertebra = startSel.options[startSel.selectedIndex].text;
+    const endVertebra = endSel.options[endSel.selectedIndex].text;
+    
+    const methodSel = document.getElementById('sim_method');
+    const method = methodSel.options[methodSel.selectedIndex].value;
+    
+    const payload = {
+        patient_id: currentPatientId,
+        cobb_angle: cobb,
+        rotation_angle: rot,
+        torsion_angle: torsion,
+        lateral_shift: shift,
+        start_vertebra: startVertebra,
+        end_vertebra: endVertebra,
+        measurement_method: method
+    };
+    
+    try {
+        const res = await authFetch('/api/simulation', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            showToast("Simülasyon analizi kaydedildi!");
+            loadSimulationHistory();
+        } else {
+            showToast("Kaydedilirken hata oluştu.");
+        }
+    } catch (e) {
+        console.error(e);
+        showToast("Sunucu hatası.");
+    }
+}
+
+async function loadSimulationHistory() {
+    if (!currentPatientId) return;
+    
+    try {
+        const res = await authFetch(`/api/simulation/patient/${currentPatientId}`);
+        if (res.ok) {
+            const data = await res.json();
+            const tbody = document.getElementById('simHistoryList');
+            tbody.innerHTML = '';
+            
+            if (data.history.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Henüz kayıt bulunmuyor.</td></tr>';
+                return;
+            }
+            
+            data.history.forEach(item => {
+                const dateStr = new Date(item.created_at + 'Z').toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap"><div class="font-medium text-slate-700">${dateStr}</div></td>
+                    <td class="px-4 py-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-xs font-bold">${item.start_vertebra} - ${item.end_vertebra}</span></td>
+                    <td class="px-4 py-3 font-bold text-slate-700">${item.cobb_angle}°</td>
+                    <td class="px-4 py-3 text-slate-600">${item.rotation_angle}°</td>
+                    <td class="px-4 py-3 text-slate-600">${item.torsion_angle}°</td>
+                    <td class="px-4 py-3 text-slate-600">${item.lateral_shift} mm</td>
+                    <td class="px-4 py-3 text-xs text-slate-500">${item.measurement_method}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}

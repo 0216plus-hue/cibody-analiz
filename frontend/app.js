@@ -69,6 +69,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
     switchTab('postureTab');
     loadPatientData(patientId);
     if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
+            if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
 }
 
 function switchTab(tabId) {

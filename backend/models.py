@@ -155,3 +155,16 @@ class ScoliometerToken(Base):
     patient_id = Column(Integer, ForeignKey("patients.id"))
     expires_at = Column(DateTime)
     is_used = Column(Boolean, default=False)
+
+class SimulationAnalysis(Base):
+    __tablename__ = "simulation_analyses"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    cobb_angle = Column(Float, default=0.0)
+    rotation_angle = Column(Float, default=0.0)
+    torsion_angle = Column(Float, default=0.0)
+    lateral_shift = Column(Float, default=0.0)
+    start_vertebra = Column(String, default="")
+    end_vertebra = Column(String, default="")
+    measurement_method = Column(String, default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

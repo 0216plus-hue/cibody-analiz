@@ -1327,4 +1327,27 @@ def save_scoliometer_data(token: str, req: ScoliometerSaveRequest, db: Session =
 def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     history = db.query(models.ScoliometerMeasurement).filter(models.ScoliometerMeasurement.patient_id == patient_id).order_by(models.ScoliometerMeasurement.created_at.desc()).all()
     return {"history": [{"id": h.id, "thoracic": h.thoracic_angle, "lumbar": h.lumbar_angle, "date": h.created_at.isoformat()} for h in history]}
+
+class SimulationCreate(BaseModel):
+    patient_id: int
+    cobb_angle: float
+    rotation_angle: float
+    torsion_angle: float
+    lateral_shift: float
+    start_vertebra: str
+    end_vertebra: str
+    measurement_method: str
+
+@app.post("/api/simulation")
+def save_simulation(sim: SimulationCreate, db: Session = Depends(get_db)):
+    db_sim = models.SimulationAnalysis(**sim.dict())
+    db.add(db_sim)
+    db.commit()
+    return {"status": "success"}
+
+@app.get("/api/simulation/patient/{patient_id}")
+def get_simulation_history(patient_id: int, db: Session = Depends(get_db)):
+    history = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.patient_id == patient_id).order_by(models.SimulationAnalysis.created_at.desc()).all()
+    return {"history": history}
+
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
