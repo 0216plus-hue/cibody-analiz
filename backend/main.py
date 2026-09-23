@@ -149,7 +149,7 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
     if "password" in req and req["password"]:
         import bcrypt
         
-        current_user.hashed_password = pwd_context.hash(req["password"])
+        current_user.hashed_password = hash_password(req["password"])
     db.commit()
     db.refresh(current_user)
     return {"name": current_user.name, "email": current_user.email}

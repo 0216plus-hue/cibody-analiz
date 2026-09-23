@@ -41,3 +41,5 @@ env/
 # backend/ai_clinic.db
 # backend/uploads/
 # posture_data.db
+
+backend/data/

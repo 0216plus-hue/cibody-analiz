@@ -1,4 +1,10 @@
 import os
+
+# 1. Update database.py
+with open("backend/database.py", "r") as f:
+    db_content = f.read()
+
+new_db_content = """import os
 import shutil
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -29,3 +35,15 @@ def get_db():
         yield db
     finally:
         db.close()
+"""
+with open("backend/database.py", "w") as f:
+    f.write(new_db_content)
+
+# 2. Update Dockerfile
+with open("Dockerfile", "r") as f:
+    docker_content = f.read()
+
+docker_content = docker_content.replace('VOLUME ["/app/backend/uploads", "/app/backend/ai_clinic.db"]', 'VOLUME ["/app/backend/uploads", "/app/backend/data"]')
+
+with open("Dockerfile", "w") as f:
+    f.write(docker_content)

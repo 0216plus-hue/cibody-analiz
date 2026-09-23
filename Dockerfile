@@ -19,7 +19,7 @@ COPY egzersiz-gorsel /app/egzersiz-gorsel
 
 # Veritabanı ve resim kayıtlarının tutulacağı alanlar
 # (Bunları Coolify panelinden volume olarak bağlayacağız)
-VOLUME ["/app/backend/uploads", "/app/backend/ai_clinic.db"]
+VOLUME ["/app/backend/uploads", "/app/backend/data"]
 
 EXPOSE 8000
 
