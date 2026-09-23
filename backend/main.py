@@ -978,11 +978,12 @@ async def create_scoliosis_analysis(
     # Save Image
     ext = image.filename.split(".")[-1]
     filename = f"{uuid.uuid4().hex}.{ext}"
-    img_path = os.path.join(UPLOAD_DIR, filename)
+    os.makedirs("uploads/scoliosis", exist_ok=True)
+    img_path = f"uploads/scoliosis/{filename}"
     with open(img_path, "wb") as f:
         f.write(await image.read())
         
-    db_path = f"uploads/{filename}"
+    db_path = f"uploads/scoliosis/{filename}"
     
     new_analysis = models.ScoliosisAnalysis(
         patient_id=patient_id,
