@@ -2,7 +2,7 @@
 
 let scoliosisFile = null;
 let scoliosisPoints = [];
-window.window.currentScoliosisId = null;
+window.currentScoliosisId = null;
 let currentCobbAngle = 0;
 let currentCurveType = "";
 
@@ -356,7 +356,7 @@ async function deleteScoliosis(id) {
 }
 
 function showScoliosisQr() {
-    if(!window.window.currentScoliosisId) { alert("Lütfen geçerli bir analiz seçin."); return; }
+    if(!window.currentScoliosisId) { alert("Lütfen geçerli bir analiz seçin."); return; }
     const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId;
     
     let modal = document.getElementById('qrModal');
@@ -408,7 +408,7 @@ function showScoliosisQr() {
 }
 
 function downloadScoliosisPdf() {
-    if(!window.window.currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
+    if(!window.currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
     const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + '&download=1';
     window.open(publicUrl, '_blank');
 }
@@ -470,7 +470,7 @@ function renderAiReports(fullText) {
 
 
 async function loadScoliosisAssignedExercises() {
-    if(!window.window.currentScoliosisId) return;
+    if(!window.currentScoliosisId) return;
     const tbody = document.getElementById('scoliosisAssignedExercisesList');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i></td></tr>';
     
@@ -547,7 +547,7 @@ async function deleteScoliosisExercise(assignId) {
 }
 
 async function suggestScoliosisExercises() {
-    if(!window.window.currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
+    if(!window.currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
     if(currentCobbAngle === 0) { alert("Açıyı hesaplayın."); return; }
     
     const btn = document.getElementById('btnSuggestScoliosisExercises');
