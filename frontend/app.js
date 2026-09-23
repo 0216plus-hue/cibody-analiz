@@ -1563,6 +1563,7 @@ async function addPrescribed(exerciseId) {
                 if (typeof loadScoliosisAssignedExercises === 'function') loadScoliosisAssignedExercises();
             }
             showToast("Egzersiz başarıyla eklendi.");
+            closeExerciseModal();
         }
     } catch(e) {
         console.error("Add error", e);

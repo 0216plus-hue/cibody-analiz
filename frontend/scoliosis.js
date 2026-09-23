@@ -489,7 +489,7 @@ async function loadScoliosisAssignedExercises() {
             <tr class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3">
                     <div class="w-12 h-12 bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm">
-                        <img src="/${ex.image_path}" onerror="this.outerHTML='<i class=\'fa-solid fa-person-running text-slate-300\'></i>'" class="w-full h-full object-cover">
+                        <img src="/${ex.image_path}" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'" class="w-full h-full object-cover">
                     </div>
                 </td>
                 <td class="px-4 py-3">
