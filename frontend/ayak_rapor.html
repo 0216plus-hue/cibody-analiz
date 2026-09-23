@@ -7,35 +7,28 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* Özel Markdown Tasarımı - SADE YAPI */
-        .prose-custom { font-size: 0.95rem; line-height: 1.6; color: #334155; }
-        .prose-custom h3 { color: #1e1b4b; font-weight: 800; font-size: 1.15rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; text-transform: uppercase; page-break-after: avoid; }
-        .prose-custom p { margin-bottom: 1rem; page-break-inside: avoid; }
-        .prose-custom ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; page-break-inside: auto; }
-        .prose-custom li { margin-bottom: 0.5rem; page-break-inside: avoid; }
+        /* Sade PDF Uyumu */
+        .prose-custom { font-size: 0.95rem; line-height: 1.7; color: #334155; padding: 1rem; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 1rem; }
+        .prose-custom h3 { color: #1e1b4b; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #e0e7ff; padding-bottom: 0.4rem; margin-top: 2rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .prose-custom p { margin-bottom: 1.5rem; }
+        .prose-custom ul { margin: 0 0 1.5rem 1.5rem; list-style-type: disc; }
+        .prose-custom li { margin-bottom: 0.5rem; }
         .prose-custom strong { color: #0f172a; }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen font-sans pb-12">
-    <div class="bg-indigo-950 text-white p-6 shadow-md mb-6 sticky top-0 z-10">
-        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-                <h1 class="text-2xl font-black tracking-wide">CIBODY AI</h1>
-                <p class="text-indigo-200 text-sm">Dijital Ayak & Biyomekanik Analiz Raporu</p>
-            </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right">
-                    <h2 id="patientName" class="text-xl font-bold uppercase tracking-wider">-</h2>
-                    <p id="patientInfo" class="text-sm text-indigo-200">Yükleniyor...</p>
-                </div>
-
-            </div>
-        </div>
+    <!-- Ekranda Görünen Yükleme Alanı -->
+    <div id="loadingState" class="flex flex-col items-center justify-center pt-20 text-indigo-900">
+        <i class="fa-solid fa-spinner fa-spin fa-3x mb-4"></i>
+        <h2 class="text-xl font-bold">Rapor Yükleniyor...</h2>
+        <p class="text-sm text-slate-500 mt-2">Lütfen bekleyin, PDF hazırlanıyor.</p>
     </div>
 
-    <div id="publicReportBody" class="max-w-4xl mx-auto px-4">
+    <!-- Asıl İndirilecek PDF İçeriği (Gizli veya ekranda temiz bir şekilde görünen alan) -->
+    <div id="footResultsSection" class="max-w-4xl mx-auto px-4 mt-8 hidden bg-slate-50">
+        
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
             <div class="flex items-start">
                 <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 mr-3 text-lg"></i>
@@ -44,20 +37,33 @@
                 </p>
             </div>
         </div>
+        
         <div class="mb-8">
-            <h2 class="text-xl font-bold text-slate-800 mb-6 border-b pb-2"><i class="fa-solid fa-robot text-indigo-600 mr-2"></i>AI Detaylı Analiz Metni</h2>
-            <div id="reportContent" class="prose-custom">
-                <p class="text-center text-slate-500 py-10"><i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i><br>Rapor yükleniyor...</p>
+            <h2 class="text-xl font-bold text-slate-800 mb-4 ml-1"><i class="fa-solid fa-robot text-indigo-600 mr-2"></i>Yapay Zeka Klinik Değerlendirmesi</h2>
+            <div class="prose-custom" id="footReportContent">
+                <!-- AI Markdown Sonucu Buraya Düşer -->
+            </div>
+        </div>
+
+        <!-- Ayak Riskler Bölümü -->
+        <div id="footRisksSection" class="mt-8">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">Bu Durum Zamanla Neye Yol Açabilir? <span class="text-sm font-normal text-slate-500">— önlem alınmazsa oluşabilecek olası riskler</span></h2>
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed max-w-4xl">Aşağıdaki tablolar, tespit edilen taban basış bozukluklarının kinetik zincir (bacak ve omurga) üzerindeki potansiyel uzun vadeli etkilerini gösterir. Kişiye özel tabanlık (ortez) ve egzersizlerle bu riskler yönetilebilir.</p>
+            
+            <div id="footRisksContainer" class="flex flex-col gap-6">
+                <!-- Ayak Risk Kartları JS ile buraya basılacak -->
             </div>
         </div>
     </div>
 
     <script>
+        let patientInfo = {};
+        
         async function loadReport() {
             const urlParams = new URLSearchParams(window.location.search);
             const id = urlParams.get('id');
             if(!id) {
-                document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Geçersiz rapor bağlantısı.</p>";
+                document.getElementById('loadingState').innerHTML = "<p class='text-red-500 font-bold'>Geçersiz rapor bağlantısı.</p>";
                 return;
             }
 
@@ -65,11 +71,11 @@
                 const res = await fetch('/api/public/foot_report/' + id);
                 if(res.ok) {
                     const data = await res.json();
-                    document.getElementById('patientName').innerText = data.patient.name;
-                    document.getElementById('patientInfo').innerText = `Yaş: ${data.patient.age} | Boy: - | Kilo: ${data.patient.weight}kg`;
+                    patientInfo = data.patient;
                     
                     let aiText = data.analysis.ai_report_text;
-                    const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**\n([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
+                    const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**
+([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
                     const match = aiText.match(patientInfoRegex);
                     if(match) {
                         let infoText = match[1];
@@ -80,32 +86,197 @@
                         aiText = aiText.replace(patientInfoRegex, htmlReplacement);
                     }
                     
-                    document.getElementById('reportContent').innerHTML = marked.parse(aiText);
-            // Auto-download PDF after content renders
-            setTimeout(() => downloadPublicFootPdf(), 1200);
+                    aiText = aiText.replace(/fizyoterapist için/gi, 'Uzman İçin');
+                    aiText = aiText.replace(/FİZYOTERAPİST İÇİN/g, 'UZMAN İÇİN');
+                    aiText = aiText.replace(/Fizyoterapist İçin/g, 'Uzman İçin');
+                    
+                    document.getElementById('footReportContent').innerHTML = marked.parse(aiText);
+                    
+                    // Riskleri Oluştur (app.js'den kopyalandı)
+                    generateFootRisks(data.analysis.ai_report_text);
+                    
+                    document.getElementById('loadingState').classList.add('hidden');
+                    document.getElementById('footResultsSection').classList.remove('hidden');
+                    
+                    setTimeout(() => downloadPublicFootPdf(), 1500);
                 } else {
-                    document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Rapor bulunamadı veya silinmiş.</p>";
+                    document.getElementById('loadingState').innerHTML = "<p class='text-red-500 font-bold'>Rapor bulunamadı veya silinmiş.</p>";
                 }
             } catch(e) {
-                document.getElementById('reportContent').innerHTML = "<p class='text-red-500 text-center font-bold'>Sunucu hatası oluştu.</p>";
+                document.getElementById('loadingState').innerHTML = "<p class='text-red-500 font-bold'>Sunucu hatası oluştu.</p>";
             }
         }
-        loadReport();
-
-    function downloadPublicFootPdf() {
-        const element = document.getElementById('publicReportBody');
-        const nameEl = document.getElementById('patientName');
-        const pName = (nameEl ? nameEl.innerText : 'hasta').replace(/[ığşçöüİĞŞÇÖÜ]/g, m => ({'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'})[m]);
         
-        html2pdf().set({
-            margin: [0.5, 0.4, 0.5, 0.4],
-            filename: 'ayak-analiz-raporum.pdf',
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
-        }).from(element).save();
-    }
+        function generateFootRisks(aiText) {
+            const CLINICAL_DATA = {
+                "Pes Planus": {
+                    risk: "Yüksek",
+                    title: "Düz Tabanlık (Pes Planus)",
+                    sonuclar: [
+                        "<strong>Ayak Bileği:</strong> İçeriye çökme (pronasyon) kaynaklı iç bağlarda (deltoid) kronik gerilme ve posterior tibial tendon yetmezliği.",
+                        "<strong>Diz:</strong> Valgus stresi (X bacak görünümü) nedeniyle iç yan bağlarda (MCL) gerilme ve medial menisküs hasarı riski.",
+                        "<strong>Kalça ve Pelvis:</strong> İçe rotasyon artışı, anterior pelvik tilt ve buna bağlı bel çukurluğunda (lordoz) artış.",
+                        "<strong>Omurga:</strong> Bel bölgesinde (L4-L5-S1) faset eklem sıkışması, bel ağrısı ve asimetrik yüklenme varsa skolyotik eğilim."
+                    ]
+                },
+                "Pes Cavus": {
+                    risk: "Yüksek",
+                    title: "Yüksek Kavis (Pes Cavus)",
+                    sonuclar: [
+                        "<strong>Ayak:</strong> Yükün topuk ve ön ayağa aşırı binmesi sonucu topuk dikeni (plantar fasiit) ve metatarsalji (tarak kemiği ağrısı).",
+                        "<strong>Ayak Bileği:</strong> Dışa basma (supinasyon) kaynaklı sık ayak bileği burkulmaları ve dış bağ (ATFL) zedelenmeleri.",
+                        "<strong>Diz:</strong> Şok emiliminin azalması nedeniyle diz eklem kıkırdağına (patellofemoral) doğrudan binen stres ve ağrı.",
+                        "<strong>Omurga:</strong> Yürüyüş sırasındaki sert darbelerin omurgaya doğrudan iletilmesi sonucu bel ve boyun fıtığı riskinde artış."
+                    ]
+                },
+                "Düşmekte": {
+                    risk: "Orta",
+                    title: "Kavis Düşüklüğü Eğilimi (Orta Ayak Basınç Artışı)",
+                    sonuclar: [
+                        "<strong>Ayak İçi:</strong> Medial longitudinal arkın çökmeye başlamasıyla plantar fasyada gerilme ve sabahları topuk ağrısı (başlangıç).",
+                        "<strong>Diz:</strong> Diz kapağının (patella) dışa doğru kayma eğilimi (lateral tracking) ve merdiven inip çıkarken diz ağrısı.",
+                        "<strong>Kaslar:</strong> Tibialis posterior kasının ayak kavisini korumaya çalışırken aşırı yorulması (shin splints / kaval kemiği ağrısı)."
+                    ]
+                },
+                "Topuk Ağırlıklı": {
+                    risk: "Orta",
+                    title: "Posterior (Topuk) Yüklenmesi",
+                    sonuclar: [
+                        "<strong>Ayak:</strong> Topuk yağ yastıkçığında dejenerasyon, topuk dikeni oluşumu ve kalkaneal bölgede şiddetli baskı ağrısı.",
+                        "<strong>Diz:</strong> Dizlerin geriye doğru kilitlenmesi (genu recurvatum) ve arka çapraz bağlarda (PCL) gerilme stresi.",
+                        "<strong>Omurga:</strong> Ağırlık merkezinin geriye kaymasını dengelemek için üst gövdenin öne eğilmesi (kifoz / kamburluk) ve boyun düzleşmesi."
+                    ]
+                },
+                "Ön Ayak": {
+                    risk: "Orta",
+                    title: "Anterior (Ön Ayak) Yüklenmesi",
+                    sonuclar: [
+                        "<strong>Ayak:</strong> Metatars (tarak) başlarına aşırı yük binmesi, nasır oluşumu, çekiç parmak deformiteleri ve Morton nöroması.",
+                        "<strong>Aşil ve Baldır:</strong> Aşil tendonunda ve gastrosoleus kas kompleksinde kronik kısalma/gerginlik ve buna bağlı kramplar.",
+                        "<strong>Omurga:</strong> Ağırlık merkezinin öne kayması nedeniyle bel kaslarının vücudu dik tutmak için sürekli kasılması ve kronik bel yorgunluğu (spazm)."
+                    ]
+                },
+                "Asimetri": {
+                    risk: "Yüksek",
+                    title: "Sağ / Sol Bacak Basınç Asimetrisi",
+                    sonuclar: [
+                        "<strong>Leğen Kemiği (Pelvis):</strong> Pelvik tilt veya rotasyon oluşumu, bacak boyu eşitsizliği illüzyonu (fonksiyonel kısa bacak).",
+                        "<strong>Kalça:</strong> Çok basan taraftaki kalça ekleminde (femoroasetabuler) erken kireçlenme (osteoartrit) ve trokanterik bursit.",
+                        "<strong>Omurga:</strong> Omurganın yana doğru eğilmesi (fonksiyonel skolyoz) ve disklerde tek taraflı fıtıklaşma (herni) riski.",
+                        "<strong>Genel:</strong> Tüm kinetik zincirde kompansatuar asimetrik kas hipertrofisi ve yürüyüş ritminde bozulma."
+                    ]
+                }
+            };
+
+            const foundRisks = [];
+            const upperText = aiText.toUpperCase();
+            
+            if(upperText.includes("PES PLANUS") || upperText.includes("DÜZ TABAN") || upperText.includes("PRONASYON")) foundRisks.push("Pes Planus");
+            if(upperText.includes("PES CAVUS") || upperText.includes("YÜKSEK KAVİS") || upperText.includes("SUPİNASYON")) foundRisks.push("Pes Cavus");
+            if(upperText.includes("DÜŞMEKTE") || upperText.includes("ORTA AYAK")) foundRisks.push("Düşmekte");
+            if(upperText.includes("TOPUK AĞIRLIKLI") || upperText.includes("POSTERİOR")) foundRisks.push("Topuk Ağırlıklı");
+            if(upperText.includes("ÖN AYAK") || upperText.includes("ANTERİOR")) foundRisks.push("Ön Ayak");
+            if(upperText.includes("ASİMETR") || upperText.includes("EŞİTSİZ")) foundRisks.push("Asimetri");
+            
+            const uniqueRisks = [...new Set(foundRisks)];
+            const container = document.getElementById('footRisksContainer');
+            
+            if(uniqueRisks.length === 0) {
+                document.getElementById('footRisksSection').classList.add('hidden');
+                return;
+            }
+            
+            document.getElementById('footRisksSection').classList.remove('hidden');
+            let html = "";
+            
+            uniqueRisks.forEach(riskKey => {
+                const rData = CLINICAL_DATA[riskKey];
+                if(!rData) return;
+                
+                let liHtml = "";
+                rData.sonuclar.forEach(s => { liHtml += `<li>${s}</li>`; });
+                
+                let colorClass = rData.risk === "Yüksek" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-700";
+                
+                html += `
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row">
+                        <div class="md:w-1/4 ${colorClass} p-5 flex flex-col justify-center items-center text-center border-b md:border-b-0 md:border-r border-slate-200">
+                            <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 opacity-80"></i>
+                            <span class="font-black uppercase tracking-wider text-sm mb-1">RİSK</span>
+                            <span class="text-xs opacity-70">${rData.risk} Düzey</span>
+                            <div class="mt-4 text-xs font-medium px-3 py-1 bg-white/50 rounded-full flex items-center">
+                                <span class="text-slate-400">Şimdi</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">Sonra</span>
+                            </div>
+                        </div>
+                        <div class="md:w-3/4 p-5">
+                            <h4 class="text-lg font-bold text-slate-800 mb-1">${rData.title}</h4>
+                            <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-3">Zamanla Oluşabilecek Olası Riskler</p>
+                            <ul class="list-disc pl-5 text-sm">
+                                ${liHtml}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function downloadPublicFootPdf() {
+            const element = document.getElementById('footResultsSection');
+            const pName = (patientInfo.name || 'hasta').replace(/[ığşçöüİĞŞÇÖÜ]/g, m => ({'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'})[m]);
+            const pAge = patientInfo.age || '-';
+            const pWeight = patientInfo.weight || '-';
+            const dateStr = new Date().toLocaleDateString('tr-TR');
+            
+            html2pdf().set({
+                margin: [0.75, 0.3, 0.5, 0.3],
+                filename: `ayak_raporu_${pName}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'] }
+            }).from(element).toPdf().get('pdf').then(function(pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+                const pageWidth = pdf.internal.pageSize.width;
+                const pageHeight = pdf.internal.pageSize.height;
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    
+                    // --- HEADER ---
+                    pdf.setFillColor(30, 27, 75); // indigo-950
+                    pdf.rect(0, 0, pageWidth, 0.55, 'F');
+                    
+                    pdf.setTextColor(255, 255, 255);
+                    pdf.setFontSize(14);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text("CIBODY AI", 0.3, 0.25);
+                    
+                    pdf.setFontSize(9);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text("Klinik Ayak Basinc & Biyomekanik Raporu", 0.3, 0.40);
+
+                    // Sağ üstte hasta bilgileri
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text(pName, pageWidth - 0.3, 0.25, { align: 'right' });
+                    
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text(`Yas: ${pAge} | Kilo: ${pWeight} kg | Tarih: ${dateStr}`, pageWidth - 0.3, 0.40, { align: 'right' });
+                    
+                    // --- FOOTER ---
+                    pdf.setDrawColor(200, 200, 200);
+                    pdf.setLineWidth(0.01);
+                    pdf.line(0.3, pageHeight - 0.3, pageWidth - 0.3, pageHeight - 0.3);
+                    
+                    pdf.setTextColor(100, 100, 100);
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
+                }
+            }).save();
+        }
     </script>
 </body>
 </html>
