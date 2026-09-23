@@ -1560,7 +1560,7 @@ async function addPrescribed(exerciseId) {
             if (currentExerciseContext === 'posture') {
                 loadPrescribedExercises();
             } else if (currentExerciseContext === 'scoliosis') {
-                if (typeof loadScoliosisAssignedExercises === 'function') loadScoliosisAssignedExercises();
+                if (typeof window.loadScoliosisAssignedExercises === 'function') window.loadScoliosisAssignedExercises();
             }
             showToast("Egzersiz başarıyla eklendi.");
             closeExerciseModal();

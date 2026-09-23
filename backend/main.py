@@ -1110,15 +1110,21 @@ def get_scoliosis_prescribed_exercises(analysis_id: int, db: Session = Depends(g
 
 @app.post("/api/scoliosis/{analysis_id}/exercises")
 def add_scoliosis_prescribed_exercise(analysis_id: int, payload: ExerciseAssign, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    ne = models.PrescribedExercise(
-        scoliosis_analysis_id=analysis_id,
-        exercise_id=payload.exercise_id,
-        sets=payload.sets,
-        reps=payload.reps
-    )
-    db.add(ne)
-    db.commit()
-    return {"status": "success"}
+    try:
+        ne = models.PrescribedExercise(
+            scoliosis_analysis_id=analysis_id,
+            exercise_id=payload.exercise_id,
+            sets=payload.sets,
+            reps=payload.reps
+        )
+        db.add(ne)
+        db.commit()
+        return {"status": "success"}
+    except Exception as e:
+        import traceback
+        print("ADD EXERCISE ERROR:", e)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/api/scoliosis/{analysis_id}/exercises/{assign_id}")
 def update_scoliosis_prescribed_exercise(analysis_id: int, assign_id: int, payload: ExerciseUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
