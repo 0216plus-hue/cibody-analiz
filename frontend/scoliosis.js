@@ -285,7 +285,7 @@ async function loadScoliosisHistory() {
 
             let html = '';
             data.forEach((item, index) => {
-                const dateStr = new Date(item.created_at + 'Z').toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+                const dateStr = new Date(item.created_at + 'Z').toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const imgUrl = item.image_path ? `/${item.image_path}` : 'https://via.placeholder.com/150?text=Gorsel+Yok';
                 let badge = index === 0 ? '<span class="absolute top-1 left-1 bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">İLK (BEFORE)</span>' : 
                             (index === data.length - 1 && data.length > 1 ? '<span class="absolute top-1 left-1 bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow">SON (AFTER)</span>' : '');

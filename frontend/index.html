@@ -1045,15 +1045,16 @@
                     </div>
                 </div>
 
-                <!-- Geçmiş Analizler -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col overflow-hidden">
-                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
-                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş (Before/After)</span>
-                        <span class="text-[10px] font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">Yana Kaydırın ➡️</span>
-                    </h2>
-                    <div id="scoliosisHistoryList" class="flex overflow-x-auto gap-3 pb-3 snap-x" style="scrollbar-width: thin;">
-                        <div class="text-center text-slate-400 py-4 w-full">Kayıt bulunamadı.</div>
-                    </div>
+                <!-- Klinik Notlar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-1 flex flex-col w-full">
+                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
+                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex-1 resize-none" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
+                <div class="flex justify-end mt-3">
+                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
+                        Notları Kaydet
+                    </button>
+                </div>
+            </div>
                 </div>
             </div>
             
@@ -1063,16 +1064,15 @@
         <!-- ALT BÖLÜM: Tam Sayfa -->
         <div class="w-full flex flex-col gap-6 mb-8">
             
-            <!-- Klinik Notlar -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 w-full">
-                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
-                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px]" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
-                <div class="flex justify-end mt-3">
-                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
-                        Notları Kaydet
-                    </button>
-                </div>
-            </div>
+            <!-- Geçmiş Analizler -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col overflow-hidden">
+                    <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş (Before/After)</span>
+                        
+                    </h2>
+                    <div id="scoliosisHistoryList" class="flex flex-wrap gap-4 pb-3">
+                        <div class="text-center text-slate-400 py-4 w-full">Kayıt bulunamadı.</div>
+                    </div>
 
             <!-- Aksiyon Butonları -->
             <div class="flex flex-col sm:flex-row gap-4 w-full">
