@@ -81,8 +81,7 @@
                     patientInfo = data.patient;
                     
                     let aiText = data.analysis.ai_report_text;
-                    const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**
-([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
+                    const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**\n([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
                     const match = aiText.match(patientInfoRegex);
                     if(match) {
                         let infoText = match[1];
