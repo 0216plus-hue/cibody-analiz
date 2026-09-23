@@ -146,13 +146,14 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
         current_user.name = req["name"]
     if "email" in req and req["email"]:
         current_user.email = req["email"]
+    if "phone" in req:
+        current_user.phone = req["phone"]
     if "password" in req and req["password"]:
         import bcrypt
-        
         current_user.hashed_password = hash_password(req["password"])
     db.commit()
     db.refresh(current_user)
-    return {"name": current_user.name, "email": current_user.email}
+    return {"name": current_user.name, "email": current_user.email, "phone": current_user.phone}
 
 # ────────────────────────────────
 #  SÜPERADMİN — KULLANICI YÖNETİMİ
@@ -854,11 +855,17 @@ def get_public_report(analysis_id: int, db: Session = Depends(get_db)):
         "left_image": analysis.left_image_path,
         "right_image": analysis.right_image_path,
         "clinical_notes": analysis.clinical_notes,
+        "ai_report_text": analysis.ai_report_text,
         "created_at": analysis.created_at,
         "patient": {
             "age": patient.age,
             "gender": patient.gender,
             "weight": patient.weight
+        },
+        "doctor": {
+            "name": doctor.name if doctor else "",
+            "email": doctor.email if doctor else "",
+            "phone": doctor.phone if doctor else ""
         },
         "exercises": ex_list
     }
@@ -869,6 +876,7 @@ def get_public_foot_report(analysis_id: int, db: Session = Depends(get_db)):
     if not analysis: raise HTTPException(status_code=404)
     
     patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id).first()
+    doctor = db.query(models.User).filter(models.User.id == patient.user_id).first() if patient else None
     
     return {
         "patient": {
@@ -876,6 +884,11 @@ def get_public_foot_report(analysis_id: int, db: Session = Depends(get_db)):
             "age": patient.age,
             "weight": patient.weight,
             "gender": patient.gender
+        },
+        "doctor": {
+            "name": doctor.name if doctor else "",
+            "email": doctor.email if doctor else "",
+            "phone": doctor.phone if doctor else ""
         },
         "analysis": {
             "id": analysis.id,

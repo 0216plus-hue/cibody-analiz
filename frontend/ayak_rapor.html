@@ -68,6 +68,7 @@
 
     <script>
         let patientInfo = {};
+        let doctorInfo = null;
         
         async function loadReport() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -82,6 +83,7 @@
                 if(res.ok) {
                     const data = await res.json();
                     patientInfo = data.patient;
+                    doctorInfo = data.doctor;
                     
                     let aiText = data.analysis.ai_report_text;
                     const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**\n([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
@@ -245,6 +247,16 @@
                     pdf.setTextColor(100, 100, 100);
                     pdf.setFontSize(8);
                     pdf.setFont('helvetica', 'normal');
+                    
+                    let docText = "";
+                    if(doctorInfo) {
+                        docText = `Uzman: ${doctorInfo.name || '-'} | Mail: ${doctorInfo.email || '-'}`;
+                        if(doctorInfo.phone) docText += ` | Tel: ${doctorInfo.phone}`;
+                    }
+                    if(docText) {
+                        pdf.text(docText, 0.3, pageHeight - 0.18);
+                    }
+                    
                     pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
                 }
             }).save();
