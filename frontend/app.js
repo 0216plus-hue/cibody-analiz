@@ -1699,9 +1699,8 @@ function downloadFootPdf() {
     const element = document.getElementById('footResultsSection');
     if(!element) return;
     
-    // PDF için: tüm kart li'leri avoid-break class'ı al, PDF sonrası geri al
-    const footLis = element.querySelectorAll('#footReportContent > ul > li, #footReportContent > ul > li > ul > li');
-    footLis.forEach(li => li.classList.add('avoid-break'));
+    // PDF için: uzun text bloklarında avoid-break kullanmıyoruz (boşluk yapmaması için)
+    const footLis = []; // Disabled explicitly
     
     const opt = {
       margin:       [0.75, 0.3, 0.5, 0.3],
@@ -1774,7 +1773,7 @@ function downloadFootPdf() {
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
         }
-    }).save().then(() => { footLis.forEach(li => li.classList.remove("avoid-break")); });
+    }).save().then(() => { /* nothing */ });
 }
 
 function showFootQr() {
