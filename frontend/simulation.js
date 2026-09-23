@@ -267,6 +267,8 @@ async function saveSimulationRecord() {
     }
 }
 
+let currentSimulationHistory = [];
+
 async function loadSimulationHistory() {
     if (!currentPatientId) return;
     
@@ -274,15 +276,16 @@ async function loadSimulationHistory() {
         const res = await authFetch(`/api/simulation/patient/${currentPatientId}`);
         if (res.ok) {
             const data = await res.json();
+            currentSimulationHistory = data.history || [];
             const tbody = document.getElementById('simHistoryList');
             tbody.innerHTML = '';
             
-            if (data.history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-slate-400">Henüz kayıt bulunmuyor.</td></tr>';
+            if (currentSimulationHistory.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400">Henüz kayıt bulunmuyor.</td></tr>';
                 return;
             }
             
-            data.history.forEach(item => {
+            currentSimulationHistory.forEach(item => {
                 const dateStr = new Date(item.created_at + 'Z').toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -293,11 +296,96 @@ async function loadSimulationHistory() {
                     <td class="px-4 py-3 text-slate-600">${item.torsion_angle}°</td>
                     <td class="px-4 py-3 text-slate-600">${item.lateral_shift} mm</td>
                     <td class="px-4 py-3 text-xs text-slate-500">${item.measurement_method}</td>
+                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                        <button onclick="applySimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg text-xs transition border border-emerald-200 shadow-sm" title="Bu kaydı simülatöre yükle ve düzenle">
+                            <i class="fa-solid fa-pen-to-square"></i> Seç & Düzenle
+                        </button>
+                        <button onclick="deleteSimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-xs transition border border-red-200 shadow-sm ml-1.5" title="Kaydı Sil">
+                            <i class="fa-solid fa-trash"></i> Sil
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
     } catch (e) {
         console.error(e);
+    }
+}
+
+function applySimulationRecord(id) {
+    const item = currentSimulationHistory.find(x => x.id === id);
+    if (!item) {
+        showToast("Kayıt bulunamadı.");
+        return;
+    }
+    
+    // Set slider values
+    const cobbEl = document.getElementById('sim_cobb');
+    const rotEl = document.getElementById('sim_rot');
+    const torsionEl = document.getElementById('sim_torsion');
+    const shiftEl = document.getElementById('sim_shift');
+    
+    if (cobbEl) cobbEl.value = item.cobb_angle;
+    if (rotEl) rotEl.value = item.rotation_angle;
+    if (torsionEl) torsionEl.value = item.torsion_angle;
+    if (shiftEl) shiftEl.value = item.lateral_shift;
+    
+    // Set selects
+    const startSel = document.getElementById('sim_start');
+    const endSel = document.getElementById('sim_end');
+    const methodSel = document.getElementById('sim_method');
+    
+    if (startSel) {
+        for (let i = 0; i < startSel.options.length; i++) {
+            if (startSel.options[i].text === item.start_vertebra) {
+                startSel.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    if (endSel) {
+        for (let i = 0; i < endSel.options.length; i++) {
+            if (endSel.options[i].text === item.end_vertebra) {
+                endSel.selectedIndex = i;
+                break;
+            }
+        }
+    }
+    
+    if (methodSel && item.measurement_method) {
+        methodSel.value = item.measurement_method;
+    }
+    
+    // Update the 3D model
+    updateSpineForm();
+    
+    // Smooth scroll to top of simulation container
+    const simContainer = document.getElementById('threeJsContainer');
+    if (simContainer) {
+        simContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    
+    showToast(`Seçilen kayıt yüklendi (${item.start_vertebra} - ${item.end_vertebra})`);
+}
+
+async function deleteSimulationRecord(id) {
+    if (!confirm("Bu simülasyon kaydını silmek istediğinize emin misiniz?")) return;
+    
+    try {
+        const res = await authFetch(`/api/simulation/${id}`, {
+            method: 'DELETE'
+        });
+        
+        if (res.ok) {
+            showToast("Simülasyon kaydı silindi.");
+            loadSimulationHistory();
+        } else {
+            showToast("Silinirken hata oluştu.");
+        }
+    } catch (e) {
+        console.error("Delete error:", e);
+        showToast("Sunucu hatası.");
     }
 }

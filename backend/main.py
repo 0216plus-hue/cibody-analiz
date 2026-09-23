@@ -1360,4 +1360,20 @@ def get_simulation_history(patient_id: int, db: Session = Depends(get_db)):
         print("SIMULATION HISTORY FETCH ERROR:", str(e))
         return {"history": []}
 
+@app.delete("/api/simulation/{simulation_id}")
+def delete_simulation(simulation_id: int, db: Session = Depends(get_db)):
+    try:
+        record = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.id == simulation_id).first()
+        if not record:
+            raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+        db.delete(record)
+        db.commit()
+        return {"status": "success"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        print("SIMULATION DELETE ERROR:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
