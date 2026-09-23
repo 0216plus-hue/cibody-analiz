@@ -1098,7 +1098,9 @@ def get_scoliosis_prescribed_exercises(analysis_id: int, db: Session = Depends(g
                 "name": base.name,
                 "category": base.category,
                 "sets": ex.sets,
-                "reps": ex.reps
+                "reps": ex.reps,
+                "image_path": base.image_path,
+                "video_url": base.video_url
             })
     return {"status": "success", "exercises": res}
 

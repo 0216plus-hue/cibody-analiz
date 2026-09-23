@@ -2,7 +2,7 @@
 
 let scoliosisFile = null;
 let scoliosisPoints = [];
-let currentScoliosisId = null;
+window.window.currentScoliosisId = null;
 let currentCobbAngle = 0;
 let currentCurveType = "";
 
@@ -16,7 +16,7 @@ function previewScoliosis(event) {
     
     scoliosisFile = file;
     scoliosisPoints = [];
-    currentScoliosisId = null;
+    window.currentScoliosisId = null;
     currentCobbAngle = 0;
     currentCurveType = "";
     
@@ -149,7 +149,7 @@ function calculateCobbAngle() {
     currentCurveType = "S veya C Eğrisi";
     document.getElementById('scoliosisSeverity').innerText = severity;
     
-    if(currentScoliosisId) {
+    if(window.currentScoliosisId) {
         saveScoliosisData(); // Auto save if already uploaded
     }
 }
@@ -183,7 +183,7 @@ async function uploadScoliosisImage() {
         
         if (res.ok) {
             const data = await res.json();
-            currentScoliosisId = data.analysis_id;
+            window.currentScoliosisId = data.analysis_id;
             
             // Yükleme başarılı, şimdi noktalar ve derece hesaplanmışsa kaydet
             if (scoliosisPoints.length === 4) {
@@ -205,10 +205,10 @@ async function uploadScoliosisImage() {
 }
 
 async function saveScoliosisData() {
-    if (!currentScoliosisId) return;
+    if (!window.currentScoliosisId) return;
     
     try {
-        await authFetch(`/api/scoliosis/${currentScoliosisId}`, {
+        await authFetch(`/api/scoliosis/${window.currentScoliosisId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -224,10 +224,10 @@ async function saveScoliosisData() {
 }
 
 async function saveScoliosisNotes() {
-    if (!currentScoliosisId) { alert("Lütfen önce bir röntgen yükleyip analiz yapın."); return; }
+    if (!window.currentScoliosisId) { alert("Lütfen önce bir röntgen yükleyip analiz yapın."); return; }
     const notes = document.getElementById('scoliosisNotes').value;
     try {
-        await authFetch(`/api/scoliosis/${currentScoliosisId}`, {
+        await authFetch(`/api/scoliosis/${window.currentScoliosisId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ clinical_notes: notes })
@@ -238,7 +238,7 @@ async function saveScoliosisNotes() {
 }
 
 async function generateScoliosisAi() {
-    if (!currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
+    if (!window.currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
     if (currentCobbAngle === 0) { alert("Lütfen önce resme 4 nokta koyarak Cobb açısını hesaplayın."); return; }
     
     const btn = document.getElementById('btnGenerateScoliosisAi');
@@ -249,7 +249,7 @@ async function generateScoliosisAi() {
     reportArea.innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-circle-notch fa-spin text-indigo-500 text-2xl mb-2"></i><p>Yapay zeka analiz raporu yazıyor...</p></div>';
     
     try {
-        const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/generate-report`, { method: 'POST' });
+        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/generate-report`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
             renderAiReports(data.report);
@@ -300,7 +300,7 @@ async function loadScoliosisAnalysis(id) {
         const res = await authFetch(`/api/public/scoliosis_report/${id}`);
         if(res.ok) {
             const data = await res.json();
-            currentScoliosisId = id;
+            window.currentScoliosisId = id;
             currentCobbAngle = data.cobb_angle || 0;
             currentCurveType = data.curve_type || "";
             
@@ -344,19 +344,19 @@ async function deleteScoliosis(id) {
     try {
         await authFetch(`/api/scoliosis/${id}`, { method: 'DELETE' });
         loadScoliosisHistory();
-        if(currentScoliosisId === id) {
+        if(window.currentScoliosisId === id) {
             // reset form
             document.getElementById('scoliosisPreview').classList.add('hidden');
             document.getElementById('scoliosisCanvas').classList.add('hidden');
             document.getElementById('scoliosisPlaceholder').classList.remove('hidden');
             scoliosisPoints = [];
-            currentScoliosisId = null;
+            window.currentScoliosisId = null;
         }
     } catch(e) { console.error(e); }
 }
 
 function showScoliosisQr() {
-    if(!currentScoliosisId) { alert("Lütfen geçerli bir analiz seçin."); return; }
+    if(!window.window.currentScoliosisId) { alert("Lütfen geçerli bir analiz seçin."); return; }
     const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId;
     
     let modal = document.getElementById('qrModal');
@@ -408,14 +408,14 @@ function showScoliosisQr() {
 }
 
 function downloadScoliosisPdf() {
-    if(!currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
+    if(!window.window.currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
     const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + '&download=1';
     window.open(publicUrl, '_blank');
 }
 
 
 async function generateScoliosisExerciseAi() {
-    if (!currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
+    if (!window.currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
     if (currentCobbAngle === 0) { alert("Lütfen önce resme 4 nokta koyarak Cobb açısını hesaplayın."); return; }
     
     const btn = document.getElementById('btnGenerateScoliosisExerciseAi');
@@ -426,7 +426,7 @@ async function generateScoliosisExerciseAi() {
     reportArea.innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-person-running fa-bounce text-emerald-500 text-3xl mb-2"></i><p class="font-medium text-emerald-700">Yapay Zeka bu dereceye uygun egzersizleri planlıyor...</p></div>';
     
     try {
-        const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/generate-exercises`, { method: 'POST' });
+        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/generate-exercises`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
             renderAiReports(data.report);
@@ -470,12 +470,12 @@ function renderAiReports(fullText) {
 
 
 async function loadScoliosisAssignedExercises() {
-    if(!currentScoliosisId) return;
+    if(!window.window.currentScoliosisId) return;
     const tbody = document.getElementById('scoliosisAssignedExercisesList');
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i></td></tr>';
     
     try {
-        const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/exercises`);
+        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises`);
         const data = await res.json();
         
         if(!data.exercises || data.exercises.length === 0) {
@@ -489,7 +489,7 @@ async function loadScoliosisAssignedExercises() {
             <tr class="hover:bg-slate-50 transition-colors">
                 <td class="px-4 py-3">
                     <div class="w-12 h-12 bg-white rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center shadow-sm">
-                        <img src="/api/exercises/${ex.exercise_id}/image" onerror="this.outerHTML='<i class=\'fa-solid fa-person-running text-slate-300\'></i>'" class="w-full h-full object-cover">
+                        <img src="/${ex.image_path}" onerror="this.outerHTML='<i class=\'fa-solid fa-person-running text-slate-300\'></i>'" class="w-full h-full object-cover">
                     </div>
                 </td>
                 <td class="px-4 py-3">
@@ -525,7 +525,7 @@ async function updateScoliosisExercise(assignId, inputEl, field) {
     const reps = field === 'reps' ? val : tr.querySelector('input[onchange*="\'reps\'"]').value;
     
     try {
-        await authFetch(`/api/scoliosis/${currentScoliosisId}/exercises/${assignId}`, {
+        await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises/${assignId}`, {
             method: 'PUT',
             headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ sets: sets, reps: reps })
@@ -539,7 +539,7 @@ async function updateScoliosisExercise(assignId, inputEl, field) {
 async function deleteScoliosisExercise(assignId) {
     if(!confirm("Silmek istediğinize emin misiniz?")) return;
     try {
-        await authFetch(`/api/scoliosis/${currentScoliosisId}/exercises/${assignId}`, { method: 'DELETE' });
+        await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises/${assignId}`, { method: 'DELETE' });
         loadScoliosisAssignedExercises();
     } catch(e) {
         console.error(e);
@@ -547,7 +547,7 @@ async function deleteScoliosisExercise(assignId) {
 }
 
 async function suggestScoliosisExercises() {
-    if(!currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
+    if(!window.window.currentScoliosisId) { alert("Önce resmi kaydedin."); return; }
     if(currentCobbAngle === 0) { alert("Açıyı hesaplayın."); return; }
     
     const btn = document.getElementById('btnSuggestScoliosisExercises');
@@ -555,7 +555,7 @@ async function suggestScoliosisExercises() {
     btn.disabled = true;
     
     try {
-        const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/exercises/suggest`, { method: 'POST' });
+        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises/suggest`, { method: 'POST' });
         if(res.ok) {
             showToast("Yapay zeka egzersizleri başarıyla atandı!");
             loadScoliosisAssignedExercises();

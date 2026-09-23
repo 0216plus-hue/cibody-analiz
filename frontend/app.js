@@ -1441,7 +1441,7 @@ async function openExerciseModal(context = 'posture') {
     if(context === 'posture' && !currentAnalysisId) {
         alert("Önce bir analiz seçmelisiniz."); return;
     }
-    if(context === 'scoliosis' && typeof currentScoliosisId !== 'undefined' && !currentScoliosisId) {
+    if(context === 'scoliosis' && typeof window.currentScoliosisId !== 'undefined' && !window.currentScoliosisId) {
         alert("Önce resmi kaydetmelisiniz."); return;
     }
     document.getElementById('exerciseModal').classList.remove('hidden');
@@ -1548,7 +1548,7 @@ async function addPrescribed(exerciseId) {
         if (currentExerciseContext === 'posture') {
             url = `/api/posture/${currentAnalysisId}/exercises`;
         } else if (currentExerciseContext === 'scoliosis') {
-            url = `/api/scoliosis/${currentScoliosisId}/exercises`;
+            url = `/api/scoliosis/${window.currentScoliosisId}/exercises`;
         }
         
         const res = await authFetch(url, {
