@@ -1,3 +1,5 @@
+import uuid
+from datetime import timedelta
 import os, uuid, base64, requests, json
 from datetime import datetime, timedelta
 from typing import Optional
@@ -445,7 +447,7 @@ async def analyze_pdf(
         with open(pdf_path, "wb") as f:
             f.write(file_bytes)
         encoded_pdf = base64.b64encode(file_bytes).decode('utf-8')
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         payload = {
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},
             "contents": [{"parts": [
@@ -654,7 +656,7 @@ async def analyze_spine(
         raise HTTPException(status_code=400, detail="En az bir görsel yükleyin.")
 
     def call_gemini(prompt, image_bytes, mime="image/jpeg"):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         encoded = base64.b64encode(image_bytes).decode()
         payload = {
             "contents": [{"parts": [
@@ -692,7 +694,7 @@ async def analyze_spine(
         report_prompt = SPINE_REPORT_PROMPT + f"\n\nANALİZ VERİLERİ:\n{summary_data}"
 
         # Use a text-only call for the report
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         report_payload = {"contents": [{"parts": [{"text": report_prompt}]}]}
         rr = requests.post(url, json=report_payload, timeout=90)
         rr.raise_for_status()
@@ -829,7 +831,7 @@ def suggest_exercises(analysis_id: int, db: Session = Depends(get_db), current_u
         prompt = f"""Sen uzman bir fizyoterapistsin..."""
         
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
             
             rr = requests.post(url, json=payload, timeout=60)
@@ -1063,7 +1065,7 @@ def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), c
     """
     
     try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
         payload = {"contents": [{"parts": [{"text": prompt}]}]}
         rr = requests.post(url, json=payload, timeout=60)
         rr.raise_for_status()
@@ -1166,7 +1168,7 @@ Egzersiz Listesi:
 """
         
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
             
             rr = requests.post(url, json=payload, timeout=60)
@@ -1261,3 +1263,68 @@ app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+class ScoliometerSaveRequest(BaseModel):
+    thoracic_angle: float = None
+    lumbar_angle: float = None
+
+@app.post("/api/scoliometer/token/{patient_id}")
+def generate_scoliometer_token(patient_id: int, request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    if not patient: raise HTTPException(status_code=404, detail="Patient not found")
+    
+    token_str = str(uuid.uuid4())
+    token = models.ScoliometerToken(
+        token=token_str,
+        patient_id=patient.id,
+        expires_at=datetime.utcnow() + timedelta(hours=1)
+    )
+    db.add(token)
+    db.commit()
+    
+    # Generate the URL that the QR code will point to
+    # request.base_url gives e.g. "http://localhost:8080/"
+    url = f"{request.base_url}scoliometer?token={token_str}"
+    return {"url": url}
+
+@app.get("/api/scoliometer/auth/{token}")
+def get_scoliometer_patient(token: str, db: Session = Depends(get_db)):
+    t = db.query(models.ScoliometerToken).filter(models.ScoliometerToken.token == token, models.ScoliometerToken.is_used == False).first()
+    if not t or t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş bağlantı.")
+    
+    patient = db.query(models.Patient).filter(models.Patient.id == t.patient_id).first()
+    return {"patient_id": patient.id, "patient_name": patient.name}
+
+@app.post("/api/scoliometer/save/{token}")
+def save_scoliometer_data(token: str, req: ScoliometerSaveRequest, db: Session = Depends(get_db)):
+    t = db.query(models.ScoliometerToken).filter(models.ScoliometerToken.token == token, models.ScoliometerToken.is_used == False).first()
+    if not t or t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş bağlantı.")
+    
+    m = models.ScoliometerMeasurement(
+        patient_id=t.patient_id,
+        thoracic_angle=req.thoracic_angle,
+        lumbar_angle=req.lumbar_angle
+    )
+    db.add(m)
+    t.is_used = True
+    db.commit()
+    return {"status": "success"}
+
+@app.get("/api/scoliometer/patient/{patient_id}")
+def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    history = db.query(models.ScoliometerMeasurement).filter(models.ScoliometerMeasurement.patient_id == patient_id).order_by(models.ScoliometerMeasurement.created_at.desc()).all()
+    return {"history": [{"id": h.id, "thoracic": h.thoracic_angle, "lumbar": h.lumbar_angle, "date": h.created_at.isoformat()} for h in history]}
