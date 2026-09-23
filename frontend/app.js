@@ -48,6 +48,8 @@ function showDashboard() {
     }
     document.getElementById('dashboardView').classList.remove('hidden');
     document.getElementById('patientView').classList.add('hidden');
+    // Hide all extra tabs
+    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab'].forEach(t => { const el = document.getElementById(t); if(el) el.classList.add('hidden'); });
     document.getElementById('navPatientName').classList.add('hidden');
     fetchPatients();
 }
