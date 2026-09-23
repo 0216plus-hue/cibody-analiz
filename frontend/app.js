@@ -1580,7 +1580,7 @@ function downloadPdf() {
       margin:       [0.60, 0.3, 0.5, 0.3],
       filename:     `postur_raporu_${currentPatientId}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
@@ -1707,7 +1707,7 @@ function downloadFootPdf() {
       margin:       [0.75, 0.3, 0.5, 0.3],
       filename:     `ayak_raporu_${currentPatientId}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
