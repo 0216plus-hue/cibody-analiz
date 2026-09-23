@@ -1,3 +1,4 @@
+let currentExerciseContext = 'posture';
 
 let globalPostureState = { front: null, back: null, left: null, right: null };
 let globalPatientInfo = null;
@@ -1435,9 +1436,13 @@ async function suggestExercises() {
 
 let activeCategory = null;
 
-async function openExerciseModal() {
-    if(!currentAnalysisId) {
+async function openExerciseModal(context = 'posture') {
+    currentExerciseContext = context;
+    if(context === 'posture' && !currentAnalysisId) {
         alert("Önce bir analiz seçmelisiniz."); return;
+    }
+    if(context === 'scoliosis' && typeof currentScoliosisId !== 'undefined' && !currentScoliosisId) {
+        alert("Önce resmi kaydetmelisiniz."); return;
     }
     document.getElementById('exerciseModal').classList.remove('hidden');
     await loadLibrary();
@@ -1539,14 +1544,25 @@ function filterExercises() {
 
 async function addPrescribed(exerciseId) {
     try {
-        const res = await authFetch(`/api/posture/${currentAnalysisId}/exercises`, {
+        let url = "";
+        if (currentExerciseContext === 'posture') {
+            url = `/api/posture/${currentAnalysisId}/exercises`;
+        } else if (currentExerciseContext === 'scoliosis') {
+            url = `/api/scoliosis/${currentScoliosisId}/exercises`;
+        }
+        
+        const res = await authFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ exercise_id: exerciseId, sets: "3", reps: "10-12" })
+            body: JSON.stringify({ exercise_id: exerciseId, sets: "3", reps: "10" })
         });
         if(res.ok) {
-            // Animasyon veya toast gösterilebilir
-            loadPrescribedExercises();
+            if (currentExerciseContext === 'posture') {
+                loadPrescribedExercises();
+            } else if (currentExerciseContext === 'scoliosis') {
+                if (typeof loadScoliosisAssignedExercises === 'function') loadScoliosisAssignedExercises();
+            }
+            showToast("Egzersiz başarıyla eklendi.");
         }
     } catch(e) {
         console.error("Add error", e);
