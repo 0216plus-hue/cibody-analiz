@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIBODY AI - Skolyoz Analiz Raporu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; }
+        .digital-skeleton-bg { background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 20px 20px; background-color: #f8fafc; }
+    </style>
+</head>
+<body class="text-slate-800 pb-20">
+
+    <div class="fixed top-0 left-0 w-full bg-indigo-950 text-white z-50 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bone text-2xl text-indigo-400"></i>
+                <div>
+                    <h1 class="font-black text-lg leading-tight tracking-wide">CIBODY<span class="text-indigo-400">AI</span></h1>
+                    <p class="text-[10px] text-indigo-200 tracking-widest uppercase">Skolyoz Cobb Analizi</p>
+                </div>
+            </div>
+            <div class="text-right hidden sm:block">
+                <p class="text-sm font-bold" id="headerPatientName">Yükleniyor...</p>
+                <p class="text-xs text-indigo-200" id="headerDate"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 pt-20 pb-8 mt-4" id="content">
+        <div class="bg-white rounded-2xl shadow-sm p-6 text-center">
+            <i class="fa-solid fa-spinner fa-spin text-3xl text-indigo-500 mb-2"></i>
+            <p>Raporunuz hazırlanıyor...</p>
+        </div>
+    </div>
+
+    <!-- Mobil Sabit İndir Butonu -->
+    <div id="mobileDownloadBar" class="fixed bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 hidden flex gap-3 justify-center">
+        <button onclick="downloadPdf()" class="flex-1 max-w-sm bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 active:bg-indigo-700 transition-colors">
+            <i class="fa-solid fa-file-pdf"></i> PDF Raporunu İndir
+        </button>
+    </div>
+
+    <script>
+        let doctorInfo = null;
+        let patientInfo = null;
+
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const reportId = urlParams.get('id');
+
+            if(!reportId) {
+                document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Geçersiz veya eksik rapor linki.</div>';
+            } else {
+                fetch('/api/public/scoliosis_report/' + reportId)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.detail) {
+                        document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Rapor bulunamadı.</div>';
+                        return;
+                    }
+                    doctorInfo = data.doctor;
+                    patientInfo = data.patient;
+                    
+                    const dateStr = new Date(data.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+                    document.getElementById('headerDate').innerText = dateStr;
+                    
+                    if(data.patient) {
+                        let pInfo = `Yaş: ${data.patient.age || '-'} | Kilo: ${data.patient.weight || '-'}kg | Cinsiyet: ${data.patient.gender || '-'}`;
+                        document.getElementById('headerPatientName').innerText = pInfo;
+                    }
+
+                    renderFullReport(data);
+                })
+                .catch(err => {
+                    document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Sunucu bağlantı hatası.</div>';
+                });
+            }
+        };
+
+        function renderFullReport(data) {
+            let points = [];
+            try { points = JSON.parse(data.points_data || "[]"); } catch(e) {}
+            
+            let severity = "Normal";
+            const cobb = data.cobb_angle || 0;
+            if (cobb > 10 && cobb <= 25) severity = "Hafif Skolyoz";
+            else if (cobb > 25 && cobb <= 40) severity = "Orta Şiddetli Skolyoz";
+            else if (cobb > 40) severity = "İleri Derece Skolyoz (Cerrahi Risk)";
+
+            let html = `
+                <div class="flex flex-col md:flex-row gap-6 mb-8">
+                    
+                    <!-- Sol: Röntgen -->
+                    <div class="w-full md:w-5/12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="bg-slate-50 border-b border-slate-200 p-3 text-center">
+                            <h3 class="font-bold text-slate-700 text-sm"><i class="fa-solid fa-x-ray text-indigo-500 mr-2"></i>Omurga Röntgeni</h3>
+                        </div>
+                        <div class="relative digital-skeleton-bg flex-1 p-4 flex items-center justify-center min-h-[400px]">
+                            <img id="xrayImg" src="/${data.image_path}" class="w-full h-auto object-contain z-10 opacity-50 hidden" />
+                            <canvas id="xrayCanvas" class="absolute top-0 left-0 w-full h-full object-contain z-20"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Sağ: Bilgiler -->
+                    <div class="w-full md:w-7/12 flex flex-col gap-6">
+                        <!-- Skor -->
+                        <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl shadow-md p-6 text-white relative overflow-hidden">
+                            <i class="fa-solid fa-angle-right absolute -right-4 -bottom-4 text-white/10 text-8xl"></i>
+                            <h3 class="text-indigo-100 font-bold uppercase tracking-wider text-xs mb-2">Cobb Açısı Skoru</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-5xl font-black">${cobb}</span>
+                                <span class="text-2xl font-medium text-indigo-200">Derece</span>
+                            </div>
+                            <div class="mt-3 bg-white/20 px-3 py-1.5 rounded-lg inline-block backdrop-blur-sm border border-white/20">
+                                <span class="font-bold text-sm tracking-wide">${severity}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Rapor -->
+                        <div class="bg-indigo-50 rounded-2xl shadow-sm p-6 border border-indigo-100 flex-1">
+                            <h2 class="text-xl font-bold text-indigo-900 mb-4 border-b border-indigo-200 pb-2"><i class="fa-solid fa-robot mr-2"></i>Yapay Zeka Klinik Yorumu</h2>
+                            <div class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">${data.ai_report_text || 'Rapor oluşturulmamış.'}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notlar -->
+                <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-200 avoid-break mb-8">
+                    <h2 class="text-lg font-bold text-slate-800 mb-3 border-b border-slate-100 pb-2"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h2>
+                    <p class="text-sm text-slate-600 whitespace-pre-wrap">${data.clinical_notes || 'Not girilmemiş.'}</p>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+            document.getElementById('mobileDownloadBar').classList.remove('hidden');
+
+            // Draw on canvas
+            const imgEl = document.getElementById('xrayImg');
+            imgEl.onload = () => {
+                const canvas = document.getElementById('xrayCanvas');
+                canvas.width = imgEl.clientWidth;
+                canvas.height = imgEl.clientHeight;
+                const ctx = canvas.getContext('2d');
+                
+                // Draw image manually to make it prominent in PDF
+                ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+                
+                if (points && points.length === 4) {
+                    // Draw lines exactly like dashboard
+                    drawLineWithExtrapolation(ctx, points[0], points[1], canvas.width, canvas.height, '#3b82f6'); // blue
+                    drawLineWithExtrapolation(ctx, points[2], points[3], canvas.width, canvas.height, '#10b981'); // emerald
+                    
+                    // Draw points
+                    ctx.fillStyle = '#f43f5e';
+                    points.forEach((p, i) => {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+                        ctx.fill();
+                    });
+                }
+            };
+            imgEl.src = "/" + data.image_path;
+        }
+
+        function drawLineWithExtrapolation(ctx, p1, p2, w, h, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            
+            if (dx === 0) {
+                ctx.moveTo(p1.x, 0);
+                ctx.lineTo(p1.x, h);
+            } else {
+                const m = dy / dx;
+                const b = p1.y - m * p1.x;
+                ctx.moveTo(0, b);
+                ctx.lineTo(w, m * w + b);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+        }
+
+        function downloadPdf() {
+            const element = document.getElementById('content');
+            html2pdf().set({
+                margin: [0.5, 0.4, 0.5, 0.4],
+                filename: 'skolyoz-analiz-raporum.pdf',
+                image: { type: 'jpeg', quality: 0.95 },
+                html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+            }).from(element).toPdf().get('pdf').then(function(pdf) {
+                const totalPages = pdf.internal.getNumberOfPages();
+                const pageWidth = pdf.internal.pageSize.width;
+                const pageHeight = pdf.internal.pageSize.height;
+                
+                let docText = "";
+                if(doctorInfo) {
+                    docText = `Uzman: ${doctorInfo.name || '-'} | Mail: ${doctorInfo.email || '-'}`;
+                    if(doctorInfo.phone) docText += ` | Tel: ${doctorInfo.phone}`;
+                }
+                
+                for (let i = 1; i <= totalPages; i++) {
+                    pdf.setPage(i);
+                    
+                    // --- HEADER ---
+                    pdf.setFillColor(30, 27, 75); // indigo-950
+                    pdf.rect(0, 0, pageWidth, 0.55, 'F');
+                    
+                    pdf.setTextColor(255, 255, 255);
+                    pdf.setFontSize(16);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.text("CIBODY AI", 0.3, 0.35);
+                    
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.text("Skolyoz Cobb Açısı Analizi", 1.8, 0.35);
+                    
+                    // Patient Info in Header
+                    pdf.setFontSize(9);
+                    pdf.setFont('helvetica', 'bold');
+                    let pInfo = "Hasta Bilgisi Yok";
+                    if(patientInfo) {
+                        pInfo = `Yaş: ${patientInfo.age || '-'} | Kilo: ${patientInfo.weight || '-'} | Cinsiyet: ${patientInfo.gender || '-'}`;
+                    }
+                    pdf.text(pInfo, pageWidth - 0.3, 0.35, { align: 'right' });
+                    
+                    // --- FOOTER ---
+                    pdf.setDrawColor(200, 200, 200);
+                    pdf.setLineWidth(0.01);
+                    pdf.line(0.3, pageHeight - 0.3, pageWidth - 0.3, pageHeight - 0.3);
+                    
+                    pdf.setTextColor(100, 100, 100);
+                    pdf.setFontSize(8);
+                    pdf.setFont('helvetica', 'normal');
+                    
+                    if(docText) {
+                        pdf.text(docText, 0.3, pageHeight - 0.18);
+                    }
+                    
+                    pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
+                }
+            }).save();
+        }
+    </script>
+</body>
+</html>
