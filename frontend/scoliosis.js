@@ -171,7 +171,7 @@ async function uploadScoliosisImage() {
     
     const formData = new FormData();
     formData.append('patient_id', currentPatientId);
-    formData.append('image', scoliosisFile);
+    formData.append('image', await compressImage(scoliosisFile));
     
     try {
         const token = localStorage.getItem('cibody_token');
