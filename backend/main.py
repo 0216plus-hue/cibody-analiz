@@ -1259,7 +1259,6 @@ def get_public_scoliosis_report(analysis_id: int, db: Session = Depends(get_db))
     }
 
 
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 
 
@@ -1328,3 +1327,4 @@ def save_scoliometer_data(token: str, req: ScoliometerSaveRequest, db: Session =
 def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     history = db.query(models.ScoliometerMeasurement).filter(models.ScoliometerMeasurement.patient_id == patient_id).order_by(models.ScoliometerMeasurement.created_at.desc()).all()
     return {"history": [{"id": h.id, "thoracic": h.thoracic_angle, "lumbar": h.lumbar_angle, "date": h.created_at.isoformat()} for h in history]}
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
