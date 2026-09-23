@@ -101,8 +101,9 @@ function switchTab(tabId) {
     }
     
     // If switching to simulation, we might need to trigger resize for canvas
-    if(tabId === 'simulationTab' && window.resizeSimulation) {
-        setTimeout(() => window.resizeSimulation(), 100);
+    if(tabId === 'simulationTab') {
+        if(window.resizeSimulation) setTimeout(() => window.resizeSimulation(), 100);
+        if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
     }
 }
 

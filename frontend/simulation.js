@@ -247,6 +247,9 @@ async function saveSimulationRecord() {
     try {
         const res = await authFetch('/api/simulation', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
         
@@ -254,11 +257,13 @@ async function saveSimulationRecord() {
             showToast("Simülasyon analizi kaydedildi!");
             loadSimulationHistory();
         } else {
-            showToast("Kaydedilirken hata oluştu.");
+            const errData = await res.json().catch(() => ({}));
+            console.error("Save simulation error:", errData);
+            showToast(errData.detail || "Kaydedilirken hata oluştu.");
         }
     } catch (e) {
         console.error(e);
-        showToast("Sunucu hatası.");
+        showToast("Sunucu hatası: " + e.message);
     }
 }
 

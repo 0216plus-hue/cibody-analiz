@@ -1340,14 +1340,24 @@ class SimulationCreate(BaseModel):
 
 @app.post("/api/simulation")
 def save_simulation(sim: SimulationCreate, db: Session = Depends(get_db)):
-    db_sim = models.SimulationAnalysis(**sim.dict())
-    db.add(db_sim)
-    db.commit()
-    return {"status": "success"}
+    try:
+        db_sim = models.SimulationAnalysis(**sim.dict())
+        db.add(db_sim)
+        db.commit()
+        db.refresh(db_sim)
+        return {"status": "success", "id": db_sim.id}
+    except Exception as e:
+        db.rollback()
+        print("SIMULATION SAVE ERROR:", str(e))
+        raise HTTPException(status_code=500, detail=f"Kayıt hatası: {str(e)}")
 
 @app.get("/api/simulation/patient/{patient_id}")
 def get_simulation_history(patient_id: int, db: Session = Depends(get_db)):
-    history = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.patient_id == patient_id).order_by(models.SimulationAnalysis.created_at.desc()).all()
-    return {"history": history}
+    try:
+        history = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.patient_id == patient_id).order_by(models.SimulationAnalysis.created_at.desc()).all()
+        return {"history": history}
+    except Exception as e:
+        print("SIMULATION HISTORY FETCH ERROR:", str(e))
+        return {"history": []}
 
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
