@@ -863,13 +863,6 @@ def get_public_report(analysis_id: int, db: Session = Depends(get_db)):
         "exercises": ex_list
     }
 
-# Static files — EN SONA
-
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.mount("/egzersiz-gorsel", StaticFiles(directory="../egzersiz-gorsel"), name="egzersiz-gorsel")
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
-
-
 @app.get("/api/public/foot_report/{analysis_id}")
 def get_public_foot_report(analysis_id: int, db: Session = Depends(get_db)):
     analysis = db.query(models.FootAnalysis).filter(models.FootAnalysis.id == analysis_id).first()
@@ -891,3 +884,12 @@ def get_public_foot_report(analysis_id: int, db: Session = Depends(get_db)):
             "original_pdf_path": analysis.original_pdf_path
         }
     }
+
+# Static files — EN SONA
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/egzersiz-gorsel", StaticFiles(directory="../egzersiz-gorsel"), name="egzersiz-gorsel")
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+
+
+
