@@ -57,12 +57,12 @@ def startup_event():
             db.add(dijimo)
             db.commit()
 
-    # ALTER TABLE to add scoliosis_analysis_id if not exists
-    try:
-        db.execute("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)")
-        db.commit()
-    except Exception as e:
-        pass # Column already exists or other error
+        # ALTER TABLE to add scoliosis_analysis_id if not exists
+        try:
+            db.execute("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)")
+            db.commit()
+        except Exception as e:
+            pass # Column already exists or other error
 
 
         if db.query(models.Exercise).count() == 0:
