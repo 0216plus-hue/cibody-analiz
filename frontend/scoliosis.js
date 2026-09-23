@@ -252,7 +252,7 @@ async function generateScoliosisAi() {
         const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/generate-report`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
-            reportArea.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.report) : data.report;
+            renderAiReports(data.report);
             showToast("AI Raporu başarıyla oluşturuldu.");
             loadScoliosisHistory();
         } else {
@@ -419,7 +419,7 @@ async function generateScoliosisExerciseAi() {
     if (currentCobbAngle === 0) { alert("Lütfen önce resme 4 nokta koyarak Cobb açısını hesaplayın."); return; }
     
     const btn = document.getElementById('btnGenerateScoliosisExerciseAi');
-    const reportArea = document.getElementById('scoliosisAiReport');
+    const reportArea = document.getElementById('scoliosisExerciseReport');
     
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Üretiliyor...';
     btn.disabled = true;
@@ -429,7 +429,7 @@ async function generateScoliosisExerciseAi() {
         const res = await authFetch(`/api/scoliosis/${currentScoliosisId}/generate-exercises`, { method: 'POST' });
         if (res.ok) {
             const data = await res.json();
-            reportArea.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.report) : data.report;
+            renderAiReports(data.report);
             showToast("AI Egzersiz Programı başarıyla eklendi.");
             loadScoliosisHistory();
         } else {
@@ -441,4 +441,29 @@ async function generateScoliosisExerciseAi() {
         btn.innerHTML = '<i class="fa-solid fa-person-running mr-1"></i>AI Egzersiz Öner';
         btn.disabled = false;
     }
+}
+
+
+function renderAiReports(fullText) {
+    const aiReportDiv = document.getElementById('scoliosisAiReport');
+    const exerciseReportDiv = document.getElementById('scoliosisExerciseReport');
+    
+    if (!fullText) {
+        aiReportDiv.innerHTML = "Analiz yapıldığında klinik rapor burada görüntülenecektir.";
+        exerciseReportDiv.innerHTML = "Hastaya özel egzersizler üretmek için yukarıdaki butona tıklayın.";
+        return;
+    }
+    
+    const marker = "### 🏃‍♂️ Önerilen Egzersiz Programı";
+    let klinik = fullText;
+    let egzersiz = "";
+    
+    if (fullText.includes(marker)) {
+        const parts = fullText.split(marker);
+        klinik = parts[0].trim();
+        egzersiz = marker + "\n" + (parts[1] ? parts[1].trim() : "");
+    }
+    
+    aiReportDiv.innerHTML = typeof marked !== 'undefined' && klinik ? marked.parse(klinik) : (klinik || "Henüz klinik rapor üretilmedi.");
+    exerciseReportDiv.innerHTML = typeof marked !== 'undefined' && egzersiz ? marked.parse(egzersiz) : (egzersiz || "Henüz egzersiz programı üretilmedi.");
 }
