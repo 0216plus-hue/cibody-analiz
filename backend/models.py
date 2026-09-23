@@ -75,7 +75,8 @@ class PrescribedExercise(Base):
     __tablename__ = "prescribed_exercises"
 
     id = Column(Integer, primary_key=True, index=True)
-    posture_analysis_id = Column(Integer, ForeignKey("posture_analyses.id"))
+    posture_analysis_id = Column(Integer, ForeignKey("posture_analyses.id"), nullable=True)
+    scoliosis_analysis_id = Column(Integer, ForeignKey("scoliosis_analyses.id"), nullable=True)
     exercise_id = Column(Integer, ForeignKey("exercises.id"))
     
     sets = Column(String, default="3")
