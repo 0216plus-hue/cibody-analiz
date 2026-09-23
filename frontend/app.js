@@ -81,6 +81,8 @@ function switchTab(tabId) {
     if (scoliosisTab) scoliosisTab.classList.add('hidden');
     const scoliometerTab = document.getElementById('scoliometerTab');
     if (scoliometerTab) scoliometerTab.classList.add('hidden');
+    const simulationTab = document.getElementById('simulationTab');
+    if (simulationTab) simulationTab.classList.add('hidden');
     
     // Remove active class from all buttons
     document.getElementById('btn_postureTab').classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
@@ -91,10 +93,17 @@ function switchTab(tabId) {
     if (btnScoliosis) btnScoliosis.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
     const btnScoliometer = document.getElementById('btn_scoliometerTab');
     if (btnScoliometer) btnScoliometer.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+    const btnSimulation = document.getElementById('btn_simulationTab');
+    if (btnSimulation) btnSimulation.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
     
     // Show selected tab and set button active
     document.getElementById(tabId).classList.remove('hidden');
     document.getElementById('btn_' + tabId).classList.add('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+    
+    // If switching to simulation, we might need to trigger resize for canvas
+    if(tabId === 'simulationTab' && window.resizeSimulation) {
+        setTimeout(() => window.resizeSimulation(), 100);
+    }
 }
 
 function showToast(msg) {
