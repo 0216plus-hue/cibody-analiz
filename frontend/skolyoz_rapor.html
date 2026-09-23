@@ -164,6 +164,15 @@
                 }
             };
             imgEl.src = "/" + data.image_path;
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('download') === '1') {
+                document.getElementById('content').insertAdjacentHTML('afterbegin', '<div class="bg-indigo-100 text-indigo-800 p-4 rounded-xl mb-4 text-center font-bold">PDF İndiriliyor, lütfen bekleyin...</div>');
+                setTimeout(() => {
+                    downloadPdf();
+                    setTimeout(() => window.close(), 3000);
+                }, 1500);
+            }
         }
 
         function drawLineWithExtrapolation(ctx, p1, p2, w, h, color) {

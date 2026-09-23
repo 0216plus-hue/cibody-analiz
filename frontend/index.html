@@ -980,27 +980,6 @@
         </div>
     </div>
 
-    <!-- Zoom Paneli -->
-    <div id="zoomPanel" class="fixed top-1/4 right-8 w-64 h-64 bg-slate-900 border-4 border-indigo-500 rounded-full shadow-2xl hidden z-50 pointer-events-none flex items-center justify-center transition-opacity duration-200">
-        <!-- Zoom canvas'ı dijital backgrounda uyumlu olsun diye siyah arka planlı olabilir -->
-        <canvas id="zoomCanvas" width="256" height="256" class="absolute top-0 left-0 rounded-full bg-slate-900"></canvas>
-        <div class="absolute w-full h-[2px] bg-red-500 opacity-60"></div>
-        <div class="absolute h-full w-[2px] bg-red-500 opacity-60"></div>
-        <div class="absolute top-4 w-full text-center"><span class="text-xs font-bold text-white bg-indigo-900 px-2 py-1 rounded-full shadow">İnce Ayar (3x)</span></div>
-    </div>
-
-    <!-- Hata Bildirimi -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity duration-300">
-        <i class="fa-solid fa-circle-exclamation mr-2"></i><span id="toastMessage">Hata!</span>
-    </div>
-
-    </div><!-- end appView -->
-
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js?v=9.4"></script>
-
-    
     <!-- SKOLYOZ ANALİZİ TAB'I -->
     <div id="scoliosisTab" class="tab-content hidden pt-4">
         <div class="flex flex-col lg:flex-row gap-6 mb-8">
@@ -1015,6 +994,15 @@
                         </button>
                     </div>
                     
+                                        <div class="mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-sm">
+                        <p class="font-bold mb-1"><i class="fa-solid fa-triangle-exclamation mr-1 text-amber-500"></i>Önemli: Ölçüm Nasıl Yapılır?</p>
+                        <p class="mb-2">Röntgeni yükledikten sonra sistemin açıyı hesaplayabilmesi için <strong>görüntü üzerine 4 adet nokta tıklamanız</strong> gerekmektedir:</p>
+                        <ol class="list-decimal pl-5 space-y-1 font-medium">
+                            <li>Eğriliğin en <strong>üstündeki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
+                            <li>Eğriliğin en <strong>altındaki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
+                            <li class="text-indigo-700 font-bold">4 noktayı tamamladığınızda sistem Cobb açısını otomatik hesaplar!</li>
+                        </ol>
+                    </div>
                     <div class="relative digital-skeleton-bg rounded-xl flex items-center justify-center min-h-[400px] border-2 border-dashed border-slate-300 overflow-hidden" id="scoliosisContainer">
                         <div id="scoliosisPlaceholder" class="text-slate-400 text-center pointer-events-none">
                             <i class="fa-solid fa-image text-5xl mb-3 opacity-50"></i>
@@ -1033,14 +1021,7 @@
                         </button>
                     </div>
                     
-                    <div id="scoliosisInstructions" class="mt-4 p-4 bg-blue-50 text-blue-800 rounded-xl text-sm hidden">
-                        <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i>Nasıl Ölçüm Yapılır?</p>
-                        <ol class="list-decimal pl-5 space-y-1">
-                            <li>Eğriliğin en <strong>üstündeki</strong> omurun üst sınırına 2 nokta tıklayarak çizgi çekin.</li>
-                            <li>Eğriliğin en <strong>altındaki</strong> omurun alt sınırına 2 nokta tıklayarak çizgi çekin.</li>
-                            <li>Sistem 4 noktayı aldığında Cobb açısını otomatik hesaplayacaktır.</li>
-                        </ol>
-                    </div>
+
                 </div>
                 
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mt-6">
@@ -1101,7 +1082,29 @@
         </div>
     </div>
 
+    <!-- Zoom Paneli -->
+    <div id="zoomPanel" class="fixed top-1/4 right-8 w-64 h-64 bg-slate-900 border-4 border-indigo-500 rounded-full shadow-2xl hidden z-50 pointer-events-none flex items-center justify-center transition-opacity duration-200">
+        <!-- Zoom canvas'ı dijital backgrounda uyumlu olsun diye siyah arka planlı olabilir -->
+        <canvas id="zoomCanvas" width="256" height="256" class="absolute top-0 left-0 rounded-full bg-slate-900"></canvas>
+        <div class="absolute w-full h-[2px] bg-red-500 opacity-60"></div>
+        <div class="absolute h-full w-[2px] bg-red-500 opacity-60"></div>
+        <div class="absolute top-4 w-full text-center"><span class="text-xs font-bold text-white bg-indigo-900 px-2 py-1 rounded-full shadow">İnce Ayar (3x)</span></div>
+    </div>
+
+    <!-- Hata Bildirimi -->
+    <div id="toastNotification" class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity duration-300">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i><span id="toastMessage">Hata!</span>
+    </div>
+
+    </div><!-- end appView -->
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="auth.js"></script>
+    <script src="app.js?v=9.4"></script>
+
+    
     <!-- ─── Profil Düzenleme Modal ─── -->
+
     <div id="profileModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl relative">
             <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">

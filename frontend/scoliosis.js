@@ -34,7 +34,7 @@ function previewScoliosis(event) {
         canvas.classList.remove('hidden');
         document.getElementById('btnResetScoliosis').classList.remove('hidden');
         document.getElementById('btnSaveScoliosis').classList.remove('hidden');
-        document.getElementById('scoliosisInstructions').classList.remove('hidden');
+        
         drawScoliosisCanvas();
     }
 }
@@ -279,7 +279,7 @@ async function loadScoliosisHistory() {
             }
             let html = '';
             data.forEach(item => {
-                const dateStr = new Date(item.created_at).toLocaleDateString('tr-TR');
+                const dateStr = new Date(item.created_at + 'Z').toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
                 html += `
                     <div class="p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer flex justify-between items-center" onclick="loadScoliosisAnalysis(${item.id})">
                         <div>
@@ -312,7 +312,7 @@ async function loadScoliosisAnalysis(id) {
             preview.classList.remove('hidden');
             
             document.getElementById('btnResetScoliosis').classList.remove('hidden');
-            document.getElementById('scoliosisInstructions').classList.remove('hidden');
+            
             
             preview.onload = () => {
                 canvas.width = preview.clientWidth;
@@ -409,8 +409,6 @@ function showScoliosisQr() {
 
 function downloadScoliosisPdf() {
     if(!currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
-    // En kolay yol, public sayfayı yeni sekmede açmak veya oradan otomatik indirtmek.
-    // Şimdilik Raporu Aç gibi public linke yönlendiriyoruz, oradan PDF indirebilirler.
-    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId;
+    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + '&download=1';
     window.open(publicUrl, '_blank');
 }
