@@ -65,6 +65,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
     
     switchTab('postureTab');
     loadPatientData(patientId);
+    if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
 }
 
 function switchTab(tabId) {
@@ -73,12 +74,16 @@ function switchTab(tabId) {
     document.getElementById('footTab').classList.add('hidden');
     const spineTab = document.getElementById('spineTab');
     if (spineTab) spineTab.classList.add('hidden');
+    const scoliosisTab = document.getElementById('scoliosisTab');
+    if (scoliosisTab) scoliosisTab.classList.add('hidden');
     
     // Remove active class from all buttons
     document.getElementById('btn_postureTab').classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
     document.getElementById('btn_footTab').classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
     const btnSpine = document.getElementById('btn_spineTab');
     if (btnSpine) btnSpine.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+    const btnScoliosis = document.getElementById('btn_scoliosisTab');
+    if (btnScoliosis) btnScoliosis.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
     
     // Show selected tab and set button active
     document.getElementById(tabId).classList.remove('hidden');
