@@ -43,3 +43,7 @@ env/
 # posture_data.db
 
 backend/data/
+backend/*.db
+*.db
+backend/*.db
+*.db
