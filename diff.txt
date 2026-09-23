@@ -1,0 +1,54 @@
+60,65c60,65
+<     # ALTER TABLE to add scoliosis_analysis_id if not exists
+<     try:
+<         db.execute("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)")
+<         db.commit()
+<     except Exception as e:
+<         pass # Column already exists or other error
+---
+>         # ALTER TABLE to add scoliosis_analysis_id if not exists
+>         try:
+>             db.execute('ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER REFERENCES scoliosis_analyses(id)')
+>             db.commit()
+>         except Exception as e:
+>             pass # Column already exists or other error
+93c93
+<         print("STARTUP EVENT ERROR:", e)
+---
+>         print('STARTUP EVENT ERROR:', e)
+700c700
+<     except Exception as e:
+---
+>         except Exception as e:
+802c802
+<         db.commit()
+---
+>             db.commit()
+810c810
+<         db.commit()
+---
+>             db.commit()
+820c820
+<         db.commit()
+---
+>             db.commit()
+1039c1039
+<         db.commit()
+---
+>             db.commit()
+1079c1079
+<         db.commit()
+---
+>             db.commit()
+1081c1081
+<     except Exception as e:
+---
+>         except Exception as e:
+1172c1172
+<         db.commit()
+---
+>             db.commit()
+1174c1174
+<     except Exception as e:
+---
+>         except Exception as e:

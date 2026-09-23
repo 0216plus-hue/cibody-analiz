@@ -2304,7 +2304,7 @@ async function loadScoliometerHistory(patientId) {
 const _oldSwitchTab = switchTab;
 switchTab = function(tabId) {
     _oldSwitchTab(tabId);
-    if(tabId === 'scoliometerTab' && currentPatientId) {
-        loadScoliometerHistory(currentPatientId);
+    if(tabId === 'scoliometerTab' && window.currentPatientId) {
+        loadScoliometerHistory(window.currentPatientId);
     }
 }

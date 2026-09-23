@@ -1,122 +1,75 @@
-import re
-
-with open('/Users/dijimotasarim/Desktop/Server/ai.ayakanaliz.com.tr/frontend/index.html', 'r') as f:
+with open("frontend/index.html", "r") as f:
     html = f.read()
 
-# 1. Update Title and Meta
-html = re.sub(r'<title>.*?</title>', '<title>CIBODY AI v2.1 - Biyomekanik Postür Analizi</title>', html)
-html = html.replace('<meta name="description" content="Klinik Yönetim Sistemi">', '<meta name="description" content="CIBODY AI Biyomekanik Postür ve Ayak Basınç Analiz CRM Sistemi">\n    <meta name="robots" content="noindex, nofollow">')
-html = html.replace('href="/favicon.ico"', 'href="/assets/logo.png"')
+# Add script tag
+if "qrcode.min.js" not in html:
+    html = html.replace("</head>", "    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js\"></script>\n</head>")
 
-# 2. Update Header Logo
-old_header_logo = """<i class="fa-solid fa-robot mr-2"></i> BiyoMekanik AI <span class="text-slate-400 font-normal text-sm ml-2">v2.0 CRM</span>"""
-new_header_logo = """<img src="/assets/logo.png" class="h-6 md:h-8 mr-2" alt="CIBODY"><span class="text-slate-400 font-normal text-sm ml-2">v2.1 CRM</span>"""
-html = html.replace(old_header_logo, new_header_logo)
+# Add Tab Button
+old_tab_btn = """<button onclick="switchTab('scoliosisTab')" id="btn_scoliosisTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap">
+                    <i class="fa-solid fa-bone text-lg"></i> Cobb Analizi (AI)
+                </button>"""
+new_tab_btn = old_tab_btn + """
+                <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap">
+                    <i class="fa-solid fa-mobile-screen text-indigo-500 mr-2"></i> Skolyometre
+                </button>"""
+html = html.replace(old_tab_btn, new_tab_btn)
 
-# 3. Replace all purple-600 with indigo-900 for branding
-html = html.replace('purple-600', 'indigo-900')
-html = html.replace('purple-700', 'indigo-800')
-html = html.replace('purple-50', 'indigo-50')
-html = html.replace('purple-100', 'indigo-100')
-
-# 4. Redesign Dashboard View
-old_dashboard = re.search(r'<!-- DASHBOARD EKRANI -->.*?<!-- HASTA DETAY EKRANI -->', html, re.DOTALL).group(0)
-
-new_dashboard = """<!-- DASHBOARD EKRANI -->
-        <div id="dashboardView" class="block animate-fade-in">
-            
-            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 mb-8">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-users text-indigo-900 text-xl"></i>
-                        <h2 class="text-2xl font-bold text-slate-800">Kayıtlı Hastalar</h2>
+# Add Tab Content
+scoliometer_html = """
+                <!-- SKOLYOMETRE TAB -->
+                <div id="scoliometerTab" class="hidden">
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+                        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
+                            
+                            <div class="flex-1 text-center md:text-left">
+                                <h2 class="text-2xl font-black text-slate-800 mb-3 flex items-center justify-center md:justify-start gap-3">
+                                    <i class="fa-solid fa-mobile-screen text-indigo-600"></i> Dijital Skolyometre
+                                </h2>
+                                <p class="text-slate-600 mb-6 leading-relaxed">Fizyoterapist olarak telefonunuzun sensörlerini kullanarak hassas <b>Angle of Trunk Rotation (ATR)</b> ölçümü yapabilirsiniz. Eşleşmek için yandaki QR kodu telefonunuzun kamerasına okutun.</p>
+                                
+                                <button onclick="generateScoliometerQR()" id="btnGenerateQR" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-indigo-200">
+                                    <i class="fa-solid fa-qrcode mr-2"></i> QR Kod Oluştur ve Bağlan
+                                </button>
+                                
+                                <div id="scoliometerStatus" class="hidden mt-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium flex items-center">
+                                    <i class="fa-solid fa-circle-notch fa-spin mr-3 text-lg"></i> Telefonla eşleşme bekleniyor veya ölçüm yapılıyor...
+                                </div>
+                            </div>
+                            
+                            <div class="shrink-0 bg-slate-50 p-6 rounded-3xl border border-slate-200 flex flex-col items-center justify-center w-64 h-64 relative">
+                                <div id="scoliometerQR" class="w-48 h-48 flex items-center justify-center">
+                                    <i class="fa-solid fa-qrcode text-6xl text-slate-300"></i>
+                                </div>
+                            </div>
+                            
+                        </div>
                     </div>
                     
-                    <div class="flex w-full md:w-auto items-center gap-3">
-                        <div class="relative w-full md:w-64">
-                            <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="patientSearch" placeholder="Hasta Ara..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 border-b border-slate-200 p-4">
+                            <h3 class="font-black text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ölçüm Geçmişi
+                            </h3>
                         </div>
-                        <button onclick="document.getElementById('newPatientModal').classList.remove('hidden')" class="shrink-0 bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-user-plus"></i> <span class="hidden md:inline">Yeni Kayıt</span>
-                        </button>
+                        <div class="p-4">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                                    <tr>
+                                        <th class="px-4 py-3">Tarih</th>
+                                        <th class="px-4 py-3 text-center">Torakal Açı (ATR)</th>
+                                        <th class="px-4 py-3 text-center">Lumbar Açı (ATR)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoliometerHistoryList" class="divide-y divide-slate-100">
+                                    <tr><td colspan="3" class="text-center py-8 text-slate-400">Henüz ölçüm bulunmuyor.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
+"""
+html = html.replace('<!-- ALT BÖLÜM: Tam Sayfa -->', scoliometer_html + '\n        <!-- ALT BÖLÜM: Tam Sayfa -->')
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                <th class="pb-4 font-semibold">ID</th>
-                                <th class="pb-4 font-semibold">Hasta Adı</th>
-                                <th class="pb-4 font-semibold">Profil</th>
-                                <th class="pb-4 font-semibold">İletişim</th>
-                                <th class="pb-4 font-semibold text-right">İşlem</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patientsList" class="text-sm">
-                            <!-- JS ile doldurulacak -->
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="mt-6 flex justify-center">
-                    <button id="loadMoreBtn" onclick="loadMorePatients()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 px-6 py-2 rounded-xl text-sm font-medium transition-colors">
-                        Daha Fazla Yükle
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Yeni Hasta Modal -->
-            <div id="newPatientModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-xl relative animate-fade-in">
-                    <button onclick="document.getElementById('newPatientModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
-                        <i class="fa-solid fa-times text-xl"></i>
-                    </button>
-                    
-                    <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus text-indigo-900"></i> Yeni Hasta Kaydı
-                    </h3>
-                    
-                    <form id="newPatientForm" onsubmit="createPatient(event)" class="flex flex-col gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Ad Soyad</label>
-                            <input type="text" id="p_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all" placeholder="Örn: Ahmet Yılmaz">
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Yaş</label>
-                                <input type="number" id="p_age" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all">
-                            </div>
-                            <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Kilo (kg)</label>
-                                <input type="number" id="p_weight" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Cinsiyet</label>
-                            <select id="p_gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all appearance-none">
-                                <option>Erkek</option>
-                                <option>Kadın</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">İletişim (Telefon)</label>
-                            <input type="text" id="p_phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all" placeholder="05XX XXX XX XX">
-                        </div>
-                        <button type="submit" class="mt-2 w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                            Kaydet ve Profili Aç <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- HASTA DETAY EKRANI -->"""
-
-html = html.replace(old_dashboard, new_dashboard)
-
-with open('/Users/dijimotasarim/Desktop/Server/ai.ayakanaliz.com.tr/frontend/index.html', 'w') as f:
+with open("frontend/index.html", "w") as f:
     f.write(html)
-print("index.html successfully updated.")

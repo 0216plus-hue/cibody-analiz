@@ -133,3 +133,25 @@ class ScoliosisAnalysis(Base):
     clinical_notes = Column(String, nullable=True)
     ai_report_text = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+class ScoliometerMeasurement(Base):
+    __tablename__ = "scoliometer_measurements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    
+    thoracic_angle = Column(Float, nullable=True)  # Sırt bölgesi açısı (derece)
+    lumbar_angle = Column(Float, nullable=True)    # Bel bölgesi açısı (derece)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    patient = relationship("Patient")
+
+class ScoliometerToken(Base):
+    __tablename__ = "scoliometer_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    expires_at = Column(DateTime)
+    is_used = Column(Boolean, default=False)

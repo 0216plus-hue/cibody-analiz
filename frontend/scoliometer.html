@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CIBODY - Skolyometre (ATR)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { overscroll-behavior-y: contain; touch-action: manipulation; }
+        .bubble-container {
+            position: relative;
+            width: 300px;
+            height: 150px;
+            border: 4px solid #334155;
+            border-radius: 75px 75px 20px 20px;
+            background: #f8fafc;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .bubble-bg {
+            position: absolute;
+            bottom: 0; left: 0; right: 0; top: 0;
+            background: linear-gradient(180deg, rgba(224,231,255,1) 0%, rgba(199,210,254,1) 100%);
+            border-radius: 75px 75px 20px 20px;
+            transform-origin: bottom center;
+            transition: transform 0.1s ease-out;
+        }
+        .center-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ef4444;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+        .angle-marks {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: bold;
+        }
+        .bubble {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.4));
+            border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: left 0.1s ease-out;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 h-screen flex flex-col items-center justify-between py-8 font-sans selection:bg-indigo-500 selection:text-white">
+
+    <div id="authScreen" class="w-full max-w-md px-6 text-center mt-10">
+        <i class="fa-solid fa-mobile-screen fa-4x text-indigo-400 mb-6 animate-pulse"></i>
+        <h1 class="text-2xl font-black text-white mb-2">Skolyometre Bağlantısı</h1>
+        <p class="text-slate-400 text-sm mb-8" id="authStatus">Bağlantı kontrol ediliyor...</p>
+        
+        <button id="btnStart" class="hidden w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all active:scale-95 text-lg">
+            <i class="fa-solid fa-play mr-2"></i> Ölçümü Başlat
+        </button>
+    </div>
+
+    <div id="measureScreen" class="hidden w-full max-w-md px-4 flex-col h-full items-center justify-between">
+        
+        <div class="text-center w-full">
+            <div class="bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-widest py-1.5 px-4 rounded-full inline-block mb-4">
+                Hasta: <span id="patientName" class="text-white">...</span>
+            </div>
+            
+            <div class="text-7xl font-black text-white mb-1 tracking-tighter" id="angleDisplay">0&deg;</div>
+            <p class="text-slate-400 text-sm mb-8">Angle of Trunk Rotation (ATR)</p>
+            
+            <div class="bubble-container shadow-2xl">
+                <div class="bubble-bg" id="bubbleBg"></div>
+                <div class="center-line"></div>
+                <div class="angle-marks">
+                    <span>-30&deg;</span>
+                    <span>30&deg;</span>
+                </div>
+                <div class="bubble" id="bubble"></div>
+            </div>
+        </div>
+
+        <div class="w-full bg-slate-800 rounded-3xl p-6 mt-8 shadow-xl border border-slate-700">
+            <p class="text-slate-400 text-center text-xs mb-4">Telefonu hastanın sırtına yatay şekilde yerleştirin.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button onclick="saveAngle('thoracic')" id="btnTorakal" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 active:scale-95">
+                    <i class="fa-solid fa-arrows-up-to-line text-orange-400 text-xl"></i>
+                    <span class="text-sm mt-1">Torakal Kaydet</span>
+                    <span id="thoracicValue" class="text-xs text-orange-300 font-normal">Bekleniyor</span>
+                </button>
+                <button onclick="saveAngle('lumbar')" id="btnLumbar" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-4 rounded-2xl transition-colors flex flex-col items-center justify-center gap-1 active:scale-95">
+                    <i class="fa-solid fa-arrows-down-to-line text-emerald-400 text-xl"></i>
+                    <span class="text-sm mt-1">Lumbar Kaydet</span>
+                    <span id="lumbarValue" class="text-xs text-emerald-300 font-normal">Bekleniyor</span>
+                </button>
+            </div>
+            
+            <button onclick="submitMeasurement()" id="btnSubmit" class="w-full bg-indigo-600 opacity-50 cursor-not-allowed text-white font-bold py-4 rounded-2xl shadow-lg transition-all text-lg" disabled>
+                <i class="fa-solid fa-check-circle mr-2"></i> Masaüstüne Gönder
+            </button>
+        </div>
+    </div>
+
+    <script src="scoliometer.js"></script>
+</body>
+</html>
