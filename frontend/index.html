@@ -1060,6 +1060,35 @@
         </div>
         
         
+        <!-- ALT BÖLÜM: Tam Sayfa -->
+        <div class="w-full flex flex-col gap-6 mb-8">
+            
+            <!-- Klinik Notlar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 w-full">
+                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
+                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px]" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
+                <div class="flex justify-end mt-3">
+                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
+                        Notları Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aksiyon Butonları -->
+            <div class="flex flex-col sm:flex-row gap-4 w-full">
+                <button onclick="downloadScoliosisPdf()" class="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
+                </button>
+                <button onclick="showScoliosisQr()" class="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
+                    <i class="fa-solid fa-qrcode"></i> Karekod Paylaş
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+
+
                 <!-- SKOLYOMETRE TAB -->
                 <div id="scoliometerTab" class="hidden">
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
@@ -1112,36 +1141,8 @@
                     </div>
                 </div>
 
-        <!-- ALT BÖLÜM: Tam Sayfa -->
-        <div class="w-full flex flex-col gap-6 mb-8">
-            
-            <!-- Klinik Notlar -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 w-full">
-                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
-                <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px]" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
-                <div class="flex justify-end mt-3">
-                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
-                        Notları Kaydet
-                    </button>
-                </div>
-            </div>
 
-            <!-- Aksiyon Butonları -->
-            <div class="flex flex-col sm:flex-row gap-4 w-full">
-                <button onclick="downloadScoliosisPdf()" class="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
-                    <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
-                </button>
-                <button onclick="showScoliosisQr()" class="flex-1 bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
-                    <i class="fa-solid fa-qrcode"></i> Karekod Paylaş
-                </button>
-            </div>
-            
-        </div>
-    </div>
-
-
-
-    <!-- Zoom Paneli -->
+        <!-- Zoom Paneli -->
     <div id="zoomPanel" class="fixed top-1/4 right-8 w-64 h-64 bg-slate-900 border-4 border-indigo-500 rounded-full shadow-2xl hidden z-50 pointer-events-none flex items-center justify-center transition-opacity duration-200">
         <!-- Zoom canvas'ı dijital backgrounda uyumlu olsun diye siyah arka planlı olabilir -->
         <canvas id="zoomCanvas" width="256" height="256" class="absolute top-0 left-0 rounded-full bg-slate-900"></canvas>
