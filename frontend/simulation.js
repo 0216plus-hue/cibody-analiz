@@ -1,10 +1,11 @@
 let simScene, simCamera, simRenderer, simControls;
 let vertebrae = [];
-const TOTAL_VERTEBRAE = 24;
+const TOTAL_VERTEBRAE = 25;
 const vertLabels = [];
 for(let i=1; i<=7; i++) vertLabels.push('C'+i);
 for(let i=1; i<=12; i++) vertLabels.push('T'+i);
 for(let i=1; i<=5; i++) vertLabels.push('L'+i);
+vertLabels.push('S1');
 
 function initSimulation() {
     const container = document.getElementById('simCanvas');
