@@ -50,15 +50,19 @@
 
     <!-- 1. AUTH SCREEN (Açılış ve İzin Ekranı) -->
     <div id="authScreen" class="w-full max-w-md px-6 text-center my-auto">
-        <div class="inline-block p-4 bg-indigo-500/10 rounded-3xl border border-indigo-500/20 mb-4">
+        <div class="inline-block p-4 bg-indigo-500/10 rounded-3xl border border-indigo-500/20 mb-3">
             <i class="fa-solid fa-mobile-screen rotate-90 text-4xl text-indigo-400 animate-pulse"></i>
         </div>
         <h1 class="text-2xl font-black text-white mb-1 tracking-tight">Dijital Skolyometre</h1>
-        <p class="text-xs text-indigo-300 font-semibold mb-4 uppercase tracking-wider">Angle of Trunk Rotation (ATR)</p>
-        <p class="text-slate-400 text-sm mb-6" id="authStatus">Bağlantı doğrulanıyor...</p>
+        <p class="text-xs text-indigo-300 font-semibold mb-3 uppercase tracking-wider">Angle of Trunk Rotation (ATR)</p>
+        <p class="text-slate-400 text-sm mb-5" id="authStatus">Bağlantı doğrulanıyor...</p>
         
-        <button id="btnStart" class="hidden w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all text-base flex items-center justify-center gap-2">
+        <button id="btnStart" class="hidden w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all text-base flex items-center justify-center gap-2 mb-3">
             <i class="fa-solid fa-play"></i> Sensörü Başlat (Yatay Ölçüm)
+        </button>
+
+        <button onclick="toggleGuideModal(true)" class="w-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-circle-question text-indigo-400"></i> Nasıl Uygulanır? (Kılavuz)
         </button>
 
         <p class="text-[11px] text-slate-500 mt-4 leading-relaxed">
@@ -69,21 +73,32 @@
     <!-- 2. MEASURE SCREEN (Yatay / Landscape Ölçüm Arayüzü) -->
     <div id="measureScreen" class="hidden w-full h-full max-w-4xl flex-col justify-between items-center my-auto p-2">
         
-        <!-- ÜST BİLGİ ÇUBUĞU -->
-        <div class="w-full flex justify-between items-center px-2 mb-2">
+        <!-- ÜST BİLGİ ÇUBUĞU (Kalibrasyon & Rehber Butonları) -->
+        <div class="w-full flex justify-between items-center px-1 mb-2">
+            <!-- Sol: Canlı Sensör + 0° Sıfırla (Tare) -->
             <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Canlı Sensör</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider mr-1">Canlı</span>
+                <button onclick="zeroCalibration()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1">
+                    <i class="fa-solid fa-compass-drafting text-emerald-400"></i> 0° Sıfırla
+                </button>
             </div>
-            <div class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30">
-                Hasta: <span id="patientName" class="text-white">...</span>
+            
+            <!-- Sağ: Hasta Adı + (i) Nasıl Yapılır? -->
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30">
+                    <span id="patientName">...</span>
+                </div>
+                <button onclick="toggleGuideModal(true)" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition active:scale-95">
+                    <i class="fa-solid fa-circle-info text-indigo-400"></i> (i) Kılavuz
+                </button>
             </div>
         </div>
 
         <!-- ANA ÖLÇÜM ALANI (Yatay İki Kolon) -->
         <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
             
-            <!-- SOL PANEL: Su Terazisi & Büyük Açı Göstergesi -->
+            <!-- SOL PANEL: Su Terazisi & Canlı Açı -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col items-center justify-center shadow-xl relative">
                 
                 <!-- Açı Değeri -->
@@ -115,10 +130,10 @@
             <!-- SAĞ PANEL: Ölçüm Kayıt Butonları (Torakal & Lumbar) -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between gap-3 shadow-xl">
                 
-                <p class="text-xs text-slate-400 text-center font-medium leading-relaxed">
-                    1. Sırt tümseğinde durup <strong>Torakal</strong>'i kaydedin.<br>
-                    2. Bel çukurunda durup <strong>Lumbar</strong>'ı kaydedin.
-                </p>
+                <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-2">
+                    <span class="font-semibold text-slate-300">Ölçüm Adımları</span>
+                    <span class="text-[10px] text-indigo-400">Tekrar basıp güncelleyebilirsiniz</span>
+                </div>
 
                 <div class="grid grid-cols-2 gap-2">
                     <!-- Torakal Butonu -->
@@ -146,6 +161,76 @@
 
     </div>
 
-    <script src="scoliometer.js?v=2.0"></script>
+    <!-- 3. NASIL UYGULANIR? REHBER MODAL (Bilgi Penceresi) -->
+    <div id="guideModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto" style="scrollbar-width: thin;">
+            <button onclick="toggleGuideModal(false)" class="absolute top-4 right-4 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-times text-xl"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 mb-4">
+                <div class="p-2.5 bg-indigo-600/20 text-indigo-400 rounded-xl border border-indigo-500/30">
+                    <i class="fa-solid fa-book-medical text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-black text-white">Nasıl Uygulanır?</h3>
+                    <p class="text-xs text-slate-400">Adams Öne Eğilme & ATR Test Kılavuzu</p>
+                </div>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
+                <!-- Adım 1 -->
+                <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">1</div>
+                    <div>
+                        <strong class="text-white block mb-0.5">Adams Pozisyonu:</strong>
+                        Hasta dizlerini bükmeden, ayaklar omuz hizasında 90 derece öne eğilir ve kollarını serbestçe aşağı sarkıtır.
+                    </div>
+                </div>
+
+                <!-- Adım 2 -->
+                <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">2</div>
+                    <div>
+                        <strong class="text-white block mb-0.5">Yatay Yerleşim & Hizalama:</strong>
+                        Telefonu hastanın sırtına <strong>yatay</strong> koyun. Ekrandaki kırmızı orta çentiği omurganın dikensi kemiğine hizalayın. (İhtiyaç olursa üstteki <em>"0° Sıfırla"</em> ile kalibre edebilirsiniz).
+                    </div>
+                </div>
+
+                <!-- Adım 3 -->
+                <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="w-6 h-6 rounded-full bg-orange-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">3</div>
+                    <div>
+                        <strong class="text-white block mb-0.5">Sırt (Torakal) Taraması:</strong>
+                        Telefonu boyundan kürek kemiklerine doğru yavaşça aşağı kaydırın. Tümseğin en tepe yaptığı noktada durup <strong>"1. Torakal (Sırt)"</strong> butonuna basın. Açı kilitlenir.
+                    </div>
+                </div>
+
+                <!-- Adım 4 -->
+                <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">4</div>
+                    <div>
+                        <strong class="text-white block mb-0.5">Bel (Lumbar) Taraması:</strong>
+                        Telefonu bel çukuruna ve kalça üstüne doğru kaydırmaya devam edin. Beldeki en yüksek rotasyon noktasında <strong>"2. Lumbar (Bel)"</strong> butonuna basın.
+                    </div>
+                </div>
+
+                <!-- Adım 5 -->
+                <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="w-6 h-6 rounded-full bg-indigo-500 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">5</div>
+                    <div>
+                        <strong class="text-white block mb-0.5">Masaüstüne Aktarma:</strong>
+                        <strong>"Masaüstüne Gönder"</strong> butonuna basın. Bilgisayar ekranındaki hastanın Skolyometre Geçmişi tablosuna canlı aktarılacaktır.
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="toggleGuideModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl mt-5 transition text-xs">
+                Anladım, Kılavuzu Kapat
+            </button>
+        </div>
+    </div>
+
+    <script src="scoliometer.js?v=2.1"></script>
 </body>
 </html>

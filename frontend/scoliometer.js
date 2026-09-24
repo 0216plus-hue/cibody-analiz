@@ -2,6 +2,8 @@ const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 
 let currentAngle = 0;
+let rawAngle = 0;
+let angleOffset = 0;
 let thoracicSaved = null;
 let lumbarSaved = null;
 let patientId = null;
@@ -9,7 +11,7 @@ let patientId = null;
 async function checkAuth() {
     if(!token) {
         document.getElementById('authStatus').innerText = "Geçersiz bağlantı. QR kodu tekrar okutun.";
-        document.getElementById('authStatus').className = "text-red-400 text-sm mb-6";
+        document.getElementById('authStatus').className = "text-red-400 text-sm mb-5";
         return;
     }
     
@@ -21,12 +23,12 @@ async function checkAuth() {
             document.getElementById('patientName').innerText = data.patient_name;
             
             document.getElementById('authStatus').innerText = "Bağlantı başarılı! Sensörü başlatmak için butona basınız.";
-            document.getElementById('authStatus').className = "text-emerald-400 text-sm mb-6 font-medium";
+            document.getElementById('authStatus').className = "text-emerald-400 text-sm mb-5 font-medium";
             document.getElementById('btnStart').classList.remove('hidden');
         } else {
             const err = await res.json().catch(() => ({}));
             document.getElementById('authStatus').innerText = err.detail || "Bağlantı süresi dolmuş.";
-            document.getElementById('authStatus').className = "text-red-400 text-sm mb-6";
+            document.getElementById('authStatus').className = "text-red-400 text-sm mb-5";
         }
     } catch(e) {
         document.getElementById('authStatus').innerText = "Sunucuya ulaşılamıyor.";
@@ -68,7 +70,6 @@ function startSensors() {
 }
 
 function handleOrientation(event) {
-    // Determine screen orientation angle
     const orientation = window.orientation ?? (screen.orientation ? screen.orientation.angle : 0);
     let angle = 0;
     
@@ -86,7 +87,8 @@ function handleOrientation(event) {
     }
     
     if (isNaN(angle)) angle = 0;
-    currentAngle = Math.round(angle);
+    rawAngle = Math.round(angle);
+    currentAngle = rawAngle - angleOffset;
     
     // Update numerical display
     const sign = currentAngle > 0 ? '+' : '';
@@ -116,19 +118,29 @@ function handleOrientation(event) {
     document.getElementById('bubble').style.left = `${percentage}%`;
 }
 
+// Tare / Zero calibration
+function zeroCalibration() {
+    angleOffset = rawAngle;
+    if (navigator.vibrate) navigator.vibrate(50);
+    const badge = document.getElementById('riskBadge');
+    badge.innerText = "Sıfırlandı (0° Referansı Alındı)";
+    badge.className = "text-[11px] font-bold text-indigo-400 mb-3";
+}
+
 function saveAngle(region) {
+    if (navigator.vibrate) navigator.vibrate(60);
     const sign = currentAngle > 0 ? '+' : '';
     const angleText = `${sign}${currentAngle}°`;
     
     if(region === 'thoracic') {
         thoracicSaved = currentAngle;
-        document.getElementById('thoracicValue').innerText = `Kaydedildi: ${angleText}`;
+        document.getElementById('thoracicValue').innerText = `Kilitlendi: ${angleText}`;
         document.getElementById('thoracicValue').className = "text-[11px] text-white font-bold";
         document.getElementById('btnTorakal').classList.remove('bg-slate-800', 'border-slate-700');
         document.getElementById('btnTorakal').classList.add('bg-orange-600', 'border-orange-500');
     } else {
         lumbarSaved = currentAngle;
-        document.getElementById('lumbarValue').innerText = `Kaydedildi: ${angleText}`;
+        document.getElementById('lumbarValue').innerText = `Kilitlendi: ${angleText}`;
         document.getElementById('lumbarValue').className = "text-[11px] text-white font-bold";
         document.getElementById('btnLumbar').classList.remove('bg-slate-800', 'border-slate-700');
         document.getElementById('btnLumbar').classList.add('bg-emerald-600', 'border-emerald-500');
@@ -162,6 +174,7 @@ async function submitMeasurement() {
         });
         
         if(res.ok) {
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             btn.classList.replace('bg-indigo-600', 'bg-emerald-500');
             btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Başarıyla Gönderildi!';
             window.removeEventListener('deviceorientation', handleOrientation);
@@ -188,6 +201,15 @@ async function submitMeasurement() {
         alert("Bağlantı hatası.");
         btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> Masaüstüne Gönder';
         btn.disabled = false;
+    }
+}
+
+function toggleGuideModal(show) {
+    const modal = document.getElementById('guideModal');
+    if (show) {
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
     }
 }
 
