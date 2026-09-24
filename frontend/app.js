@@ -37,6 +37,10 @@ let currentDragView = null;
 
 // GÖRÜNÜM KONTROLLERİ
 function showDashboard() {
+    sessionStorage.removeItem('cibody_active_patient_id');
+    sessionStorage.removeItem('cibody_active_tab');
+    currentPatientId = null;
+    currentSpineAnalysisId = null;
     showAppView();
     const user = getUser();
     // Update nav username
@@ -56,6 +60,13 @@ function showDashboard() {
 
 function showPatient(patientId, patientName, patientAge, patientWeight, patientGender, patientPhone) {
     currentPatientId = patientId;
+    sessionStorage.setItem('cibody_active_patient_id', patientId);
+    sessionStorage.setItem('cibody_active_patient_name', patientName);
+    sessionStorage.setItem('cibody_active_patient_age', patientAge);
+    sessionStorage.setItem('cibody_active_patient_weight', patientWeight);
+    sessionStorage.setItem('cibody_active_patient_gender', patientGender);
+    sessionStorage.setItem('cibody_active_patient_phone', patientPhone || '');
+
     document.getElementById('dashboardView').classList.add('hidden');
     document.getElementById('patientView').classList.remove('hidden');
     document.getElementById('navPatientName').classList.remove('hidden');
@@ -66,10 +77,12 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
     const maskedPhone = patientPhone ? patientPhone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "Yok";
     document.getElementById('detailInfo').innerText = `Yaş: ${patientAge} | Kilo: ${patientWeight}kg | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
     
-    switchTab('postureTab');
+    const targetTab = sessionStorage.getItem('cibody_active_tab') || 'postureTab';
+    switchTab(targetTab);
     loadPatientData(patientId);
     if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
-            if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
+    if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
+    if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
 }
 
 function switchTab(tabId) {
@@ -142,6 +155,15 @@ async function fetchPatients() {
         // Backend id desc olarak yolluyor, yine de garanti olsun.
         allPatients = data;
         renderPatients();
+
+        // Sayfa yenilendiğinde aktif hastayı ve sekmeyi geri yükle
+        const savedPid = sessionStorage.getItem('cibody_active_patient_id');
+        if (savedPid && !currentPatientId) {
+            const p = allPatients.find(x => x.id == savedPid);
+            if (p) {
+                showPatient(p.id, p.name, p.age, p.weight, p.gender, p.phone || '');
+            }
+        }
     } catch(err) { showToast("Hastalar yüklenemedi: " + err.message); }
 }
 
@@ -361,6 +383,10 @@ document.getElementById('footReportContent').innerHTML = marked.parse(aiText);
                     fRisksSection.classList.add('hidden');
                 }
             }
+        }
+        // Load Spine Analyses
+        if (typeof loadSpineHistory === 'function') {
+            loadSpineHistory(id, true);
         }
     } catch(err) { console.error("Data load err:", err); }
 }
@@ -1169,9 +1195,19 @@ function spinePreview(input, previewId, placeholderId) {
     reader.readAsDataURL(input.files[0]);
 }
 
+let currentSpineHistory = [];
+let currentSpineAnalysisId = null;
+
 async function runSpineAnalysis() {
-    const backFile = document.getElementById('file_spine_back').files[0];
-    const sideFile = document.getElementById('file_spine_side').files[0];
+    if (!currentPatientId) {
+        alert('Lütfen önce bir hasta seçin.');
+        return;
+    }
+
+    const backInput = document.getElementById('file_spine_back');
+    const sideInput = document.getElementById('file_spine_side');
+    const backFile = backInput && backInput.files ? backInput.files[0] : null;
+    const sideFile = sideInput && sideInput.files ? sideInput.files[0] : null;
 
     if (!backFile && !sideFile) {
         alert('Lütfen en az bir fotoğraf yükleyin (Arka veya Yan profil).');
@@ -1209,7 +1245,27 @@ async function runSpineAnalysis() {
             return;
         }
 
-        renderSpineResults(data);
+        renderSpineResults(data, data.analysis_id);
+
+        // Geçmiş listesini güncelle ve yeni analizi seçili yap
+        await loadSpineHistory(currentPatientId, false);
+        if (data.analysis_id) {
+            currentSpineAnalysisId = data.analysis_id;
+            highlightSpineCard(data.analysis_id);
+        }
+
+        // Form alanlarını sıfırla
+        if (backInput) backInput.value = '';
+        if (sideInput) sideInput.value = '';
+        const bPrev = document.getElementById('spineBackPreview');
+        const bPlace = document.getElementById('spineBackPlaceholder');
+        if (bPrev) bPrev.classList.add('hidden');
+        if (bPlace) bPlace.classList.remove('hidden');
+
+        const sPrev = document.getElementById('spineSidePreview');
+        const sPlace = document.getElementById('spineSidePlaceholder');
+        if (sPrev) sPrev.classList.add('hidden');
+        if (sPlace) sPlace.classList.remove('hidden');
 
     } catch (err) {
         alert('Sunucu hatası: ' + err.message);
@@ -1232,7 +1288,7 @@ function statusColor(status) {
 }
 
 function scoliosisLabel(risk) {
-    const map = { 'low': '🟢 Düşük', 'moderate': '🟡 Orta', 'high': '🔴 Yüksek' };
+    const map = { 'low': '🟢 Düşük Risk', 'moderate': '🟡 Orta Risk', 'high': '🔴 Yüksek Risk' };
     return map[risk] || risk || '—';
 }
 
@@ -1247,14 +1303,53 @@ function deviationBar(mm) {
     </div>`;
 }
 
-function renderSpineResults(data) {
+function renderSpineResults(data, selectedId = null) {
     const results = document.getElementById('spineResultsSection');
     const coronal = data.coronal;
     const sagittal = data.sagittal;
 
-    // Tarih
-    document.getElementById('spineAnalysisDate').textContent =
-        'Oluşturuldu: ' + new Date().toLocaleString('tr-TR');
+    // Tarih & Saat Formatlama
+    let dateStr = 'Yeni Analiz';
+    if (data.created_at) {
+        const d = new Date(data.created_at + (data.created_at.endsWith('Z') ? '' : 'Z'));
+        dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } else {
+        dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    const dateEl = document.getElementById('spineAnalysisDate');
+    if (dateEl) dateEl.textContent = 'Analiz Tarihi: ' + dateStr;
+
+    // Görseller
+    const photosRow = document.getElementById('spineResultPhotosRow');
+    const backBox = document.getElementById('spineResultBackBox');
+    const sideBox = document.getElementById('spineResultSideBox');
+    const backImg = document.getElementById('spineResultBackImg');
+    const sideImg = document.getElementById('spineResultSideImg');
+
+    if (photosRow) {
+        let hasPhoto = false;
+        if (data.back_image_path) {
+            backImg.src = '/' + data.back_image_path.replace(/\\/g, '/');
+            backBox.classList.remove('hidden');
+            hasPhoto = true;
+        } else {
+            backBox.classList.add('hidden');
+        }
+
+        if (data.side_image_path) {
+            sideImg.src = '/' + data.side_image_path.replace(/\\/g, '/');
+            sideBox.classList.remove('hidden');
+            hasPhoto = true;
+        } else {
+            sideBox.classList.add('hidden');
+        }
+
+        if (hasPhoto) {
+            photosRow.classList.remove('hidden');
+        } else {
+            photosRow.classList.add('hidden');
+        }
+    }
 
     // ── Metrik Kartlar ──
     if (sagittal) {
@@ -1277,17 +1372,29 @@ function renderSpineResults(data) {
         const fhpEl = document.getElementById('metricFHPStatus');
         fhpEl.textContent = sagittal.fhp_status || '';
         fhpEl.className = 'text-xs font-bold mt-1 ' + statusColor(sagittal.fhp_status);
+    } else {
+        document.getElementById('metricKyphosis').textContent = '—';
+        document.getElementById('metricLordosis').textContent = '—';
+        document.getElementById('metricFHP').textContent = '—';
+        document.getElementById('metricKyphosisStatus').textContent = '';
+        document.getElementById('metricLordosisStatus').textContent = '';
+        document.getElementById('metricFHPStatus').textContent = '';
     }
 
     if (coronal) {
         const scEl = document.getElementById('metricScoliosis');
         scEl.textContent = scoliosisLabel(coronal.scoliosis_risk);
         scEl.className = 'text-xl font-black ' + statusColor(coronal.scoliosis_risk);
+    } else {
+        const scEl = document.getElementById('metricScoliosis');
+        scEl.textContent = '—';
+        scEl.className = 'text-xl font-black text-slate-400';
     }
 
     // ── Koronal Tablo ──
+    const corSec = document.getElementById('coronalSection');
     if (coronal && coronal.markers) {
-        document.getElementById('coronalSection').classList.remove('hidden');
+        if (corSec) corSec.classList.remove('hidden');
         const tbody = document.getElementById('coronalTableBody');
         const markerLabels = { 'C7': 'C7 Vertebra', 'T7': 'T7/T8 Bölgesi', 'L3': 'L3/L4 Bölgesi', 'S1': 'S1 Vertebra' };
         tbody.innerHTML = Object.entries(coronal.markers).map(([key, m]) => {
@@ -1309,11 +1416,14 @@ function renderSpineResults(data) {
             (coronal.shoulder_level_diff_mm || 0) + ' mm ' + ((coronal.shoulder_level_diff_mm || 0) > 5 ? '⚠️' : '✅');
         document.getElementById('pelvisTilt').textContent =
             (coronal.pelvis_tilt_mm || 0) + ' mm ' + ((coronal.pelvis_tilt_mm || 0) > 8 ? '⚠️' : '✅');
+    } else {
+        if (corSec) corSec.classList.add('hidden');
     }
 
     // ── Sagital Özet ──
+    const sagSec = document.getElementById('sagittalSection');
     if (sagittal) {
-        document.getElementById('sagittalSection').classList.remove('hidden');
+        if (sagSec) sagSec.classList.remove('hidden');
         document.getElementById('sagKyphosis').textContent =
             sagittal.kyphosis_angle_deg ? sagittal.kyphosis_angle_deg + '°' : '—';
         document.getElementById('sagLordosis').textContent =
@@ -1322,20 +1432,143 @@ function renderSpineResults(data) {
             sagittal.forward_head_mm != null ? sagittal.forward_head_mm + ' mm' : '—';
         document.getElementById('sagittalSummaryText').textContent =
             sagittal.sagittal_summary || '';
+    } else {
+        if (sagSec) sagSec.classList.add('hidden');
     }
 
     // ── AI Raporu ──
-    if (data.report) {
-        const reportEl = document.getElementById('spineAiReport');
+    const repText = data.report || data.ai_report_text || '';
+    const reportEl = document.getElementById('spineAiReport');
+    if (repText) {
         if (typeof marked !== 'undefined') {
-            reportEl.innerHTML = marked.parse(data.report);
+            reportEl.innerHTML = marked.parse(repText);
         } else {
-            reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + data.report + '</pre>';
+            reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + repText + '</pre>';
         }
+    } else {
+        reportEl.innerHTML = '<p class="text-sm text-slate-400">Rapor metni oluşturulamadı.</p>';
     }
 
     results.classList.remove('hidden');
-    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (selectedId) {
+        highlightSpineCard(selectedId);
+    }
+}
+
+function highlightSpineCard(id) {
+    document.querySelectorAll('.spine-history-card').forEach(c => {
+        if (c.dataset.id == id) {
+            c.classList.add('ring-2', 'ring-indigo-600', 'border-indigo-600', 'bg-indigo-50/50');
+        } else {
+            c.classList.remove('ring-2', 'ring-indigo-600', 'border-indigo-600', 'bg-indigo-50/50');
+        }
+    });
+}
+
+async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
+    const pid = patientId || currentPatientId;
+    if (!pid) return;
+
+    try {
+        const res = await authFetch(`/api/spine/patient/${pid}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        currentSpineHistory = data || [];
+
+        const cardEl = document.getElementById('spineHistoryCard');
+        const listEl = document.getElementById('spineHistoryList');
+        const countEl = document.getElementById('spineHistoryCount');
+
+        if (!cardEl || !listEl) return;
+
+        if (countEl) countEl.textContent = currentSpineHistory.length;
+
+        if (currentSpineHistory.length === 0) {
+            cardEl.classList.add('hidden');
+            if (!currentSpineAnalysisId) {
+                const results = document.getElementById('spineResultsSection');
+                if (results) results.classList.add('hidden');
+            }
+            return;
+        }
+
+        cardEl.classList.remove('hidden');
+
+        listEl.innerHTML = currentSpineHistory.map((item, index) => {
+            const d = new Date(item.created_at + (item.created_at && !item.created_at.endsWith('Z') ? 'Z' : ''));
+            const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const isLatest = index === 0;
+            const badge = isLatest 
+                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700">En Güncel</span>' 
+                : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Geçmiş #${currentSpineHistory.length - index}</span>`;
+
+            const kifoz = item.sagittal && item.sagittal.kyphosis_angle_deg ? `${item.sagittal.kyphosis_angle_deg}°` : null;
+            const lordoz = item.sagittal && item.sagittal.lordosis_angle_deg ? `${item.sagittal.lordosis_angle_deg}°` : null;
+            const skolyoz = item.coronal && item.coronal.scoliosis_risk ? scoliosisLabel(item.coronal.scoliosis_risk) : null;
+
+            let metricsPill = [];
+            if (kifoz) metricsPill.push(`Kifoz: <b>${kifoz}</b>`);
+            if (lordoz) metricsPill.push(`Lordoz: <b>${lordoz}</b>`);
+            if (skolyoz) metricsPill.push(`Skolyoz: <b>${skolyoz}</b>`);
+
+            const previewImg = item.side_image_path || item.back_image_path;
+            const imgHtml = previewImg 
+                ? `<img src="/${previewImg.replace(/\\/g, '/')}" class="w-12 h-12 rounded-lg object-cover border border-slate-200 flex-shrink-0" onerror="this.style.display='none'">` 
+                : `<div class="w-12 h-12 rounded-lg bg-indigo-50 text-indigo-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-bone text-lg"></i></div>`;
+
+            return `
+                <div data-id="${item.id}" onclick="selectSpineAnalysis(${item.id})"
+                     class="spine-history-card group relative flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-500 hover:shadow-md cursor-pointer transition-all flex-shrink-0 min-w-[240px] max-w-[280px]">
+                    ${imgHtml}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-1 mb-1">
+                            ${badge}
+                            <button onclick="deleteSpineAnalysis(${item.id}, event)" 
+                                    class="text-slate-300 hover:text-red-600 transition-colors p-1" title="Analizi Sil">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs font-black text-slate-800 truncate">${dateStr}</p>
+                        <p class="text-[11px] text-slate-500 truncate mt-0.5">${metricsPill.join(' • ') || 'Ölçüm kaydı'}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        if (autoSelectLatest && currentSpineHistory.length > 0) {
+            selectSpineAnalysis(currentSpineHistory[0].id);
+        }
+
+    } catch (err) {
+        console.error("loadSpineHistory error:", err);
+    }
+}
+
+function selectSpineAnalysis(analysisId) {
+    currentSpineAnalysisId = analysisId;
+    const item = currentSpineHistory.find(x => x.id === analysisId);
+    if (item) {
+        renderSpineResults(item, analysisId);
+    }
+}
+
+async function deleteSpineAnalysis(analysisId, event) {
+    if (event) event.stopPropagation();
+    if (!confirm('Bu omurga analizi kaydını silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const res = await authFetch(`/api/spine/${analysisId}`, { method: 'DELETE' });
+        if (res.ok) {
+            if (currentSpineAnalysisId === analysisId) {
+                currentSpineAnalysisId = null;
+            }
+            await loadSpineHistory(currentPatientId, true);
+        } else {
+            alert('Silinirken hata oluştu.');
+        }
+    } catch (e) {
+        alert('Sunucu hatası: ' + e.message);
+    }
 }
 
 // ═══════════════════════════════════════════════
@@ -2326,7 +2559,11 @@ async function loadScoliometerHistory(patientId) {
 const _oldSwitchTab = switchTab;
 switchTab = function(tabId) {
     _oldSwitchTab(tabId);
+    sessionStorage.setItem('cibody_active_tab', tabId);
     if(tabId === 'scoliometerTab' && currentPatientId) {
         loadScoliometerHistory(currentPatientId);
+    }
+    if(tabId === 'spineTab' && currentPatientId) {
+        loadSpineHistory(currentPatientId, true);
     }
 }

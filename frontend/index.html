@@ -780,6 +780,20 @@
                         </div>
                     </div>
 
+                    <!-- ░ GEÇMİŞ ANALİZLER ░ -->
+                    <div id="spineHistoryCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-black text-slate-800 flex items-center">
+                                <i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i>
+                                Geçmiş Klinik Omurga Analizleri (<span id="spineHistoryCount">0</span>)
+                            </h4>
+                            <span class="text-xs text-slate-400">İncelemek istediğiniz analize tıklayın</span>
+                        </div>
+                        <div id="spineHistoryList" class="flex flex-wrap gap-3 pb-2 overflow-x-auto">
+                            <!-- Dinamik analiz kartları -->
+                        </div>
+                    </div>
+
                     <!-- ░ YÜKLEME ALANLARI ░ -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                         <!-- ARKA PROFİL -->
@@ -813,7 +827,7 @@
                     <!-- ░ LOADING ░ -->
                     <div id="spineLoadingState" class="hidden mt-8 text-center py-12">
                         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-900 mb-4"></div>
-                        <p class="font-bold text-slate-700 text-lg">Yapay Zeka analiz ediyor...</p>
+                        <p class="font-bold text-slate-700 text-lg">CIBODY AI Eklentisi Analiz Ediyor...</p>
                         <p class="text-sm text-slate-400 mt-2">Koronal sapma ve sagital açılar hesaplanıyor...</p>
                     </div>
 
@@ -826,6 +840,18 @@
                                 <i class="fa-solid fa-bone mr-2 text-indigo-600"></i>Klinik Omurga Analiz Raporu
                             </h3>
                             <span id="spineAnalysisDate" class="text-sm text-slate-400 font-medium"></span>
+                        </div>
+
+                        <!-- Görseller (Varsa) -->
+                        <div id="spineResultPhotosRow" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div id="spineResultBackBox" class="hidden bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
+                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> Arka Profil (Koronal)</span>
+                                <img id="spineResultBackImg" class="max-h-60 mx-auto rounded-lg object-contain border border-slate-100">
+                            </div>
+                            <div id="spineResultSideBox" class="hidden bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
+                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> Yan Profil (Sagital)</span>
+                                <img id="spineResultSideImg" class="max-h-60 mx-auto rounded-lg object-contain border border-slate-100">
+                            </div>
                         </div>
 
                         <!-- Metrik Kartlar -->
@@ -909,7 +935,7 @@
                         <!-- AI Klinik Raporu -->
                         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                             <h4 class="font-black text-slate-800 mb-4 text-lg">
-                                <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i>Yapay Zeka Klinik Değerlendirmesi
+                                <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i>CIBODY AI Klinik Değerlendirmesi
                             </h4>
                             <div id="spineAiReport" class="prose prose-sm max-w-none text-slate-700 leading-relaxed"></div>
                         </div>

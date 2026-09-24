@@ -798,13 +798,63 @@ def get_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
         raise HTTPException(status_code=404, detail="Bulunamadı")
     return {
         "id": rec.id,
+        "patient_id": rec.patient_id,
         "back_image_path": rec.back_image_path,
         "side_image_path": rec.side_image_path,
         "coronal": json.loads(rec.coronal_data) if rec.coronal_data else None,
         "sagittal": json.loads(rec.sagittal_data) if rec.sagittal_data else None,
         "report": rec.ai_report_text,
-        "created_at": rec.created_at.isoformat()
+        "created_at": rec.created_at.isoformat() if rec.created_at else None
     }
+
+@app.get("/api/spine/patient/{patient_id}")
+def get_patient_spine_analyses(patient_id: int, db: Session = Depends(get_db),
+                               current_user: models.User = Depends(get_current_user)):
+    analyses = db.query(models.SpineAnalysis).filter(
+        models.SpineAnalysis.patient_id == patient_id
+    ).order_by(models.SpineAnalysis.created_at.desc()).all()
+    
+    result = []
+    for a in analyses:
+        c_data = None
+        s_data = None
+        try:
+            if a.coronal_data:
+                c_data = json.loads(a.coronal_data)
+        except Exception:
+            pass
+        try:
+            if a.sagittal_data:
+                s_data = json.loads(a.sagittal_data)
+        except Exception:
+            pass
+        result.append({
+            "id": a.id,
+            "patient_id": a.patient_id,
+            "back_image_path": a.back_image_path,
+            "side_image_path": a.side_image_path,
+            "coronal": c_data,
+            "sagittal": s_data,
+            "report": a.ai_report_text,
+            "created_at": a.created_at.isoformat() if a.created_at else None
+        })
+    return result
+
+@app.delete("/api/spine/{analysis_id}")
+def delete_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
+                          current_user: models.User = Depends(get_current_user)):
+    analysis = db.query(models.SpineAnalysis).filter(models.SpineAnalysis.id == analysis_id).first()
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    for p in [analysis.back_image_path, analysis.side_image_path]:
+        if p and os.path.exists(p):
+            try:
+                os.remove(p)
+            except Exception:
+                pass
+    db.delete(analysis)
+    db.commit()
+    return {"status": "success"}
 
 # ────────────────────────────────
 #  EGZERSİZ YÖNETİMİ
