@@ -27,9 +27,12 @@ def generate_scoliometer_token(patient_id: int, request: Request, db: Session = 
     db.add(token)
     db.commit()
     
-    # Generate the URL that the QR code will point to
-    # request.base_url gives e.g. "http://localhost:8080/"
-    url = f"{request.base_url}scoliometer?token={token_str}"
+    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.base_url.netloc
+    if "localhost" not in str(host) and "127.0.0.1" not in str(host):
+        proto = "https"
+    base_url = f"{proto}://{host}"
+    url = f"{base_url}/scoliometer.html?token={token_str}"
     return {"url": url}
 
 @router.get("/api/scoliometer/auth/{token}")
