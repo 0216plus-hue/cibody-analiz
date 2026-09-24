@@ -1186,12 +1186,18 @@ async function runSpineAnalysis() {
     loading.classList.remove('hidden');
     results.classList.add('hidden');
 
-    const formData = new FormData();
-    formData.append('patient_id', currentPatientId);
-    if (backFile) formData.append('back_image', backFile);
-    if (sideFile) formData.append('side_image', sideFile);
-
     try {
+        const formData = new FormData();
+        formData.append('patient_id', currentPatientId);
+        if (backFile) {
+            const compBack = await compressImage(backFile);
+            formData.append('back_image', compBack);
+        }
+        if (sideFile) {
+            const compSide = await compressImage(sideFile);
+            formData.append('side_image', compSide);
+        }
+
         const res = await authFetch('/api/spine/analyze', {
             method: 'POST',
             body: formData

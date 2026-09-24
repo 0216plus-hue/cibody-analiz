@@ -1,8 +1,7 @@
-import uuid
-from datetime import timedelta
-import os, uuid, base64, requests, json
+import os, uuid, base64, requests, json, io, concurrent.futures
 from datetime import datetime, timedelta
 from typing import Optional
+from PIL import Image, ImageOps
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
@@ -534,22 +533,41 @@ def update_analysis_notes(analysis_id: int, payload: NoteUpdate,
 # ────────────────────────────────
 #  KLİNİK OMURGA & SKOLYOZ ANALİZİ
 # ────────────────────────────────
-SPINE_CORONAL_PROMPT = """Sen klinik biyomekanik uzmanısın. Sana bir hastanın sırtına renkli yapışkan marker (etiket) yerleştirilmiş ARKA profil fotoğrafı verildi.
+def compress_spine_image(image_bytes: bytes, max_dim: int = 1200) -> bytes:
+    """EXIF rotasyonunu düzeltir, görseli küçültür ve JPEG olarak sıkıştırır."""
+    try:
+        img = Image.open(io.BytesIO(image_bytes))
+        img = ImageOps.exif_transpose(img)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+        img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+        out = io.BytesIO()
+        img.save(out, format="JPEG", quality=82, optimize=True)
+        return out.getvalue()
+    except Exception as e:
+        print(f"[compress_spine_image] Uyarı/Hata: {e}", flush=True)
+        return image_bytes
 
-Bu markerlerin yerleşim noktaları şunlardır (yukarıdan aşağıya):
-- C7: Boyun tabanı (en üstteki marker)
-- T7/T8: Kürek kemiği alt uç hizası (ortadaki marker)
-- L3/L4: Bel çukuru (alt bölgedeki marker)
-- S1: Kuyruk sokumu başı (en alttaki marker)
-- PSIS Sol ve PSIS Sağ: Varsa kalça iki yanındaki markerlar
+SPINE_CORONAL_PROMPT = """Sen uzman bir klinik biyomekanik ve postür analiz uzmanısın.
+Sana bir danışanın/hastanın ARKA (posterior / koronal) profil fotoğrafı verildi.
+Hastanın sırtında renkli yapışkan markerlar (etiketler) bulunabilir ya da etiket olmadan doğrudan doğal anatomik duruşu sergilenmiş olabilir.
+
+Temel anatomik seviyeler (yukarıdan aşağıya):
+- C7: Boyun tabanı (en belirgin alt servikal omur)
+- T7/T8: Kürek kemiklerinin (skapula) alt uçları hizası
+- L3/L4: Bel çukuru / lomber omurga bölgesi
+- S1: Sakrum tabanı / kuyruk sokumu başlangıcı
 
 Görevin:
-1. Her markeri fotoğrafta tespit et.
-2. C7 markerından S1 markerına düşey (çekül) referans hattı oluştur.
-3. Her marker için bu referans hattından piksel cinsinden yatay sapmasını ölç.
-4. Piksel sapmasını milimetreye çevir (fotoğrafta bir omuz genişliği ~400 piksel = ~380 mm referans al).
+1. Varsa renkli etiketleri, etiket yoksa vücudun doğal anatomik hatlarından bu 4 seviyeyi (C7, T7, L3, S1) görsel olarak tespit et.
+2. C7 noktasından S1 noktasına sanal bir düşey (çekül/plumb line) referans hattı oluştur.
+3. Her seviye için (C7, T7, L3, S1) bu referans hattından milimetre cinsinden yatay sapmayı (dev_mm) ve yönünü (direction: 'center', 'left', 'right') belirle.
+   (Referans: Yetişkin iki omuz arası genişliği ortalama ~380-400 mm kabul edilir).
+4. Omuz yükseklik farkını (shoulder_level_diff_mm: 0-30 mm arası) ve pelvis eğimini (pelvis_tilt_mm: 0-30 mm arası) hesapla.
+5. Skolyoz riskini ('low', 'moderate', 'high') belirle.
+6. 2 cümlelik profesyonel Türkçe klinik özet (coronal_summary) yaz.
 
-SADECE JSON döndür, başka metin ekleme:
+SADECE geçerli bir JSON nesnesi döndür, başka hiçbir metin veya markdown formatı ekleme:
 {
   "markers_found": true,
   "markers": {
@@ -560,43 +578,49 @@ SADECE JSON döndür, başka metin ekleme:
   },
   "shoulder_level_diff_mm": 0,
   "pelvis_tilt_mm": 0,
-  "scoliosis_risk": "low|moderate|high",
-  "coronal_summary": "Kısa Türkçe klinik özet (2 cümle)"
+  "scoliosis_risk": "low",
+  "coronal_summary": "Koronal düzlemde omurga dizilimi dengelidir."
 }"""
 
-SPINE_SAGITTAL_PROMPT = """Sen klinik biyomekanik uzmanısın. Sana bir hastanın omurga anatomik noktalarına renkli yapışkan marker yerleştirilmiş YAN profil fotoğrafı verildi.
+SPINE_SAGITTAL_PROMPT = """Sen uzman bir klinik biyomekanik ve postür analiz uzmanısın.
+Sana bir danışanın/hastanın YAN (sagital) profil fotoğrafı verildi (sağa veya sola dönük olabilir).
+Hastanın anatomik noktalarında renkli etiketler bulunabilir ya da etiket olmadan doğrudan doğal anatomik duruşu sergilenmiş olabilir.
 
-Marker noktaları:
-- EAM: Kulak deliği (en üstte)
+Temel anatomik referans noktaları:
+- EAM: Kulak deliği / Tragus
 - Akromiyon: Omuz başı
-- Kifoz tepe: Sırtın en çıkıntılı noktası
-- L3: Bel çukurunun en derin noktası
-- Trokanter: Kalça eklemi dışı
-- Malleol: Dış ayak bileği (en altta)
+- Kifoz tepe: Torakal omurganın en arkaya çıkıntılı dış noktası (sırt tepe eğriliği)
+- L3: Lomber lordozun bel çukurundaki en derin iç noktası
+- Trokanter: Kalça eklemi dış çıkıntısı (Trochanter major)
+- Malleol: Ayak bileği dış çıkıntısı (Lateral malleol)
 
 Görevin:
-1. Her markeri tespit et.
-2. Thoracic Kyphosis açısını ölç (Kürek kemiği üstü ile bel başı arasındaki eğrilik — Normal: 20-45 derece).
-3. Lumbar Lordosis açısını ölç (Bel çukurunun derinliği — Normal: 20-45 derece).
-4. Forward Head Posture: EAM, akromiyon ve trokanter arasındaki sapma mm cinsinden (Normal: EAM, trokanter hizasında olmalı, 0-15 mm arası normal).
-5. Ağırlık merkezi (plumb line): EAM'den malleole çizgide omuz ve kalça ne kadar önde veya arkada?
+1. Varsa renkli etiketleri, etiket yoksa vücudun doğal anatomik hatlarından bu referans noktalarını tespit et.
+2. Torakal Kifoz (Thoracic Kyphosis) açısını derece cinsinden ölç (Normal: 20-45 derece).
+3. Lomber Lordoz (Lumbar Lordosis) açısını derece cinsinden ölç (Normal: 20-45 derece).
+4. İleri Baş Postürü (Forward Head Posture - FHP) sapmasını mm cinsinden ölç (Kulak deliği ile omuz başı/çekül hattı arası mesafe; 0-15 mm normal, 16-25 mm hafif, 26-40 mm belirgin, >40 mm ciddi).
+5. Omuz çekül ofsetini mm cinsinden belirle (shoulder_plumb_offset_mm: 0-25 mm).
+6. Durumları belirle:
+   - kyphosis_status: 'normal', 'artmış' veya 'azalmış'
+   - lordosis_status: 'normal', 'artmış' veya 'azalmış'
+   - fhp_status: 'normal', 'hafif', 'belirgin' veya 'ciddi'
+7. 2 cümlelik profesyonel Türkçe klinik özet (sagittal_summary) yaz.
 
-SADECE JSON döndür, başka metin ekleme:
+SADECE geçerli bir JSON nesnesi döndür, başka hiçbir metin veya markdown formatı ekleme:
 {
   "markers_found": true,
-  "kyphosis_angle_deg": 0,
-  "lordosis_angle_deg": 0,
-  "forward_head_mm": 0,
-  "shoulder_plumb_offset_mm": 0,
-  "kyphosis_status": "normal|artmış|azalmış",
-  "lordosis_status": "normal|artmış|azalmış",
-  "fhp_status": "normal|hafif|belirgin|ciddi",
-  "sagittal_summary": "Kısa Türkçe klinik özet (2 cümle)"
+  "kyphosis_angle_deg": 32,
+  "lordosis_angle_deg": 30,
+  "forward_head_mm": 8,
+  "shoulder_plumb_offset_mm": 5,
+  "kyphosis_status": "normal",
+  "lordosis_status": "normal",
+  "fhp_status": "normal",
+  "sagittal_summary": "Torakal kifoz ve lomber lordoz fizyolojik sınırlardadır."
 }"""
 
-SPINE_REPORT_PROMPT = """Sen klinik biyomekanik uzmanısın. Bir hastanın Koronal Düzlem (Skolyoz) ve Sagital Düzlem (Kifoz/Lordoz) analizinden çıkan veriler sana verildi.
-
-Bu verilere göre Türkçe, profesyonel, FİZYOTERAPİSTE YÖNELİK kısa bir klinik rapor oluştur.
+SPINE_REPORT_PROMPT = """Sen klinik biyomekanik uzmanısın. Bir danışanın Koronal Düzlem (Skolyoz) ve Sagital Düzlem (Kifoz/Lordoz/Boyun) analiz verileri sana verildi.
+Bu verilere göre Türkçe, profesyonel, FİZYOTERAPİST VE POSTÜR UZMANINA YÖNELİK kısa bir klinik değerlendirme raporu oluştur.
 
 Rapor formatı:
 
@@ -611,8 +635,8 @@ Rapor formatı:
 #### ⚠️ RİSK DEĞERLENDİRMESİ
 [Genel risk seviyesi ve aciliyet]
 
-#### 💊 ÖNERİLEN YAKLAŞIM
-[Fizyoterapi protokolü önerileri — ilaç önerme, sadece egzersiz ve müdahale türü]"""
+#### 💊 ÖNERİLEN EGZERSİZ VE DÜZELTİCİ YAKLAŞIM
+[Kişiye özel postür düzeltici egzersiz ve fizyoterapi yaklaşımları]"""
 
 @app.post("/api/spine/analyze")
 async def analyze_spine(
@@ -623,7 +647,7 @@ async def analyze_spine(
     current_user: models.User = Depends(get_current_user)
 ):
     if not API_KEY:
-        raise HTTPException(status_code=500, detail="Gemini API Anahtarı eksik.")
+        raise HTTPException(status_code=500, detail="Yapay Zeka API Anahtarı eksik.")
 
     patient = db.query(models.Patient).filter(
         models.Patient.id == patient_id,
@@ -641,76 +665,117 @@ async def analyze_spine(
         ext = back_image.filename.split('.')[-1].lower()
         if ext not in ['jpg', 'jpeg', 'png', 'webp']:
             raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
-        back_bytes = await back_image.read()
-        back_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_back.{ext}")
+        raw_back = await back_image.read()
+        back_bytes = compress_spine_image(raw_back)
+        back_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_back.jpg")
         with open(back_path, "wb") as f: f.write(back_bytes)
 
     if side_image and side_image.filename:
         ext = side_image.filename.split('.')[-1].lower()
         if ext not in ['jpg', 'jpeg', 'png', 'webp']:
             raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
-        side_bytes = await side_image.read()
-        side_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_side.{ext}")
+        raw_side = await side_image.read()
+        side_bytes = compress_spine_image(raw_side)
+        side_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_side.jpg")
         with open(side_path, "wb") as f: f.write(side_bytes)
 
     if not back_bytes and not side_bytes:
         raise HTTPException(status_code=400, detail="En az bir görsel yükleyin.")
 
-    def call_gemini(prompt, image_bytes, mime="image/jpeg"):
+    def call_gemini(prompt: str, image_bytes: Optional[bytes] = None, expect_json: bool = True, timeout_sec: int = 40):
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
-        encoded = base64.b64encode(image_bytes).decode()
+        parts = [{"text": prompt}]
+        if image_bytes:
+            encoded = base64.b64encode(image_bytes).decode('utf-8')
+            parts.append({"inline_data": {"mime_type": "image/jpeg", "data": encoded}})
+        gen_config = {"temperature": 0.1}
+        if expect_json:
+            gen_config["response_mime_type"] = "application/json"
         payload = {
-            "contents": [{"parts": [
-                {"text": prompt},
-                {"inline_data": {"mime_type": mime, "data": encoded}}
-            ]}],
-            "generationConfig": {"temperature": 0.1}
+            "contents": [{"parts": parts}],
+            "generationConfig": gen_config
         }
-        r = requests.post(url, json=payload, timeout=90)
+        r = requests.post(url, json=payload, timeout=timeout_sec)
         r.raise_for_status()
-        return r.json()["candidates"][0]["content"]["parts"][0]["text"]
+        res_json = r.json()
+        return res_json["candidates"][0]["content"]["parts"][0]["text"]
+
+    def safe_json_parse(raw_text: Optional[str]):
+        if not raw_text:
+            return None
+        try:
+            return json.loads(raw_text.strip())
+        except Exception:
+            import re
+            m = re.search(r'\{.*\}', raw_text, re.DOTALL)
+            if m:
+                try:
+                    return json.loads(m.group(0))
+                except Exception:
+                    pass
+        return None
 
     coronal_data = sagittal_data = None
     coronal_raw = sagittal_raw = None
 
     try:
-        if back_bytes:
-            raw = call_gemini(SPINE_CORONAL_PROMPT, back_bytes)
-            # Extract JSON from response
-            import re
-            json_match = re.search(r'\{.*\}', raw, re.DOTALL)
-            if json_match:
-                coronal_raw = json_match.group(0)
-                coronal_data = json.loads(coronal_raw)
+        # Arka ve Yan analizleri paralel çalıştırarak bekleme süresini yarıya indir
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            fut_coronal = executor.submit(call_gemini, SPINE_CORONAL_PROMPT, back_bytes, True, 40) if back_bytes else None
+            fut_sagittal = executor.submit(call_gemini, SPINE_SAGITTAL_PROMPT, side_bytes, True, 40) if side_bytes else None
 
-        if side_bytes:
-            raw2 = call_gemini(SPINE_SAGITTAL_PROMPT, side_bytes)
-            json_match2 = re.search(r'\{.*\}', raw2, re.DOTALL)
-            if json_match2:
-                sagittal_raw = json_match2.group(0)
-                sagittal_data = json.loads(sagittal_raw)
+            if fut_coronal:
+                try:
+                    coronal_raw = fut_coronal.result()
+                    coronal_data = safe_json_parse(coronal_raw)
+                except Exception as ce:
+                    print(f"[analyze_spine] Coronal AI hatası: {ce}", flush=True)
 
-        # Generate clinical report
-        summary_data = f"Koronal Analiz: {json.dumps(coronal_data, ensure_ascii=False)}\nSagital Analiz: {json.dumps(sagittal_data, ensure_ascii=False)}"
+            if fut_sagittal:
+                try:
+                    sagittal_raw = fut_sagittal.result()
+                    sagittal_data = safe_json_parse(sagittal_raw)
+                except Exception as se:
+                    print(f"[analyze_spine] Sagittal AI hatası: {se}", flush=True)
+
+        if not coronal_data and not sagittal_data:
+            raise HTTPException(status_code=500, detail="Görsellerden postür verisi çözümlenemedi. Lütfen fotoğrafların netliğini kontrol edin.")
+
+        # Klinik rapor üretimi
+        summary_parts = []
+        if coronal_data:
+            summary_parts.append(f"Koronal Düzlem Analizi: {json.dumps(coronal_data, ensure_ascii=False)}")
+        else:
+            summary_parts.append("Koronal Düzlem: Arka görsel yüklenmedi.")
+        if sagittal_data:
+            summary_parts.append(f"Sagital Düzlem Analizi: {json.dumps(sagittal_data, ensure_ascii=False)}")
+        else:
+            summary_parts.append("Sagital Düzlem: Yan görsel yüklenmedi.")
+        summary_data = "\n".join(summary_parts)
         report_prompt = SPINE_REPORT_PROMPT + f"\n\nANALİZ VERİLERİ:\n{summary_data}"
 
-        # Use a text-only call for the report
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
-        report_payload = {"contents": [{"parts": [{"text": report_prompt}]}]}
-        rr = requests.post(url, json=report_payload, timeout=90)
-        rr.raise_for_status()
-        ai_report = rr.json()["candidates"][0]["content"]["parts"][0]["text"]
+        ai_report = ""
+        try:
+            ai_report = call_gemini(report_prompt, image_bytes=None, expect_json=False, timeout_sec=30)
+        except Exception as re:
+            print(f"[analyze_spine] Rapor oluşturma uyarısı: {re}", flush=True)
+            kifoz = sagittal_data.get('kyphosis_angle_deg', '—') if sagittal_data else '—'
+            lordoz = sagittal_data.get('lordosis_angle_deg', '—') if sagittal_data else '—'
+            skolyoz = coronal_data.get('scoliosis_risk', '—') if coronal_data else '—'
+            ai_report = f"### KLİNİK OMURGA ANALİZ RAPORU\n\n#### 🔵 KORONAL DÜZLEM\nSkolyoz Riski: {skolyoz}\n\n#### 🟠 SAGİTAL DÜZLEM\nTorakal Kifoz: {kifoz}° | Lomber Lordoz: {lordoz}°\n\n#### 💊 ÖNERİLEN YAKLAŞIM\nKlinik değerlendirme metrikleri tablolarda detaylandırılmıştır."
 
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Analiz hatası: {str(e)}")
 
-    # Save to DB
+    # Veritabanına kaydet
     spine_rec = models.SpineAnalysis(
         patient_id=patient_id,
         back_image_path=back_path,
         side_image_path=side_path,
-        coronal_data=coronal_raw,
-        sagittal_data=sagittal_raw,
+        coronal_data=json.dumps(coronal_data, ensure_ascii=False) if coronal_data else None,
+        sagittal_data=json.dumps(sagittal_data, ensure_ascii=False) if sagittal_data else None,
         ai_report_text=ai_report
     )
     db.add(spine_rec)
