@@ -39,20 +39,23 @@ function previewScoliosis(event) {
     }
 }
 
-document.getElementById('scoliosisCanvas').addEventListener('click', function(e) {
-    if (scoliosisPoints.length >= 4) return; // Zaten 4 nokta seçildi
-    
-    const rect = this.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    scoliosisPoints.push({x, y});
-    drawScoliosisCanvas();
-    
-    if (scoliosisPoints.length === 4) {
-        calculateCobbAngle();
-    }
-});
+const _scCanvas = document.getElementById('scoliosisCanvas');
+if (_scCanvas) {
+    _scCanvas.addEventListener('click', function(e) {
+        if (scoliosisPoints.length >= 4) return; // Zaten 4 nokta seçildi
+        
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        scoliosisPoints.push({x, y});
+        drawScoliosisCanvas();
+        
+        if (scoliosisPoints.length === 4) {
+            calculateCobbAngle();
+        }
+    });
+}
 
 function drawScoliosisCanvas() {
     const canvas = document.getElementById('scoliosisCanvas');

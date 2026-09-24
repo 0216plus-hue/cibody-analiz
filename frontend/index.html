@@ -256,7 +256,7 @@
     <!-- Navbar -->
     <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="showDashboard()">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showDashboard(true)">
                 <img src="/assets/logo.png" class="h-10 w-auto object-contain" alt="CIBODY Logo">
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-900 to-indigo-600">
                     CIBODY AI <span class="text-sm text-slate-400 font-normal">v2.1 CRM</span>
@@ -398,7 +398,7 @@
 
         <!-- PATIENT PROFILE (Hasta Detayı) -->
         <div id="patientView" class="hidden">
-            <button onclick="showDashboard()" class="mb-6 text-slate-500 hover:text-indigo-900 font-medium transition">
+            <button onclick="showDashboard(true)" class="mb-6 text-slate-500 hover:text-indigo-900 font-medium transition">
                 <i class="fa-solid fa-arrow-left mr-2"></i> Tüm Kayıtlı Kişiler'e Dön
             </button>
 
@@ -1329,8 +1329,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js"></script>
-    <script src="app.js?v=9.9"></script>
+    <script src="auth.js?v=10.5"></script>
+    <script src="app.js?v=10.5"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -1456,12 +1456,12 @@
         </div>
     </div>
 </div>
-    <script src="scoliosis.js?v=9.8"></script>
+    <script src="scoliosis.js?v=10.5"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=10.1"></script>
+    <script src="simulation.js?v=10.5"></script>
 
 </body>
 </html>

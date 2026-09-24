@@ -10,12 +10,32 @@ function saveAuth(token, user) {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
-function getToken() { return localStorage.getItem(TOKEN_KEY); }
-function getUser()  { const u = localStorage.getItem(USER_KEY); return u ? JSON.parse(u) : null; }
+function getToken() { 
+    try {
+        const t = localStorage.getItem(TOKEN_KEY);
+        return (t && t !== 'undefined' && t !== 'null') ? t : null;
+    } catch(e) {
+        return null;
+    }
+}
+
+function getUser() { 
+    try {
+        const u = localStorage.getItem(USER_KEY); 
+        if (!u || u === 'undefined' || u === 'null') return null;
+        return JSON.parse(u); 
+    } catch(e) {
+        console.warn("Kullanıcı verisi ayrıştırılamadı:", e);
+        try { localStorage.removeItem(USER_KEY); } catch(_) {}
+        return null;
+    }
+}
 
 function clearAuth() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    try {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+    } catch(e) {}
 }
 
 function authHeaders() {
@@ -94,24 +114,33 @@ function afterLogin(role, name) {
 //  View Controller
 // ─────────────────────────────────────────────
 function showLoginView() {
-    document.getElementById('loginView').classList.remove('hidden');
-    document.getElementById('appView').classList.add('hidden');
-    document.getElementById('adminView').classList.add('hidden');
+    const login = document.getElementById('loginView');
+    const app = document.getElementById('appView');
+    const admin = document.getElementById('adminView');
+    if (login) login.classList.remove('hidden');
+    if (app) app.classList.add('hidden');
+    if (admin) admin.classList.add('hidden');
 }
 
 function showAppView() {
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('appView').classList.remove('hidden');
-    document.getElementById('adminView').classList.add('hidden');
+    const login = document.getElementById('loginView');
+    const app = document.getElementById('appView');
+    const admin = document.getElementById('adminView');
+    if (login) login.classList.add('hidden');
+    if (app) app.classList.remove('hidden');
+    if (admin) admin.classList.add('hidden');
 }
 
 function showAdminView(name) {
-    document.getElementById('loginView').classList.add('hidden');
-    document.getElementById('appView').classList.add('hidden');
-    document.getElementById('adminView').classList.remove('hidden');
+    const login = document.getElementById('loginView');
+    const app = document.getElementById('appView');
+    const admin = document.getElementById('adminView');
+    if (login) login.classList.add('hidden');
+    if (app) app.classList.add('hidden');
+    if (admin) admin.classList.remove('hidden');
     const el = document.getElementById('adminWelcomeName');
     if (el) el.textContent = name;
-    loadAdminDashboard();
+    if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
 }
 
 // ─────────────────────────────────────────────
@@ -266,17 +295,45 @@ async function deleteTherapist(id) {
 // ─────────────────────────────────────────────
 //  Uygulama Başlangıcı
 // ─────────────────────────────────────────────
+let appInitialized = false;
+
 function initApp() {
-    const token = getToken();
-    const user  = getUser();
-    if (!token || !user) {
-        showLoginView();
-        return;
+    if (appInitialized) return;
+    try {
+        const token = getToken();
+        const user  = getUser();
+        if (!token || !user) {
+            clearAuth();
+            showLoginView();
+            appInitialized = true;
+            return;
+        }
+        // Token var — direkt role göre yönlendir
+        if (user.role === 'superadmin') {
+            showAdminView(user.name);
+        } else {
+            if (typeof showDashboard === 'function') {
+                showDashboard(false);
+            } else {
+                showAppView();
+            }
+        }
+        appInitialized = true;
+    } catch (err) {
+        console.error("initApp hatası, login ekranına dönülüyor:", err);
+        try {
+            showLoginView();
+        } catch (_) {
+            const login = document.getElementById('loginView');
+            if (login) login.classList.remove('hidden');
+        }
+        appInitialized = true;
     }
-    // Token var — direkt role göre yönlendir
-    if (user.role === 'superadmin') {
-        showAdminView(user.name);
-    } else {
-        showDashboard();
-    }
+}
+
+// Hem DOMContentLoaded hem onload ile garantile (erken render)
+if (document.readyState === 'interactive' || document.readyState === 'complete') {
+    initApp();
+} else {
+    document.addEventListener('DOMContentLoaded', initApp);
 }

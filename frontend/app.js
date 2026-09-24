@@ -31,92 +31,133 @@ const FOOT_RISK_DATA = {
 };
 
 let currentPatientId = null;
+let currentSpineAnalysisId = null;
+let currentSpineHistory = [];
 let isDragging = false;
 let draggedPointKey = null;
 let currentDragView = null;
 
 // GÖRÜNÜM KONTROLLERİ
-function showDashboard() {
-    sessionStorage.removeItem('cibody_active_patient_id');
-    sessionStorage.removeItem('cibody_active_tab');
-    currentPatientId = null;
-    currentSpineAnalysisId = null;
-    showAppView();
-    const user = getUser();
-    // Update nav username
-    const navUserName = document.getElementById('navUserName');
-    if(navUserName && user && user.name) navUserName.textContent = user.name;
-    if(user) {
-        const nameEl = document.getElementById('navCurrentUser');
-        if(nameEl) nameEl.textContent = user.name;
+function showDashboard(clearActive = false) {
+    try {
+        if (clearActive) {
+            sessionStorage.removeItem('cibody_active_patient_id');
+            sessionStorage.removeItem('cibody_active_tab');
+            currentPatientId = null;
+            currentSpineAnalysisId = null;
+        }
+        showAppView();
+        const user = getUser();
+        // Update nav username
+        const navUserName = document.getElementById('navUserName');
+        if(navUserName && user && user.name) navUserName.textContent = user.name;
+        if(user) {
+            const nameEl = document.getElementById('navCurrentUser');
+            if(nameEl) nameEl.textContent = user.name;
+        }
+        const dashView = document.getElementById('dashboardView');
+        if (dashView) dashView.classList.remove('hidden');
+        const patView = document.getElementById('patientView');
+        if (patView) patView.classList.add('hidden');
+        
+        // Hide all extra tabs
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'].forEach(t => { 
+            const el = document.getElementById(t); 
+            if(el) el.classList.add('hidden'); 
+        });
+        const navP = document.getElementById('navPatientName');
+        if (navP) navP.classList.add('hidden');
+        fetchPatients();
+    } catch(err) {
+        console.error("showDashboard error:", err);
+        showAppView();
+        const dashView = document.getElementById('dashboardView');
+        if (dashView) dashView.classList.remove('hidden');
     }
-    document.getElementById('dashboardView').classList.remove('hidden');
-    document.getElementById('patientView').classList.add('hidden');
-    // Hide all extra tabs
-    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab'].forEach(t => { const el = document.getElementById(t); if(el) el.classList.add('hidden'); });
-    document.getElementById('navPatientName').classList.add('hidden');
-    fetchPatients();
 }
 
 function showPatient(patientId, patientName, patientAge, patientWeight, patientGender, patientPhone) {
-    currentPatientId = patientId;
-    sessionStorage.setItem('cibody_active_patient_id', patientId);
-    sessionStorage.setItem('cibody_active_patient_name', patientName);
-    sessionStorage.setItem('cibody_active_patient_age', patientAge);
-    sessionStorage.setItem('cibody_active_patient_weight', patientWeight);
-    sessionStorage.setItem('cibody_active_patient_gender', patientGender);
-    sessionStorage.setItem('cibody_active_patient_phone', patientPhone || '');
+    try {
+        currentPatientId = patientId;
+        sessionStorage.setItem('cibody_active_patient_id', patientId);
+        sessionStorage.setItem('cibody_active_patient_name', patientName);
+        sessionStorage.setItem('cibody_active_patient_age', patientAge);
+        sessionStorage.setItem('cibody_active_patient_weight', patientWeight);
+        sessionStorage.setItem('cibody_active_patient_gender', patientGender);
+        sessionStorage.setItem('cibody_active_patient_phone', patientPhone || '');
 
-    document.getElementById('dashboardView').classList.add('hidden');
-    document.getElementById('patientView').classList.remove('hidden');
-    document.getElementById('navPatientName').classList.remove('hidden');
-    document.getElementById('navPatientName').innerText = patientName;
-    globalPatientInfo = { name: patientName, age: patientAge, weight: patientWeight, gender: patientGender, phone: patientPhone };
-    
-    document.getElementById('detailName').innerText = patientName;
-    const maskedPhone = patientPhone ? patientPhone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "Yok";
-    document.getElementById('detailInfo').innerText = `Yaş: ${patientAge} | Kilo: ${patientWeight}kg | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
-    
-    const targetTab = sessionStorage.getItem('cibody_active_tab') || 'postureTab';
-    switchTab(targetTab);
-    loadPatientData(patientId);
-    if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
-    if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
-    if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
+        const dashView = document.getElementById('dashboardView');
+        if (dashView) dashView.classList.add('hidden');
+        const patView = document.getElementById('patientView');
+        if (patView) patView.classList.remove('hidden');
+        const navP = document.getElementById('navPatientName');
+        if (navP) {
+            navP.classList.remove('hidden');
+            navP.innerText = patientName;
+        }
+        globalPatientInfo = { name: patientName, age: patientAge, weight: patientWeight, gender: patientGender, phone: patientPhone };
+        
+        const dName = document.getElementById('detailName');
+        if (dName) dName.innerText = patientName;
+        const maskedPhone = patientPhone ? patientPhone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "Yok";
+        const dInfo = document.getElementById('detailInfo');
+        if (dInfo) dInfo.innerText = `Yaş: ${patientAge} | Kilo: ${patientWeight}kg | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
+        
+        const targetTab = sessionStorage.getItem('cibody_active_tab') || 'postureTab';
+        switchTab(targetTab);
+        loadPatientData(patientId);
+        if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
+        if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
+        if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
+    } catch(err) {
+        console.error("showPatient error:", err);
+    }
 }
 
 function switchTab(tabId) {
-    // Hide all tabs
-    const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'];
-    tabs.forEach(t => {
-        const el = document.getElementById(t);
-        if (el) el.classList.add('hidden');
-    });
-    
-    // Remove active styles from ALL buttons
-    const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab'];
-    btns.forEach(b => {
-        const el = document.getElementById(b);
-        if (el) {
-            el.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-            el.style.borderBottomColor = 'transparent';
+    try {
+        // Hide all tabs
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'];
+        tabs.forEach(t => {
+            const el = document.getElementById(t);
+            if (el) el.classList.add('hidden');
+        });
+        
+        // Remove active styles from ALL buttons
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab'];
+        btns.forEach(b => {
+            const el = document.getElementById(b);
+            if (el) {
+                el.classList.remove('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+                el.style.borderBottomColor = 'transparent';
+            }
+        });
+        
+        // Show selected tab and set button active
+        const activeTab = document.getElementById(tabId);
+        if(activeTab) activeTab.classList.remove('hidden');
+        
+        const activeBtn = document.getElementById('btn_' + tabId);
+        if(activeBtn) {
+            activeBtn.classList.add('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
+            activeBtn.style.borderBottomColor = '#4f46e5';
         }
-    });
-    
-    // Show selected tab and set button active
-    const activeTab = document.getElementById(tabId);
-    if(activeTab) activeTab.classList.remove('hidden');
-    
-    const activeBtn = document.getElementById('btn_' + tabId);
-    if(activeBtn) {
-        activeBtn.classList.add('active', 'border-b-2', 'border-indigo-600', 'text-indigo-600');
-        activeBtn.style.borderBottomColor = '#4f46e5';
-    }
-    
-    // If switching to simulation, we might need to trigger resize for canvas
-    if(tabId === 'simulationTab') {
-        if(window.resizeSimulation) setTimeout(() => window.resizeSimulation(), 100);
-        if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
+
+        sessionStorage.setItem('cibody_active_tab', tabId);
+
+        // Tab-specific loading
+        if(tabId === 'scoliometerTab' && currentPatientId) {
+            if(typeof loadScoliometerHistory === 'function') loadScoliometerHistory(currentPatientId);
+        }
+        if(tabId === 'spineTab' && currentPatientId) {
+            if(typeof loadSpineHistory === 'function') loadSpineHistory(currentPatientId, true);
+        }
+        if(tabId === 'simulationTab') {
+            if(window.resizeSimulation) setTimeout(() => window.resizeSimulation(), 100);
+            if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
+        }
+    } catch(err) {
+        console.error("switchTab error:", err);
     }
 }
 
@@ -1194,9 +1235,6 @@ function spinePreview(input, previewId, placeholderId) {
     };
     reader.readAsDataURL(input.files[0]);
 }
-
-let currentSpineHistory = [];
-let currentSpineAnalysisId = null;
 
 async function runSpineAnalysis() {
     if (!currentPatientId) {
@@ -2553,17 +2591,4 @@ async function loadScoliometerHistory(patientId) {
             }
         }
     } catch(e) { console.error(e); }
-}
-
-// Attach to global tab switcher to load history when tab opens
-const _oldSwitchTab = switchTab;
-switchTab = function(tabId) {
-    _oldSwitchTab(tabId);
-    sessionStorage.setItem('cibody_active_tab', tabId);
-    if(tabId === 'scoliometerTab' && currentPatientId) {
-        loadScoliometerHistory(currentPatientId);
-    }
-    if(tabId === 'spineTab' && currentPatientId) {
-        loadSpineHistory(currentPatientId, true);
-    }
 }
