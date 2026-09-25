@@ -17,7 +17,7 @@ function initSimulation() {
     simCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
     simCamera.position.set(0, 5, 55);
     
-    simRenderer = new THREE.WebGLRenderer({ canvas: container, antialias: true });
+    simRenderer = new THREE.WebGLRenderer({ canvas: container, antialias: true, preserveDrawingBuffer: true });
     simRenderer.setSize(container.clientWidth, container.clientHeight);
     simRenderer.shadowMap.enabled = true;
     

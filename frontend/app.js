@@ -1864,6 +1864,82 @@ async function addPrescribed(exerciseId) {
 }
 
 // PDF & QR FUNCTIONS
+
+function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik Analiz Raporu") {
+    const totalPages = pdf.internal.getNumberOfPages();
+    const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
+    
+    let pName = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.name) 
+        ? globalPatientInfo.name 
+        : (document.getElementById('navPatientName') ? document.getElementById('navPatientName').innerText : 'Hasta');
+    const trMap = {'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'};
+    if (pName) pName = pName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
+    const patientAge = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-';
+    const patientWeight = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-';
+    const dateStr = new Date().toLocaleDateString('tr-TR');
+    
+    let currentUserName = "Uzman";
+    let currentUserEmail = "";
+    let currentUserPhone = "";
+    try {
+        const storedUser = localStorage.getItem('cibody_user');
+        if(storedUser) {
+            const parsed = JSON.parse(storedUser);
+            currentUserName = parsed.name || "Uzman";
+            currentUserEmail = parsed.email || "";
+            currentUserPhone = parsed.phone || "";
+            if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
+        }
+    } catch(e) {}
+
+    for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        
+        // --- HEADER ---
+        pdf.setFillColor(30, 27, 75); // indigo-950
+        pdf.rect(0, 0, pageWidth, 0.55, 'F');
+        
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text("CIBODY AI", 0.3, 0.25);
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(199, 210, 254); // indigo-200
+        pdf.text(reportSubtitle, 0.3, 0.42);
+        
+        // Right Side Header (Patient)
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(pName, pageWidth - 0.3, 0.25, { align: 'right' });
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(199, 210, 254); // indigo-200
+        pdf.text(`Yas: ${patientAge}  |  Kilo: ${patientWeight} kg  |  Tarih: ${dateStr}`, pageWidth - 0.3, 0.42, { align: 'right' });
+        
+        // --- FOOTER ---
+        pdf.setFillColor(248, 250, 252); // slate-50
+        pdf.rect(0, pageHeight - 0.4, pageWidth, 0.4, 'F');
+        
+        pdf.setDrawColor(203, 213, 225); // slate-300
+        pdf.setLineWidth(0.01);
+        pdf.line(0, pageHeight - 0.4, pageWidth, pageHeight - 0.4);
+        
+        pdf.setTextColor(100, 116, 139); // slate-500
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
+        
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
+    }
+}
+window.applyCibodyPdfHeaderFooter = applyCibodyPdfHeaderFooter;
+
 function downloadPdf() {
     const element = document.getElementById('postureTab');
     
@@ -1893,84 +1969,15 @@ function downloadPdf() {
 
     const opt = {
       margin:       [0.60, 0.3, 0.5, 0.3],
-      filename:     `postur_raporu_${currentPatientId}.pdf`,
+      filename:     `postur_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
       html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    // User Data for Header/Footer
-    let pName = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo) ? globalPatientInfo.name : (document.getElementById('navPatientName').innerText || 'Hasta');
-    const trMap = {'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'};
-    if (pName) pName = pName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
-    const patientAge = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-';
-    const patientWeight = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-';
-    const dateStr = new Date().toLocaleDateString('tr-TR');
-    
-    let currentUserName = "Uzman";
-    let currentUserEmail = "";
-    let currentUserPhone = "";
-    try {
-        const storedUser = localStorage.getItem('cibody_user');
-        if(storedUser) {
-            const parsed = JSON.parse(storedUser);
-            currentUserName = parsed.name || "Uzman";
-            currentUserEmail = parsed.email || "";
-            currentUserPhone = parsed.phone || "";
-            if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
-        }
-    } catch(e) {}
-
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        const totalPages = pdf.internal.getNumberOfPages();
-        const pageWidth = pdf.internal.pageSize.width;
-        const pageHeight = pdf.internal.pageSize.height;
-        
-        for (let i = 1; i <= totalPages; i++) {
-            pdf.setPage(i);
-            
-            // --- HEADER ---
-            pdf.setFillColor(30, 27, 75); // indigo-950
-            pdf.rect(0, 0, pageWidth, 0.55, 'F');
-            
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(14);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("CIBODY AI", 0.3, 0.25);
-            
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(199, 210, 254); // indigo-200
-            pdf.text("Klinik Biyomekanik Analiz Raporu", 0.3, 0.42);
-            
-            // Right Side Header (Patient)
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(pName, pageWidth - 0.3, 0.25, { align: 'right' });
-            
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(199, 210, 254); // indigo-200
-            pdf.text(`Yas: ${patientAge}  |  Kilo: ${patientWeight} kg  |  Tarih: ${dateStr}`, pageWidth - 0.3, 0.42, { align: 'right' });
-            
-            // --- FOOTER ---
-            pdf.setFillColor(248, 250, 252); // slate-50
-            pdf.rect(0, pageHeight - 0.4, pageWidth, 0.4, 'F');
-            
-            pdf.setDrawColor(203, 213, 225); // slate-300
-            pdf.setLineWidth(0.01);
-            pdf.line(0, pageHeight - 0.4, pageWidth, pageHeight - 0.4);
-            
-            pdf.setTextColor(100, 116, 139); // slate-500
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
-        }
+        applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
     }).save().then(() => {
         // Restore DOM
         bStyles.forEach(item => item.el.style.display = item.display);
@@ -1978,6 +1985,355 @@ function downloadPdf() {
             notesEl.style.display = oldNotesDisplay;
             if(notesDiv) notesDiv.remove();
         }
+        showToast("Postür analizi PDF raporu indirildi.");
+    }).catch(err => {
+        console.error("Posture PDF error:", err);
+        bStyles.forEach(item => item.el.style.display = item.display);
+        if(notesEl) {
+            notesEl.style.display = oldNotesDisplay;
+            if(notesDiv) notesDiv.remove();
+        }
+        showToast("PDF oluşturulurken hata oluştu.");
+    });
+}
+
+function downloadSpinePdf() {
+    const section = document.getElementById('spineResultsSection');
+    if (!section || section.classList.contains('hidden')) {
+        showToast("Lütfen önce bir omurga analizi yapın veya geçmişten bir analiz seçin.");
+        return;
+    }
+
+    const buttonsToHide = section.querySelectorAll('button, [data-html2canvas-ignore]');
+    const bStyles = [];
+    buttonsToHide.forEach(el => {
+        bStyles.push({ el, display: el.style.display });
+        el.style.display = 'none';
+    });
+
+    const opt = {
+      margin:       [0.65, 0.3, 0.5, 0.3],
+      filename:     `omurga_raporu_${currentPatientId || 'hasta'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr', '.grid'] }
+    };
+
+    html2pdf().set(opt).from(section).toPdf().get('pdf').then(function(pdf) {
+        applyCibodyPdfHeaderFooter(pdf, "Klinik Omurga & Skolyoz Analiz Raporu");
+    }).save().then(() => {
+        bStyles.forEach(item => item.el.style.display = item.display);
+        showToast("Omurga analizi PDF raporu indirildi.");
+    }).catch(err => {
+        console.error("Spine PDF error:", err);
+        bStyles.forEach(item => item.el.style.display = item.display);
+        showToast("PDF oluşturulurken hata oluştu.");
+    });
+}
+
+function downloadScoliometerPdf() {
+    if (!currentPatientId) {
+        showToast("Lütfen bir hasta seçin.");
+        return;
+    }
+
+    const tbody = document.getElementById('scoliometerHistoryList');
+    const rows = tbody ? tbody.querySelectorAll('tr') : [];
+    const hasData = rows.length > 0 && !tbody.innerText.includes('Henüz ölçüm bulunmuyor');
+    
+    // Create an offscreen print-friendly container
+    const printContainer = document.createElement('div');
+    printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
+    printContainer.style.maxWidth = '800px';
+
+    let latestThoracic = "—";
+    let latestLumbar = "—";
+    let latestDate = "—";
+    if (hasData && rows[0]) {
+        const cells = rows[0].querySelectorAll('td');
+        if (cells.length >= 3) {
+            latestDate = cells[0].innerText.trim();
+            latestThoracic = cells[1].innerText.trim();
+            latestLumbar = cells[2].innerText.trim();
+        }
+    }
+
+    printContainer.innerHTML = `
+        <div class="mb-6 border-b border-slate-200 pb-4">
+            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen text-indigo-600"></i> Dijital Skolyometre (ATR) Ölçüm Raporu
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi</p>
+        </div>
+
+        <!-- Özet Kartlar -->
+        <div class="grid grid-cols-2 gap-4 mb-6 avoid-break">
+            <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 text-center">
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Son Torakal Açı (ATR)</span>
+                <span class="text-3xl font-black text-indigo-900 block">${latestThoracic}</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">Sırt (Göğüs) Omurgası Eğimi</span>
+            </div>
+            <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-center">
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Son Lumbar Açı (ATR)</span>
+                <span class="text-3xl font-black text-emerald-800 block">${latestLumbar}</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">Bel Omurgası Eğimi</span>
+            </div>
+        </div>
+
+        <!-- Klinik Rehber Kutusu -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 avoid-break">
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-indigo-500"></i> Klinik ATR Sınıflandırma Kriterleri
+            </h4>
+            <div class="grid grid-cols-3 gap-3 text-xs">
+                <div class="bg-white p-3 rounded-xl border border-slate-100">
+                    <span class="font-bold text-emerald-600 block mb-0.5">0° - 4° (Normal)</span>
+                    <p class="text-slate-500 text-[11px]">Fizyolojik asimetri. Rutin klinik takip yeterlidir.</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-100">
+                    <span class="font-bold text-amber-600 block mb-0.5">5° - 7° (Hafif Rotasyon)</span>
+                    <p class="text-slate-500 text-[11px]">Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.</p>
+                </div>
+                <div class="bg-white p-3 rounded-xl border border-slate-100">
+                    <span class="font-bold text-rose-600 block mb-0.5">≥ 7° - 10°+ (Belirgin)</span>
+                    <p class="text-slate-500 text-[11px]">Skolyoz şüphesi. Ayakta tüm omurga röntgeni (Cobb) önerilir.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geçmiş Tablosu -->
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6 avoid-break">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                <h4 class="text-xs font-black text-slate-700 uppercase">Ölçüm Geçmişi ve İzlem Kayıtları</h4>
+            </div>
+            <div class="p-2">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                        <tr>
+                            <th class="px-3 py-2.5">Ölçüm Tarihi</th>
+                            <th class="px-3 py-2.5 text-center">Torakal ATR</th>
+                            <th class="px-3 py-2.5 text-center">Lumbar ATR</th>
+                            <th class="px-3 py-2.5 text-center">Değerlendirme</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${hasData ? Array.from(rows).map(r => {
+                            const tds = r.querySelectorAll('td');
+                            if (tds.length < 3) return '';
+                            const tVal = parseFloat(tds[1].innerText) || 0;
+                            const lVal = parseFloat(tds[2].innerText) || 0;
+                            const maxVal = Math.max(tVal, lVal);
+                            const status = maxVal >= 7 ? '<span class="text-rose-600 font-bold">İleri İnceleme</span>' : (maxVal >= 5 ? '<span class="text-amber-600 font-bold">Takip & Egzersiz</span>' : '<span class="text-emerald-600 font-bold">Normal</span>');
+                            return `
+                                <tr>
+                                    <td class="px-3 py-2 font-medium text-slate-700">${tds[0].innerText}</td>
+                                    <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[1].innerHTML}</td>
+                                    <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[2].innerHTML}</td>
+                                    <td class="px-3 py-2 text-center">${status}</td>
+                                </tr>
+                            `;
+                        }).join('') : '<tr><td colspan="4" class="text-center py-6 text-slate-400">Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Klinik Not & İmza -->
+        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break flex justify-between items-end">
+            <div class="text-xs text-slate-500">
+                <p class="font-bold text-slate-700 mb-1">Uzman Klinik Takip Notu:</p>
+                <p>Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.</p>
+            </div>
+            <div class="text-right text-xs text-slate-400">
+                <p class="font-bold text-slate-700">Kaşe / İmza</p>
+                <div class="w-32 h-10 border-b border-dashed border-slate-300"></div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(printContainer);
+
+    const opt = {
+      margin:       [0.65, 0.3, 0.5, 0.3],
+      filename:     `skolyometre_raporu_${currentPatientId || 'hasta'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+    };
+
+    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
+        applyCibodyPdfHeaderFooter(pdf, "Dijital Skolyometre (ATR) Analiz Raporu");
+    }).save().then(() => {
+        printContainer.remove();
+        showToast("Skolyometre PDF raporu indirildi.");
+    }).catch(err => {
+        console.error("Scoliometer PDF error:", err);
+        printContainer.remove();
+        showToast("PDF oluşturulurken hata oluştu.");
+    });
+}
+
+function downloadSimulationPdf() {
+    if (!currentPatientId) {
+        showToast("Lütfen bir hasta seçin.");
+        return;
+    }
+
+    // Capture Three.js WebGL canvas snapshot
+    let simImgData = null;
+    const simCanvas = document.getElementById('simCanvas');
+    if (simCanvas) {
+        try {
+            if (typeof simRenderer !== 'undefined' && simRenderer && typeof simScene !== 'undefined' && typeof simCamera !== 'undefined') {
+                simRenderer.render(simScene, simCamera);
+            }
+            simImgData = simCanvas.toDataURL('image/png');
+        } catch(e) {
+            console.warn("Sim canvas snapshot error:", e);
+        }
+    }
+
+    const cobb = document.getElementById('sim_cobb') ? document.getElementById('sim_cobb').value : '0';
+    const rot = document.getElementById('sim_rot') ? document.getElementById('sim_rot').value : '0';
+    const torsion = document.getElementById('sim_torsion') ? document.getElementById('sim_torsion').value : '0';
+    const shift = document.getElementById('sim_shift') ? document.getElementById('sim_shift').value : '0';
+    
+    const startSel = document.getElementById('sim_start');
+    const endSel = document.getElementById('sim_end');
+    const startVertebra = startSel && startSel.selectedIndex >= 0 ? startSel.options[startSel.selectedIndex].text : 'C6';
+    const endVertebra = endSel && endSel.selectedIndex >= 0 ? endSel.options[endSel.selectedIndex].text : 'T9';
+    
+    const methodSel = document.getElementById('sim_method');
+    const method = methodSel ? methodSel.value : 'Nash-Moe Sınıflandırması';
+
+    const simTbody = document.getElementById('simHistoryList');
+    const simRows = simTbody ? simTbody.querySelectorAll('tr') : [];
+    const hasHistory = simRows.length > 0 && !simTbody.innerText.includes('Henüz kayıt bulunmuyor');
+
+    const printContainer = document.createElement('div');
+    printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
+    printContainer.style.maxWidth = '800px';
+
+    printContainer.innerHTML = `
+        <div class="mb-6 border-b border-slate-200 pb-4">
+            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
+                <i class="fa-solid fa-cube text-emerald-600"></i> 3D Omurga & Skolyoz Simülasyon Raporu
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli</p>
+        </div>
+
+        <!-- 3D Snapshot ve Parametreler (Yan Yana) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 avoid-break">
+            <!-- 3D Görsel -->
+            <div class="bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[340px]">
+                <span class="text-xs font-bold text-emerald-400 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-eye mr-1"></i> 3D Omurga Deformite Görünümü</span>
+                ${simImgData ? `<img src="${simImgData}" class="max-h-72 object-contain rounded-xl mx-auto shadow-md">` : '<div class="text-slate-500 text-sm py-12">Simülasyon modeli yüklenemedi</div>'}
+                <span class="text-[10px] text-slate-400 mt-2 block">${startVertebra} - ${endVertebra} Vertebra Segmenti</span>
+            </div>
+
+            <!-- Parametreler Tablosu / Kartları -->
+            <div class="flex flex-col justify-between space-y-3">
+                <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-center">
+                    <span class="text-xs font-bold text-slate-500 block uppercase">Cobb Açısı</span>
+                    <span class="text-3xl font-black text-indigo-900">${cobb}°</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">Rotasyon Açısı</span>
+                        <span class="text-xl font-black text-slate-800">${rot}°</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">Torsiyon Açısı</span>
+                        <span class="text-xl font-black text-slate-800">${torsion}°</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">Yana Kayma</span>
+                        <span class="text-xl font-black text-slate-800">${shift} mm</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">Eğrilik Segmenti</span>
+                        <span class="text-base font-black text-indigo-700">${startVertebra} - ${endVertebra}</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
+                    <span class="text-[11px] font-bold text-slate-500 block">Kullanılan Ölçüm Metodu</span>
+                    <span class="text-xs font-bold text-slate-700">${method}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simülasyon Geçmişi (Varsa) -->
+        ${hasHistory ? `
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6 avoid-break">
+            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                <h4 class="text-xs font-black text-slate-700 uppercase">Kayıtlı Simülasyon Geçmişi</h4>
+            </div>
+            <div class="p-2">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                        <tr>
+                            <th class="px-3 py-2">Tarih</th>
+                            <th class="px-3 py-2">Bölge</th>
+                            <th class="px-3 py-2 text-center">Cobb</th>
+                            <th class="px-3 py-2 text-center">Rotasyon</th>
+                            <th class="px-3 py-2 text-center">Torsiyon</th>
+                            <th class="px-3 py-2 text-center">Kayma</th>
+                            <th class="px-3 py-2">Yöntem</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${Array.from(simRows).slice(0, 5).map(r => {
+                            const cells = r.querySelectorAll('td');
+                            if (cells.length < 7) return '';
+                            return `
+                                <tr>
+                                    <td class="px-3 py-2 font-medium text-slate-700">${cells[0].innerText}</td>
+                                    <td class="px-3 py-2 font-bold text-indigo-700">${cells[1].innerText}</td>
+                                    <td class="px-3 py-2 text-center font-bold">${cells[2].innerText}</td>
+                                    <td class="px-3 py-2 text-center">${cells[3].innerText}</td>
+                                    <td class="px-3 py-2 text-center">${cells[4].innerText}</td>
+                                    <td class="px-3 py-2 text-center">${cells[5].innerText}</td>
+                                    <td class="px-3 py-2 text-slate-500">${cells[6].innerText}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- Klinik Açıklama Notu -->
+        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break text-xs text-slate-600 leading-relaxed">
+            <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-notes-medical text-indigo-500 mr-1"></i> Biyomekanik Simülasyon Bilgisi:</p>
+            <p>Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.</p>
+        </div>
+    `;
+
+    document.body.appendChild(printContainer);
+
+    const opt = {
+      margin:       [0.65, 0.3, 0.5, 0.3],
+      filename:     `simulasyon_raporu_${currentPatientId || 'hasta'}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+    };
+
+    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
+        applyCibodyPdfHeaderFooter(pdf, "3D Omurga Simülasyon Raporu");
+    }).save().then(() => {
+        printContainer.remove();
+        showToast("3D simülasyon PDF raporu indirildi.");
+    }).catch(err => {
+        console.error("Simulation PDF error:", err);
+        printContainer.remove();
+        showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 

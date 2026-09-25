@@ -424,9 +424,154 @@ function showScoliosisQr() {
 }
 
 function downloadScoliosisPdf() {
-    if(!window.currentScoliosisId) { alert("Lütfen bir analiz seçin."); return; }
-    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + '&download=1';
-    window.open(publicUrl, '_blank');
+    const preview = document.getElementById('scoliosisPreview');
+    const canvas = document.getElementById('scoliosisCanvas');
+    const hasImage = preview && preview.src && !preview.classList.contains('hidden');
+
+    if (!window.currentScoliosisId && !hasImage) {
+        if (typeof showToast === 'function') {
+            showToast("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin.");
+        } else {
+            alert("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin.");
+        }
+        return;
+    }
+
+    // Build composite X-ray image with Cobb lines
+    let compositeImgData = null;
+    if (hasImage) {
+        try {
+            const compCanvas = document.createElement('canvas');
+            const naturalW = preview.naturalWidth || canvas.width || 800;
+            const naturalH = preview.naturalHeight || canvas.height || 1000;
+            compCanvas.width = naturalW;
+            compCanvas.height = naturalH;
+            const ctx = compCanvas.getContext('2d');
+            
+            ctx.drawImage(preview, 0, 0, naturalW, naturalH);
+            if (canvas && !canvas.classList.contains('hidden') && canvas.width > 0 && canvas.height > 0) {
+                ctx.drawImage(canvas, 0, 0, naturalW, naturalH);
+            }
+            compositeImgData = compCanvas.toDataURL('image/jpeg', 0.95);
+        } catch(e) {
+            console.warn("Composite canvas error, fallback to preview:", e);
+            compositeImgData = preview.src;
+        }
+    }
+
+    const cobb = document.getElementById('scoliosisCobbAngle')?.innerText || '0';
+    const severity = document.getElementById('scoliosisSeverity')?.innerText || 'Bekleniyor...';
+    const notes = document.getElementById('scoliosisNotes')?.value.trim() || 'Klinik not girilmemiş.';
+    
+    const aiReportEl = document.getElementById('scoliosisAiReport');
+    const exerciseReportEl = document.getElementById('scoliosisExerciseReport');
+    let aiText = '';
+    if (aiReportEl && aiReportEl.innerText && !aiReportEl.innerText.includes('Analiz yapıldığında')) {
+        aiText += aiReportEl.innerText + '\n\n';
+    }
+    if (exerciseReportEl && exerciseReportEl.innerText && !exerciseReportEl.innerText.includes('Hastaya özel egzersizler')) {
+        aiText += exerciseReportEl.innerText;
+    }
+
+    const printContainer = document.createElement('div');
+    printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
+    printContainer.style.maxWidth = '800px';
+
+    printContainer.innerHTML = `
+        <div class="mb-6 border-b border-slate-200 pb-4">
+            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
+                <i class="fa-solid fa-x-ray text-indigo-600"></i> Skolyoz Cobb Açısı Analiz Raporu
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Spinal Eğrilik & Radyolojik Cobb Açısı Ölçüm Değerlendirmesi</p>
+        </div>
+
+        <!-- Cobb Değerlendirme Kartı & Röntgen Görseli -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 avoid-break">
+            <!-- Röntgen ve Çizimler -->
+            <div class="bg-black/95 rounded-2xl p-3 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[360px]">
+                <span class="text-xs font-bold text-slate-300 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-x-ray mr-1"></i> İşaretli Röntgen (X-Ray)</span>
+                ${compositeImgData ? `<img src="${compositeImgData}" class="max-h-80 object-contain rounded-xl mx-auto shadow-md">` : '<div class="text-slate-400 text-sm py-12">Röntgen görüntüsü yüklenemedi</div>'}
+                <span class="text-[10px] text-slate-400 mt-2 block">4 Noktalı Dijital Cobb Açı Çizimi</span>
+            </div>
+
+            <!-- Cobb Metrikleri & Klinik Sınıflandırma -->
+            <div class="flex flex-col justify-between space-y-4">
+                <div class="bg-gradient-to-br from-indigo-900 to-indigo-700 text-white rounded-2xl p-6 text-center shadow-sm">
+                    <span class="text-xs font-bold text-indigo-200 uppercase tracking-wider block mb-1">Hesaplanan Cobb Açısı</span>
+                    <span class="text-5xl font-black block my-2">${cobb}°</span>
+                    <span class="inline-block bg-white/20 text-white font-bold text-sm px-4 py-1.5 rounded-full backdrop-blur-sm mt-1">${severity}</span>
+                </div>
+
+                <!-- Klinik Standartlar -->
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs">
+                    <span class="font-bold text-slate-700 block mb-2 uppercase tracking-wider"><i class="fa-solid fa-ruler mr-1 text-indigo-500"></i> Cobb Skolyoz Derecelendirme Skalası:</span>
+                    <ul class="space-y-1.5 text-slate-600">
+                        <li><b class="text-emerald-700">0° - 10°:</b> Normal / Spinal Asimetri (Skolyoz kabul edilmez)</li>
+                        <li><b class="text-indigo-700">10° - 25°:</b> Hafif Skolyoz (Fizyoterapi & Schroth egzersizleri)</li>
+                        <li><b class="text-amber-700">25° - 40°:</b> Orta Şiddetli Skolyoz (Korse & yoğun egzersiz)</li>
+                        <li><b class="text-rose-700">≥ 40°+:</b> İleri Skolyoz (Ortopedik & cerrahi konsültasyon)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Uzman Klinik Notları -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 avoid-break">
+            <h4 class="text-xs font-black text-slate-700 uppercase mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-clipboard-user text-indigo-600"></i> Uzman Klinik Notları ve Tedavi Planı
+            </h4>
+            <p class="text-xs text-slate-600 whitespace-pre-wrap bg-slate-50 p-3 rounded-xl border border-slate-100">${notes}</p>
+        </div>
+
+        <!-- AI Klinik & Egzersiz Değerlendirmesi (Varsa) -->
+        ${aiText.trim() ? `
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 avoid-break">
+            <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-1.5">
+                <i class="fa-solid fa-person-running text-emerald-600"></i> CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri
+            </h4>
+            <div class="text-xs text-slate-700 leading-relaxed space-y-2">
+                ${typeof marked !== 'undefined' ? marked.parse(aiText) : '<pre class="whitespace-pre-wrap">' + aiText + '</pre>'}
+            </div>
+        </div>
+        ` : ''}
+
+        <!-- İmza Alanı -->
+        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break flex justify-between items-end">
+            <div class="text-xs text-slate-500">
+                <p class="font-bold text-slate-700 mb-1">Radyolojik Cobb Ölçüm Raporu</p>
+                <p>Standart Cobb açısı hesaplama algoritmasına göre dijital ortamda üretilmiştir.</p>
+            </div>
+            <div class="text-right text-xs text-slate-400">
+                <p class="font-bold text-slate-700">Uzman Kaşe / İmza</p>
+                <div class="w-32 h-10 border-b border-dashed border-slate-300"></div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(printContainer);
+
+    const currentPid = (typeof currentPatientId !== 'undefined' && currentPatientId) ? currentPatientId : 'hasta';
+    const opt = {
+      margin:       [0.65, 0.3, 0.5, 0.3],
+      filename:     `skolyoz_cobb_raporu_${currentPid}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+    };
+
+    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
+        if (typeof applyCibodyPdfHeaderFooter === 'function') {
+            applyCibodyPdfHeaderFooter(pdf, "Skolyoz Cobb Açısı Analiz Raporu");
+        }
+    }).save().then(() => {
+        printContainer.remove();
+        if (typeof showToast === 'function') showToast("Skolyoz Cobb PDF raporu indirildi.");
+    }).catch(err => {
+        console.error("Scoliosis PDF error:", err);
+        printContainer.remove();
+        if (typeof showToast === 'function') showToast("PDF oluşturulurken hata oluştu.");
+    });
 }
 
 

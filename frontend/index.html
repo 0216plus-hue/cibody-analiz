@@ -20,7 +20,7 @@
         #footReportContent ul { margin: 0 0 1.5rem 1.5rem; list-style-type: disc; }
         #footReportContent li { margin-bottom: 0.5rem; }
         #footReportContent strong { color: #0f172a; }
-
+        .avoid-break { page-break-inside: avoid; break-inside: avoid; }
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -835,11 +835,16 @@
                     <div id="spineResultsSection" class="hidden mt-8">
 
                         <!-- Başlık -->
-                        <div class="flex items-center justify-between mb-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                             <h3 class="text-2xl font-black text-slate-800">
                                 <i class="fa-solid fa-bone mr-2 text-indigo-600"></i>Klinik Omurga Analiz Raporu
                             </h3>
-                            <span id="spineAnalysisDate" class="text-sm text-slate-400 font-medium"></span>
+                            <div class="flex items-center gap-3">
+                                <span id="spineAnalysisDate" class="text-sm text-slate-400 font-medium"></span>
+                                <button onclick="downloadSpinePdf()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm" data-html2canvas-ignore="true">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF Raporu İndir
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Görseller (Varsa) -->
@@ -1081,10 +1086,13 @@
                     </div>
                     
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 border-b border-slate-200 p-4">
+                        <div class="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
                             <h3 class="font-black text-slate-800 flex items-center gap-2">
                                 <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Ölçüm Geçmişi
                             </h3>
+                            <button onclick="downloadScoliometerPdf()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 text-sm" data-html2canvas-ignore="true">
+                                <i class="fa-solid fa-file-pdf"></i> PDF Raporu İndir
+                            </button>
                         </div>
                         <div class="p-4">
                             <table class="w-full text-sm text-left">
@@ -1208,10 +1216,13 @@
                                     </div>
                                 </div>
 
-                                <!-- Pinned Save Button at the Bottom -->
-                                <div class="pt-3 mt-2 border-t border-slate-700/60 flex-shrink-0">
-                                    <button onclick="saveSimulationRecord()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 text-sm">
+                                <!-- Pinned Action Buttons at the Bottom -->
+                                <div class="pt-3 mt-2 border-t border-slate-700/60 flex-shrink-0 flex gap-2">
+                                    <button onclick="saveSimulationRecord()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-1.5 text-xs">
                                         <i class="fa-solid fa-floppy-disk"></i> Analizi Kaydet
+                                    </button>
+                                    <button onclick="downloadSimulationPdf()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-1.5 text-xs" data-html2canvas-ignore="true">
+                                        <i class="fa-solid fa-file-pdf"></i> PDF İndir
                                     </button>
                                 </div>
                             </div>
@@ -1220,10 +1231,13 @@
 
                     <!-- Simülasyon Geçmişi -->
                     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mt-6 mb-8">
-                        <div class="bg-slate-50 border-b border-slate-200 p-4">
+                        <div class="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap items-center justify-between gap-3">
                             <h3 class="font-black text-slate-800 flex items-center gap-2">
                                 <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Simülasyon Geçmişi
                             </h3>
+                            <button onclick="downloadSimulationPdf()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 text-sm" data-html2canvas-ignore="true">
+                                <i class="fa-solid fa-file-pdf"></i> PDF Raporu İndir
+                            </button>
                         </div>
                         <div class="p-4">
                             <table class="w-full text-sm text-left">
@@ -1329,8 +1343,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=10.5"></script>
-    <script src="app.js?v=10.5"></script>
+    <script src="auth.js?v=10.6"></script>
+    <script src="app.js?v=10.6"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -1456,12 +1470,12 @@
         </div>
     </div>
 </div>
-    <script src="scoliosis.js?v=10.5"></script>
+    <script src="scoliosis.js?v=10.6"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=10.5"></script>
+    <script src="simulation.js?v=10.6"></script>
 
 </body>
 </html>
