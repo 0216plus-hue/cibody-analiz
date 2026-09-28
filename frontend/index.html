@@ -1262,54 +1262,71 @@
                 </div>
 
 <div id="footTab" class="hidden">
+<div id="footTab" class="hidden">
     <style>
-        #footTab .foot-header { text-align: center; margin-bottom: 20px; }
-        #footTab .foot-header h1 { margin: 0; color: #1e293b; font-size: 28px; letter-spacing: 2px;}
-        #footTab .foot-header p { margin: 5px 0 0 0; color: #10b981; font-size: 14px;}
-        
-        #footTab .foot-container { display: flex; justify-content: center; gap: 40px; align-items: flex-start; max-width: 1100px; margin: auto; padding: 20px; }
-        #footTab .canvas-container { position: relative; border: 2px solid #333; background: #000; box-shadow: 0 4px 30px rgba(0,255,255,0.2); border-radius: 10px; overflow: hidden; }
-        #footTab canvas { display: block; }
-        
-        #footTab .stats-container { background: #1e293b; padding: 25px; border-radius: 10px; width: 400px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);}
-        #footTab .stat-box { background: #334155; padding: 20px; border-radius: 8px; border: 1px solid #475569; }
-        #footTab .stat-title { font-size: 16px; color: #f1f5f9; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-align: center; font-weight: bold;}
-        
-        #footTab .bar-bg { background: #0f172a; height: 35px; border-radius: 5px; overflow: hidden; position: relative; display: flex; margin-bottom: 10px;}
-        #footTab .bar-left { background: linear-gradient(90deg, #2196F3, #00BCD4); height: 100%; display: flex; align-items: center; padding-left: 15px; font-weight: bold; transition: width 0.2s; color: white;}
-        #footTab .bar-right { background: linear-gradient(90deg, #4CAF50, #8BC34A); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: bold; transition: width 0.2s; color: white;}
-        #footTab .bar-top { background: linear-gradient(90deg, #9C27B0, #E91E63); height: 100%; display: flex; align-items: center; padding-left: 15px; font-weight: bold; transition: width 0.2s; color: white;}
-        #footTab .bar-bottom { background: linear-gradient(90deg, #FF9800, #FFC107); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: bold; transition: width 0.2s; color: white;}
-        #footTab .center-line { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 2px; background: rgba(255,255,255,0.5); z-index: 10;}
+        /* Sadece bar animasyonları ve canvas için minimal CSS */
+        #footTab .bar-left { background: linear-gradient(90deg, #3b82f6, #06b6d4); transition: width 0.2s ease-out; }
+        #footTab .bar-right { background: linear-gradient(90deg, #10b981, #84cc16); transition: width 0.2s ease-out; }
+        #footTab .bar-top { background: linear-gradient(90deg, #8b5cf6, #ec4899); transition: width 0.2s ease-out; }
+        #footTab .bar-bottom { background: linear-gradient(90deg, #f59e0b, #eab308); transition: width 0.2s ease-out; }
     </style>
     
-    <div class="foot-header">
-        <h1>CIBODY DİJİTAL ANALİZ</h1>
-        <p>V2 - Tıbbi Teşhis (A-B-C), Yürüyüş Ekseni & Otomatik Sabitleme</p>
-    </div>
-    
-    <div class="foot-container">
-        <div class="canvas-container">
-            <canvas id="foot_analysis_canvas" width="480" height="480"></canvas>
+    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-6">
+        <!-- Canvas Alanı -->
+        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto lg:mx-0">
+            <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
+            <div class="absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
+                <i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI
+            </div>
         </div>
         
-        <div class="stats-container">
-            <div class="stat-box">
-                <div class="stat-title">Sol / Sağ Dağılımı</div>
-                <div class="bar-bg">
-                    <div class="center-line"></div>
-                    <div id="barL" class="bar-left" style="width:50%">Sol %50</div>
-                    <div id="barR" class="bar-right" style="width:50%">Sağ %50</div>
+        <!-- İstatistikler -->
+        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0">
+            
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center"><i class="fa-solid fa-scale-balanced mr-2"></i>Sol / Sağ Dağılımı</h4>
+                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50">
+                    <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
+                    <div id="barL" class="bar-left h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sol %50</div>
+                    <div id="barR" class="bar-right h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sağ %50</div>
                 </div>
             </div>
-            <div class="stat-box">
-                <div class="stat-title">Ön / Arka Dağılımı</div>
-                <div class="bar-bg">
-                    <div class="center-line"></div>
-                    <div id="barT" class="bar-top" style="width:30%">Ön %30</div>
-                    <div id="barB" class="bar-bottom" style="width:70%">Arka %70</div>
+
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center"><i class="fa-solid fa-arrows-up-down mr-2"></i>Ön / Arka Dağılımı</h4>
+                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50">
+                    <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
+                    <div id="barT" class="bar-top h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:30%">Ön %30</div>
+                    <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:70%">Arka %70</div>
                 </div>
             </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Sol Ayak</h4>
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-3 text-center">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1">CLARKE AÇISI</div>
+                        <div id="val_left_clarke" class="text-xl font-black text-indigo-900">-°</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1">ARK İNDEKSİ</div>
+                        <div id="val_left_arch" class="text-xl font-black text-emerald-600">-</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Sağ Ayak</h4>
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-3 text-center">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1">CLARKE AÇISI</div>
+                        <div id="val_right_clarke" class="text-xl font-black text-indigo-900">-°</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
+                        <div class="text-[10px] text-slate-500 font-bold mb-1">ARK İNDEKSİ</div>
+                        <div id="val_right_arch" class="text-xl font-black text-emerald-600">-</div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -1523,15 +1540,27 @@
                     return ((archP / totalP) * 100).toFixed(2);
                 }
 
+                let leftClarke = "-", leftArch = "-", rightClarke = "-", rightArch = "-";
+
                 ctx.fillStyle = "#0f0"; ctx.font = "bold 14px Arial";
                 if(lmK) {
-                    ctx.fillText(`Sol Clarke: ${calcClarke(lmK)}°`, 20, 30);
-                    ctx.fillText(`Ark İnd.: ${calcArchIndex(ptsL)}`, 20, 50);
+                    leftClarke = calcClarke(lmK);
+                    leftArch = calcArchIndex(ptsL);
+                    ctx.fillText(`Sol Clarke: ${leftClarke}°`, 20, 30);
+                    ctx.fillText(`Ark İnd.: ${leftArch}`, 20, 50);
                 }
                 if(lmR) {
-                    ctx.fillText(`Sağ Clarke: ${calcClarke(lmR)}°`, 320, 30);
-                    ctx.fillText(`Ark İnd.: ${calcArchIndex(ptsR)}`, 320, 50);
+                    rightClarke = calcClarke(lmR);
+                    rightArch = calcArchIndex(ptsR);
+                    ctx.fillText(`Sağ Clarke: ${rightClarke}°`, 320, 30);
+                    ctx.fillText(`Ark İnd.: ${rightArch}`, 320, 50);
                 }
+
+                // Dinamik olarak HTML elementlerini güncelle
+                document.getElementById('val_left_clarke').innerText = leftClarke !== "-" ? leftClarke + "°" : "-°";
+                document.getElementById('val_left_arch').innerText = leftArch;
+                document.getElementById('val_right_clarke').innerText = rightClarke !== "-" ? rightClarke + "°" : "-°";
+                document.getElementById('val_right_arch').innerText = rightArch;
 
                 // GENEL AĞIRLIK MERKEZİ
                 if (totalP > 0) {
