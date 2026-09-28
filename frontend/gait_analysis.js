@@ -415,13 +415,36 @@ function renderCharts() {
         let datasets = [];
         gaitResults.processedSteps.forEach(step => {
             let data = step.copPath.map(p => ({ x: p.x, y: p.y }));
+            if (data.length === 0) return;
+            
+            let color = step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(59, 130, 246, 0.7)';
+            
             datasets.push({
-                label: `Adım ${step.id} (${step.type})`,
+                label: `Adım ${step.id}`,
                 data: data,
-                borderColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(59, 130, 246, 0.7)',
+                borderColor: color,
+                borderWidth: 2,
                 showLine: true,
-                tension: 0.3,
+                tension: 0.4,
                 pointRadius: 0
+            });
+            
+            // Start point (circle)
+            datasets.push({
+                label: `Adım ${step.id} Başlangıç`,
+                data: [data[0]],
+                backgroundColor: color,
+                pointRadius: 5
+            });
+            
+            // End point (cross)
+            datasets.push({
+                label: `Adım ${step.id} Bitiş`,
+                data: [data[data.length-1]],
+                backgroundColor: color,
+                pointStyle: 'crossRot',
+                pointRadius: 6,
+                borderWidth: 2
             });
         });
         
@@ -430,10 +453,13 @@ function renderCharts() {
             data: { datasets: datasets },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    title: { display: true, text: 'COP Trajektorileri (Kırmızı: Sol, Mavi: Sağ)' },
+                    legend: { display: false } 
+                },
                 scales: {
-                    x: { min: 0, max: 48 },
-                    y: { reverse: true, min: 0, max: 48 }
+                    x: { title: { display: true, text: 'X (piksel)' } },
+                    y: { reverse: true, title: { display: true, text: 'Y (piksel)' } }
                 }
             }
         });
@@ -441,18 +467,48 @@ function renderCharts() {
 
     let ctxCopMet = document.getElementById('chartCopMetrics');
     if (ctxCopMet) {
+        // Calculate Metrics
+        let leftLat = [], leftLen = [];
+        let rightLat = [], rightLen = [];
+        
+        gaitResults.processedSteps.forEach(step => {
+            if (step.copPath.length < 2) return;
+            let minX = Math.min(...step.copPath.map(p => p.x));
+            let maxX = Math.max(...step.copPath.map(p => p.x));
+            let lat = maxX - minX;
+            
+            let len = 0;
+            for(let i=1; i<step.copPath.length; i++) {
+                let dx = step.copPath[i].x - step.copPath[i-1].x;
+                let dy = step.copPath[i].y - step.copPath[i-1].y;
+                len += Math.sqrt(dx*dx + dy*dy);
+            }
+            
+            if (step.type === 'Sol Ayak') {
+                leftLat.push(lat); leftLen.push(len);
+            } else {
+                rightLat.push(lat); rightLen.push(len);
+            }
+        });
+        
+        let avgLeftLat = leftLat.length ? leftLat.reduce((a,b)=>a+b)/leftLat.length : 0;
+        let avgRightLat = rightLat.length ? rightLat.reduce((a,b)=>a+b)/rightLat.length : 0;
+        let avgLeftLen = leftLen.length ? leftLen.reduce((a,b)=>a+b)/leftLen.length : 0;
+        let avgRightLen = rightLen.length ? rightLen.reduce((a,b)=>a+b)/rightLen.length : 0;
+
         chartInstances['copMet'] = new Chart(ctxCopMet, {
             type: 'bar',
             data: {
-                labels: ['Lateral Sapma (Med-Lat)', 'COP Yol Uzunluğu'],
+                labels: ['Lateral Sapma (Med-Lat)', 'COP Yol Uzunluğu (Toplam)'],
                 datasets: [
-                    { label: 'Sol Ayak', data: [12, 15], backgroundColor: '#ef4444' }, // Mock values
-                    { label: 'Sağ Ayak', data: [13, 14], backgroundColor: '#3b82f6' }
+                    { label: 'Sol Ayak', data: [avgLeftLat, avgLeftLen], backgroundColor: '#ef4444' },
+                    { label: 'Sağ Ayak', data: [avgRightLat, avgRightLen], backgroundColor: '#3b82f6' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'COP Metrikleri' } }
+                plugins: { title: { display: true, text: 'COP Metrikleri (Basınç Merkezi Analizi)' } },
+                scales: { y: { title: { display: true, text: 'piksel' } } }
             }
         });
     }
