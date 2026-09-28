@@ -321,27 +321,6 @@ function renderCharts() {
         });
     }
 
-    // 2. Ortalama Duruş Süreleri (Bar)
-    let ctxStanceTime = document.getElementById('chartStanceTimeBar');
-    if (ctxStanceTime) {
-        chartInstances['stanceTime'] = new Chart(ctxStanceTime, {
-            type: 'bar',
-            data: {
-                labels: ['Sol Ayak', 'Sağ Ayak'],
-                datasets: [{
-                    label: 'Duruş Süresi (ms)',
-                    data: [gaitResults.metrics.leftStance, gaitResults.metrics.rightStance],
-                    backgroundColor: ['#ef4444', '#3b82f6']
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Ortalama Duruş Süreleri' } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    }
-
     // 3. Ortalama Bölgesel Yük Dağılımı (Pie)
     let ctxAvgRegional = document.getElementById('chartAvgRegionalPie');
     if (ctxAvgRegional) {
@@ -582,7 +561,8 @@ function renderCharts() {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { title: { display: true, text: 'Çift Bazlı Yük Dağılımı' } },
-                scales: { y: { max: 100 } }
+                scales: { y: { max: 100, title: { display: true, text: 'Yük Dağılımı (%)' } } },
+                horizontalLines: [{ y: 50, color: 'green', dash: [5, 5], width: 2 }]
             }
         });
     }
@@ -593,23 +573,40 @@ function renderCharts() {
         let pairs = Math.min(leftSteps.length, rightSteps.length);
         for(let i=0; i<pairs; i++) {
             labels.push(i+1);
-            data.push( Math.abs(leftSteps[i].maxForce - rightSteps[i].maxForce) / Math.max(leftSteps[i].maxForce, rightSteps[i].maxForce) * 100 );
+            let lF = leftSteps[i].maxForce;
+            let rF = rightSteps[i].maxForce;
+            data.push( Math.abs(lF - rF) / Math.max(lF, rF) * 100 );
         }
         chartInstances['symInd'] = new Chart(ctxSymInd, {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{ label: 'RSI (%)', data: data, backgroundColor: 'green' }]
+                datasets: [
+                    { label: 'RSI (%)', data: data, backgroundColor: 'green' },
+                    { label: 'Simetrik (<10%)', data: [], borderColor: 'green', borderDash: [5,5], type: 'line' },
+                    { label: 'Hafif (<20%)', data: [], borderColor: 'orange', borderDash: [5,5], type: 'line' }
+                ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Çift Simetri İndeksleri' } }
+                plugins: { title: { display: true, text: 'Çift Simetri İndeksleri' } },
+                scales: { 
+                    x: { title: { display: true, text: 'Adım Çifti' } },
+                    y: { max: 25, title: { display: true, text: 'RSI (%)' } } 
+                },
+                horizontalLines: [
+                    { y: 10, color: 'green', dash: [5, 5], width: 2 },
+                    { y: 20, color: 'orange', dash: [5, 5], width: 2 }
+                ]
             }
         });
     }
 
     let ctxSymAvg = document.getElementById('chartSymAvgLoad');
     if (ctxSymAvg) {
+        let rsi = gaitResults.metrics.forceAsym;
+        let severity = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        
         chartInstances['symAvg'] = new Chart(ctxSymAvg, {
             type: 'pie',
             data: {
@@ -621,7 +618,13 @@ function renderCharts() {
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: `Ortalama Yük Dağılımı (RSI: %${gaitResults.metrics.forceAsym.toFixed(1)})` } }
+                plugins: { 
+                    title: { 
+                        display: true, 
+                        text: ['Ortalama Yük Dağılımı', `RSI: %${rsi.toFixed(1)} (${severity})`]
+                    },
+                    legend: { position: 'right' }
+                }
             }
         });
     }
@@ -670,7 +673,7 @@ function renderCharts() {
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { title: { display: true, text: 'Yürüme Fazları Analizi' }, legend: { display: true, position: 'left' } },
+                    plugins: { title: { display: true, text: 'Yürüme Fazları Analizi' }, legend: { display: true, position: 'top', align: 'center' } },
                     scales: { y: { min: 0, max: 100, title: { display: true, text: 'Normalize Değer (%)' } } }
                 }
             });
