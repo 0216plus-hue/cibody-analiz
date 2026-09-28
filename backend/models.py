@@ -29,6 +29,8 @@ class Patient(Base):
     name = Column(String, index=True)
     age = Column(Integer)
     weight = Column(Float)
+    height = Column(Float, default=0.0)
+    shoe_size = Column(Float, default=0.0)
     gender = Column(String)
     phone = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

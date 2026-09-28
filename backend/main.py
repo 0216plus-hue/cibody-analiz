@@ -65,7 +65,15 @@ def startup_event():
             db.execute(text("ALTER TABLE prescribed_exercises ADD COLUMN scoliosis_analysis_id INTEGER"))
             db.commit()
         except Exception as e:
-            print("SQLite Alter Table Error:", e)
+            pass
+            
+        try:
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE patients ADD COLUMN height FLOAT DEFAULT 0.0"))
+            db.execute(text("ALTER TABLE patients ADD COLUMN shoe_size FLOAT DEFAULT 0.0"))
+            db.commit()
+        except Exception as e:
+            pass
 
 
         if db.query(models.Exercise).count() == 0:
@@ -329,12 +337,14 @@ def admin_stats(db: Session = Depends(get_db), _: models.User = Depends(require_
 @app.post("/api/patients")
 async def create_patient(
     name: str = Form(...), age: int = Form(0), weight: float = Form(0.0),
+    height: float = Form(0.0), shoe_size: float = Form(0.0),
     gender: str = Form("Erkek"), phone: str = Form(None),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
     new_patient = models.Patient(
         name=name, age=age, weight=weight,
+        height=height, shoe_size=shoe_size,
         gender=gender, phone=phone, user_id=current_user.id
     )
     db.add(new_patient); db.commit(); db.refresh(new_patient)

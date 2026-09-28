@@ -76,7 +76,7 @@ function showDashboard(clearActive = false) {
     }
 }
 
-function showPatient(patientId, patientName, patientAge, patientWeight, patientGender, patientPhone) {
+function showPatient(patientId, patientName, patientAge, patientWeight, patientGender, patientPhone, patientHeight, patientShoeSize) {
     try {
         currentPatientId = patientId;
         sessionStorage.setItem('cibody_active_patient_id', patientId);
@@ -85,6 +85,8 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         sessionStorage.setItem('cibody_active_patient_weight', patientWeight);
         sessionStorage.setItem('cibody_active_patient_gender', patientGender);
         sessionStorage.setItem('cibody_active_patient_phone', patientPhone || '');
+        sessionStorage.setItem('cibody_active_patient_height', patientHeight || 0);
+        sessionStorage.setItem('cibody_active_patient_shoe_size', patientShoeSize || 0);
 
         const dashView = document.getElementById('dashboardView');
         if (dashView) dashView.classList.add('hidden');
@@ -95,13 +97,13 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
             navP.classList.remove('hidden');
             navP.innerText = patientName;
         }
-        globalPatientInfo = { name: patientName, age: patientAge, weight: patientWeight, gender: patientGender, phone: patientPhone };
+        globalPatientInfo = { name: patientName, age: patientAge, weight: patientWeight, gender: patientGender, phone: patientPhone, height: patientHeight, shoeSize: patientShoeSize };
         
         const dName = document.getElementById('detailName');
         if (dName) dName.innerText = patientName;
         const maskedPhone = patientPhone ? patientPhone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "Yok";
         const dInfo = document.getElementById('detailInfo');
-        if (dInfo) dInfo.innerText = `Yaş: ${patientAge} | Kilo: ${patientWeight}kg | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
+        if (dInfo) dInfo.innerText = `Yaş: ${patientAge} | Boy: ${patientHeight || 0}cm | Kilo: ${patientWeight}kg | Ayakkabı: ${patientShoeSize || 0} | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
         
         const targetTab = sessionStorage.getItem('cibody_active_tab') || 'postureTab';
         switchTab(targetTab);
@@ -202,7 +204,7 @@ async function fetchPatients() {
         if (savedPid && !currentPatientId) {
             const p = allPatients.find(x => x.id == savedPid);
             if (p) {
-                showPatient(p.id, p.name, p.age, p.weight, p.gender, p.phone || '');
+                showPatient(p.id, p.name, p.age, p.weight, p.gender, p.phone || '', p.height || 0, p.shoe_size || 0);
             }
         }
     } catch(err) { showToast("Hastalar yüklenemedi: " + err.message); }
@@ -247,10 +249,10 @@ function renderPatients() {
             </td>
             <td class="py-4 text-slate-500 px-2 align-middle font-medium">#${p.id}</td>
             <td class="py-4 font-bold text-slate-800 px-2 align-middle">${p.name}</td>
-            <td class="py-4 text-slate-600 px-2 align-middle">${p.age} Yaş, ${p.weight} kg</td>
+            <td class="py-4 text-slate-600 px-2 align-middle">${p.age} Yaş, ${p.height || 0}cm, ${p.weight}kg</td>
             <td class="py-4 text-slate-600 px-2 align-middle font-medium">${p.phone || '-'}</td>
             <td class="py-4 text-right px-2 align-middle">
-                <button onclick="showPatient(${p.id}, '${p.name}', ${p.age}, ${p.weight}, '${p.gender}', '${p.phone || ''}')" class="bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-lg font-bold transition-colors text-sm inline-flex items-center justify-center shadow-sm">
+                <button onclick="showPatient(${p.id}, '${p.name}', ${p.age}, ${p.weight}, '${p.gender}', '${p.phone || ''}', ${p.height || 0}, ${p.shoe_size || 0})" class="bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-lg font-bold transition-colors text-sm inline-flex items-center justify-center shadow-sm">
                     Hasta Kartını Aç <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </td>
@@ -269,6 +271,8 @@ async function createPatient(e) {
     formData.append('name', document.getElementById('p_name').value);
     formData.append('age', document.getElementById('p_age').value || 0);
     formData.append('weight', document.getElementById('p_weight').value || 0);
+    formData.append('height', document.getElementById('p_height').value || 0);
+    formData.append('shoe_size', document.getElementById('p_shoe_size').value || 0);
     formData.append('gender', document.getElementById('p_gender').value || 'Erkek');
     formData.append('phone', document.getElementById('p_phone').value || '');
 
@@ -280,7 +284,16 @@ async function createPatient(e) {
             if(modal) modal.classList.add('hidden');
             visiblePatientCount = 20;
             await fetchPatients();
-            showPatient(data.patient_id, document.getElementById('p_name').value, document.getElementById('p_age').value, document.getElementById('p_weight').value, document.getElementById('p_gender').value, document.getElementById('p_phone').value);
+            showPatient(
+                data.patient_id, 
+                document.getElementById('p_name').value, 
+                document.getElementById('p_age').value, 
+                document.getElementById('p_weight').value, 
+                document.getElementById('p_gender').value, 
+                document.getElementById('p_phone').value,
+                document.getElementById('p_height').value || 0,
+                document.getElementById('p_shoe_size').value || 0
+            );
             document.getElementById('newPatientForm').reset();
         } else showToast(data.detail || "Kayıt hatası");
     } catch(err) { showToast("Kayıt hatası!"); }
