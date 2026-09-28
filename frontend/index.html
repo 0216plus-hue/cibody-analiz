@@ -25,22 +25,13 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+
     <style id="pdf-export-css">
-        .pdf-export-mode .grid {
+        .pdf-export-mode-static .grid {
             grid-template-columns: 1fr !important;
         }
-        .pdf-export-mode .lg\:grid-cols-2, .pdf-export-mode .md\:grid-cols-2, .pdf-export-mode .md\:grid-cols-3, .pdf-export-mode .lg\:grid-cols-3 {
-            grid-template-columns: 1fr !important;
-        }
-        .pdf-export-mode .flex-row, .pdf-export-mode .lg\:flex-row, .pdf-export-mode .md\:flex-row {
+        .pdf-export-mode-static .lg\:flex-row {
             flex-direction: column !important;
-        }
-        .pdf-export-mode .chart-container {
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-        .pdf-export-mode .w-1\/2 {
-            width: 100% !important;
         }
     </style>
 </head>
@@ -1799,7 +1790,7 @@
             const originalWidth = element.style.width;
             element.style.width = '1000px';
             element.style.maxWidth = '1000px';
-            element.classList.add('pdf-export-mode');
+            element.classList.add('pdf-export-mode-static');
             
             html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
                 if (typeof applyCibodyPdfHeaderFooter === 'function') {
@@ -1808,7 +1799,7 @@
             }).save().then(() => {
                 element.style.width = originalWidth;
                 element.style.maxWidth = '';
-                element.classList.remove('pdf-export-mode');
+                element.classList.remove('pdf-export-mode-static');
                 
                 if(topBar) topBar.style.display = 'flex';
                 if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");

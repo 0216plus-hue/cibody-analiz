@@ -27,7 +27,7 @@ function startGaitAnalysis() {
     }
     const emptyState = document.getElementById('gaitEmptyState');
     if(emptyState) emptyState.classList.remove('hidden');
-    document.getElementById('gaitStepCount').innerText = "0";
+    document.getElementById('gaitStepCountBadge').innerText = "0";
     
     document.getElementById('gaitInstructionOverlay').classList.add('hidden');
     document.getElementById('btnStartGaitAnalysis').classList.add('hidden');
@@ -171,7 +171,7 @@ window.loadGaitHistory = function(recordId) {
         document.getElementById('gaitResultsSection').classList.add('hidden');
         document.getElementById('gaitRecordingSection').classList.remove('hidden');
         recordedSteps = [];
-        document.getElementById('gaitStepCount').innerText = "0";
+        document.getElementById('gaitStepCountBadge').innerText = "0";
         const btnPdf2 = document.getElementById('btnDownloadGaitPdf');
         if(btnPdf2) btnPdf2.classList.add('hidden');
         const listEl = document.getElementById('gaitStepsList');
@@ -449,16 +449,13 @@ window.downloadGaitPdf = function() {
         margin:       [0.75, 0.3, 0.5, 0.3],
         filename:     `dinamik_yurume_analizi_${currentPatientId}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0, windowWidth: 1200 },
+        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
     // Force a fixed width so charts don't squash/overlap in PDF
-    const originalWidth = element.style.width;
-    element.style.width = '1000px';
-    element.style.maxWidth = '1000px';
-    element.classList.add('pdf-export-mode');
+    
 
     const topBar = document.getElementById('gaitTopBar');
     if(topBar) topBar.style.display = 'none';
@@ -468,9 +465,7 @@ window.downloadGaitPdf = function() {
             applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
         }
     }).save().then(() => {
-        element.style.width = originalWidth;
-        element.style.maxWidth = '';
-        element.classList.remove('pdf-export-mode');
+        
         if(topBar) topBar.style.display = 'flex';
         if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
     });
