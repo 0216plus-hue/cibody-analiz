@@ -119,14 +119,14 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 function switchTab(tabId) {
     try {
         // Hide all tabs
-        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'];
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab'];
         tabs.forEach(t => {
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden');
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
