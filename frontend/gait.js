@@ -61,7 +61,26 @@ function completeGaitAnalysis() {
     }
 }
 
-function processGaitFrame(data) {
+function processGaitFrame(rawData) {
+    // Hardware mat in gait mode is rotated 90 degrees.
+    // We rotate the 48x48 matrix 90 degrees counter-clockwise (or clockwise) to make feet upright.
+    let data = new Uint8Array(2304);
+    for(let r=0; r<48; r++) {
+        for(let c=0; c<48; c++) {
+            // Apply X-mirror (as in static) and 90 deg rotation.
+            let orig_c = 48 - 1 - c; // hardware mirror
+            let orig_r = r;
+            
+            // 90 deg CCW rotation of the (orig_r, orig_c) matrix
+            // new_r = 48 - 1 - orig_c
+            // new_c = orig_r
+            let new_r = 48 - 1 - orig_c;
+            let new_c = orig_r;
+            
+            data[new_r * 48 + new_c] = rawData[r * 48 + c];
+        }
+    }
+
     drawGaitFrame(data);
     let totalPressure = 0;
     for(let i=0; i<data.length; i++) totalPressure += data[i];
@@ -121,7 +140,7 @@ function drawGaitFrame(data) {
         if(val > 5) {
             let r = Math.floor(i/48);
             let c = i%48;
-            let cx = (48 - 1 - c) * 10 + 5;
+            let cx = c * 10 + 5;
             let cy = r * 10 + 5;
             let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
             grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);

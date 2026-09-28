@@ -24,11 +24,10 @@ function analyzeGaitData(steps) {
                 let v = frame[i];
                 if(v > 5) {
                     let r = Math.floor(i/48); // y
-                    let c = i%48;             // x (mirrored logic handled in draw, but for COP we can use raw or mirrored)
-                    let mirroredC = 48 - 1 - c;
+                    let c = i%48;             // x (data is already upright and mirrored from processGaitFrame)
                     
                     frameForce += v;
-                    sumX += (mirroredC * v);
+                    sumX += (c * v);
                     sumY += (r * v);
                     
                     totalPressureSum += v;
@@ -163,7 +162,7 @@ function renderGaitResults() {
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="flex flex-col items-center">
-                        <canvas id="agg_${step.id}" width="200" height="200" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner w-full"></canvas>
+                        <canvas id="agg_${step.id}" width="200" height="200" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner"></canvas>
                     </div>
                     
                     <div class="flex flex-col">
@@ -209,7 +208,7 @@ function renderMiniFrame(canvasId, frameData, outSize=120) {
         if(val > 5) {
             let r = Math.floor(i/48);
             let col = i%48;
-            let cx = (48 - 1 - col) * 10 + 5;
+            let cx = col * 10 + 5;
             let cy = r * 10 + 5;
             let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
             grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
