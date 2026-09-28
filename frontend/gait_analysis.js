@@ -38,6 +38,7 @@ function analyzeGaitData(steps) {
         }
         let centerToeX = (minX + maxX) / 2;
 
+        let totalPressureSum = 0;
         let regional = { heel: 0, mid: 0, fore: 0 }; 
         let regions5 = { toe1: 0, toes25: 0, fore: 0, mid: 0, heel: 0 };
 
@@ -186,7 +187,10 @@ function renderGaitResults() {
     
     document.getElementById('gMetricLeftLoad').innerText = "%" + gaitResults.metrics.leftLoad.toFixed(1);
     document.getElementById('gMetricRightLoad').innerText = "%" + gaitResults.metrics.rightLoad.toFixed(1);
-    document.getElementById('gMetricForceAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1);
+    document.getElementById('gMetricPeakAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1);
+    
+    let severity = gaitResults.metrics.forceAsym < 10 ? ' (Simetrik)' : (gaitResults.metrics.forceAsym < 20 ? ' (Hafif Asimetri)' : ' (Belirgin Asimetri)');
+    document.getElementById('gMetricForceAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1) + severity;
     
     // Adım Detaylarını Çiz
     let detailsContainer = document.getElementById('gaitStepDetailsContainer');
@@ -214,23 +218,24 @@ function renderGaitResults() {
                     ${phaseHtml}
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="flex flex-col items-center">
-                        <canvas id="agg_${step.id}" width="200" height="200" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner"></canvas>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex flex-col items-center justify-center">
+                        <canvas id="agg_${step.id}" width="190" height="190" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner"></canvas>
                     </div>
                     
-                    <div class="flex flex-col">
-                        <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
-                            <canvas id="profileChart_${step.id}"></canvas>
-                        </div>
+                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                        <canvas id="profileChart_${step.id}"></canvas>
                     </div>
                     
-                    <div class="flex flex-col">
-                        <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
-                            <canvas id="copPath_${step.id}"></canvas>
-                        </div>
+                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                        <canvas id="regionalChart_${step.id}"></canvas>
+                    </div>
+                    
+                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                        <canvas id="copPath_${step.id}"></canvas>
                     </div>
                 </div>
+            </div>
             `;
             detailsContainer.appendChild(div);
             
