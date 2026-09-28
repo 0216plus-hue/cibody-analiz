@@ -32,6 +32,17 @@
         }
         .pdf-export-mode-static .lg\:flex-row {
             flex-direction: column !important;
+            height: auto !important;
+        }
+        .pdf-export-mode-static .lg\:w-1\/3,
+        .pdf-export-mode-static .lg\:w-2\/3 {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        .pdf-export-mode-static #footAnalysisDataPanel {
+            overflow: visible !important;
         }
     </style>
 </head>
@@ -1301,8 +1312,12 @@
     </style>
     
     <!-- Üst İşlem ve Geçmiş Çubuğu -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4" id="footTopBar">
-        <div class="flex items-center gap-3 w-full md:w-auto">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4 flex-wrap" id="footTopBar">
+        <div>
+            <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i>Statik Ayak Analizi</h2>
+            <p class="text-xs text-slate-500 mt-1">Hastayı platformun ortasına alınız ve sabit durmasını söyleyiniz.</p>
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
             <div class="bg-indigo-50 p-2 rounded-lg hidden md:block">
                 <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
             </div>
@@ -1324,9 +1339,9 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
+    <div class="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px] w-full py-2">
         <!-- Canvas Alanı -->
-        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto flex-shrink-0" style="width: 100%; max-width: 480px; aspect-ratio: 1 / 1;">
+        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center h-[480px] lg:h-full">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
@@ -1334,7 +1349,7 @@
         </div>
         
         <!-- İstatistikler -->
-        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0" id="footAnalysisDataPanel">
+        <div class="flex flex-col gap-6 w-full lg:w-1/3 h-[480px] lg:h-full overflow-y-auto pr-2" id="footAnalysisDataPanel">
             
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
@@ -1835,13 +1850,13 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <button id="btnStartGaitAnalysis" onclick="startGaitAnalysis()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md flex items-center gap-2">
+            <button id="btnStartGaitAnalysis" onclick="startGaitAnalysis()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center gap-2">
                 <i class="fa-solid fa-play"></i> Analizi Başlat
             </button>
-            <button id="btnCompleteGaitAnalysis" onclick="completeGaitAnalysis()" class="bg-amber-500 hover:bg-amber-400 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md flex items-center gap-2 hidden">
+            <button id="btnCompleteGaitAnalysis" onclick="completeGaitAnalysis()" class="bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center gap-2 hidden">
                 <i class="fa-solid fa-flag-checkered"></i> Analizi Tamamla
             </button>
-            <button id="btnDownloadGaitPdf" onclick="downloadGaitPdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2 px-5 rounded-xl transition-all shadow-sm flex items-center gap-2">
+            <button id="btnDownloadGaitPdf" onclick="downloadGaitPdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
                 <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
             </button>
         </div>
