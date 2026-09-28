@@ -388,12 +388,12 @@ window.downloadGaitPdf = function() {
     
     const element = document.getElementById('gaitTab');
     const opt = {
-        margin:       0.5,
+        margin:       [0.75, 0.3, 0.5, 0.3],
         filename:     `dinamik_yurume_analizi_${currentPatientId}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
+        image:        { type: 'jpeg', quality: 1.0 },
         html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr', '.grid'] }
+        pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
     const topBar = document.getElementById('gaitTopBar');

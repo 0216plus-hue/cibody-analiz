@@ -198,7 +198,7 @@ function renderGaitResults() {
         detailsContainer.innerHTML = '';
         gaitResults.processedSteps.forEach(step => {
             let div = document.createElement('div');
-            div.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6";
+            div.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break";
             
             let phaseHtml = '';
             for(let i=0; i<5; i++) {

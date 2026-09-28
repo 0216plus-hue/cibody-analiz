@@ -1867,7 +1867,7 @@
     <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
     <div id="gaitResultsSection" class="hidden pb-20">
         <!-- Özet Paneli -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i>Yürüme Analizi Özeti</h3>
             <div class="flex gap-8 items-center text-slate-700">
                 <p>Toplam Adım: <span id="gSummaryTotal" class="font-bold text-lg text-slate-900">0</span></p>
@@ -1877,7 +1877,7 @@
         </div>
         
         <!-- Klinik Metrikler -->
-        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6">
+        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2"><i class="fa-solid fa-stethoscope text-emerald-500 mr-2"></i>Klinik Metrikler</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -1895,7 +1895,7 @@
         </div>
 
         <!-- Yürüme Fazları Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Yürüme Fazları Analizi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGaitPhaseBar"></canvas></div>
@@ -1905,7 +1905,7 @@
         </div>
 
         <!-- 5 Bölge Yük Dağılımı Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden" id="fiveRegionSection">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden avoid-break" id="fiveRegionSection">
             <h3 class="text-lg font-black text-slate-800 mb-1"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i>5 Bölge Yük Dağılımı Analizi</h3>
             <p class="text-sm text-slate-500 mb-6 pb-2 border-b border-slate-100">Bölgeler: Başparmak, Parmaklar, Ön Ayak, Orta Ayak, Topuk (Cavanagh & Ulbrecht, 1994)</p>
             
@@ -1915,7 +1915,7 @@
         </div>
 
         <!-- Yer Tepki Kuvveti (GRF) Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i>Yer Tepki Kuvveti (GRF) Analizi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGRFLeft"></canvas></div>
@@ -1928,7 +1928,7 @@
         </div>
 
         <!-- COP Trajektorisi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i>COP Trajektorisi</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-80"><canvas id="gaitCopChart"></canvas></div>
@@ -1937,7 +1937,7 @@
         </div>
 
         <!-- Sol - Sağ Ayak Karşılaştırması -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-code-compare text-indigo-500 mr-2"></i>Sol - Sağ Ayak Karşılaştırması</h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -2003,7 +2003,7 @@
         </div>
 
         <!-- Simetri Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i>Simetri Analizi</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="h-64"><canvas id="chartSymLoadPairs"></canvas></div>
