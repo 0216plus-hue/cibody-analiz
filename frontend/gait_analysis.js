@@ -238,6 +238,52 @@ function renderMiniFrame(canvasId, frameData, outSize=120) {
 
 // CHARTS
 
+Chart.register({
+    id: 'pieLabels',
+    afterDraw: function(chart) {
+        if (chart.config.type !== 'pie') return;
+        const ctx = chart.ctx;
+        chart.data.datasets.forEach((dataset, i) => {
+            let meta = chart.getDatasetMeta(i);
+            meta.data.forEach((element, index) => {
+                let value = dataset.data[index];
+                if(value <= 0) return;
+                let center = element.tooltipPosition();
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                let text = value.toFixed(1) + '%';
+                ctx.fillText(text, center.x, center.y);
+            });
+        });
+    }
+});
+
+Chart.register({
+    id: 'horizontalLines',
+    afterDraw: function(chart) {
+        if (chart.config.options.horizontalLines) {
+            const ctx = chart.ctx;
+            const xAxis = chart.scales.x;
+            const yAxis = chart.scales.y;
+            chart.config.options.horizontalLines.forEach(line => {
+                let y = yAxis.getPixelForValue(line.y);
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(xAxis.left, y);
+                ctx.lineTo(xAxis.right, y);
+                ctx.lineWidth = line.width || 1;
+                ctx.strokeStyle = line.color || 'black';
+                if (line.dash) ctx.setLineDash(line.dash);
+                ctx.stroke();
+                ctx.restore();
+            });
+        }
+    }
+});
+
+
 let chartInstances = {};
 
 function renderCharts() {
