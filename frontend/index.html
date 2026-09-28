@@ -1839,7 +1839,15 @@
                 </div>
             </div>
         </div>
-
+        
+        <!-- COP Trajektorisi (Genel Grafikler) -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i>COP Trajektorisi (Basınç Merkezi Yolu)</h3>
+            <div class="w-full h-80 relative">
+                <canvas id="gaitCopChart"></canvas>
+            </div>
+            <p class="text-xs text-slate-500 mt-3 text-center">Tüm adımların ağırlık merkezi salınımları (Kırmızı: Sol Ayak, Mavi: Sağ Ayak)</p>
+        </div>
         <!-- Adım Detayları (5 Faz & Bölgesel Dağılım) -->
         <h3 class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Adım Detayları & Fazlar</h3>
         <div id="gaitStepDetailsContainer">
@@ -2008,6 +2016,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="simulation.js?v=10.6"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="gait.js?v=1.0"></script>
 <script src="gait_analysis.js?v=1.0"></script>
 </body>

@@ -161,10 +161,14 @@ function renderGaitResults() {
                     </div>
                     <div>
                         <p class="text-sm font-bold text-slate-700 mb-3">Bölgesel Yük Dağılımı</p>
-                        <div class="flex h-12 bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                        <div class="flex h-8 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-4">
                             <div class="bg-rose-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.heelPct}%" title="Topuk">T: %${step.regional.heelPct.toFixed(0)}</div>
                             <div class="bg-amber-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.midPct}%" title="Orta">O: %${step.regional.midPct.toFixed(0)}</div>
                             <div class="bg-emerald-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.forePct}%" title="Ön">Ö: %${step.regional.forePct.toFixed(0)}</div>
+                        </div>
+                        <p class="text-sm font-bold text-slate-700 mb-2">Basınç Profili Eğrisi</p>
+                        <div class="w-full h-32 relative">
+                            <canvas id="profileChart_${step.id}"></canvas>
                         </div>
                     </div>
                 </div>
@@ -178,6 +182,9 @@ function renderGaitResults() {
                 renderMiniFrame(cId, frame);
             }
         });
+        
+        // Render Chart.js
+        setTimeout(renderCharts, 100);
     }
 }
 
@@ -222,4 +229,99 @@ function renderMiniFrame(canvasId, frameData) {
     tCtx.putImageData(outData, 0, 0);
     
     ctx.drawImage(tempC, 0, 0, 480, 480, 0, 0, 120, 120);
+}
+
+// CHARTS
+
+let copChartInstance = null;
+
+function renderCharts() {
+    // 1. COP Chart
+    let ctxCop = document.getElementById('gaitCopChart');
+    if(ctxCop) {
+        if(copChartInstance) copChartInstance.destroy();
+        
+        let leftDatasets = [];
+        let rightDatasets = [];
+        
+        gaitResults.processedSteps.forEach(step => {
+            let data = step.copPath.map(p => ({ x: p.x, y: p.y }));
+            if(step.type === 'Sol Ayak') {
+                leftDatasets.push({
+                    label: `Adım ${step.id} (Sol)`,
+                    data: data,
+                    borderColor: 'rgba(239, 68, 68, 0.7)',
+                    backgroundColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 2,
+                    showLine: true,
+                    tension: 0.3,
+                    pointRadius: 1
+                });
+            } else {
+                rightDatasets.push({
+                    label: `Adım ${step.id} (Sağ)`,
+                    data: data,
+                    borderColor: 'rgba(59, 130, 246, 0.7)',
+                    backgroundColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 2,
+                    showLine: true,
+                    tension: 0.3,
+                    pointRadius: 1
+                });
+            }
+        });
+        
+        copChartInstance = new Chart(ctxCop, {
+            type: 'scatter',
+            data: { datasets: [...leftDatasets, ...rightDatasets] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { reverse: false, title: { display: true, text: 'X (Piksel)' }, min: 0, max: 48 },
+                    y: { reverse: true, title: { display: true, text: 'Y (Piksel)' }, min: 0, max: 48 }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+    
+    // 2. Pressure Profile Charts per Step
+    gaitResults.processedSteps.forEach(step => {
+        let ctxProfile = document.getElementById(`profileChart_${step.id}`);
+        if(ctxProfile) {
+            let labels = Array.from({length: step.frames.length}, (_, i) => i+1);
+            let data = step.frames.map(f => {
+                let sum = 0;
+                for(let i=0; i<2304; i++) sum += f[i];
+                return sum;
+            });
+            
+            new Chart(ctxProfile, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Toplam Basınç',
+                        data: data,
+                        borderColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 1)' : 'rgba(59, 130, 246, 1)',
+                        backgroundColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { display: false },
+                        y: { beginAtZero: true, display: false }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    });
 }
