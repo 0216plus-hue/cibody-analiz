@@ -312,9 +312,8 @@ function viewBalanceReport() {
     
     renderMasterTable();
     
-    // Pick the first available test to show charts for
-    let firstAvail = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'].find(t => currentBalanceSession[t] !== null);
-    if(firstAvail) showChartForTest(firstAvail);
+    // Render detailed charts and reference tables for all completed tests
+    renderAllTestDetails();
 }
 
 function renderMasterTable() {
@@ -363,101 +362,152 @@ function getStatusColor(val, good, med) {
     return "text-rose-600";
 }
 
-function showChartForTest(testType) {
-    // update tabs UI
-    const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
+function renderAllTestDetails() {
+    let container = document.getElementById('balanceAllTestsDetails');
+    if(!container) return;
+    container.innerHTML = ''; // clear
+    
+    const types = [
+        {k: 'cift_acik', l: 'Çift Ayak (Göz Açık)'},
+        {k: 'cift_kapali', l: 'Çift Ayak (Göz Kapalı)'},
+        {k: 'tek_sol_acik', l: 'Tek Ayak Sol (Göz Açık)'},
+        {k: 'tek_sag_acik', l: 'Tek Ayak Sağ (Göz Açık)'}
+    ];
+    
     types.forEach(t => {
-        let btn = document.getElementById('tab_btn_' + t);
-        if(!btn) return;
-        if(t === testType) {
-            btn.className = "px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 border-2 border-indigo-500";
+        let m = currentBalanceSession[t.k];
+        if(!m) return;
+        
+        let section = document.createElement('div');
+        section.className = "flex flex-col gap-6 avoid-break bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 mb-8";
+        
+        // Header
+        let header = document.createElement('h2');
+        header.className = "text-xl font-black text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-2";
+        header.innerHTML = `<i class="fa-solid fa-shoe-prints mr-2"></i>${t.l} - Detaylı Analiz`;
+        section.appendChild(header);
+        
+        // Reference Table
+        if(t.k !== 'cift_kapali') {
+            let isSingle = t.k.includes('tek');
+            let pathGood = isSingle ? 100 : 40;
+            let pathMed = isSingle ? 180 : 70;
+            let areaGood = isSingle ? 20 : 4;
+            let areaMed = isSingle ? 40 : 8;
+            let velGood = isSingle ? 5.0 : 1.2;
+            let velMed = isSingle ? 8.0 : 2.0;
+            
+            const getStatus = (val, good, med) => {
+                if(val < good) return { text: "İyi", color: "bg-emerald-100 text-emerald-800" };
+                if(val <= med) return { text: "Orta", color: "bg-amber-100 text-amber-800" };
+                return { text: "Yüksek", color: "bg-rose-100 text-rose-800" };
+            };
+            
+            let pathS = getStatus(m.pathCm, pathGood, pathMed);
+            let areaS = getStatus(m.areaCm, areaGood, areaMed);
+            let velS = getStatus(m.velCm, velGood, velMed);
+            
+            let refHTML = `
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>Referans Aralıkları ile Karşılaştırma</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-bold border-b">
+                            <tr>
+                                <th class="px-4 py-2">Metrik</th>
+                                <th class="px-4 py-2 text-emerald-600">İyi</th>
+                                <th class="px-4 py-2 text-amber-500">Orta</th>
+                                <th class="px-4 py-2 text-rose-500">Yüksek (Risk)</th>
+                                <th class="px-4 py-2 bg-indigo-50 text-indigo-900 border-l">Sizin Değeriniz</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium">Yol Uzunluğu (cm)</td>
+                                <td class="px-4 py-2"><${pathGood}</td>
+                                <td class="px-4 py-2">${pathGood}-${pathMed}</td>
+                                <td class="px-4 py-2">>${pathMed}</td>
+                                <td class="px-4 py-2 border-l font-bold ${pathS.color}">${m.pathCm.toFixed(2)} (${pathS.text})</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium">Sallantı Alanı (cm²)</td>
+                                <td class="px-4 py-2"><${areaGood}</td>
+                                <td class="px-4 py-2">${areaGood}-${areaMed}</td>
+                                <td class="px-4 py-2">>${areaMed}</td>
+                                <td class="px-4 py-2 border-l font-bold ${areaS.color}">${m.areaCm.toFixed(2)} (${areaS.text})</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium">COP Hızı (cm/s)</td>
+                                <td class="px-4 py-2"><${velGood.toFixed(1)}</td>
+                                <td class="px-4 py-2">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
+                                <td class="px-4 py-2">>${velMed.toFixed(1)}</td>
+                                <td class="px-4 py-2 border-l font-bold ${velS.color}">${m.velCm.toFixed(2)} (${velS.text})</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+            section.innerHTML += refHTML;
         } else {
-            btn.className = "px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200";
+            // For cift kapali, we don't have hard references, just a note.
+            section.innerHTML += `
+            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
+                <i class="fa-solid fa-circle-info mr-2"></i> Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.
+            </div>`;
         }
+        
+        // Canvas Container
+        let chartHTML = `
+        <div class="flex flex-col lg:flex-row gap-6 w-full mt-2">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full lg:w-1/2">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Statokinezigram (COP Yörüngesi)</h3>
+                <div style="position: relative; height:300px;">
+                    <canvas id="scatter_${t.k}"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full lg:w-1/2 flex flex-col gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram X (ML)</h3>
+                    <div style="position: relative; height:120px;">
+                        <canvas id="xline_${t.k}"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram Y (AP)</h3>
+                    <div style="position: relative; height:120px;">
+                        <canvas id="yline_${t.k}"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        section.innerHTML += chartHTML;
+        container.appendChild(section);
+        
+        // Now draw charts
+        drawChartsForSection(t.k, m);
     });
+}
+
+function drawChartsForSection(k, m) {
+    let data = m.smoothedData || m.data;
+    let meanX = m.meanX;
+    let meanY = m.meanY;
     
-    let m = currentBalanceSession[testType];
-    if(!m) return;
-    
-    // Update reference table
-    renderRefTable(m, testType);
-    
-    // Draw charts using smoothed data
-    let data = m.smoothedData || m.data; // fallback for legacy records
+    let scatterData = [];
     let xData = [];
     let yData = [];
+    let labels = [];
+    
     for(let i=0; i<data.length; i++) {
-        xData.push({x: i, y: data[i].x - m.meanX});
-        yData.push({x: i, y: data[i].y - m.meanY});
+        let sx = data[i].x - meanX;
+        let sy = data[i].y - meanY;
+        scatterData.push({x: sx, y: sy});
+        xData.push(sx);
+        yData.push(sy);
+        labels.push('');
     }
-    drawBalanceCharts(data, m.meanX, m.meanY, xData, yData);
-}
-
-function renderRefTable(m, testType) {
-    let refTable = document.getElementById('balanceRefTableContainer');
-    let tbody = document.getElementById('balanceRefTableBody');
-    let refNote = document.getElementById('balanceRefNote');
     
-    if(refTable && tbody && testType !== 'cift_kapali') {
-        refTable.style.display = 'block';
-        let isSingle = testType.includes('tek');
-        refNote.innerText = isSingle ? "Referans: Tek Ayak Göz Açık (15s)" : "Referans: Çift Ayak Göz Açık (30s)";
-        
-        let pathGood = isSingle ? 100 : 40;
-        let pathMed = isSingle ? 180 : 70;
-        
-        let areaGood = isSingle ? 20 : 4;
-        let areaMed = isSingle ? 40 : 8;
-        
-        let velGood = isSingle ? 5.0 : 1.2;
-        let velMed = isSingle ? 8.0 : 2.0;
-        
-        const getStatus = (val, good, med) => {
-            if(val < good) return { text: "İyi", color: "bg-emerald-100 text-emerald-800" };
-            if(val <= med) return { text: "Orta", color: "bg-amber-100 text-amber-800" };
-            return { text: "Yüksek", color: "bg-rose-100 text-rose-800" };
-        };
-        
-        let pathS = getStatus(m.pathCm, pathGood, pathMed);
-        let areaS = getStatus(m.areaCm, areaGood, areaMed);
-        let velS = getStatus(m.velCm, velGood, velMed);
-        
-        tbody.innerHTML = `
-            <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium">Yol Uzunluğu (cm)</td>
-                <td class="px-4 py-3"><${pathGood}</td>
-                <td class="px-4 py-3">${pathGood}-${pathMed}</td>
-                <td class="px-4 py-3">>${pathMed}</td>
-                <td class="px-4 py-3 border-l font-bold ${pathS.color}">${m.pathCm.toFixed(2)} (${pathS.text})</td>
-            </tr>
-            <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium">Sallantı Alanı (cm²)</td>
-                <td class="px-4 py-3"><${areaGood}</td>
-                <td class="px-4 py-3">${areaGood}-${areaMed}</td>
-                <td class="px-4 py-3">>${areaMed}</td>
-                <td class="px-4 py-3 border-l font-bold ${areaS.color}">${m.areaCm.toFixed(2)} (${areaS.text})</td>
-            </tr>
-            <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-medium">COP Hızı (cm/s)</td>
-                <td class="px-4 py-3"><${velGood.toFixed(1)}</td>
-                <td class="px-4 py-3">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
-                <td class="px-4 py-3">>${velMed.toFixed(1)}</td>
-                <td class="px-4 py-3 border-l font-bold ${velS.color}">${m.velCm.toFixed(2)} (${velS.text})</td>
-            </tr>
-        `;
-    } else if (refTable) {
-        refTable.style.display = 'none';
-    }
-}
-
-function drawBalanceCharts(data, meanX, meanY, xData, yData) {
-    if(balanceChartInstances['scatter']) balanceChartInstances['scatter'].destroy();
-    if(balanceChartInstances['xLine']) balanceChartInstances['xLine'].destroy();
-    if(balanceChartInstances['yLine']) balanceChartInstances['yLine'].destroy();
-    
-    let scatterData = data.map(d => ({x: d.x - meanX, y: d.y - meanY}));
-    
-    balanceChartInstances['scatter'] = new Chart(document.getElementById('balChartScatter'), {
+    new Chart(document.getElementById('scatter_' + k), {
         type: 'scatter',
         data: {
             datasets: [{
@@ -474,21 +524,19 @@ function drawBalanceCharts(data, meanX, meanY, xData, yData) {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { title: { display: true, text: 'Medio-Lateral (mm)' } },
-                y: { title: { display: true, text: 'Antero-Posterior (mm)' } }
+                x: { title: { display: true, text: 'ML (mm)' } },
+                y: { title: { display: true, text: 'AP (mm)' } }
             }
         }
     });
     
-    let labels = xData.map(d => '');
-    
-    balanceChartInstances['xLine'] = new Chart(document.getElementById('balChartX'), {
+    new Chart(document.getElementById('xline_' + k), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: 'X (ML)',
-                data: xData.map(d => d.y),
+                data: xData,
                 borderColor: '#10b981',
                 borderWidth: 1.5,
                 pointRadius: 0,
@@ -502,13 +550,13 @@ function drawBalanceCharts(data, meanX, meanY, xData, yData) {
         }
     });
     
-    balanceChartInstances['yLine'] = new Chart(document.getElementById('balChartY'), {
+    new Chart(document.getElementById('yline_' + k), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: 'Y (AP)',
-                data: yData.map(d => d.y),
+                data: yData,
                 borderColor: '#f59e0b',
                 borderWidth: 1.5,
                 pointRadius: 0,
@@ -522,7 +570,6 @@ function drawBalanceCharts(data, meanX, meanY, xData, yData) {
         }
     });
 }
-
 function saveBalanceSession() {
     if(!currentPatientId) return showToast("Hasta seçili değil");
     
