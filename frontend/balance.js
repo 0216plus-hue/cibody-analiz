@@ -1,36 +1,68 @@
+
 let balanceWs = null;
 let isBalanceRecording = false;
-let balanceCopData = [];
 let balanceTimerInterval = null;
 let balanceTimeLeft = 30;
 let balanceChartInstances = {};
+
+let activeTestType = 'cift_acik';
+let currentBalanceSession = {
+    cift_acik: null,
+    cift_kapali: null,
+    tek_sol_acik: null,
+    tek_sag_acik: null
+};
+
+// Temp array during live recording
+let balanceCopData = [];
+
+function selectBalanceTest(type) {
+    if (isBalanceRecording) return;
+    activeTestType = type;
+    
+    // UI update for cards
+    const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
+    types.forEach(t => {
+        const card = document.getElementById('card_' + t);
+        if(!card) return;
+        if(t === activeTestType) {
+            card.className = "test-card cursor-pointer border-2 border-indigo-500 bg-indigo-50 rounded-xl p-3 flex justify-between items-center transition-all";
+            // if completed, keep the checkmark, else show arrow
+            let icon = document.getElementById('icon_' + t);
+            if(currentBalanceSession[t]) {
+                icon.className = "fa-solid fa-circle-check text-emerald-500 text-lg";
+            } else {
+                icon.className = "fa-solid fa-chevron-right text-indigo-500";
+            }
+        } else {
+            card.className = "test-card cursor-pointer border border-slate-200 hover:border-indigo-300 rounded-xl p-3 flex justify-between items-center transition-all";
+            let icon = document.getElementById('icon_' + t);
+            if(currentBalanceSession[t]) {
+                icon.className = "fa-solid fa-circle-check text-emerald-500 text-lg";
+            } else {
+                icon.className = "fa-solid fa-circle border-2 border-slate-300 rounded-full w-4 h-4";
+            }
+        }
+    });
+}
 
 function startBalanceTest() {
     if (balanceWs) balanceWs.close();
     
     balanceCopData = [];
-    const testTypeEl = document.getElementById('balanceTestType');
-    let testType = testTypeEl ? testTypeEl.value : 'cift_acik';
-    balanceTimeLeft = testType.includes('tek') ? 15 : 30;
-    
-    document.getElementById('balanceResultsSection').classList.add('hidden');
-    document.getElementById('balanceRecordingSection').classList.remove('hidden');
+    balanceTimeLeft = activeTestType.includes('tek') ? 15 : 30;
     
     document.getElementById('btnStartBalance').classList.add('hidden');
-    document.getElementById('btnSaveBalance').classList.add('hidden');
-    document.getElementById('btnDownloadBalancePdf').classList.add('hidden');
     document.getElementById('btnStopBalance').classList.remove('hidden');
     
-    const historySelect = document.getElementById('balanceHistorySelect');
-    if(historySelect) historySelect.value = "";
-
     const statusBadge = document.getElementById('balanceLiveStatus');
     statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI';
     statusBadge.className = 'absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10';
     
-    const timerDisplay = document.getElementById('balanceTimerDisplay');
     const indicator = document.getElementById('balanceRecordingIndicator');
     if(indicator) indicator.classList.remove('hidden');
+    
+    const timerDisplay = document.getElementById('balanceTimerDisplay');
     timerDisplay.innerText = balanceTimeLeft;
     
     let isConnected = false;
@@ -55,7 +87,6 @@ function startBalanceTest() {
         if (data.length === 2304) {
             processBalanceFrame(data);
         } else if (data.length === 6912) {
-            // grab middle frame
             let frame = data.slice(2304, 4608);
             processBalanceFrame(frame);
         }
@@ -76,17 +107,21 @@ function stopBalanceTest() {
     
     document.getElementById('btnStopBalance').classList.add('hidden');
     document.getElementById('btnStartBalance').classList.remove('hidden');
+    
     document.getElementById('balanceTimerDisplay').innerText = '--';
     const indicator = document.getElementById('balanceRecordingIndicator');
     if(indicator) indicator.classList.add('hidden');
     
     const statusBadge = document.getElementById('balanceLiveStatus');
     statusBadge.innerHTML = '<i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...';
+    statusBadge.className = 'absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10';
     
     // Clear canvas
     let canvas = document.getElementById('balance_live_canvas');
-    let ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if(canvas) {
+        let ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 }
 
 function processBalanceFrame(frameData) {
@@ -104,7 +139,7 @@ function processBalanceFrame(frameData) {
         if (val > 5) {
             let y = Math.floor(i / 48);
             let x = i % 48;
-            let mirroredX = 47 - x; // Ayna
+            let mirroredX = 47 - x;
             
             wX += mirroredX * val;
             wY += y * val;
@@ -113,7 +148,6 @@ function processBalanceFrame(frameData) {
             let cx = mirroredX * 10;
             let cy = y * 10;
             
-            // Draw heat
             let grad = ctx.createRadialGradient(cx + 5, cy + 5, 1, cx + 5, cy + 5, 8);
             grad.addColorStop(0, `hsla(${(255 - val)}, 100%, 50%, 0.8)`);
             grad.addColorStop(1, 'transparent');
@@ -126,11 +160,11 @@ function processBalanceFrame(frameData) {
         let copX = wX / totalP;
         let copY = wY / totalP;
         
-        // 1 grid cell = 10mm mapping
         let realX = copX * 10;
         let realY = copY * 10;
         
-        balanceCopData.push({ x: realX, y: realY, t: 30 - balanceTimeLeft });
+        let totalTime = activeTestType.includes('tek') ? 15 : 30;
+        balanceCopData.push({ x: realX, y: realY, t: totalTime - balanceTimeLeft });
         
         // Draw COP
         ctx.beginPath();
@@ -156,23 +190,34 @@ function completeBalanceTest() {
         return;
     }
     
-    document.getElementById('balanceRecordingSection').classList.add('hidden');
-    document.getElementById('balanceResultsSection').classList.remove('hidden');
+    // Save to session
+    let metrics = calculateBalanceMetrics(balanceCopData, activeTestType);
+    metrics.data = balanceCopData;
+    currentBalanceSession[activeTestType] = metrics;
     
-    document.getElementById('btnSaveBalance').classList.remove('hidden');
-    document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
+    // Update UI Card
+    let icon = document.getElementById('icon_' + activeTestType);
+    if(icon) {
+        icon.className = "fa-solid fa-circle-check text-emerald-500 text-lg";
+    }
     
-    const testTypeEl = document.getElementById('balanceTestType');
-    let testType = testTypeEl ? testTypeEl.value : 'cift_acik';
-    analyzeBalanceData(balanceCopData, testType);
+    showToast("Test başarıyla kaydedildi. Diğer aşamalara geçebilirsiniz.");
+    
+    // Enable View Report button
+    let btnRep = document.getElementById('btnViewBalanceReport');
+    if(btnRep) {
+        btnRep.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+    
+    // Auto-advance
+    if(activeTestType === 'cift_acik') selectBalanceTest('cift_kapali');
+    else if(activeTestType === 'cift_kapali') selectBalanceTest('tek_sol_acik');
+    else if(activeTestType === 'tek_sol_acik') selectBalanceTest('tek_sag_acik');
 }
 
-function analyzeBalanceData(data, testType = 'cift_acik') {
-    if(!data || data.length === 0) return;
-    
-    let pathLength = 0; // mm
+function calculateBalanceMetrics(data, testType) {
+    let pathLength = 0;
     let sumX = 0, sumY = 0;
-    
     for(let i = 0; i < data.length; i++) {
         sumX += data[i].x;
         sumY += data[i].y;
@@ -188,17 +233,12 @@ function analyzeBalanceData(data, testType = 'cift_acik') {
     let meanY = sumY / n;
     
     let c11 = 0, c22 = 0, c12 = 0;
-    let xData = [], yData = [];
-    
     for(let i=0; i<n; i++) {
         let dx = data[i].x - meanX;
         let dy = data[i].y - meanY;
         c11 += dx*dx;
         c22 += dy*dy;
         c12 += dx*dy;
-        
-        xData.push({x: i, y: dx}); 
-        yData.push({x: i, y: dy});
     }
     c11 /= (n-1);
     c22 /= (n-1);
@@ -211,27 +251,124 @@ function analyzeBalanceData(data, testType = 'cift_acik') {
     let lambda2 = (trace - root) / 2;
     
     let ellipseAreaMm = Math.PI * 5.991 * Math.sqrt(Math.max(0, lambda1 * lambda2));
-    
     let duration = testType.includes('tek') ? 15.0 : 30.0;
     let meanVelMm = pathLength / duration;
     
-    // CONVERT TO CM
-    let pathCm = pathLength / 10.0;
-    let velCm = meanVelMm / 10.0;
-    let areaCm = ellipseAreaMm / 100.0;
+    return {
+        pathCm: pathLength / 10.0,
+        velCm: meanVelMm / 10.0,
+        areaCm: ellipseAreaMm / 100.0,
+        duration: duration,
+        nFrames: n,
+        meanX: meanX,
+        meanY: meanY
+    };
+}
+
+function viewBalanceReport() {
+    let hasAnyData = Object.values(currentBalanceSession).some(x => x !== null);
+    if(!hasAnyData) {
+        showToast("Lütfen önce en az bir test aşamasını tamamlayın.");
+        return;
+    }
     
-    document.getElementById('balMetricPath').innerText = pathCm.toFixed(2) + " cm";
-    document.getElementById('balMetricVel').innerText = velCm.toFixed(2) + " cm/s";
-    document.getElementById('balMetricArea').innerText = areaCm.toFixed(2) + " cm²";
+    document.getElementById('balanceRecordingSection').classList.add('hidden');
+    document.getElementById('balanceResultsSection').classList.remove('hidden');
     
-    // REFERENCE RANGES
-    let isSingle = testType.includes('tek');
+    document.getElementById('btnSaveBalance').classList.remove('hidden');
+    document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
+    
+    renderMasterTable();
+    
+    // Pick the first available test to show charts for
+    let firstAvail = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'].find(t => currentBalanceSession[t] !== null);
+    if(firstAvail) showChartForTest(firstAvail);
+}
+
+function renderMasterTable() {
+    let tbody = document.getElementById('masterResultsTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    
+    const types = [
+        {k: 'cift_acik', l: 'Çift Ayak (Açık)'},
+        {k: 'cift_kapali', l: 'Çift Ayak (Kapalı)'},
+        {k: 'tek_sol_acik', l: 'Tek Ayak Sol'},
+        {k: 'tek_sag_acik', l: 'Tek Ayak Sağ'}
+    ];
+    
+    types.forEach(t => {
+        let m = currentBalanceSession[t.k];
+        if(!m) return;
+        
+        let pathS = getStatusColor(m.pathCm, t.k.includes('tek') ? 100 : 40, t.k.includes('tek') ? 180 : 70);
+        let areaS = getStatusColor(m.areaCm, t.k.includes('tek') ? 20 : 4, t.k.includes('tek') ? 40 : 8);
+        let velS = getStatusColor(m.velCm, t.k.includes('tek') ? 5.0 : 1.2, t.k.includes('tek') ? 8.0 : 2.0);
+        
+        // For Double Leg Closed, we don't have hard reference limits in UI but we'll leave it neutral or use open ones.
+        if(t.k === 'cift_kapali') { pathS = 'text-slate-700'; areaS = 'text-slate-700'; velS = 'text-slate-700'; }
+        
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-bold text-slate-800">${t.l}</td>
+                <td class="px-4 py-3">${m.duration.toFixed(1)}</td>
+                <td class="px-4 py-3 font-mono ${pathS}">${m.pathCm.toFixed(2)}</td>
+                <td class="px-4 py-3 font-mono ${areaS}">${m.areaCm.toFixed(2)}</td>
+                <td class="px-4 py-3 font-mono ${velS}">${m.velCm.toFixed(2)}</td>
+                <td class="px-4 py-3 text-emerald-600 font-bold">Optimal</td>
+            </tr>
+        `;
+        
+        // Unhide tab button for charts
+        let tb = document.getElementById('tab_btn_' + t.k);
+        if(tb) tb.classList.remove('hidden');
+    });
+}
+
+function getStatusColor(val, good, med) {
+    if(val < good) return "text-emerald-600";
+    if(val <= med) return "text-amber-500";
+    return "text-rose-600";
+}
+
+function showChartForTest(testType) {
+    // update tabs UI
+    const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
+    types.forEach(t => {
+        let btn = document.getElementById('tab_btn_' + t);
+        if(!btn) return;
+        if(t === testType) {
+            btn.className = "px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 border-2 border-indigo-500";
+        } else {
+            btn.className = "px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200";
+        }
+    });
+    
+    let m = currentBalanceSession[testType];
+    if(!m) return;
+    
+    // Update reference table
+    renderRefTable(m, testType);
+    
+    // Draw charts
+    let data = m.data;
+    let xData = [];
+    let yData = [];
+    for(let i=0; i<data.length; i++) {
+        xData.push({x: i, y: data[i].x - m.meanX});
+        yData.push({x: i, y: data[i].y - m.meanY});
+    }
+    drawBalanceCharts(data, m.meanX, m.meanY, xData, yData);
+}
+
+function renderRefTable(m, testType) {
     let refTable = document.getElementById('balanceRefTableContainer');
     let tbody = document.getElementById('balanceRefTableBody');
     let refNote = document.getElementById('balanceRefNote');
     
     if(refTable && tbody && testType !== 'cift_kapali') {
         refTable.style.display = 'block';
+        let isSingle = testType.includes('tek');
         refNote.innerText = isSingle ? "Referans: Tek Ayak Göz Açık (15s)" : "Referans: Çift Ayak Göz Açık (30s)";
         
         let pathGood = isSingle ? 100 : 40;
@@ -249,9 +386,9 @@ function analyzeBalanceData(data, testType = 'cift_acik') {
             return { text: "Yüksek", color: "bg-rose-100 text-rose-800" };
         };
         
-        let pathS = getStatus(pathCm, pathGood, pathMed);
-        let areaS = getStatus(areaCm, areaGood, areaMed);
-        let velS = getStatus(velCm, velGood, velMed);
+        let pathS = getStatus(m.pathCm, pathGood, pathMed);
+        let areaS = getStatus(m.areaCm, areaGood, areaMed);
+        let velS = getStatus(m.velCm, velGood, velMed);
         
         tbody.innerHTML = `
             <tr class="hover:bg-slate-50">
@@ -259,30 +396,28 @@ function analyzeBalanceData(data, testType = 'cift_acik') {
                 <td class="px-4 py-3"><${pathGood}</td>
                 <td class="px-4 py-3">${pathGood}-${pathMed}</td>
                 <td class="px-4 py-3">>${pathMed}</td>
-                <td class="px-4 py-3 border-l font-bold ${pathS.color}">${pathCm.toFixed(2)} (${pathS.text})</td>
+                <td class="px-4 py-3 border-l font-bold ${pathS.color}">${m.pathCm.toFixed(2)} (${pathS.text})</td>
             </tr>
             <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">Sallantı Alanı (cm²)</td>
                 <td class="px-4 py-3"><${areaGood}</td>
                 <td class="px-4 py-3">${areaGood}-${areaMed}</td>
                 <td class="px-4 py-3">>${areaMed}</td>
-                <td class="px-4 py-3 border-l font-bold ${areaS.color}">${areaCm.toFixed(2)} (${areaS.text})</td>
+                <td class="px-4 py-3 border-l font-bold ${areaS.color}">${m.areaCm.toFixed(2)} (${areaS.text})</td>
             </tr>
             <tr class="hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">COP Hızı (cm/s)</td>
                 <td class="px-4 py-3"><${velGood.toFixed(1)}</td>
                 <td class="px-4 py-3">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
                 <td class="px-4 py-3">>${velMed.toFixed(1)}</td>
-                <td class="px-4 py-3 border-l font-bold ${velS.color}">${velCm.toFixed(2)} (${velS.text})</td>
+                <td class="px-4 py-3 border-l font-bold ${velS.color}">${m.velCm.toFixed(2)} (${velS.text})</td>
             </tr>
         `;
     } else if (refTable) {
         refTable.style.display = 'none';
     }
-    
-    // Draw Charts
-    drawBalanceCharts(data, meanX, meanY, xData, yData);
 }
+
 function drawBalanceCharts(data, meanX, meanY, xData, yData) {
     if(balanceChartInstances['scatter']) balanceChartInstances['scatter'].destroy();
     if(balanceChartInstances['xLine']) balanceChartInstances['xLine'].destroy();
@@ -356,89 +491,87 @@ function drawBalanceCharts(data, meanX, meanY, xData, yData) {
     });
 }
 
-function saveBalanceTest() {
+function saveBalanceSession() {
     if(!currentPatientId) return showToast("Hasta seçili değil");
-    let testType = document.getElementById('balanceTestType').value;
     
     let record = {
         id: Date.now().toString(),
         date: new Date().toLocaleString('tr-TR'),
-        type: testType,
-        path: document.getElementById('balMetricPath').innerText,
-        vel: document.getElementById('balMetricVel').innerText,
-        area: document.getElementById('balMetricArea').innerText,
-        data: balanceCopData
+        session: currentBalanceSession
     };
     
     let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
     history.push(record);
     localStorage.setItem(`balance_history_${currentPatientId}`, JSON.stringify(history));
     
-    showToast("Denge testi kaydedildi.");
-    refreshBalanceHistoryDropdown();
+    showToast("Denge testi oturumu kaydedildi.");
+    refreshBalanceSessionDropdown();
 }
 
-function loadBalanceHistory(recordId) {
+function loadBalanceSessionHistory(recordId) {
     if(!recordId) {
+        // Reset to new session
+        currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
         document.getElementById('balanceResultsSection').classList.add('hidden');
         document.getElementById('balanceRecordingSection').classList.remove('hidden');
         document.getElementById('btnDownloadBalancePdf').classList.add('hidden');
+        document.getElementById('btnSaveBalance').classList.add('hidden');
+        selectBalanceTest('cift_acik');
+        
+        let btnRep = document.getElementById('btnViewBalanceReport');
+        if(btnRep) btnRep.classList.add('opacity-50', 'cursor-not-allowed');
+        
+        // Hide all chart tabs
+        const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
+        types.forEach(t => {
+            let tb = document.getElementById('tab_btn_' + t);
+            if(tb) tb.classList.add('hidden');
+        });
         return;
     }
     
     let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
     let record = history.find(r => r.id === recordId);
     if(record) {
-        document.getElementById('balanceRecordingSection').classList.add('hidden');
-        document.getElementById('balanceResultsSection').classList.remove('hidden');
-        document.getElementById('btnSaveBalance').classList.add('hidden');
-        document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
+        // Support old history records
+        if(record.data) {
+            currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
+            let fakeMetrics = calculateBalanceMetrics(record.data, record.type);
+            fakeMetrics.data = record.data;
+            currentBalanceSession[record.type === 'eyes_open' ? 'cift_acik' : 'cift_kapali'] = fakeMetrics;
+        } else {
+            currentBalanceSession = record.session;
+        }
         
-        balanceCopData = record.data;
-        const testTypeEl = document.getElementById('balanceTestType');
-        if(testTypeEl) testTypeEl.value = record.type;
-        analyzeBalanceData(record.data, record.type);
+        viewBalanceReport();
+        document.getElementById('btnSaveBalance').classList.add('hidden');
     }
 }
 
-function refreshBalanceHistoryDropdown() {
+function refreshBalanceSessionDropdown() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
     
-    historySelect.innerHTML = '<option value="">-- Yeni Test --</option>';
+    historySelect.innerHTML = '<option value="">-- Yeni Test Oturumu --</option>';
     if(!currentPatientId) return;
     
     let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
     history.reverse().forEach(record => {
         let opt = document.createElement('option');
         opt.value = record.id;
-        let tName = record.type;
-        if(tName === 'cift_acik') tName = 'Çift Ayak Göz Açık';
-        if(tName === 'cift_kapali') tName = 'Çift Ayak Göz Kapalı';
-        if(tName === 'tek_sol_acik') tName = 'Tek Ayak (Sol) Göz Açık';
-        if(tName === 'tek_sag_acik') tName = 'Tek Ayak (Sağ) Göz Açık';
-        if(tName === 'eyes_open') tName = 'Gözler Açık';
-        if(tName === 'eyes_closed') tName = 'Gözler Kapalı';
-        opt.innerText = `${record.date} - ${tName}`;
+        opt.innerText = `${record.date} Oturumu`;
         historySelect.appendChild(opt);
     });
 }
 
-
+// PDF export override
 window.downloadBalancePdf = function() {
     if (!currentPatientId) return showToast("Hasta seçin.");
-    const element = document.getElementById('balanceTab');
-    
-    // Add pdf mode to ensure charts don't overlap
-    element.classList.add('pdf-export-mode-static');
-    const topBar = document.getElementById('balanceTopBar');
-    if(topBar) topBar.style.display = 'none';
-    
-    let pName = sessionStorage.getItem('cibody_active_patient_name') || currentPatientId;
+    const element = document.getElementById('balanceResultsSection');
     
     const opt = {
         margin:       [0.75, 0.3, 0.5, 0.3],
-        filename:     `denge_testi_${pName.replace(/\s+/g, '_')}.pdf`,
+        filename:     `denge_testi_${currentPatientId}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
         html2canvas:  { scale: 2, useCORS: true },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
@@ -446,11 +579,9 @@ window.downloadBalancePdf = function() {
     
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
         if (typeof applyCibodyPdfHeaderFooter === 'function') {
-            applyCibodyPdfHeaderFooter(pdf, "Denge ve Postürografi Analizi");
+            applyCibodyPdfHeaderFooter(pdf, "Klinik Denge ve Postürografi Raporu");
         }
     }).save().then(() => {
-        element.classList.remove('pdf-export-mode-static');
-        if(topBar) topBar.style.display = 'flex';
         showToast("Denge PDF raporu indirildi.");
     });
 };

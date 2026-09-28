@@ -2202,37 +2202,25 @@
             <div class="bg-indigo-50 p-2 rounded-lg hidden md:block">
                 <i class="fa-solid fa-scale-unbalanced text-indigo-500"></i>
             </div>
-            <select id="balanceHistorySelect" onchange="loadBalanceHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                <option value="">-- Yeni Test --</option>
+            <select id="balanceHistorySelect" onchange="loadBalanceSessionHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- Yeni Test Oturumu --</option>
             </select>
         </div>
 
         <div class="flex items-center gap-3 w-full md:w-auto flex-wrap justify-end">
-            <select id="balanceTestType" class="text-sm bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700">
-                <option value="cift_acik">Çift Ayak Göz Açık (30sn)</option>
-                <option value="cift_kapali">Çift Ayak Göz Kapalı (30sn)</option>
-                <option value="tek_sol_acik">Tek Ayak (Sol) Göz Açık (15sn)</option>
-                <option value="tek_sag_acik">Tek Ayak (Sağ) Göz Açık (15sn)</option>
-            </select>
-            <button id="btnStartBalance" onclick="startBalanceTest()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                <i class="fa-solid fa-play"></i> Başlat
-            </button>
-            <button id="btnStopBalance" onclick="stopBalanceTest()" class="hidden bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                <i class="fa-solid fa-stop"></i> İptal
-            </button>
-            <button id="btnSaveBalance" onclick="saveBalanceTest()" class="hidden bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            <button id="btnSaveBalance" onclick="saveBalanceSession()" class="hidden bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Oturumu Kaydet
             </button>
             <button id="btnDownloadBalancePdf" onclick="downloadBalancePdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
-                <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
+                <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
             </button>
         </div>
     </div>
 
     <!-- Canlı Kayıt Ekranı -->
-    <div id="balanceRecordingSection" class="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px] w-full py-2">
+    <div id="balanceRecordingSection" class="flex flex-col lg:flex-row gap-6 w-full py-2">
         <!-- Canlı Matris Ekranı -->
-        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center h-[480px] lg:h-full">
+        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center min-h-[480px]">
             <canvas id="balance_live_canvas" width="480" height="480" class="block"></canvas>
             
             <div id="balanceLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10">
@@ -2240,62 +2228,119 @@
             </div>
         </div>
         
-        <!-- Sağ Panel: Sayaç ve Bilgi -->
-        <div class="lg:w-1/3 w-full flex flex-col gap-6">
-            <div class="bg-slate-900 rounded-2xl border-4 border-slate-800 shadow-xl p-8 flex flex-col items-center justify-center flex-1 relative">
-                <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Kalan Süre</h3>
-                <div id="balanceTimerDisplay" class="text-white text-8xl font-black drop-shadow-lg">
+        <!-- Sağ Panel: Kontroller -->
+        <div class="lg:w-1/3 w-full flex flex-col gap-4">
+            
+            <!-- Sayaç Paneli -->
+            <div class="bg-slate-900 rounded-2xl border-4 border-slate-800 shadow-xl p-6 flex flex-col items-center justify-center relative">
+                <h3 class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Kalan Süre</h3>
+                <div id="balanceTimerDisplay" class="text-white text-7xl font-black drop-shadow-lg leading-none">
                     --
                 </div>
-                <p class="text-emerald-400 text-sm font-medium mt-4 animate-pulse hidden" id="balanceRecordingIndicator">
+                <p class="text-emerald-400 text-xs font-medium mt-2 animate-pulse hidden" id="balanceRecordingIndicator">
                     <i class="fa-solid fa-circle text-xs mr-1"></i> Veri Kaydediliyor
                 </p>
                 
-                <div class="absolute bottom-4 left-0 w-full flex justify-around border-t border-slate-800 pt-4 mt-4 px-4">
+                <div class="w-full flex justify-around border-t border-slate-800 pt-3 mt-3">
                     <div class="text-center">
-                        <div class="text-xs text-slate-500 font-bold uppercase">X Ekseni (ML)</div>
-                        <div class="text-lg text-indigo-400 font-mono font-bold" id="liveCopX">0.0</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">X (ML)</div>
+                        <div class="text-base text-indigo-400 font-mono font-bold" id="liveCopX">0.0</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-xs text-slate-500 font-bold uppercase">Y Ekseni (AP)</div>
-                        <div class="text-lg text-emerald-400 font-mono font-bold" id="liveCopY">0.0</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase">Y (AP)</div>
+                        <div class="text-base text-emerald-400 font-mono font-bold" id="liveCopY">0.0</div>
                     </div>
                 </div>
             </div>
             
-            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
-                <h4 class="font-bold text-indigo-900 mb-2"><i class="fa-solid fa-circle-info mr-2"></i>Talimatlar</h4>
-                <p class="text-sm text-indigo-700 leading-relaxed">
-                    Hastanın platformun tam ortasına basmasını sağlayın. Hazır olduğunda <strong>Başlat</strong> butonuna tıklayın.<br><br>
-                    Hasta test süresince kımıldamamalı ve sabit durmalıdır. Ekrandaki beyaz nokta, anlık ağırlık merkezini (COP) gösterir.
-                </p>
+            <!-- Test Aşamaları -->
+            <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2">
+                <h4 class="font-bold text-slate-700 text-sm mb-2 border-b pb-2"><i class="fa-solid fa-list-check mr-2 text-indigo-500"></i>Test Aşamaları</h4>
+                
+                <div onclick="selectBalanceTest('cift_acik')" id="card_cift_acik" class="test-card cursor-pointer border-2 border-indigo-500 bg-indigo-50 rounded-xl p-3 flex justify-between items-center transition-all">
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">Çift Ayak (Göz Açık)</div>
+                        <div class="text-xs text-slate-500">30 Saniye</div>
+                    </div>
+                    <i id="icon_cift_acik" class="fa-solid fa-chevron-right text-indigo-500"></i>
+                </div>
+                
+                <div onclick="selectBalanceTest('cift_kapali')" id="card_cift_kapali" class="test-card cursor-pointer border border-slate-200 hover:border-indigo-300 rounded-xl p-3 flex justify-between items-center transition-all">
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">Çift Ayak (Göz Kapalı)</div>
+                        <div class="text-xs text-slate-500">30 Saniye</div>
+                    </div>
+                    <i id="icon_cift_kapali" class="fa-solid fa-circle border-2 border-slate-300 rounded-full w-4 h-4"></i>
+                </div>
+                
+                <div onclick="selectBalanceTest('tek_sol_acik')" id="card_tek_sol_acik" class="test-card cursor-pointer border border-slate-200 hover:border-indigo-300 rounded-xl p-3 flex justify-between items-center transition-all">
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">Tek Ayak Sol (Açık)</div>
+                        <div class="text-xs text-slate-500">15 Saniye</div>
+                    </div>
+                    <i id="icon_tek_sol_acik" class="fa-solid fa-circle border-2 border-slate-300 rounded-full w-4 h-4"></i>
+                </div>
+                
+                <div onclick="selectBalanceTest('tek_sag_acik')" id="card_tek_sag_acik" class="test-card cursor-pointer border border-slate-200 hover:border-indigo-300 rounded-xl p-3 flex justify-between items-center transition-all">
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">Tek Ayak Sağ (Açık)</div>
+                        <div class="text-xs text-slate-500">15 Saniye</div>
+                    </div>
+                    <i id="icon_tek_sag_acik" class="fa-solid fa-circle border-2 border-slate-300 rounded-full w-4 h-4"></i>
+                </div>
             </div>
+
+            <!-- Aksiyon Butonları -->
+            <div class="flex gap-2 mt-auto">
+                <button id="btnStartBalance" onclick="startBalanceTest()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-play"></i> Seçili Testi Başlat
+                </button>
+                <button id="btnStopBalance" onclick="stopBalanceTest()" class="hidden flex-1 bg-rose-500 hover:bg-rose-400 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-stop"></i> İptal
+                </button>
+            </div>
+            <button id="btnViewBalanceReport" onclick="viewBalanceReport()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+                <i class="fa-solid fa-file-contract"></i> Analiz Raporunu Gör
+            </button>
+            
         </div>
     </div>
 
     <!-- Sonuçlar Ekranı -->
-    <div id="balanceResultsSection" class="hidden flex flex-col gap-8 w-full py-2">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <div class="text-2xl font-black text-indigo-600" id="balMetricPath">0.0 cm</div>
-                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Sway Path (Yol)</div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <div class="text-2xl font-black text-emerald-600" id="balMetricVel">0.0 cm/s</div>
-                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Ort. Hız</div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <div class="text-2xl font-black text-amber-500" id="balMetricArea">0.0 cm²</div>
-                <div class="text-xs text-slate-500 font-bold uppercase mt-1">95% Elips Alanı</div>
-            </div>
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <div class="text-2xl font-black text-rose-500" id="balMetricRomberg">N/A</div>
-                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Romberg Oranı</div>
+    <div id="balanceResultsSection" class="hidden flex flex-col gap-6 w-full py-2">
+        
+        <!-- Üst Tablo (Master) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b pb-2"><i class="fa-solid fa-list text-indigo-500 mr-2"></i>Test Koşulları ve Sonuçlar</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-slate-600">
+                    <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-bold border-b">
+                        <tr>
+                            <th class="px-4 py-3">Test Tipi</th>
+                            <th class="px-4 py-3">Süre (s)</th>
+                            <th class="px-4 py-3">Path (cm)</th>
+                            <th class="px-4 py-3">Sway (cm²)</th>
+                            <th class="px-4 py-3">Speed (cm/s)</th>
+                            <th class="px-4 py-3">Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterResultsTableBody" class="divide-y divide-slate-100">
+                        <!-- JS Doldurur -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Referans Karşılaştırma Tablosu -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" id="balanceRefTableContainer" style="display: none;">
+        <!-- Grafik ve Alt Detay Seçici -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-2 avoid-break" id="reportChartTabs">
+            <button onclick="showChartForTest('cift_acik')" id="tab_btn_cift_acik" class="px-4 py-2 rounded-lg font-bold text-sm bg-indigo-100 text-indigo-700 border-2 border-indigo-500 hidden">Çift Ayak (Açık)</button>
+            <button onclick="showChartForTest('cift_kapali')" id="tab_btn_cift_kapali" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200 hidden">Çift Ayak (Kapalı)</button>
+            <button onclick="showChartForTest('tek_sol_acik')" id="tab_btn_tek_sol_acik" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200 hidden">Tek Ayak Sol</button>
+            <button onclick="showChartForTest('tek_sag_acik')" id="tab_btn_tek_sag_acik" class="px-4 py-2 rounded-lg font-bold text-sm bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200 hidden">Tek Ayak Sağ</button>
+        </div>
+
+        <!-- Referans Tablosu -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm avoid-break" id="balanceRefTableContainer" style="display: none;">
             <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>Referans Aralıkları ile Karşılaştırma</h3>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left text-slate-600">
@@ -2309,14 +2354,14 @@
                         </tr>
                     </thead>
                     <tbody id="balanceRefTableBody" class="divide-y divide-slate-100">
-                        <!-- JS ile doldurulacak -->
                     </tbody>
                 </table>
             </div>
             <p class="text-xs text-slate-400 mt-2" id="balanceRefNote"></p>
         </div>
 
-        <div class="flex flex-col lg:flex-row gap-6 w-full">
+        <!-- Grafikler -->
+        <div class="flex flex-col lg:flex-row gap-6 w-full avoid-break">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-1/2">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Statokinezigram (COP Yörüngesi)</h3>
                 <div class="chart-container" style="position: relative; height:350px;">
@@ -2340,10 +2385,6 @@
         </div>
     </div>
 </div>
-
-
-
-<!-- Bilgilendirme Modalı -->
 
 <div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" data-html2canvas-ignore="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">

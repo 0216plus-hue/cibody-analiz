@@ -110,7 +110,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
         if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
-        if (typeof refreshBalanceHistoryDropdown === 'function') refreshBalanceHistoryDropdown();
+        if (typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
     } catch(err) {
         console.error("showPatient error:", err);
     }
