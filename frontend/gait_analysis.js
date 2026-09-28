@@ -537,6 +537,87 @@ function renderCharts() {
         });
     }
 
+    // --- Sol - Sağ Ayak Karşılaştırması ---
+    let compLeftTitle = document.getElementById('compLeftTitle');
+    let compRightTitle = document.getElementById('compRightTitle');
+    if (compLeftTitle) compLeftTitle.innerText = `Sol Ayak (n=${leftSteps.length})`;
+    if (compRightTitle) compRightTitle.innerText = `Sağ Ayak (n=${rightSteps.length})`;
+
+    // Composite aggregates
+    let leftComposite = new Uint8Array(2304);
+    let rightComposite = new Uint8Array(2304);
+    
+    leftSteps.forEach(s => {
+        for(let i=0; i<2304; i++) {
+            if(s.aggregate[i] > leftComposite[i]) leftComposite[i] = s.aggregate[i];
+        }
+    });
+    rightSteps.forEach(s => {
+        for(let i=0; i<2304; i++) {
+            if(s.aggregate[i] > rightComposite[i]) rightComposite[i] = s.aggregate[i];
+        }
+    });
+    
+    renderMiniFrame('compLeftCanvas', leftComposite, 240);
+    renderMiniFrame('compRightCanvas', rightComposite, 240);
+
+    // Tables
+    let tbodyPairs = document.getElementById('compPairsTableBody');
+    if (tbodyPairs) {
+        tbodyPairs.innerHTML = '';
+        let pairs = Math.min(leftSteps.length, rightSteps.length);
+        for(let i=0; i<pairs; i++) {
+            let total = leftSteps[i].maxForce + rightSteps[i].maxForce;
+            let lPct = ((leftSteps[i].maxForce / total) * 100).toFixed(1);
+            let rPct = ((rightSteps[i].maxForce / total) * 100).toFixed(1);
+            let rsi = (Math.abs(leftSteps[i].maxForce - rightSteps[i].maxForce) / Math.max(leftSteps[i].maxForce, rightSteps[i].maxForce) * 100).toFixed(1);
+            
+            // Simetri renklendirme
+            let bgClass = rsi < 10 ? 'bg-green-100' : (rsi < 20 ? 'bg-orange-100' : 'bg-red-100');
+            
+            let tr = document.createElement('tr');
+            tr.className = 'border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors';
+            tr.innerHTML = `
+                <td class="px-4 py-2.5 font-medium text-slate-700">Çift ${i+1}</td>
+                <td class="px-4 py-2.5">Adım ${leftSteps[i].id}</td>
+                <td class="px-4 py-2.5">Adım ${rightSteps[i].id}</td>
+                <td class="px-4 py-2.5">%${lPct} / %${rPct}</td>
+                <td class="px-4 py-2.5 ${bgClass} font-bold text-slate-700 text-center">%${rsi}</td>
+            `;
+            tbodyPairs.appendChild(tr);
+        }
+    }
+
+    let tbodyAvg = document.getElementById('compAvgTableBody');
+    if (tbodyAvg) {
+        tbodyAvg.innerHTML = `
+            <tr class="border-b border-slate-100">
+                <td class="px-4 py-2.5 font-medium text-slate-700">Çift Sayısı</td>
+                <td class="px-4 py-2.5">${leftSteps.length}</td>
+                <td class="px-4 py-2.5">${rightSteps.length}</td>
+            </tr>
+            <tr>
+                <td class="px-4 py-2.5 font-medium text-slate-700">Yük Dağılımı (%)</td>
+                <td class="px-4 py-2.5 font-bold">${gaitResults.metrics.leftLoad.toFixed(1)}%</td>
+                <td class="px-4 py-2.5 font-bold">${gaitResults.metrics.rightLoad.toFixed(1)}%</td>
+            </tr>
+        `;
+    }
+
+    let tbodyEval = document.getElementById('compEvalTableBody');
+    if (tbodyEval) {
+        let rsi = gaitResults.metrics.forceAsym;
+        let severity = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        let bgClass = rsi < 10 ? 'bg-green-100' : (rsi < 20 ? 'bg-amber-100' : 'bg-red-100');
+        
+        tbodyEval.innerHTML = `
+            <tr>
+                <td class="px-4 py-3 font-medium text-slate-700">Ortalama Çift Simetrisi</td>
+                <td class="px-4 py-3 ${bgClass} font-bold text-slate-800 text-center">%${rsi.toFixed(1)} - ${severity}</td>
+            </tr>
+        `;
+    }
+
     // --- Simetri Analizi ---
     let ctxSymLoad = document.getElementById('chartSymLoadPairs');
     if (ctxSymLoad) {
@@ -679,6 +760,35 @@ function renderCharts() {
             });
         }
 
+        let ctxRegional = document.getElementById(`regionalChart_${step.id}`);
+        if (ctxRegional) {
+            chartInstances[`regionalChart_${step.id}`] = new Chart(ctxRegional, {
+                type: 'bar',
+                data: {
+                    labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'],
+                    datasets: [{
+                        data: [step.regional.heelPct, step.regional.midPct, step.regional.forePct],
+                        backgroundColor: ['#ef4444', '#10b981', '#f59e0b'] // Red, Green, Orange
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { 
+                        title: { display: true, text: 'Bölgesel Dağılım' },
+                        legend: { display: false },
+                        datalabels: {
+                            display: true,
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: Math.round,
+                            font: { weight: 'bold' }
+                        }
+                    },
+                    scales: { y: { min: 0, max: 100, title: { display: true, text: '%' } } }
+                }
+            });
+        }
+        
         let ctxCopPath = document.getElementById(`copPath_${step.id}`);
         if (ctxCopPath) {
             let data = step.copPath.map(p => ({ x: p.x, y: p.y }));

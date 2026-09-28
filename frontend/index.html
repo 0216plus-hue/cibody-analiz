@@ -1914,6 +1914,72 @@
             </div>
         </div>
 
+        <!-- Sol - Sağ Ayak Karşılaştırması -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-code-compare text-indigo-500 mr-2"></i>Sol - Sağ Ayak Karşılaştırması</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="flex flex-col items-center">
+                    <h4 class="font-bold text-slate-700 mb-2" id="compLeftTitle">Sol Ayak (n=0)</h4>
+                    <canvas id="compLeftCanvas" width="240" height="240" class="bg-black rounded-2xl border-4 border-slate-800 shadow-lg"></canvas>
+                </div>
+                <div class="flex flex-col items-center">
+                    <h4 class="font-bold text-slate-700 mb-2" id="compRightTitle">Sağ Ayak (n=0)</h4>
+                    <canvas id="compRightCanvas" width="240" height="240" class="bg-black rounded-2xl border-4 border-slate-800 shadow-lg"></canvas>
+                </div>
+            </div>
+
+            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Eşleşen Adım Çiftleri Karşılaştırması</h4>
+            <div class="overflow-x-auto mb-8">
+                <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
+                    <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 border-b border-slate-200">Çift</th>
+                            <th class="px-4 py-3 border-b border-slate-200">Sol Adım</th>
+                            <th class="px-4 py-3 border-b border-slate-200">Sağ Adım</th>
+                            <th class="px-4 py-3 border-b border-slate-200">Dağılım (Sol/Sağ)</th>
+                            <th class="px-4 py-3 border-b border-slate-200">Simetri (RSI)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compPairsTableBody">
+                        <!-- JS fills -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Ortalama Değerler (Çift Bazlı)</h4>
+                    <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 border-b border-slate-200">Metrik</th>
+                                <th class="px-4 py-3 border-b border-slate-200">Sol Ayak</th>
+                                <th class="px-4 py-3 border-b border-slate-200">Sağ Ayak</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compAvgTableBody">
+                            <!-- JS fills -->
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Simetri Değerlendirmesi</h4>
+                    <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 border-b border-slate-200">Parametre</th>
+                                <th class="px-4 py-3 border-b border-slate-200">Simetri İndeksi (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compEvalTableBody">
+                            <!-- JS fills -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Simetri Analizi -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
             <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i>Simetri Analizi</h3>
