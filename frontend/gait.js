@@ -15,6 +15,8 @@ function startGaitAnalysis() {
     
     document.getElementById('gaitInstructionOverlay').classList.add('hidden');
     document.getElementById('btnStartGaitAnalysis').classList.add('hidden');
+    const btnPdf = document.getElementById('btnDownloadGaitPdf');
+    if(btnPdf) btnPdf.classList.add('hidden');
     document.getElementById('btnCompleteGaitAnalysis').classList.remove('hidden');
     
     let statusBadge = document.getElementById('gaitLiveStatus');
@@ -54,6 +56,8 @@ function completeGaitAnalysis() {
     if(typeof showToast === 'function') showToast(`${recordedSteps.length} adım analize gönderildi.`);
     document.getElementById('gaitRecordingSection').classList.add('hidden');
     document.getElementById('gaitResultsSection').classList.remove('hidden');
+    const btnPdf = document.getElementById('btnDownloadGaitPdf');
+    if(btnPdf) btnPdf.classList.remove('hidden');
     
     // Yürüme Analizi AŞAMA 2 ve 3'ü tetikle
     if(typeof analyzeGaitData === 'function') {
@@ -110,6 +114,8 @@ window.loadGaitHistory = function(recordId) {
         document.getElementById('gaitRecordingSection').classList.remove('hidden');
         recordedSteps = [];
         document.getElementById('gaitStepCount').innerText = "0";
+        const btnPdf2 = document.getElementById('btnDownloadGaitPdf');
+        if(btnPdf2) btnPdf2.classList.add('hidden');
         const listEl = document.getElementById('gaitStepsList');
         if(listEl) {
             Array.from(listEl.children).forEach(child => {
@@ -127,6 +133,8 @@ window.loadGaitHistory = function(recordId) {
         recordedSteps = record.steps;
         document.getElementById('gaitRecordingSection').classList.add('hidden');
         document.getElementById('gaitResultsSection').classList.remove('hidden');
+        const btnPdf3 = document.getElementById('btnDownloadGaitPdf');
+        if(btnPdf3) btnPdf3.classList.remove('hidden');
         if(typeof analyzeGaitData === 'function') {
             analyzeGaitData(recordedSteps);
         }
@@ -372,3 +380,32 @@ function removeStep(idx) {
     recordedSteps.splice(idx, 1);
     updateGaitUI();
 }
+
+window.downloadGaitPdf = function() {
+    if (!currentPatientId) {
+        if(typeof showToast === 'function') showToast("Lütfen bir hasta seçin.");
+        return;
+    }
+    
+    const element = document.getElementById('gaitTab');
+    const opt = {
+        margin:       0.5,
+        filename:     `dinamik_yurume_analizi_${currentPatientId}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr', '.grid'] }
+    };
+
+    const topBar = document.getElementById('gaitTopBar');
+    if(topBar) topBar.style.display = 'none';
+    
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+        if (typeof applyCibodyPdfHeaderFooter === 'function') {
+            applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
+        }
+    }).save().then(() => {
+        if(topBar) topBar.style.display = 'flex';
+        if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+    });
+};

@@ -1794,7 +1794,7 @@
 <!-- SEKME: YÜRÜME ANALİZİ -->
 <div id="gaitTab" class="hidden">
     <!-- Üst Bar: Başlık ve Butonlar -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4" id="gaitTopBar">
         <div>
             <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-person-running mr-2 text-emerald-500"></i>Dinamik Yürüme Analizi</h2>
             <p class="text-xs text-slate-500 mt-1">Hastayı cihaz üzerinde yürütünüz. Sistem adımları otomatik yakalayacaktır.</p>
@@ -1814,6 +1814,9 @@
             </button>
             <button id="btnCompleteGaitAnalysis" onclick="completeGaitAnalysis()" class="bg-amber-500 hover:bg-amber-400 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md flex items-center gap-2 hidden">
                 <i class="fa-solid fa-flag-checkered"></i> Analizi Tamamla
+            </button>
+            <button id="btnDownloadGaitPdf" onclick="downloadGaitPdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2 px-5 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
             </button>
         </div>
     </div>
@@ -2016,7 +2019,7 @@
         </div>
         
         <div class="flex justify-between mt-6">
-            <button onclick="document.getElementById('gaitResultsSection').classList.add('hidden'); document.getElementById('gaitRecordingSection').classList.remove('hidden');" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
+            <button data-html2canvas-ignore="true" onclick="document.getElementById('gaitResultsSection').classList.add('hidden'); document.getElementById('gaitRecordingSection').classList.remove('hidden');" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Kayda Dön
             </button>
         </div>
