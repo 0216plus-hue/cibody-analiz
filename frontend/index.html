@@ -2181,6 +2181,103 @@
     </div>
 
 <!-- Bilgilendirme Modalı -->
+
+<!-- Denge Testi Sekmesi -->
+<div id="balanceTab" class="hidden">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4" id="balanceTopBar">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <div class="bg-indigo-50 p-2 rounded-lg hidden md:block">
+                <i class="fa-solid fa-scale-unbalanced text-indigo-500"></i>
+            </div>
+            <select id="balanceHistorySelect" onchange="loadBalanceHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- Yeni Test --</option>
+            </select>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto flex-wrap justify-end">
+            <select id="balanceTestType" class="text-sm bg-slate-50 border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700">
+                <option value="eyes_open">Gözler Açık Testi (30sn)</option>
+                <option value="eyes_closed">Gözler Kapalı Testi (30sn)</option>
+            </select>
+            <button id="btnStartBalance" onclick="startBalanceTest()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-play"></i> Başlat
+            </button>
+            <button id="btnStopBalance" onclick="stopBalanceTest()" class="hidden bg-rose-500 hover:bg-rose-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-stop"></i> İptal
+            </button>
+            <button id="btnSaveBalance" onclick="saveBalanceTest()" class="hidden bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+            <button id="btnDownloadBalancePdf" onclick="downloadBalancePdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
+            </button>
+        </div>
+    </div>
+
+    <!-- Canlı Kayıt Ekranı -->
+    <div id="balanceRecordingSection" class="flex flex-col items-center justify-center py-8">
+        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 flex-shrink-0" style="width: 100%; max-width: 480px; aspect-ratio: 1 / 1;">
+            <canvas id="balance_live_canvas" width="480" height="480" class="block"></canvas>
+            
+            <div id="balanceTimerDisplay" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-7xl font-black drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] hidden">
+                30
+            </div>
+            
+            <div id="balanceLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10">
+                <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
+            </div>
+        </div>
+        <p class="text-slate-500 text-sm font-medium mt-6 text-center max-w-lg">
+            Hastanın platformun tam ortasına basmasını sağlayın. Hazır olduğunda testi başlatın. Hastadan sabit durması ve kımıldamaması istenir.
+        </p>
+    </div>
+
+    <!-- Sonuçlar Ekranı -->
+    <div id="balanceResultsSection" class="hidden flex flex-col gap-8 w-full py-2">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <div class="text-2xl font-black text-indigo-600" id="balMetricPath">0.0 mm</div>
+                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Sway Path (Yol)</div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <div class="text-2xl font-black text-emerald-600" id="balMetricVel">0.0 mm/sn</div>
+                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Ort. Hız</div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <div class="text-2xl font-black text-amber-500" id="balMetricArea">0.0 mm²</div>
+                <div class="text-xs text-slate-500 font-bold uppercase mt-1">95% Elips Alanı</div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+                <div class="text-2xl font-black text-rose-500" id="balMetricRomberg">N/A</div>
+                <div class="text-xs text-slate-500 font-bold uppercase mt-1">Romberg Oranı</div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-6 w-full">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-1/2">
+                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Statokinezigram (COP Yörüngesi)</h3>
+                <div class="chart-container" style="position: relative; height:350px;">
+                    <canvas id="balChartScatter"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-1/2 flex flex-col gap-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram X (Medio-Lateral)</h3>
+                    <div class="chart-container" style="position: relative; height:140px;">
+                        <canvas id="balChartX"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram Y (Antero-Posterior)</h3>
+                    <div class="chart-container" style="position: relative; height:140px;">
+                        <canvas id="balChartY"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" data-html2canvas-ignore="true">
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
         <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
