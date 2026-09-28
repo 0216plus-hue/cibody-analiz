@@ -1262,66 +1262,300 @@
                 </div>
 
 <div id="footTab" class="hidden">
-                <!-- Üst Bilgi ve İşlem Çubuğu (Şeffaf Zemin) -->
-                <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 gap-4">
-                    <div>
-                        <h3 class="text-2xl font-black text-slate-800"><i class="fa-solid fa-shoe-prints mr-2 text-indigo-900"></i>Biyomekanik Ayak Analiz Raporu</h3>
-                        <p class="text-sm text-slate-500 mt-1 font-medium" id="footReportDate">Oluşturma Tarihi: Bekleniyor...</p>
-                    </div>
-                    
-                    <div class="flex flex-wrap items-center gap-3">
-                        <form id="footAnalysisForm" onsubmit="runFootAnalysis(event)" class="flex items-center gap-2 m-0 pr-4 border-r border-slate-200">
-                            <input type="file" id="pdf_file" accept="application/pdf" required class="block w-auto max-w-[200px] text-sm text-slate-500 file:mr-2 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-800 hover:file:bg-indigo-100 bg-white border border-slate-200 rounded-lg p-0 cursor-pointer">
-                            <button type="submit" id="btnFootSubmit" class="px-4 py-2 bg-indigo-900 text-white rounded-lg font-bold hover:bg-indigo-800 transition whitespace-nowrap shadow-sm"><i class="fa-solid fa-bolt mr-1"></i> Analiz Et</button>
-                        </form>
-                        
-                        <div id="footActionButtons" class="hidden flex items-center gap-2" data-html2canvas-ignore="true">
-                            <button onclick="showFootQr()" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
-                                <i class="fa-solid fa-qrcode text-indigo-600"></i> Karekod
-                            </button>
-                            <button onclick="downloadFootPdf()" class="bg-indigo-100 text-indigo-900 hover:bg-indigo-200 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
-                                <i class="fa-solid fa-file-pdf text-red-600"></i> PDF İndir
-                            </button>
-                            <a id="btnDownloadPdf" href="#" target="_blank" class="bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 px-3 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap hidden">
-                                Orijinal PDF
-                            </a>
-                        </div>
-                    </div>
+    <style>
+        #footTab .foot-header { text-align: center; margin-bottom: 20px; }
+        #footTab .foot-header h1 { margin: 0; color: #1e293b; font-size: 28px; letter-spacing: 2px;}
+        #footTab .foot-header p { margin: 5px 0 0 0; color: #10b981; font-size: 14px;}
+        
+        #footTab .foot-container { display: flex; justify-content: center; gap: 40px; align-items: flex-start; max-width: 1100px; margin: auto; padding: 20px; }
+        #footTab .canvas-container { position: relative; border: 2px solid #333; background: #000; box-shadow: 0 4px 30px rgba(0,255,255,0.2); border-radius: 10px; overflow: hidden; }
+        #footTab canvas { display: block; }
+        
+        #footTab .stats-container { background: #1e293b; padding: 25px; border-radius: 10px; width: 400px; border: 1px solid #334155; display: flex; flex-direction: column; gap: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);}
+        #footTab .stat-box { background: #334155; padding: 20px; border-radius: 8px; border: 1px solid #475569; }
+        #footTab .stat-title { font-size: 16px; color: #f1f5f9; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; text-align: center; font-weight: bold;}
+        
+        #footTab .bar-bg { background: #0f172a; height: 35px; border-radius: 5px; overflow: hidden; position: relative; display: flex; margin-bottom: 10px;}
+        #footTab .bar-left { background: linear-gradient(90deg, #2196F3, #00BCD4); height: 100%; display: flex; align-items: center; padding-left: 15px; font-weight: bold; transition: width 0.2s; color: white;}
+        #footTab .bar-right { background: linear-gradient(90deg, #4CAF50, #8BC34A); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: bold; transition: width 0.2s; color: white;}
+        #footTab .bar-top { background: linear-gradient(90deg, #9C27B0, #E91E63); height: 100%; display: flex; align-items: center; padding-left: 15px; font-weight: bold; transition: width 0.2s; color: white;}
+        #footTab .bar-bottom { background: linear-gradient(90deg, #FF9800, #FFC107); height: 100%; display: flex; align-items: center; justify-content: flex-end; padding-right: 15px; font-weight: bold; transition: width 0.2s; color: white;}
+        #footTab .center-line { position: absolute; left: 50%; top: -5px; bottom: -5px; width: 2px; background: rgba(255,255,255,0.5); z-index: 10;}
+    </style>
+    
+    <div class="foot-header">
+        <h1>CIBODY DİJİTAL ANALİZ</h1>
+        <p>V2 - Tıbbi Teşhis (A-B-C), Yürüyüş Ekseni & Otomatik Sabitleme</p>
+    </div>
+    
+    <div class="foot-container">
+        <div class="canvas-container">
+            <canvas id="foot_analysis_canvas" width="480" height="480"></canvas>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-box">
+                <div class="stat-title">Sol / Sağ Dağılımı</div>
+                <div class="bar-bg">
+                    <div class="center-line"></div>
+                    <div id="barL" class="bar-left" style="width:50%">Sol %50</div>
+                    <div id="barR" class="bar-right" style="width:50%">Sağ %50</div>
                 </div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-title">Ön / Arka Dağılımı</div>
+                <div class="bar-bg">
+                    <div class="center-line"></div>
+                    <div id="barT" class="bar-top" style="width:30%">Ön %30</div>
+                    <div id="barB" class="bar-bottom" style="width:70%">Arka %70</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById("foot_analysis_canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            
+            // --- AYAR ---
+            const HASSASIYET = 1.6; // Kırmızılığı artırmak/azaltmak için bunu değiştirebilirsin.
+            // ------------
+
+            const palCanvas = document.createElement('canvas');
+            palCanvas.width = 1; palCanvas.height = 256;
+            const pCtx = palCanvas.getContext('2d');
+            const grd = pCtx.createLinearGradient(0, 0, 0, 256);
+            grd.addColorStop(0, "black");
+            grd.addColorStop(0.15, "purple");
+            grd.addColorStop(0.35, "blue");
+            grd.addColorStop(0.55, "cyan");
+            grd.addColorStop(0.75, "lime");
+            grd.addColorStop(0.90, "yellow");
+            grd.addColorStop(1, "red");
+            pCtx.fillStyle = grd;
+            pCtx.fillRect(0, 0, 1, 256);
+            const palette = pCtx.getImageData(0, 0, 1, 256).data;
+
+            const alphaCanvas = document.createElement('canvas');
+            alphaCanvas.width = 480; alphaCanvas.height = 480;
+            const alphaCtx = alphaCanvas.getContext('2d');
+
+            const WIDTH = 48;
+            const HEIGHT = 48;
+            const FRAME_SIZE = 2304; 
+            
+            let buffer = new Uint8Array(FRAME_SIZE * 3); 
+            let writeIdx = 0;
+            let lastDrawIdx = 0;
+
+            const ws = new WebSocket("ws://localhost:8765");
+            ws.binaryType = "arraybuffer";
+
+            ws.onmessage = (event) => {
+                let data = new Uint8Array(event.data);
+                for (let i = 0; i < data.length; i++) {
+                    buffer[writeIdx % buffer.length] = data[i];
+                    writeIdx++;
+                }
+                if (writeIdx - lastDrawIdx >= FRAME_SIZE) {
+                    drawFrame();
+                    lastDrawIdx = writeIdx;
+                }
+            };
+
+            function drawFrame() {
+                let tempFrame = new Uint8Array(FRAME_SIZE * 2);
+                let start = (writeIdx - (FRAME_SIZE * 2) + buffer.length) % buffer.length;
+                for (let i = 0; i < FRAME_SIZE * 2; i++) {
+                    tempFrame[i] = buffer[(start + i) % buffer.length];
+                }
+
+                // GÖRÜNTÜ SABİTLEME KİLİDİ
+                let rowSums = new Array(96).fill(0);
+                for(let r=0; r<96; r++) {
+                    let sum = 0;
+                    for(let c=0; c<48; c++) { sum += tempFrame[r*48 + c]; }
+                    rowSums[r] = sum;
+                }
+                let bestStartRow = 0;
+                let maxSum = -1;
+                for(let r=0; r<48; r++) {
+                    let centerSum = 0;
+                    for(let i=14; i<34; i++) { centerSum += rowSums[r + i]; }
+                    if(centerSum > maxSum) { maxSum = centerSum; bestStartRow = r; }
+                }
+                if (typeof window.lastStableRow === 'undefined') window.lastStableRow = bestStartRow;
+                if (Math.abs(bestStartRow - window.lastStableRow) > 3 && Math.abs(bestStartRow - window.lastStableRow) < 45) {
+                    window.lastStableRow = bestStartRow;
+                }
+
+                let readStart = window.lastStableRow * 48;
+                alphaCtx.clearRect(0, 0, 480, 480);
                 
-                <div id="footLoadingState" class="hidden mb-6 text-center text-indigo-900">
-                    <i class="fa-solid fa-spinner fa-spin fa-2x mb-2"></i>
-                    <p class="font-medium">PDF Tıbbi Literatüre Göre Yapay Zeka Tarafından Okunuyor...</p>
-                </div>
+                let totalP = 0, leftP = 0, rightP = 0, topP = 0, bottomP = 0;
+                let wX = 0, wY = 0;
 
-                <!-- AYAK BASINÇ ANALİZİ SONUÇLARI -->
-                <div id="footResultsSection" class="hidden avoid-break bg-slate-50">
-                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-start">
-                            <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-1 mr-3 text-lg"></i>
-                            <p class="text-xs text-amber-800 leading-relaxed font-medium">
-                                <strong>Önemli:</strong> Bu rapor bir tıbbi teşhis değildir. Sistem, yüklenen baropodometrik basınç verilerini literatürdeki standartlara göre analiz ederek biyomekanik bir ön değerlendirme sunar. Nihai teşhis ve tabanlık reçetesi için uzmanınıza danışın.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="mb-8">
-                        <h2 class="text-xl font-bold text-slate-800 mb-4 ml-1"><i class="fa-solid fa-robot text-indigo-600 mr-2"></i>Yapay Zeka Klinik Değerlendirmesi</h2>
-                        <div class="prose prose-slate max-w-none prose-h3:text-indigo-900 prose-h3:mt-0 prose-h3:mb-4 prose-p:text-slate-600 prose-ul:text-slate-600" id="footReportContent">
-                            <!-- AI Markdown Sonucu Buraya Düşer -->
-                        </div>
-                    </div>
-
-                    <!-- Ayak Riskler Bölümü -->
-                    <div id="footRisksSection" class="mt-8 hidden avoid-break">
-                        <h2 class="text-2xl font-bold text-slate-800 mb-2">Bu Durum Zamanla Neye Yol Açabilir? <span class="text-sm font-normal text-slate-500">— önlem alınmazsa oluşabilecek olası riskler</span></h2>
-                        <p class="text-sm text-slate-600 mb-6 leading-relaxed max-w-4xl">Aşağıdaki tablolar, tespit edilen taban basış bozukluklarının kinetik zincir (bacak ve omurga) üzerindeki potansiyel uzun vadeli etkilerini gösterir. Kişiye özel tabanlık (ortez) ve egzersizlerle bu riskler yönetilebilir.</p>
+                for (let i = 0; i < FRAME_SIZE; i++) {
+                    let val = tempFrame[readStart + i];
+                    if (val > 5) { 
+                        let y = Math.floor(i / WIDTH);
+                        let x = i % WIDTH;
+                        let mirroredX = WIDTH - 1 - x;
                         
-                        <div id="footRisksContainer" class="flex flex-col gap-6">
-                            <!-- Ayak Risk Kartları JS ile buraya basılacak -->
-                        </div>
-                    </div>
-                    </div>
-                </div>
+                        let cx = mirroredX * 10 + 5;
+                        let cy = y * 10 + 5;
+
+                        totalP += val;
+                        if (mirroredX < 24) leftP += val; else rightP += val;
+                        if (y < 24) topP += val; else bottomP += val;
+                        wX += cx * val;
+                        wY += cy * val;
+
+                        let radGrd = alphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+                        radGrd.addColorStop(0, `rgba(255, 255, 255, ${val/255})`);
+                        radGrd.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                        alphaCtx.fillStyle = radGrd;
+                        alphaCtx.fillRect(cx - 14, cy - 14, 28, 28);
+                    }
+                }
+
+                // RENKLENDİRME
+                let imgData = alphaCtx.getImageData(0,0,480,480);
+                let pixels = imgData.data;
+                for(let i=0; i<pixels.length; i+=4) {
+                    let intensity = Math.min(255, pixels[i+3] * HASSASIYET); 
+                    if(intensity > 0) {
+                        let cIdx = Math.floor(intensity) * 4;
+                        pixels[i]   = palette[cIdx];     
+                        pixels[i+1] = palette[cIdx+1];   
+                        pixels[i+2] = palette[cIdx+2];   
+                        pixels[i+3] = 255;               
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                // BİYOMEKANİK ÇİZİMLER (ABC ve OMURGA)
+                let ptsL = [], ptsR = [];
+                for (let i = 0; i < FRAME_SIZE; i++) {
+                    let val = tempFrame[readStart + i];
+                    if (val > 5) {
+                        let y = Math.floor(i / WIDTH);
+                        let x = WIDTH - 1 - (i % WIDTH);
+                        let cx = x * 10 + 5, cy = y * 10 + 5;
+                        if (x < 24) ptsL.push({x, y, cx, cy, val});
+                        else ptsR.push({x, y, cx, cy, val});
+                    }
+                }
+
+                function drawSpine(pts) {
+                    if(pts.length === 0) return;
+                    let rows = {};
+                    pts.forEach(p => {
+                        if(!rows[p.y]) rows[p.y] = {sumX:0, sumP:0};
+                        rows[p.y].sumX += p.cx * p.val;
+                        rows[p.y].sumP += p.val;
+                    });
+                    ctx.strokeStyle = "#FF9800"; 
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    let first = true;
+                    Object.keys(rows).sort((a,b)=>a-b).forEach(y => {
+                        let copX = rows[y].sumX / rows[y].sumP;
+                        let cy = parseInt(y) * 10 + 5;
+                        if(first) { ctx.moveTo(copX, cy); first = false; }
+                        else { ctx.lineTo(copX, cy); }
+                    });
+                    ctx.stroke();
+                }
+                drawSpine(ptsL); drawSpine(ptsR);
+
+                function findLandmarks(pts, isLeft) {
+                    if(pts.length < 10) return null; 
+                    let heel = pts.filter(p => p.y > 24).reduce((max, p) => p.val > max.val ? p : max, {val:-1});
+                    let meta = pts.filter(p => p.y < 24 && (isLeft ? p.x > 8 : p.x < 40)).reduce((max, p) => p.val > max.val ? p : max, {val:-1});
+                    let archPts = pts.filter(p => p.y > 15 && p.y < 35);
+                    let arch = null;
+                    if (archPts.length > 0) {
+                        arch = archPts.reduce((edge, p) => {
+                            if(isLeft) return p.x > edge.x ? p : edge;
+                            else return p.x < edge.x ? p : edge;
+                        }, archPts[0]);
+                    }
+                    if(heel.val > -1 && meta.val > -1 && arch) return {A: meta, B: heel, C: arch};
+                    return null;
+                }
+
+                let lmK = findLandmarks(ptsL, true);
+                let lmR = findLandmarks(ptsR, false);
+
+                function drawABC(lm) {
+                    if(!lm) return;
+                    ctx.strokeStyle = "rgba(255,255,255,0.7)";
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(lm.A.cx, lm.A.cy); ctx.lineTo(lm.B.cx, lm.B.cy);
+                    ctx.lineTo(lm.C.cx, lm.C.cy); ctx.lineTo(lm.A.cx, lm.A.cy);
+                    ctx.stroke();
+
+                    ['A', 'B', 'C'].forEach(key => {
+                        let pt = lm[key];
+                        ctx.fillStyle = "white";
+                        ctx.beginPath(); ctx.arc(pt.cx, pt.cy, 3, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = "yellow"; ctx.font = "bold 12px Arial";
+                        ctx.fillText(key, pt.cx + 6, pt.cy - 6);
+                    });
+                }
+                drawABC(lmK); drawABC(lmR);
+
+                function calcClarke(lm) {
+                    let dx1 = lm.A.cx - lm.B.cx, dy1 = lm.A.cy - lm.B.cy;
+                    let dx2 = lm.C.cx - lm.B.cx, dy2 = lm.C.cy - lm.B.cy;
+                    let angle = Math.abs((Math.atan2(dy1, dx1) - Math.atan2(dy2, dx2)) * 180 / Math.PI);
+                    if (angle > 180) angle = 360 - angle;
+                    return angle.toFixed(1);
+                }
+                function calcArchIndex(pts) {
+                    if(pts.length===0) return "0.0";
+                    let archP = pts.filter(p => p.y > 16 && p.y < 32).reduce((sum, p)=>sum+p.val, 0);
+                    let totalP = pts.reduce((sum, p)=>sum+p.val, 0);
+                    return ((archP / totalP) * 100).toFixed(2);
+                }
+
+                ctx.fillStyle = "#0f0"; ctx.font = "bold 14px Arial";
+                if(lmK) {
+                    ctx.fillText(`Sol Clarke: ${calcClarke(lmK)}°`, 20, 30);
+                    ctx.fillText(`Ark İnd.: ${calcArchIndex(ptsL)}`, 20, 50);
+                }
+                if(lmR) {
+                    ctx.fillText(`Sağ Clarke: ${calcClarke(lmR)}°`, 320, 30);
+                    ctx.fillText(`Ark İnd.: ${calcArchIndex(ptsR)}`, 320, 50);
+                }
+
+                // GENEL AĞIRLIK MERKEZİ
+                if (totalP > 0) {
+                    let copX = wX / totalP, copY = wY / totalP;
+                    ctx.strokeStyle = "rgba(255, 128, 0, 0.7)"; ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(copX, 0); ctx.lineTo(copX, 480);
+                    ctx.moveTo(0, copY); ctx.lineTo(480, copY);
+                    ctx.stroke();
+
+                    let lPct = (leftP / totalP * 100).toFixed(1);
+                    let rPct = (rightP / totalP * 100).toFixed(1);
+                    let tPct = (topP / totalP * 100).toFixed(1);
+                    let bPct = (bottomP / totalP * 100).toFixed(1);
+
+                    document.getElementById('barL').style.width = lPct + "%"; document.getElementById('barL').innerText = "Sol %" + lPct;
+                    document.getElementById('barR').style.width = rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + rPct;
+                    document.getElementById('barT').style.width = tPct + "%"; document.getElementById('barT').innerText = "Ön %" + tPct;
+                    document.getElementById('barB').style.width = bPct + "%"; document.getElementById('barB').innerText = "Arka %" + bPct;
+                }
+            }
+        })();
+    </script>
+</div>
 
         </div> <!-- /patientView -->
     </div>
