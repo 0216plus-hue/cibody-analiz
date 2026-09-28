@@ -458,14 +458,14 @@ function renderAllTestDetails() {
         
         // Canvas Container
         let chartHTML = `
-        <div class="flex flex-col lg:flex-row gap-6 w-full mt-2">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full lg:w-1/2">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-2">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Statokinezigram (COP Yörüngesi)</h3>
                 <div style="position: relative; height:300px;">
                     <canvas id="scatter_${t.k}"></canvas>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full lg:w-1/2 flex flex-col gap-4">
+            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full flex flex-col gap-4">
                 <div>
                     <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram X (ML)</h3>
                     <div style="position: relative; height:120px;">
