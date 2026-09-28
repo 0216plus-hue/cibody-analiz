@@ -1314,9 +1314,9 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
+    <div class="flex flex-col items-center gap-8 w-full py-2">
         <!-- Canvas Alanı -->
-        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto lg:mx-0">
+        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto flex-shrink-0" style="width: 100%; max-width: 480px; aspect-ratio: 1 / 1;">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
@@ -1324,7 +1324,7 @@
         </div>
         
         <!-- İstatistikler -->
-        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0" id="footAnalysisDataPanel">
+        <div class="flex flex-col gap-6 w-full max-w-2xl mx-auto" id="footAnalysisDataPanel">
             
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
