@@ -1289,11 +1289,14 @@
         </div>
 
         <div class="flex items-center gap-3 w-full md:w-auto">
-            <button onclick="downloadStaticFootPdf()" class="flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
-                <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
+            <button id="btnStartStaticFoot" onclick="startStaticFootAnalysis()" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-play"></i> Analizi Başlat
             </button>
-            <button id="btnSaveFootAnalysis" onclick="saveStaticFootAnalysis()" class="flex-1 md:flex-none bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+            <button id="btnSaveFootAnalysis" onclick="saveStaticFootAnalysis()" class="hidden flex-1 md:flex-none bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
                 <i class="fa-solid fa-floppy-disk"></i> Kaydet
+            </button>
+            <button id="btnDownloadFootPdf" onclick="downloadStaticFootPdf()" class="hidden flex-1 md:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-file-pdf text-red-500"></i> İndir
             </button>
         </div>
     </div>
@@ -1302,8 +1305,8 @@
         <!-- Canvas Alanı -->
         <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto lg:mx-0">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
-            <div id="footLiveStatus" class="absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
-                <i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI
+            <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
+                <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
             </div>
         </div>
         
@@ -1361,7 +1364,21 @@
         </div>
     </div>
     <script>
-        window.isFootLive = true;
+        window.isFootLive = false;
+        
+        window.startStaticFootAnalysis = function() {
+            window.isFootLive = true;
+            
+            document.getElementById('btnStartStaticFoot').classList.add('hidden');
+            document.getElementById('btnSaveFootAnalysis').classList.remove('hidden');
+            document.getElementById('btnDownloadFootPdf').classList.add('hidden');
+            
+            let statusBadge = document.getElementById('footLiveStatus');
+            if (statusBadge) {
+                statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI';
+                statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+            }
+        };
         let lastFootData = {};
         
         (function() {
@@ -1648,6 +1665,9 @@
             alert("Analiz başarıyla kaydedildi!");
             refreshStaticFootHistoryDropdown();
             document.getElementById('staticFootHistorySelect').value = newRecord.id;
+            
+            document.getElementById('btnSaveFootAnalysis').classList.add('hidden');
+            document.getElementById('btnDownloadFootPdf').classList.remove('hidden');
         }
 
         function refreshStaticFootHistoryDropdown() {
@@ -1672,12 +1692,21 @@
             let btnSave = document.getElementById('btnSaveFootAnalysis');
             
             if (!recordId) {
-                window.isFootLive = true;
+                window.isFootLive = false; // Bekleme durumu
                 if (statusBadge) {
-                    statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI';
-                    statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+                    statusBadge.innerHTML = '<i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...';
+                    statusBadge.className = "absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600";
                 }
-                if (btnSave) btnSave.style.display = 'flex';
+                document.getElementById('btnStartStaticFoot').classList.remove('hidden');
+                document.getElementById('btnSaveFootAnalysis').classList.add('hidden');
+                document.getElementById('btnDownloadFootPdf').classList.add('hidden');
+                
+                // clear canvas
+                const canvas = document.getElementById("foot_analysis_canvas");
+                if(canvas) {
+                    const ctx = canvas.getContext("2d");
+                    ctx.clearRect(0,0, canvas.width, canvas.height);
+                }
                 return;
             }
             
@@ -1689,7 +1718,9 @@
                     statusBadge.innerHTML = '<i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> GEÇMİŞ';
                     statusBadge.className = "absolute top-4 left-4 bg-indigo-900/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-indigo-500/50";
                 }
-                if (btnSave) btnSave.style.display = 'none';
+                if (btnSave) btnSave.classList.add('hidden');
+                document.getElementById('btnStartStaticFoot').classList.add('hidden');
+                document.getElementById('btnDownloadFootPdf').classList.remove('hidden');
 
                 let d = record.data;
                 document.getElementById('barL').style.width = d.lPct + "%"; document.getElementById('barL').innerText = "Sol %" + d.lPct;
