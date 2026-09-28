@@ -43,7 +43,7 @@
             width: 100% !important;
         }
     </style>
-\n</head>
+</head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans" onload="initApp()">
 
     <!-- ═══════════════════════════════════════ LOGIN VIEW ═══════════════════════════════════════ -->
@@ -1333,7 +1333,7 @@
         </div>
     </div>
 
-    <div class="flex flex-col items-center gap-8 w-full py-2">
+    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
         <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto flex-shrink-0" style="width: 100%; max-width: 480px; aspect-ratio: 1 / 1;">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
@@ -1343,7 +1343,7 @@
         </div>
         
         <!-- İstatistikler -->
-        <div class="flex flex-col gap-6 w-full max-w-2xl mx-auto" id="footAnalysisDataPanel">
+        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0" id="footAnalysisDataPanel">
             
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
@@ -1785,21 +1785,31 @@
             
             const element = document.getElementById('footTab');
             const opt = {
-                margin:       0.5,
+                margin:       [0.75, 0.3, 0.5, 0.3],
                 filename:     `statik_ayak_analiz_${currentPatientId}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0, windowWidth: 1200 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
             };
 
             const topBar = document.getElementById('footTopBar');
             if(topBar) topBar.style.display = 'none';
+            
+            const originalWidth = element.style.width;
+            element.style.width = '1000px';
+            element.style.maxWidth = '1000px';
+            element.classList.add('pdf-export-mode');
             
             html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
                 if (typeof applyCibodyPdfHeaderFooter === 'function') {
                     applyCibodyPdfHeaderFooter(pdf, "Statik Ayak Analizi Raporu");
                 }
             }).save().then(() => {
+                element.style.width = originalWidth;
+                element.style.maxWidth = '';
+                element.classList.remove('pdf-export-mode');
+                
                 if(topBar) topBar.style.display = 'flex';
                 if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");
             });
