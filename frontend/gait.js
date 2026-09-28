@@ -164,18 +164,26 @@ function processFinishedStep(frames) {
 function updateGaitUI() {
     const listEl = document.getElementById('gaitStepsList');
     const badgeEl = document.getElementById('gaitStepCountBadge');
+    const emptyState = document.getElementById('gaitEmptyState');
     
-    badgeEl.innerText = `${recordedSteps.length} Adım`;
+    if(badgeEl) badgeEl.innerText = `${recordedSteps.length} Adım`;
     
     if (recordedSteps.length === 0) {
-        document.getElementById('gaitEmptyState').classList.remove('hidden');
-        listEl.innerHTML = '';
-        listEl.appendChild(document.getElementById('gaitEmptyState'));
+        if(emptyState) emptyState.classList.remove('hidden');
+        if(listEl) {
+            Array.from(listEl.children).forEach(child => {
+                if (child.id !== 'gaitEmptyState') child.remove();
+            });
+        }
         return;
     }
     
-    document.getElementById('gaitEmptyState').classList.add('hidden');
-    listEl.innerHTML = '';
+    if(emptyState) emptyState.classList.add('hidden');
+    if(listEl) {
+        Array.from(listEl.children).forEach(child => {
+            if (child.id !== 'gaitEmptyState') child.remove();
+        });
+    }
     
     recordedSteps.forEach((s, index) => {
         let c = document.createElement('canvas');
