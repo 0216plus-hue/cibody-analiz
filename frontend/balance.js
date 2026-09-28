@@ -593,6 +593,75 @@ function loadBalanceSessionHistory(recordId) {
         currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
         document.getElementById('balanceResultsSection').classList.add('hidden');
         document.getElementById('balanceRecordingSection').classList.remove('hidden');
+        
+        let btnStart = document.getElementById('btnStartBalance');
+        if(btnStart) btnStart.classList.remove('hidden');
+        
+        document.getElementById('btnDownloadBalancePdf').classList.add('hidden');
+        let btnSave = document.getElementById('btnSaveBalance');
+        if(btnSave) btnSave.classList.add('hidden');
+        
+        // reset UI
+        const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
+        types.forEach(t => {
+            let icon = document.getElementById('icon_' + t);
+            if(icon) {
+                icon.className = "fa-solid fa-circle border-2 border-slate-300 rounded-full w-4 h-4 text-transparent";
+            }
+        });
+        selectBalanceTest('cift_acik');
+        checkBalanceReportReady();
+        
+        let cvs = document.getElementById('balance_live_canvas');
+        if(cvs) {
+            let ctx = cvs.getContext('2d');
+            ctx.clearRect(0,0,480,480);
+        }
+        return;
+    }
+    
+    // Load from history
+    let history = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+    let record = history.find(r => r.id === recordId);
+    if(record) {
+        currentBalanceSession = record.session;
+        document.getElementById('balanceRecordingSection').classList.add('hidden');
+        document.getElementById('balanceResultsSection').classList.remove('hidden');
+        
+        let btnStart = document.getElementById('btnStartBalance');
+        if(btnStart) btnStart.classList.add('hidden');
+        
+        document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
+        let btnSave = document.getElementById('btnSaveBalance');
+        if(btnSave) btnSave.classList.add('hidden');
+        
+        renderMasterTable();
+        renderAllTestDetails();
+    }
+}
+function saveBalanceSession() {
+    if(!currentPatientId) return showToast("Hasta seçili değil");
+    
+    let record = {
+        id: Date.now().toString(),
+        date: new Date().toLocaleString('tr-TR'),
+        session: currentBalanceSession
+    };
+    
+    let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
+    history.push(record);
+    localStorage.setItem(`balance_history_${currentPatientId}`, JSON.stringify(history));
+    
+    showToast("Denge testi oturumu kaydedildi.");
+    refreshBalanceSessionDropdown();
+}
+
+function loadBalanceSessionHistory(recordId) {
+    if(!recordId) {
+        // Reset to new session
+        currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
+        document.getElementById('balanceResultsSection').classList.add('hidden');
+        document.getElementById('balanceRecordingSection').classList.remove('hidden');
         document.getElementById('btnDownloadBalancePdf').classList.add('hidden');
         document.getElementById('btnSaveBalance').classList.add('hidden');
         selectBalanceTest('cift_acik');
