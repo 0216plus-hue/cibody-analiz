@@ -2228,21 +2228,47 @@
     </div>
 
     <!-- Canlı Kayıt Ekranı -->
-    <div id="balanceRecordingSection" class="flex flex-col items-center justify-center py-8">
-        <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 flex-shrink-0" style="width: 100%; max-width: 480px; aspect-ratio: 1 / 1;">
+    <div id="balanceRecordingSection" class="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px] w-full py-2">
+        <!-- Canlı Matris Ekranı -->
+        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center h-[480px] lg:h-full">
             <canvas id="balance_live_canvas" width="480" height="480" class="block"></canvas>
-            
-            <div id="balanceTimerDisplay" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-7xl font-black drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] hidden">
-                30
-            </div>
             
             <div id="balanceLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
             </div>
         </div>
-        <p class="text-slate-500 text-sm font-medium mt-6 text-center max-w-lg">
-            Hastanın platformun tam ortasına basmasını sağlayın. Hazır olduğunda testi başlatın. Hastadan sabit durması ve kımıldamaması istenir.
-        </p>
+        
+        <!-- Sağ Panel: Sayaç ve Bilgi -->
+        <div class="lg:w-1/3 w-full flex flex-col gap-6">
+            <div class="bg-slate-900 rounded-2xl border-4 border-slate-800 shadow-xl p-8 flex flex-col items-center justify-center flex-1 relative">
+                <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">Kalan Süre</h3>
+                <div id="balanceTimerDisplay" class="text-white text-8xl font-black drop-shadow-lg">
+                    --
+                </div>
+                <p class="text-emerald-400 text-sm font-medium mt-4 animate-pulse hidden" id="balanceRecordingIndicator">
+                    <i class="fa-solid fa-circle text-xs mr-1"></i> Veri Kaydediliyor
+                </p>
+                
+                <div class="absolute bottom-4 left-0 w-full flex justify-around border-t border-slate-800 pt-4 mt-4 px-4">
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500 font-bold uppercase">X Ekseni (ML)</div>
+                        <div class="text-lg text-indigo-400 font-mono font-bold" id="liveCopX">0.0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-slate-500 font-bold uppercase">Y Ekseni (AP)</div>
+                        <div class="text-lg text-emerald-400 font-mono font-bold" id="liveCopY">0.0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
+                <h4 class="font-bold text-indigo-900 mb-2"><i class="fa-solid fa-circle-info mr-2"></i>Talimatlar</h4>
+                <p class="text-sm text-indigo-700 leading-relaxed">
+                    Hastanın platformun tam ortasına basmasını sağlayın. Hazır olduğunda <strong>Başlat</strong> butonuna tıklayın.<br><br>
+                    Hasta test süresince kımıldamamalı ve sabit durmalıdır. Ekrandaki beyaz nokta, anlık ağırlık merkezini (COP) gösterir.
+                </p>
+            </div>
+        </div>
     </div>
 
     <!-- Sonuçlar Ekranı -->

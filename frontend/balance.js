@@ -27,11 +27,13 @@ function startBalanceTest() {
     statusBadge.className = 'absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10';
     
     const timerDisplay = document.getElementById('balanceTimerDisplay');
-    timerDisplay.classList.remove('hidden');
+    const indicator = document.getElementById('balanceRecordingIndicator');
+    if(indicator) indicator.classList.remove('hidden');
     timerDisplay.innerText = balanceTimeLeft;
     
     let isConnected = false;
     balanceWs = new WebSocket('ws://localhost:8765');
+    balanceWs.binaryType = 'arraybuffer';
     
     balanceWs.onopen = () => { 
         isConnected = true;
@@ -72,7 +74,9 @@ function stopBalanceTest() {
     
     document.getElementById('btnStopBalance').classList.add('hidden');
     document.getElementById('btnStartBalance').classList.remove('hidden');
-    document.getElementById('balanceTimerDisplay').classList.add('hidden');
+    document.getElementById('balanceTimerDisplay').innerText = '--';
+    const indicator = document.getElementById('balanceRecordingIndicator');
+    if(indicator) indicator.classList.add('hidden');
     
     const statusBadge = document.getElementById('balanceLiveStatus');
     statusBadge.innerHTML = '<i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...';
@@ -134,6 +138,12 @@ function processBalanceFrame(frameData) {
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'black';
         ctx.stroke();
+        
+        // Update DOM
+        const lx = document.getElementById('liveCopX');
+        const ly = document.getElementById('liveCopY');
+        if(lx) lx.innerText = realX.toFixed(1);
+        if(ly) ly.innerText = realY.toFixed(1);
     }
 }
 
