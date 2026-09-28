@@ -216,41 +216,71 @@ function completeBalanceTest() {
 }
 
 function calculateBalanceMetrics(data, testType) {
+    if (data.length < 5) return null;
+    
+    // 1. Bilimsel Filtreleme (Moving Average / Noise Reduction)
+    // Sensördeki mikro titreşimler (ADC gürültüsü) path uzunluğunu suni olarak artırır.
+    // Düzeltmek için 5-frame moving average (Hareketli Ortalama) uyguluyoruz.
+    let smoothedData = [];
+    let window = 5;
+    for(let i = 0; i < data.length; i++) {
+        let start = Math.max(0, i - Math.floor(window/2));
+        let end = Math.min(data.length - 1, i + Math.floor(window/2));
+        let sumX = 0, sumY = 0;
+        let count = end - start + 1;
+        for(let j = start; j <= end; j++) {
+            sumX += data[j].x;
+            sumY += data[j].y;
+        }
+        smoothedData.push({
+            x: sumX / count,
+            y: sumY / count,
+            t: data[i].t
+        });
+    }
+    
+    // 2. Metriklerin Hesaplanması (Sway Path)
     let pathLength = 0;
     let sumX = 0, sumY = 0;
-    for(let i = 0; i < data.length; i++) {
-        sumX += data[i].x;
-        sumY += data[i].y;
+    for(let i = 0; i < smoothedData.length; i++) {
+        sumX += smoothedData[i].x;
+        sumY += smoothedData[i].y;
         if(i > 0) {
-            let dx = data[i].x - data[i-1].x;
-            let dy = data[i].y - data[i-1].y;
+            let dx = smoothedData[i].x - smoothedData[i-1].x;
+            let dy = smoothedData[i].y - smoothedData[i-1].y;
             pathLength += Math.sqrt(dx*dx + dy*dy);
         }
     }
     
-    let n = data.length;
+    let n = smoothedData.length;
     let meanX = sumX / n;
     let meanY = sumY / n;
     
+    // 3. PCA (Principal Component Analysis) ile %95 Güven Elipsi (Confidence Ellipse)
     let c11 = 0, c22 = 0, c12 = 0;
     for(let i=0; i<n; i++) {
-        let dx = data[i].x - meanX;
-        let dy = data[i].y - meanY;
+        let dx = smoothedData[i].x - meanX;
+        let dy = smoothedData[i].y - meanY;
         c11 += dx*dx;
         c22 += dy*dy;
         c12 += dx*dy;
     }
+    // Kovaryans Matrisi
     c11 /= (n-1);
     c22 /= (n-1);
     c12 /= (n-1);
     
+    // Özdeğerler (Eigenvalues)
     let trace = c11 + c22;
     let det = c11*c22 - c12*c12;
     let root = Math.sqrt(Math.max(0, trace*trace - 4*det));
     let lambda1 = (trace + root) / 2;
     let lambda2 = (trace - root) / 2;
     
+    // Chi-square değeri = 5.991 (2 Serbestlik Derecesi için %95 Güven Aralığı)
     let ellipseAreaMm = Math.PI * 5.991 * Math.sqrt(Math.max(0, lambda1 * lambda2));
+    
+    // Gerçek test süresine göre Hız (Speed)
     let duration = testType.includes('tek') ? 15.0 : 30.0;
     let meanVelMm = pathLength / duration;
     
@@ -261,7 +291,9 @@ function calculateBalanceMetrics(data, testType) {
         duration: duration,
         nFrames: n,
         meanX: meanX,
-        meanY: meanY
+        meanY: meanY,
+        // Düzeltilmiş veriyi grafikler için saklıyoruz
+        smoothedData: smoothedData
     };
 }
 
@@ -350,8 +382,8 @@ function showChartForTest(testType) {
     // Update reference table
     renderRefTable(m, testType);
     
-    // Draw charts
-    let data = m.data;
+    // Draw charts using smoothed data
+    let data = m.smoothedData || m.data; // fallback for legacy records
     let xData = [];
     let yData = [];
     for(let i=0; i<data.length; i++) {
