@@ -165,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-}
 
 function processGaitFrame(rawData) {
     // Hardware mat in gait mode is rotated 90 degrees.
