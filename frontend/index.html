@@ -1286,7 +1286,7 @@
         <!-- Canvas Alanı -->
         <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto lg:mx-0">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
-            <div class="absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
+            <div id="footLiveStatus" class="absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2">
                 <i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI
             </div>
         </div>
@@ -1294,18 +1294,20 @@
         <!-- İstatistikler -->
         <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0" id="footAnalysisDataPanel">
             
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center"><i class="fa-solid fa-scale-balanced mr-2"></i>Sol / Sağ Dağılımı</h4>
-                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center relative z-10"><i class="fa-solid fa-scale-balanced mr-2"></i>Sol / Sağ Dağılımı</h4>
+                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50 z-10">
                     <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
                     <div id="barL" class="bar-left h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sol %50</div>
                     <div id="barR" class="bar-right h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sağ %50</div>
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center"><i class="fa-solid fa-arrows-up-down mr-2"></i>Ön / Arka Dağılımı</h4>
-                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50">
+            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full opacity-50 pointer-events-none"></div>
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center relative z-10"><i class="fa-solid fa-arrows-up-down mr-2"></i>Ön / Arka Dağılımı</h4>
+                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50 z-10">
                     <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
                     <div id="barT" class="bar-top h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:30%">Ön %30</div>
                     <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:70%">Arka %70</div>
@@ -1313,27 +1315,29 @@
             </div>
 
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Sol Ayak</h4>
-                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-3 text-center">
-                        <div class="text-[10px] text-slate-500 font-bold mb-1">CLARKE AÇISI</div>
-                        <div id="val_left_clarke" class="text-xl font-black text-indigo-900">-°</div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute -left-4 -top-4 w-16 h-16 bg-slate-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 text-center relative z-10">Sol Ayak</h4>
+                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-2 shadow-sm relative z-10">
+                        <span class="text-[10px] text-slate-500 font-bold">CLARKE</span>
+                        <span id="val_left_clarke" class="text-base font-black text-indigo-900">-°</span>
                     </div>
-                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                        <div class="text-[10px] text-slate-500 font-bold mb-1">ARK İNDEKSİ</div>
-                        <div id="val_left_arch" class="text-xl font-black text-emerald-600">-</div>
+                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm relative z-10">
+                        <span class="text-[10px] text-slate-500 font-bold">ARK İND.</span>
+                        <span id="val_left_arch" class="text-base font-black text-emerald-600">-</span>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">Sağ Ayak</h4>
-                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 mb-3 text-center">
-                        <div class="text-[10px] text-slate-500 font-bold mb-1">CLARKE AÇISI</div>
-                        <div id="val_right_clarke" class="text-xl font-black text-indigo-900">-°</div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
+                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-slate-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 text-center relative z-10">Sağ Ayak</h4>
+                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-2 shadow-sm relative z-10">
+                        <span class="text-[10px] text-slate-500 font-bold">CLARKE</span>
+                        <span id="val_right_clarke" class="text-base font-black text-indigo-900">-°</span>
                     </div>
-                    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center">
-                        <div class="text-[10px] text-slate-500 font-bold mb-1">ARK İNDEKSİ</div>
-                        <div id="val_right_arch" class="text-xl font-black text-emerald-600">-</div>
+                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm relative z-10">
+                        <span class="text-[10px] text-slate-500 font-bold">ARK İND.</span>
+                        <span id="val_right_arch" class="text-base font-black text-emerald-600">-</span>
                     </div>
                 </div>
             </div>
@@ -1351,7 +1355,7 @@
         </div>
     </div>
     <script>
-
+        window.isFootLive = true;
         let lastFootData = {};
         
         (function() {
@@ -1397,9 +1401,14 @@
                     buffer[writeIdx % buffer.length] = data[i];
                     writeIdx++;
                 }
-                if (writeIdx - lastDrawIdx >= FRAME_SIZE) {
-                    drawFrame();
-                    lastDrawIdx = writeIdx;
+                
+                if (window.isFootLive) {
+                    if (writeIdx - lastDrawIdx >= FRAME_SIZE) {
+                        drawFrame();
+                        lastDrawIdx = writeIdx;
+                    }
+                } else {
+                    lastDrawIdx = writeIdx; // Keep it caught up so it doesn't queue up old frames when unpaused
                 }
             };
 
@@ -1561,18 +1570,13 @@
                 let leftClarke = "-", leftArch = "-", rightClarke = "-", rightArch = "-";
                 let lPct = 0, rPct = 0, tPct = 0, bPct = 0;
 
-                ctx.fillStyle = "#0f0"; ctx.font = "bold 14px Arial";
                 if(lmK) {
                     leftClarke = calcClarke(lmK);
                     leftArch = calcArchIndex(ptsL);
-                    ctx.fillText(`Sol Clarke: ${leftClarke}°`, 20, 30);
-                    ctx.fillText(`Ark İnd.: ${leftArch}`, 20, 50);
                 }
                 if(lmR) {
                     rightClarke = calcClarke(lmR);
                     rightArch = calcArchIndex(ptsR);
-                    ctx.fillText(`Sağ Clarke: ${rightClarke}°`, 320, 30);
-                    ctx.fillText(`Ark İnd.: ${rightArch}`, 320, 50);
                 }
 
                 document.getElementById('val_left_clarke').innerText = leftClarke !== "-" ? leftClarke + "°" : "-°";
@@ -1607,7 +1611,6 @@
             }
         })();
 
-        // -- YENİ: Geçmiş Kayıt, Yükleme ve PDF İndirme --
         function saveStaticFootAnalysis() {
             if (!currentPatientId) {
                 alert("Lütfen önce bir hasta seçin veya kaydedin.");
@@ -1627,8 +1630,17 @@
             history.push(newRecord);
             localStorage.setItem(`static_foot_history_${currentPatientId}`, JSON.stringify(history));
 
+            // Dondurma işlemi
+            window.isFootLive = false;
+            let statusBadge = document.getElementById('footLiveStatus');
+            if (statusBadge) {
+                statusBadge.innerHTML = '<i class="fa-solid fa-check-circle text-emerald-400"></i> KAYDEDİLDİ';
+                statusBadge.className = "absolute top-4 left-4 bg-emerald-900/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-emerald-500/50";
+            }
+
             alert("Analiz başarıyla kaydedildi!");
             refreshStaticFootHistoryDropdown();
+            document.getElementById('staticFootHistorySelect').value = newRecord.id;
         }
 
         function refreshStaticFootHistoryDropdown() {
@@ -1637,7 +1649,7 @@
             if(!select) return;
             
             let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
-            select.innerHTML = '<option value="">-- Geçmiş Analiz Seçin --</option>';
+            select.innerHTML = '<option value="">-- Canlı Akışa Dön --</option>';
             
             history.reverse().forEach(record => {
                 let d = new Date(record.date).toLocaleString('tr-TR');
@@ -1649,13 +1661,27 @@
         }
 
         function loadStaticFootHistory(recordId) {
-            if (!recordId) return;
+            let statusBadge = document.getElementById('footLiveStatus');
+            
+            if (!recordId) {
+                window.isFootLive = true;
+                if (statusBadge) {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI';
+                    statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+                }
+                return;
+            }
+            
             let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
             let record = history.find(r => r.id == recordId);
             if (record && record.data) {
+                window.isFootLive = false;
+                if (statusBadge) {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> GEÇMİŞ';
+                    statusBadge.className = "absolute top-4 left-4 bg-indigo-900/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-indigo-500/50";
+                }
+
                 let d = record.data;
-                
-                // İstatistikleri güncelle
                 document.getElementById('barL').style.width = d.lPct + "%"; document.getElementById('barL').innerText = "Sol %" + d.lPct;
                 document.getElementById('barR').style.width = d.rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + d.rPct;
                 document.getElementById('barT').style.width = d.tPct + "%"; document.getElementById('barT').innerText = "Ön %" + d.tPct;
@@ -1666,7 +1692,6 @@
                 document.getElementById('val_right_clarke').innerText = d.rightClarke !== "-" ? d.rightClarke + "°" : "-°";
                 document.getElementById('val_right_arch').innerText = d.rightArch;
 
-                // Canvas'a geçmiş görüntüyü bas
                 const canvas = document.getElementById("foot_analysis_canvas");
                 const ctx = canvas.getContext("2d");
                 let img = new Image();
@@ -1675,7 +1700,6 @@
                     ctx.drawImage(img, 0, 0);
                 };
                 img.src = d.image;
-                
                 lastFootData = d;
             }
         }
@@ -1691,23 +1715,26 @@
                 margin:       0.5,
                 filename:     `statik_ayak_analiz_${currentPatientId}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Butonları ve dropdownu gizle (PDF'te görünmesin)
             const actionButtons = element.querySelector('.flex-col.gap-3.mt-2');
-            const historyDropdown = element.querySelector('.flex.justify-between.items-center.mb-6');
+            const historyDropdown = document.querySelector('#footTab .flex.justify-between.items-center.mb-6');
             if(actionButtons) actionButtons.style.display = 'none';
             if(historyDropdown) historyDropdown.style.display = 'none';
             
-            html2pdf().set(opt).from(element).save().then(() => {
+            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+                if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                    applyCibodyPdfHeaderFooter(pdf, "Statik Ayak Analizi Raporu");
+                }
+            }).save().then(() => {
                 if(actionButtons) actionButtons.style.display = 'flex';
                 if(historyDropdown) historyDropdown.style.display = 'flex';
+                if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");
             });
         }
 
-        // Sayfa/Sekme açıldığında history'yi tetiklemek için ufak bir hack:
         document.addEventListener('DOMContentLoaded', () => {
             const tabBtn = document.getElementById('btn_footTab');
             if(tabBtn) {
