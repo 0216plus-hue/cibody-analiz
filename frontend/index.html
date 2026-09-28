@@ -2337,25 +2337,6 @@
 
 </div>
 
-<div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" data-html2canvas-ignore="true">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
-        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
-            <h3 id="infoModalTitle" class="font-bold text-lg text-indigo-900">Bilgilendirme</h3>
-            <button onclick="document.getElementById('infoModal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 transition-colors">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-        <div class="p-6">
-            <p id="infoModalContent" class="text-sm text-slate-700 leading-relaxed"></p>
-        </div>
-        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-            <button onclick="document.getElementById('infoModal').classList.add('hidden')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg font-medium transition-colors text-sm">
-                Kapat
-            </button>
-        </div>
-    </div>
-</div>
-    
 <!-- SEKME: YAPAY ZEKA RAPOR (AI) -->
 <div id="aiReportTab" class="hidden max-w-7xl mx-auto px-4 mt-8">
     <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-8 rounded-3xl shadow-2xl mb-8 relative overflow-hidden">
@@ -2424,6 +2405,26 @@
     </div>
 </div>
 
+
+<div id="infoModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" data-html2canvas-ignore="true">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50/50">
+            <h3 id="infoModalTitle" class="font-bold text-lg text-indigo-900">Bilgilendirme</h3>
+            <button onclick="document.getElementById('infoModal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p id="infoModalContent" class="text-sm text-slate-700 leading-relaxed"></p>
+        </div>
+        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <button onclick="document.getElementById('infoModal').classList.add('hidden')" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                Kapat
+            </button>
+        </div>
+    </div>
+</div>
+    
 <script src="scoliosis.js?v=10.6"></script>
 
     <!-- Three.js ve OrbitControls -->
