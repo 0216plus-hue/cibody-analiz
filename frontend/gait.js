@@ -83,10 +83,18 @@ function processGaitFrame(data) {
     }
 }
 
-const colorMapGait = [[0,0,0], [0,0,255], [0,255,255], [0,255,0], [255,255,0], [255,0,0]];
+const colorMapGait = [
+    [0,0,0],       // Black
+    [128,0,128],   // Purple
+    [0,0,255],     // Blue
+    [0,255,255],   // Cyan
+    [0,255,0],     // Lime
+    [255,255,0],   // Yellow
+    [255,0,0]      // Red
+];
 function getGaitColor(value) {
     if (value < 5) return [0, 0, 0];
-    let v = Math.min(255, value * 1.6);
+    let v = Math.min(255, value * 1.1);
     let idx = (v / 255) * (colorMapGait.length - 1);
     let i = Math.floor(idx);
     let f = idx - i;
@@ -115,11 +123,11 @@ function drawGaitFrame(data) {
             let c = i%48;
             let cx = (48 - 1 - c) * 10 + 5;
             let cy = r * 10 + 5;
-            let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 15);
-            grad.addColorStop(0, `rgba(255,255,255,${val/255})`);
+            let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+            grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
             grad.addColorStop(1, "rgba(255,255,255,0)");
             gaitAlphaCtx.fillStyle = grad;
-            gaitAlphaCtx.fillRect(cx-15, cy-15, 30, 30);
+            gaitAlphaCtx.fillRect(cx-12, cy-12, 24, 24);
         }
     }
     
@@ -197,11 +205,11 @@ function updateGaitUI() {
                 let col = i%48;
                 let cx = (48 - 1 - col) * 10 + 5;
                 let cy = r * 10 + 5;
-                let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 15);
-                grad.addColorStop(0, `rgba(255,255,255,${val/255})`);
+                let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+                grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
                 grad.addColorStop(1, "rgba(255,255,255,0)");
                 gaitAlphaCtx.fillStyle = grad;
-                gaitAlphaCtx.fillRect(cx-15, cy-15, 30, 30);
+                gaitAlphaCtx.fillRect(cx-12, cy-12, 24, 24);
             }
         }
         let imgData = gaitAlphaCtx.getImageData(0,0,480,480);

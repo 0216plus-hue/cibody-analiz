@@ -1369,7 +1369,7 @@
             if (!canvas) return;
             const ctx = canvas.getContext("2d");
             
-            const HASSASIYET = 1.6;
+            const HASSASIYET = 1.1;
 
             const palCanvas = document.createElement('canvas');
             palCanvas.width = 1; palCanvas.height = 256;
@@ -1465,11 +1465,12 @@
                         wX += cx * val;
                         wY += cy * val;
 
-                        let radGrd = alphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 14);
-                        radGrd.addColorStop(0, `rgba(255, 255, 255, ${val/255})`);
+                        let radGrd = alphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+                        // Reduce base alpha to prevent heavy saturation when overlapping
+                        radGrd.addColorStop(0, `rgba(255, 255, 255, ${(val/255) * 0.7})`);
                         radGrd.addColorStop(1, `rgba(255, 255, 255, 0)`);
                         alphaCtx.fillStyle = radGrd;
-                        alphaCtx.fillRect(cx - 14, cy - 14, 28, 28);
+                        alphaCtx.fillRect(cx - 12, cy - 12, 24, 24);
                     }
                 }
 
