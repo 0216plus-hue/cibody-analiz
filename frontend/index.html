@@ -1813,6 +1813,8 @@
     </div>
     
     <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
+    
+    <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
     <div id="gaitResultsSection" class="hidden pb-20">
         <!-- Özet Paneli -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
@@ -1836,19 +1838,50 @@
                 <div>
                     <div class="flex justify-between mb-2"><span class="text-slate-600">Sol Ayak Yükü:</span><span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span></div>
                     <div class="flex justify-between mb-2"><span class="text-slate-600">Sağ Ayak Yükü:</span><span id="gMetricRightLoad" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Tepe Kuvvet Asimetrisi:</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Genel Asimetri:</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
                 </div>
             </div>
         </div>
-        
-        <!-- COP Trajektorisi (Genel Grafikler) -->
+
+        <!-- Yürüme Fazları Analizi -->
         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i>COP Trajektorisi (Basınç Merkezi Yolu)</h3>
-            <div class="w-full h-80 relative">
-                <canvas id="gaitCopChart"></canvas>
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Yürüme Fazları Analizi</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="h-64"><canvas id="chartGaitPhaseBar"></canvas></div>
+                <div class="h-64"><canvas id="chartGaitPhaseProfile"></canvas></div>
+                <div class="h-64"><canvas id="chartStanceTimeBar"></canvas></div>
+                <div class="h-64"><canvas id="chartAvgRegionalPie"></canvas></div>
             </div>
-            <p class="text-xs text-slate-500 mt-3 text-center">Tüm adımların ağırlık merkezi salınımları (Kırmızı: Sol Ayak, Mavi: Sağ Ayak)</p>
         </div>
+
+        <!-- Yer Tepki Kuvveti (GRF) Analizi -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i>Yer Tepki Kuvveti (GRF) Analizi</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="h-64"><canvas id="chartGRFLeft"></canvas></div>
+                <div class="h-64"><canvas id="chartGRFRight"></canvas></div>
+            </div>
+        </div>
+
+        <!-- COP Trajektorisi -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i>COP Trajektorisi</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="h-80"><canvas id="gaitCopChart"></canvas></div>
+                <div class="h-80"><canvas id="chartCopMetrics"></canvas></div>
+            </div>
+        </div>
+
+        <!-- Simetri Analizi -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i>Simetri Analizi</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="h-64"><canvas id="chartSymLoadPairs"></canvas></div>
+                <div class="h-64"><canvas id="chartSymIndices"></canvas></div>
+                <div class="h-64"><canvas id="chartSymAvgLoad"></canvas></div>
+            </div>
+        </div>
+
         <!-- Adım Detayları (5 Faz & Bölgesel Dağılım) -->
         <h3 class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Adım Detayları & Fazlar</h3>
         <div id="gaitStepDetailsContainer">

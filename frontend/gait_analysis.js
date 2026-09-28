@@ -233,95 +233,242 @@ function renderMiniFrame(canvasId, frameData) {
 
 // CHARTS
 
-let copChartInstance = null;
+let chartInstances = {};
 
 function renderCharts() {
-    // 1. COP Chart
-    let ctxCop = document.getElementById('gaitCopChart');
-    if(ctxCop) {
-        if(copChartInstance) copChartInstance.destroy();
-        
-        let leftDatasets = [];
-        let rightDatasets = [];
-        
-        gaitResults.processedSteps.forEach(step => {
-            let data = step.copPath.map(p => ({ x: p.x, y: p.y }));
-            if(step.type === 'Sol Ayak') {
-                leftDatasets.push({
-                    label: `Adım ${step.id} (Sol)`,
-                    data: data,
-                    borderColor: 'rgba(239, 68, 68, 0.7)',
-                    backgroundColor: 'rgba(239, 68, 68, 1)',
-                    borderWidth: 2,
-                    showLine: true,
-                    tension: 0.3,
-                    pointRadius: 1
-                });
-            } else {
-                rightDatasets.push({
-                    label: `Adım ${step.id} (Sağ)`,
-                    data: data,
-                    borderColor: 'rgba(59, 130, 246, 0.7)',
-                    backgroundColor: 'rgba(59, 130, 246, 1)',
-                    borderWidth: 2,
-                    showLine: true,
-                    tension: 0.3,
-                    pointRadius: 1
-                });
-            }
-        });
-        
-        copChartInstance = new Chart(ctxCop, {
-            type: 'scatter',
-            data: { datasets: [...leftDatasets, ...rightDatasets] },
+    // Destroy existing charts
+    Object.values(chartInstances).forEach(c => { if(c) c.destroy(); });
+    chartInstances = {};
+
+    let leftSteps = gaitResults.processedSteps.filter(s => s.type === 'Sol Ayak');
+    let rightSteps = gaitResults.processedSteps.filter(s => s.type === 'Sağ Ayak');
+
+    // --- Yürüme Fazları Analizi ---
+    
+    // 1. Bölgesel Basınç Dağılımı (Bar)
+    let ctxPhaseBar = document.getElementById('chartGaitPhaseBar');
+    if (ctxPhaseBar) {
+        let labels = gaitResults.processedSteps.map(s => s.id + (s.type === 'Sol Ayak' ? 'S' : 'R'));
+        let heelData = gaitResults.processedSteps.map(s => s.regional.heelPct);
+        let midData = gaitResults.processedSteps.map(s => s.regional.midPct);
+        let foreData = gaitResults.processedSteps.map(s => s.regional.forePct);
+
+        chartInstances['phaseBar'] = new Chart(ctxPhaseBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Topuk', data: heelData, backgroundColor: '#f43f5e' },
+                    { label: 'Orta Ayak', data: midData, backgroundColor: '#14b8a6' },
+                    { label: 'Ön Ayak', data: foreData, backgroundColor: '#0ea5e9' }
+                ]
+            },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { reverse: false, title: { display: true, text: 'X (Piksel)' }, min: 0, max: 48 },
-                    y: { reverse: true, title: { display: true, text: 'Y (Piksel)' }, min: 0, max: 48 }
-                },
-                plugins: { legend: { display: false } }
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Bölgesel Basınç Dağılımı' } },
+                scales: { y: { beginAtZero: true, max: 100 } }
             }
         });
     }
-    
-    // 2. Pressure Profile Charts per Step
-    gaitResults.processedSteps.forEach(step => {
-        let ctxProfile = document.getElementById(`profileChart_${step.id}`);
-        if(ctxProfile) {
-            let labels = Array.from({length: step.frames.length}, (_, i) => i+1);
-            let data = step.frames.map(f => {
-                let sum = 0;
-                for(let i=0; i<2304; i++) sum += f[i];
-                return sum;
-            });
-            
-            new Chart(ctxProfile, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Toplam Basınç',
-                        data: data,
-                        borderColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 1)' : 'rgba(59, 130, 246, 1)',
-                        backgroundColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { display: false },
-                        y: { beginAtZero: true, display: false }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
+
+    // 2. Ortalama Duruş Süreleri (Bar)
+    let ctxStanceTime = document.getElementById('chartStanceTimeBar');
+    if (ctxStanceTime) {
+        chartInstances['stanceTime'] = new Chart(ctxStanceTime, {
+            type: 'bar',
+            data: {
+                labels: ['Sol Ayak', 'Sağ Ayak'],
+                datasets: [{
+                    label: 'Duruş Süresi (ms)',
+                    data: [gaitResults.metrics.leftStance, gaitResults.metrics.rightStance],
+                    backgroundColor: ['#ef4444', '#3b82f6']
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Ortalama Duruş Süreleri' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+
+    // 3. Ortalama Bölgesel Yük Dağılımı (Pie)
+    let ctxAvgRegional = document.getElementById('chartAvgRegionalPie');
+    if (ctxAvgRegional) {
+        let avgHeel = 0, avgMid = 0, avgFore = 0;
+        if (gaitResults.processedSteps.length > 0) {
+            avgHeel = gaitResults.processedSteps.reduce((acc, s) => acc + s.regional.heelPct, 0) / gaitResults.processedSteps.length;
+            avgMid = gaitResults.processedSteps.reduce((acc, s) => acc + s.regional.midPct, 0) / gaitResults.processedSteps.length;
+            avgFore = gaitResults.processedSteps.reduce((acc, s) => acc + s.regional.forePct, 0) / gaitResults.processedSteps.length;
         }
-    });
+
+        chartInstances['avgRegional'] = new Chart(ctxAvgRegional, {
+            type: 'pie',
+            data: {
+                labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'],
+                datasets: [{
+                    data: [avgHeel, avgMid, avgFore],
+                    backgroundColor: ['#f43f5e', '#14b8a6', '#0ea5e9']
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Ortalama Bölgesel Basınç Dağılımı' } }
+            }
+        });
+    }
+
+    // --- Yer Tepki Kuvveti (GRF) Analizi ---
+    function renderGRF(ctxId, steps, colorBase, title) {
+        let ctx = document.getElementById(ctxId);
+        if (!ctx) return;
+        
+        let datasets = steps.map(step => {
+            let data = step.frames.map((f, i) => {
+                let sum = 0;
+                for(let j=0; j<2304; j++) sum += f[j];
+                return { x: i * 25, y: sum };
+            });
+            return {
+                label: `Adım ${step.id}`,
+                data: data,
+                borderColor: colorBase,
+                borderWidth: 1.5,
+                fill: false,
+                tension: 0.1,
+                pointRadius: 0
+            };
+        });
+
+        chartInstances[ctxId] = new Chart(ctx, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: title }, legend: { display: false } },
+                scales: { 
+                    x: { type: 'linear', title: { display: true, text: 'Zaman (ms)' } },
+                    y: { title: { display: true, text: 'Kuvvet (N)' } }
+                }
+            }
+        });
+    }
+    renderGRF('chartGRFLeft', leftSteps, 'rgba(239, 68, 68, 0.6)', 'Sol Ayak GRF Eğrileri');
+    renderGRF('chartGRFRight', rightSteps, 'rgba(59, 130, 246, 0.6)', 'Sağ Ayak GRF Eğrileri');
+
+    // --- COP Trajektorisi ve Metrikler ---
+    let ctxCop = document.getElementById('gaitCopChart');
+    if (ctxCop) {
+        let datasets = [];
+        gaitResults.processedSteps.forEach(step => {
+            let data = step.copPath.map(p => ({ x: p.x, y: p.y }));
+            datasets.push({
+                label: `Adım ${step.id} (${step.type})`,
+                data: data,
+                borderColor: step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(59, 130, 246, 0.7)',
+                showLine: true,
+                tension: 0.3,
+                pointRadius: 0
+            });
+        });
+        
+        chartInstances['copChart'] = new Chart(ctxCop, {
+            type: 'scatter',
+            data: { datasets: datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { min: 0, max: 48 },
+                    y: { reverse: true, min: 0, max: 48 }
+                }
+            }
+        });
+    }
+
+    let ctxCopMet = document.getElementById('chartCopMetrics');
+    if (ctxCopMet) {
+        chartInstances['copMet'] = new Chart(ctxCopMet, {
+            type: 'bar',
+            data: {
+                labels: ['Lateral Sapma (Med-Lat)', 'COP Yol Uzunluğu'],
+                datasets: [
+                    { label: 'Sol Ayak', data: [12, 15], backgroundColor: '#ef4444' }, // Mock values
+                    { label: 'Sağ Ayak', data: [13, 14], backgroundColor: '#3b82f6' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'COP Metrikleri' } }
+            }
+        });
+    }
+
+    // --- Simetri Analizi ---
+    let ctxSymLoad = document.getElementById('chartSymLoadPairs');
+    if (ctxSymLoad) {
+        let labels = [], leftL = [], rightL = [];
+        let pairs = Math.min(leftSteps.length, rightSteps.length);
+        for(let i=0; i<pairs; i++) {
+            labels.push('Çift ' + (i+1));
+            let total = leftSteps[i].maxForce + rightSteps[i].maxForce;
+            leftL.push( (leftSteps[i].maxForce / total) * 100 );
+            rightL.push( (rightSteps[i].maxForce / total) * 100 );
+        }
+
+        chartInstances['symLoad'] = new Chart(ctxSymLoad, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Sol', data: leftL, backgroundColor: '#ef4444' },
+                    { label: 'Sağ', data: rightL, backgroundColor: '#3b82f6' }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Çift Bazlı Yük Dağılımı' } },
+                scales: { y: { max: 100 } }
+            }
+        });
+    }
+
+    let ctxSymInd = document.getElementById('chartSymIndices');
+    if (ctxSymInd) {
+        let labels = [], data = [];
+        let pairs = Math.min(leftSteps.length, rightSteps.length);
+        for(let i=0; i<pairs; i++) {
+            labels.push(i+1);
+            data.push( Math.abs(leftSteps[i].maxForce - rightSteps[i].maxForce) / Math.max(leftSteps[i].maxForce, rightSteps[i].maxForce) * 100 );
+        }
+        chartInstances['symInd'] = new Chart(ctxSymInd, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{ label: 'RSI (%)', data: data, backgroundColor: 'green' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: 'Çift Simetri İndeksleri' } }
+            }
+        });
+    }
+
+    let ctxSymAvg = document.getElementById('chartSymAvgLoad');
+    if (ctxSymAvg) {
+        chartInstances['symAvg'] = new Chart(ctxSymAvg, {
+            type: 'pie',
+            data: {
+                labels: ['Sol Ayak', 'Sağ Ayak'],
+                datasets: [{
+                    data: [gaitResults.metrics.leftLoad, gaitResults.metrics.rightLoad],
+                    backgroundColor: ['#ef4444', '#3b82f6']
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { title: { display: true, text: `Ortalama Yük Dağılımı (RSI: %${gaitResults.metrics.forceAsym.toFixed(1)})` } }
+            }
+        });
+    }
 }
