@@ -26,12 +26,54 @@ function startGaitAnalysis() {
     
     gaitWs.onopen = () => { isGaitRecording = true; };
     
+    let gaitBuffer = new Uint8Array(2304 * 3);
+    let gaitWriteIdx = 0;
+    let gaitLastDrawIdx = 0;
+    
+    gaitWs.binaryType = "arraybuffer";
     gaitWs.onmessage = (event) => {
         if (!isGaitRecording) return;
-        event.data.arrayBuffer().then(buffer => {
-            const data = new Uint8Array(buffer);
-            if (data.length === 2304) processGaitFrame(data);
-        });
+        let data = new Uint8Array(event.data);
+        for (let i = 0; i < data.length; i++) {
+            gaitBuffer[gaitWriteIdx % gaitBuffer.length] = data[i];
+            gaitWriteIdx++;
+        }
+        
+        if (gaitWriteIdx - gaitLastDrawIdx >= 2304) {
+            let tempFrame = new Uint8Array(2304 * 2);
+            let start = (gaitWriteIdx - (2304 * 2) + gaitBuffer.length) % gaitBuffer.length;
+            for (let i = 0; i < 2304 * 2; i++) {
+                tempFrame[i] = gaitBuffer[(start + i) % gaitBuffer.length];
+            }
+
+            let rowSums = new Array(96).fill(0);
+            for(let r = 0; r < 96; r++) {
+                let sum = 0;
+                for(let c = 0; c < 48; c++) { sum += tempFrame[r * 48 + c]; }
+                rowSums[r] = sum;
+            }
+            let bestStartRow = 0;
+            let maxSum = -1;
+            for(let r = 0; r < 48; r++) {
+                let centerSum = 0;
+                for(let i = 14; i < 34; i++) { centerSum += rowSums[r + i]; }
+                if(centerSum > maxSum) { maxSum = centerSum; bestStartRow = r; }
+            }
+            
+            if (typeof window.gaitLastStableRow === 'undefined') window.gaitLastStableRow = bestStartRow;
+            if (Math.abs(bestStartRow - window.gaitLastStableRow) > 3 && Math.abs(bestStartRow - window.gaitLastStableRow) < 45) {
+                window.gaitLastStableRow = bestStartRow;
+            }
+
+            let readStart = window.gaitLastStableRow * 48;
+            let alignedFrame = new Uint8Array(2304);
+            for (let i = 0; i < 2304; i++) {
+                alignedFrame[i] = tempFrame[readStart + i];
+            }
+            
+            processGaitFrame(alignedFrame);
+            gaitLastDrawIdx = gaitWriteIdx;
+        }
     };
     
     gaitWs.onerror = () => {
@@ -245,7 +287,7 @@ function drawGaitFrame(data) {
         if(val > 5) {
             let r = Math.floor(i/48);
             let c = i%48;
-            let cx = c * 10 + 5;
+            let cx = (48 - 1 - c) * 10 + 5;
             let cy = r * 10 + 5;
             let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
             grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
