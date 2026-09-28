@@ -13,6 +13,22 @@ function startGaitAnalysis() {
     isFootDown = false;
     updateGaitUI();
     
+    document.getElementById('gaitResultsSection').classList.add('hidden');
+    document.getElementById('gaitRecordingSection').classList.remove('hidden');
+    
+    const historySelect = document.getElementById('gaitHistorySelect');
+    if(historySelect) historySelect.value = "";
+    
+    const listEl = document.getElementById('gaitStepsList');
+    if(listEl) {
+        Array.from(listEl.children).forEach(child => {
+            if (child.id !== 'gaitEmptyState') child.remove();
+        });
+    }
+    const emptyState = document.getElementById('gaitEmptyState');
+    if(emptyState) emptyState.classList.remove('hidden');
+    document.getElementById('gaitStepCount').innerText = "0";
+    
     document.getElementById('gaitInstructionOverlay').classList.add('hidden');
     document.getElementById('btnStartGaitAnalysis').classList.add('hidden');
     const btnPdf = document.getElementById('btnDownloadGaitPdf');

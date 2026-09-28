@@ -105,8 +105,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         const dInfo = document.getElementById('detailInfo');
         if (dInfo) dInfo.innerText = `Yaş: ${patientAge} | Boy: ${patientHeight || 0}cm | Kilo: ${patientWeight}kg | Ayakkabı: ${patientShoeSize || 0} | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
         
-        const targetTab = sessionStorage.getItem('cibody_active_tab') || 'postureTab';
-        switchTab(targetTab);
+        switchTab('postureTab');
         loadPatientData(patientId);
         if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
