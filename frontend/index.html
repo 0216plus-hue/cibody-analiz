@@ -1339,9 +1339,9 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row gap-6 h-auto lg:h-[600px] w-full py-2">
+    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
-        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center h-[480px] lg:h-full">
+        <div class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
@@ -1349,7 +1349,7 @@
         </div>
         
         <!-- İstatistikler -->
-        <div class="flex flex-col gap-6 w-full lg:w-1/3 h-[480px] lg:h-full overflow-y-auto pr-2" id="footAnalysisDataPanel">
+        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0 h-[480px] overflow-y-auto pr-2" id="footAnalysisDataPanel">
             
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
                 <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
@@ -1863,10 +1863,10 @@
     </div>
 
     <!-- Analiz Ekranı: Sol (Mat/Canlı) - Sağ (Adımlar) -->
-    <div class="flex flex-col lg:flex-row gap-6 h-[600px]" id="gaitRecordingSection">
+    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full h-auto lg:h-[480px]" id="gaitRecordingSection">
         
         <!-- Canlı Matris Ekranı -->
-        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center">
+        <div class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
             <canvas id="gaitLiveCanvas" width="480" height="480" class="block"></canvas>
             
             <div id="gaitLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
@@ -1884,7 +1884,7 @@
         </div>
         
         <!-- Kaydedilen Adımlar Listesi -->
-        <div class="lg:w-1/3 w-full bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+        <div class="w-full max-w-md mx-auto lg:mx-0 h-[480px] bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
             <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                 <h3 class="font-bold text-slate-700 text-sm"><i class="fa-solid fa-shoe-prints mr-2 text-indigo-400"></i>Kaydedilen Adımlar</h3>
                 <span id="gaitStepCountBadge" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Adım</span>
@@ -2218,9 +2218,9 @@
     </div>
 
     <!-- Canlı Kayıt Ekranı -->
-    <div id="balanceRecordingSection" class="flex flex-col lg:flex-row gap-6 w-full py-2">
+    <div id="balanceRecordingSection" class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canlı Matris Ekranı -->
-        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center min-h-[480px]">
+        <div class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
             <canvas id="balance_live_canvas" width="480" height="480" class="block"></canvas>
             
             <div id="balanceLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600 z-10">
@@ -2229,7 +2229,7 @@
         </div>
         
         <!-- Sağ Panel: Kontroller -->
-        <div class="lg:w-1/3 w-full flex flex-col gap-4">
+        <div class="w-full max-w-md mx-auto lg:mx-0 h-auto lg:h-[480px] flex flex-col gap-4">
             
             <!-- Sayaç Paneli -->
             <div class="bg-slate-900 rounded-2xl border-4 border-slate-800 shadow-xl p-6 flex flex-col items-center justify-center relative">
@@ -2360,6 +2360,13 @@
             <p class="text-xs text-slate-400 mt-2" id="balanceRefNote"></p>
         </div>
 
+        <!-- Yeni Test Butonu -->
+        <div class="w-full flex justify-end mb-2 avoid-break" data-html2canvas-ignore="true">
+            <button onclick="document.getElementById('balanceHistorySelect').value = ''; loadBalanceSessionHistory('');" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2 border border-indigo-200">
+                <i class="fa-solid fa-rotate-right"></i> Yeni Test Oturumu Başlat
+            </button>
+        </div>
+        
         <!-- Grafikler -->
         <div class="flex flex-col lg:flex-row gap-6 w-full avoid-break">
             <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm w-full lg:w-1/2">
