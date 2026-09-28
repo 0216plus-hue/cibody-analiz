@@ -59,6 +59,104 @@ function completeGaitAnalysis() {
     if(typeof analyzeGaitData === 'function') {
         analyzeGaitData(recordedSteps);
     }
+    
+    // Otomatik Kaydet (Tarih bazlı)
+    saveGaitAnalysis();
+}
+
+function saveGaitAnalysis() {
+    if(!currentPatientId) {
+        if(typeof showToast === 'function') showToast("Hasta seçilmediği için kaydedilemedi.");
+        return;
+    }
+    if(recordedSteps.length === 0) return;
+
+    const stepsToSave = recordedSteps.map(step => {
+        return {
+            id: step.id,
+            type: step.type,
+            frameCount: step.frameCount,
+            aggregate: Array.from(step.aggregate),
+            frames: step.frames.map(f => Array.from(f))
+        };
+    });
+
+    const record = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        steps: stepsToSave
+    };
+
+    let history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
+    history.push(record);
+    
+    if(history.length > 5) {
+        history = history.slice(history.length - 5);
+    }
+    
+    try {
+        localStorage.setItem(`gait_history_${currentPatientId}`, JSON.stringify(history));
+        if(typeof showToast === 'function') showToast("Yürüme analizi başarıyla kaydedildi.");
+    } catch(e) {
+        if(typeof showToast === 'function') showToast("Depolama alanı dolu, en eski kayıtları silerek deneyin.");
+        console.error(e);
+    }
+    refreshGaitHistoryDropdown();
+}
+
+window.loadGaitHistory = function(recordId) {
+    if(!recordId) {
+        document.getElementById('gaitResultsSection').classList.add('hidden');
+        document.getElementById('gaitRecordingSection').classList.remove('hidden');
+        recordedSteps = [];
+        document.getElementById('gaitStepCount').innerText = "0";
+        const listEl = document.getElementById('gaitStepsList');
+        if(listEl) {
+            Array.from(listEl.children).forEach(child => {
+                if (child.id !== 'gaitEmptyState') child.remove();
+            });
+        }
+        const emptyState = document.getElementById('gaitEmptyState');
+        if(emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+
+    let history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
+    let record = history.find(r => r.id === recordId);
+    if(record) {
+        recordedSteps = record.steps;
+        document.getElementById('gaitRecordingSection').classList.add('hidden');
+        document.getElementById('gaitResultsSection').classList.remove('hidden');
+        if(typeof analyzeGaitData === 'function') {
+            analyzeGaitData(recordedSteps);
+        }
+    }
+};
+
+window.refreshGaitHistoryDropdown = function() {
+    const sel = document.getElementById('gaitHistorySelect');
+    if(!sel) return;
+    
+    const history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
+    sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
+    
+    history.reverse().forEach(r => {
+        let opt = document.createElement('option');
+        opt.value = r.id;
+        let date = new Date(r.timestamp);
+        opt.text = date.toLocaleDateString('tr-TR') + " " + date.toLocaleTimeString('tr-TR');
+        sel.appendChild(opt);
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const tabBtn = document.getElementById('btn_gaitTab');
+    if(tabBtn) {
+        tabBtn.addEventListener('click', () => {
+            setTimeout(refreshGaitHistoryDropdown, 200);
+        });
+    }
+});
 }
 
 function processGaitFrame(rawData) {
