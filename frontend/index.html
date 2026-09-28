@@ -1812,8 +1812,45 @@
     </div>
     
     <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
-    <div id="gaitResultsSection" class="hidden">
-        <h3 class="text-lg font-bold text-slate-800 mb-4">Rapor ve Grafikler (Yapım Aşamasında)</h3>
+    <div id="gaitResultsSection" class="hidden pb-20">
+        <!-- Özet Paneli -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i>Yürüme Analizi Özeti</h3>
+            <div class="flex gap-8 items-center text-slate-700">
+                <p>Toplam Adım: <span id="gSummaryTotal" class="font-bold text-lg text-slate-900">0</span></p>
+                <p>Sol Ayak: <span id="gSummaryLeft" class="font-bold text-lg text-red-500">0</span></p>
+                <p>Sağ Ayak: <span id="gSummaryRight" class="font-bold text-lg text-blue-500">0</span></p>
+            </div>
+        </div>
+        
+        <!-- Klinik Metrikler -->
+        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6">
+            <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2"><i class="fa-solid fa-stethoscope text-emerald-500 mr-2"></i>Klinik Metrikler</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sol Duruş Süresi:</span><span id="gMetricLeftStance" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sağ Duruş Süresi:</span><span id="gMetricRightStance" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Duruş Süresi Asimetrisi:</span><span id="gMetricStanceAsym" class="font-bold text-amber-600">-</span></div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sol Ayak Yükü:</span><span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sağ Ayak Yükü:</span><span id="gMetricRightLoad" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Tepe Kuvvet Asimetrisi:</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adım Detayları (5 Faz & Bölgesel Dağılım) -->
+        <h3 class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Adım Detayları & Fazlar</h3>
+        <div id="gaitStepDetailsContainer">
+            <!-- JS tarafından doldurulacak -->
+        </div>
+        
+        <div class="flex justify-between mt-6">
+            <button onclick="document.getElementById('gaitResultsSection').classList.add('hidden'); document.getElementById('gaitRecordingSection').classList.remove('hidden');" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Kayda Dön
+            </button>
+        </div>
     </div>
 </div>
 
@@ -1972,5 +2009,6 @@
     <script src="simulation.js?v=10.6"></script>
 
 <script src="gait.js?v=1.0"></script>
+<script src="gait_analysis.js?v=1.0"></script>
 </body>
 </html>

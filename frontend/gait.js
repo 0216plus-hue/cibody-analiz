@@ -54,6 +54,11 @@ function completeGaitAnalysis() {
     if(typeof showToast === 'function') showToast(`${recordedSteps.length} adım analize gönderildi.`);
     document.getElementById('gaitRecordingSection').classList.add('hidden');
     document.getElementById('gaitResultsSection').classList.remove('hidden');
+    
+    // Yürüme Analizi AŞAMA 2 ve 3'ü tetikle
+    if(typeof analyzeGaitData === 'function') {
+        analyzeGaitData(recordedSteps);
+    }
 }
 
 function processGaitFrame(data) {
