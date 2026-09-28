@@ -2961,3 +2961,161 @@ async function loadScoliometerHistory(patientId) {
         }
     } catch(e) { console.error(e); }
 }
+
+
+
+// ==========================================
+// AI REPORT (FOOT ANALYSIS) LOGIC
+// ==========================================
+
+function loadAiSelectDropdowns() {
+    if(!activePatientId) return;
+    
+    // Static Foot
+    let statics = JSON.parse(localStorage.getItem('static_foot_' + activePatientId) || '[]');
+    let selStat = document.getElementById('aiSelectStatic');
+    if(selStat) {
+        selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
+        statics.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+            selStat.appendChild(opt);
+        });
+    }
+    
+    // Dynamic Gait
+    let gaits = JSON.parse(localStorage.getItem('gait_history_' + activePatientId) || '[]');
+    let selGait = document.getElementById('aiSelectGait');
+    if(selGait) {
+        selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
+        gaits.forEach(g => {
+            let opt = document.createElement('option');
+            opt.value = g.id;
+            opt.textContent = new Date(g.date).toLocaleString('tr-TR');
+            selGait.appendChild(opt);
+        });
+    }
+    
+    // Balance Test
+    let balances = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+    let selBal = document.getElementById('aiSelectBalance');
+    if(selBal) {
+        selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
+        balances.forEach(b => {
+            let opt = document.createElement('option');
+            opt.value = b.id;
+            opt.textContent = new Date(b.date).toLocaleString('tr-TR');
+            selBal.appendChild(opt);
+        });
+    }
+}
+
+async function generateAiFootReport() {
+    let statId = document.getElementById('aiSelectStatic').value;
+    let gaitId = document.getElementById('aiSelectGait').value;
+    let balId = document.getElementById('aiSelectBalance').value;
+    
+    if(!statId && !gaitId && !balId) {
+        showToast("Lütfen rapora dahil edilecek en az bir analiz seçin!");
+        return;
+    }
+    
+    document.getElementById('aiFootResultSection').classList.add('hidden');
+    document.getElementById('aiFootLoadingState').classList.remove('hidden');
+    document.getElementById('btnGenerateAiFootReport').disabled = true;
+    document.getElementById('btnGenerateAiFootReport').classList.add('opacity-50');
+    
+    // Gather data
+    let staticData = null;
+    if(statId) {
+        let arr = JSON.parse(localStorage.getItem('static_foot_' + activePatientId) || '[]');
+        let rec = arr.find(x => x.id === statId);
+        if(rec) {
+            staticData = {
+                tarih: rec.date,
+                sol_yuzde: rec.metrics.left_weight_perc,
+                sag_yuzde: rec.metrics.right_weight_perc,
+                on_yuzde: rec.metrics.front_weight_perc,
+                arka_yuzde: rec.metrics.back_weight_perc,
+                max_basinc_sol: rec.metrics.left_max,
+                max_basinc_sag: rec.metrics.right_max,
+                ortalama_basinc: rec.metrics.avg_pressure,
+                degerlendirme: rec.metrics.left_weight_perc > rec.metrics.right_weight_perc ? "Sol ayak daha fazla yük alıyor." : "Sağ ayak daha fazla yük alıyor."
+            };
+        }
+    }
+    
+    let gaitData = null;
+    if(gaitId) {
+        let arr = JSON.parse(localStorage.getItem('gait_history_' + activePatientId) || '[]');
+        let rec = arr.find(x => x.id === gaitId);
+        if(rec) {
+            gaitData = {
+                tarih: rec.date,
+                toplam_adim: rec.steps ? rec.steps.length : 0,
+                sol_adimlar: rec.steps ? rec.steps.filter(s => s.side === 'L').map(s => ({basinc: s.metrics.maxPressure, the_t: s.metrics.duration})) : [],
+                sag_adimlar: rec.steps ? rec.steps.filter(s => s.side === 'R').map(s => ({basinc: s.metrics.maxPressure, the_t: s.metrics.duration})) : []
+            };
+        }
+    }
+    
+    let balData = null;
+    if(balId) {
+        let arr = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+        let rec = arr.find(x => x.id === balId);
+        if(rec && rec.session) {
+            balData = {
+                tarih: rec.date,
+                cift_acik: rec.session.cift_acik ? { yol_cm: rec.session.cift_acik.pathCm, alan_cm2: rec.session.cift_acik.areaCm, hiz_cms: rec.session.cift_acik.velCm } : null,
+                cift_kapali: rec.session.cift_kapali ? { yol_cm: rec.session.cift_kapali.pathCm, alan_cm2: rec.session.cift_kapali.areaCm, hiz_cms: rec.session.cift_kapali.velCm } : null,
+                tek_sol: rec.session.tek_sol_acik ? { yol_cm: rec.session.tek_sol_acik.pathCm, alan_cm2: rec.session.tek_sol_acik.areaCm, hiz_cms: rec.session.tek_sol_acik.velCm } : null,
+                tek_sag: rec.session.tek_sag_acik ? { yol_cm: rec.session.tek_sag_acik.pathCm, alan_cm2: rec.session.tek_sag_acik.areaCm, hiz_cms: rec.session.tek_sag_acik.velCm } : null,
+            };
+        }
+    }
+    
+    try {
+        const token = localStorage.getItem('token');
+        const resp = await fetch(API_URL + '/api/ai/foot-report', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                static_data: staticData,
+                gait_data: gaitData,
+                balance_data: balData
+            })
+        });
+        
+        if(!resp.ok) throw new Error("Yapay zeka sunucusu yanıt vermedi.");
+        let data = await resp.json();
+        if(data.error) throw new Error(data.error);
+        
+        // Parse markdown
+        document.getElementById('aiFootReportContent').innerHTML = marked.parse(data.report);
+        document.getElementById('aiFootLoadingState').classList.add('hidden');
+        document.getElementById('aiFootResultSection').classList.remove('hidden');
+        
+    } catch(err) {
+        alert("Hata: " + err.message);
+        document.getElementById('aiFootLoadingState').classList.add('hidden');
+    } finally {
+        document.getElementById('btnGenerateAiFootReport').disabled = false;
+        document.getElementById('btnGenerateAiFootReport').classList.remove('opacity-50');
+    }
+}
+
+function downloadAiFootPdf() {
+    const el = document.getElementById('aiFootReportContent');
+    const opt = {
+        margin:       10,
+        filename:     'YapayZeka_Klinik_Rapor.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(el).save();
+}

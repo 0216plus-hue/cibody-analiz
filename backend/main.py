@@ -1510,4 +1510,53 @@ def delete_simulation(simulation_id: int, db: Session = Depends(get_db)):
         print("SIMULATION DELETE ERROR:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class AIFootReportRequest(BaseModel):
+    static_data: Optional[dict] = None
+    gait_data: Optional[dict] = None
+    balance_data: Optional[dict] = None
+
+@app.post("/api/ai/foot-report")
+async def generate_ai_foot_report(req: AIFootReportRequest, current_user: models.User = Depends(get_current_user)):
+    API_KEY = os.getenv("GEMINI_API_KEY")
+    if not API_KEY:
+        raise HTTPException(status_code=500, detail="Gemini API Anahtarı eksik.")
+
+    prompt = f"""Sen uzman bir ORTEZ-PROTEZ UZMANISIN.
+Aşağıda hastanın cihaz üzerinden alınmış statik ayak bası, dinamik yürüme ve postürografi (denge) analiz verileri (hangileri seçilmişse) verilmiştir.
+Senin görevin bu verileri kapsamlı bir şekilde inceleyerek bir rapor oluşturmaktır.
+
+# İstenen Format:
+1. KLİNİK BULGULAR (Fizyoterapist / Doktor için): Hastanın problemi nedir? Hangi veriye dayanarak bunu söylüyorsun? Madde madde, klinik ve biyomekanik terimlerle (valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs.) açıkla.
+2. HASTA BİLGİLENDİRMESİ (Hasta için): Hastanın anlayabileceği çok basit, günlük dilde bir özet yap. Probleminin onun hayatını nasıl etkilediğini anlat.
+3. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ: Özellikle statik ayak bası dağılımına (ön/arka, sağ/sol dengesizliklerine) ve diğer analizlere bakarak, hastanın KİŞİYE ÖZEL TABANLIK kullanmasına gerek olup olmadığına kesin bir karar ver. Gerekliyse nasıl bir tabanlık tasarımı (medial ark desteği, metatarsal ped, topuk kaması vb.) gerektiğini yaz.
+
+# Veriler:
+Statik Analiz Verisi: {req.static_data}
+Dinamik Yürüme Analizi Verisi: {req.gait_data}
+Denge Testi Verisi: {req.balance_data}
+
+Lütfen raporunu şık bir Markdown (.md) formatında hazırla.
+"""
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    headers = {"Content-Type": "application/json"}
+    
+    import requests
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=40)
+        resp.raise_for_status()
+        data = resp.json()
+        if "candidates" in data and len(data["candidates"]) > 0:
+            text = data["candidates"][0]["content"]["parts"][0]["text"]
+            return {"report": text}
+        else:
+            return {"error": "API boş yanıt döndürdü."}
+    except Exception as e:
+        print("AI Foot Report Error:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
