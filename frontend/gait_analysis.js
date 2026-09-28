@@ -332,7 +332,8 @@ function renderCharts() {
             let data = step.frames.map((f, i) => {
                 let sum = 0;
                 for(let j=0; j<2304; j++) sum += f[j];
-                return { x: i * 25, y: sum };
+                // Scale raw sum down to approximate Newtons for visualization (e.g. max ~150)
+                return { x: i * 25, y: sum / 300 }; 
             });
             return {
                 label: `Adım ${step.id}`,
@@ -350,16 +351,63 @@ function renderCharts() {
             data: { datasets: datasets },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: title }, legend: { display: false } },
+                plugins: { title: { display: true, text: title + ` (${steps.length} Adım)` }, legend: { display: false } },
                 scales: { 
                     x: { type: 'linear', title: { display: true, text: 'Zaman (ms)' } },
-                    y: { title: { display: true, text: 'Kuvvet (N)' } }
+                    y: { title: { display: true, text: 'Kuvvet (N)' }, min: 0 }
                 }
             }
         });
     }
+    
     renderGRF('chartGRFLeft', leftSteps, 'rgba(239, 68, 68, 0.6)', 'Sol Ayak GRF Eğrileri');
     renderGRF('chartGRFRight', rightSteps, 'rgba(59, 130, 246, 0.6)', 'Sağ Ayak GRF Eğrileri');
+
+    // Calculate FTI and Loading Rate
+    let leftFTI = 0, rightFTI = 0;
+    let leftLR = 0, rightLR = 0;
+    
+    leftSteps.forEach(step => {
+        let forces = step.frames.map(f => f.reduce((a,b)=>a+b, 0) / 300);
+        leftFTI += forces.reduce((a,b)=>a+b, 0) * 25; // Force * Time (ms)
+        
+        // Max loading rate in first 30% of stance
+        let lr = 0;
+        let limit = Math.floor(forces.length * 0.3);
+        for(let i=1; i<limit; i++) {
+            let rate = (forces[i] - forces[i-1]) / 25; // N/ms
+            if(rate > lr) lr = rate;
+        }
+        leftLR += lr;
+    });
+    
+    rightSteps.forEach(step => {
+        let forces = step.frames.map(f => f.reduce((a,b)=>a+b, 0) / 300);
+        rightFTI += forces.reduce((a,b)=>a+b, 0) * 25;
+        
+        let lr = 0;
+        let limit = Math.floor(forces.length * 0.3);
+        for(let i=1; i<limit; i++) {
+            let rate = (forces[i] - forces[i-1]) / 25;
+            if(rate > lr) lr = rate;
+        }
+        rightLR += lr;
+    });
+    
+    let totalFTI = leftFTI + rightFTI || 1;
+    let totalLR = leftLR + rightLR || 1;
+    
+    let ftiLeftPct = (leftFTI / totalFTI * 100).toFixed(1);
+    let ftiRightPct = (rightFTI / totalFTI * 100).toFixed(1);
+    
+    let lrLeftPct = (leftLR / totalLR * 100).toFixed(1);
+    let lrRightPct = (rightLR / totalLR * 100).toFixed(1);
+    
+    const elFTI = document.getElementById('grfFTI');
+    if(elFTI) elFTI.innerText = `FTI: Sol %${ftiLeftPct} / Sağ %${ftiRightPct}`;
+    
+    const elLR = document.getElementById('grfLoadingRate');
+    if(elLR) elLR.innerText = `Yüklenme Hızı: Sol %${lrLeftPct} / Sağ %${lrRightPct}`;
 
     // --- COP Trajektorisi ve Metrikler ---
     let ctxCop = document.getElementById('gaitCopChart');
