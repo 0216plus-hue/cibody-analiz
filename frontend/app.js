@@ -110,6 +110,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
         if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
+        if (typeof refreshBalanceHistoryDropdown === 'function') refreshBalanceHistoryDropdown();
     } catch(err) {
         console.error("showPatient error:", err);
     }
@@ -125,7 +126,7 @@ function switchTab(tabId) {
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
