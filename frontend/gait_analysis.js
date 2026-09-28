@@ -143,44 +143,49 @@ function renderGaitResults() {
             let div = document.createElement('div');
             div.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6";
             
-            // 5 faz canvaslarını oluştur
             let phaseHtml = '';
             for(let i=0; i<5; i++) {
-                phaseHtml += `<div class="flex flex-col items-center"><canvas id="phase_${step.id}_${i}" width="120" height="120" class="bg-black rounded-lg"></canvas><span class="text-xs text-slate-500 mt-2">Faz ${i+1}</span></div>`;
+                phaseHtml += `<div class="flex flex-col items-center">
+                    <canvas id="phase_${step.id}_${i}" width="100" height="100" class="bg-black rounded-lg border border-slate-800"></canvas>
+                    <span class="text-xs text-slate-500 mt-2 font-medium">Faz ${i+1}</span>
+                </div>`;
             }
             
+            let titleColor = step.type === 'Sol Ayak' ? 'text-red-600' : 'text-blue-600';
+            
             div.innerHTML = `
-                <h4 class="font-bold text-indigo-900 mb-4 border-b border-slate-100 pb-2">Adım ${step.id} - ${step.type}</h4>
+                <h4 class="text-xl font-bold ${titleColor} mb-4 border-b border-slate-100 pb-2">Adım ${step.id} - ${step.type}</h4>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-                    <div>
-                        <p class="text-sm font-bold text-slate-700 mb-3">5 Faz Görüntüleri</p>
-                        <div class="flex justify-between gap-2 overflow-x-auto">
-                            ${phaseHtml}
+                <p class="text-sm font-bold text-slate-700 mb-3">5 Faz Görüntüleri</p>
+                <div class="flex gap-4 overflow-x-auto mb-8">
+                    ${phaseHtml}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="flex flex-col items-center">
+                        <canvas id="agg_${step.id}" width="200" height="200" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner w-full"></canvas>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                            <canvas id="profileChart_${step.id}"></canvas>
                         </div>
                     </div>
-                    <div>
-                        <p class="text-sm font-bold text-slate-700 mb-3">Bölgesel Yük Dağılımı</p>
-                        <div class="flex h-8 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 mb-4">
-                            <div class="bg-rose-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.heelPct}%" title="Topuk">T: %${step.regional.heelPct.toFixed(0)}</div>
-                            <div class="bg-amber-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.midPct}%" title="Orta">O: %${step.regional.midPct.toFixed(0)}</div>
-                            <div class="bg-emerald-500 h-full flex items-center justify-center text-white text-xs font-bold" style="width: ${step.regional.forePct}%" title="Ön">Ö: %${step.regional.forePct.toFixed(0)}</div>
-                        </div>
-                        <p class="text-sm font-bold text-slate-700 mb-2">Basınç Profili Eğrisi</p>
-                        <div class="w-full h-32 relative">
-                            <canvas id="profileChart_${step.id}"></canvas>
+                    
+                    <div class="flex flex-col">
+                        <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                            <canvas id="copPath_${step.id}"></canvas>
                         </div>
                     </div>
                 </div>
             `;
             detailsContainer.appendChild(div);
             
-            // Canvasları çiz
             for(let i=0; i<5; i++) {
-                let frame = step.phases[i];
-                let cId = `phase_${step.id}_${i}`;
-                renderMiniFrame(cId, frame);
+                renderMiniFrame(`phase_${step.id}_${i}`, step.phases[i], 100);
             }
+            // Draw aggregate frame
+            renderMiniFrame(`agg_${step.id}`, step.aggregate, 200);
         });
         
         // Render Chart.js
@@ -188,7 +193,7 @@ function renderGaitResults() {
     }
 }
 
-function renderMiniFrame(canvasId, frameData) {
+function renderMiniFrame(canvasId, frameData, outSize=120) {
     let canvas = document.getElementById(canvasId);
     if(!canvas || !frameData) return;
     let ctx = canvas.getContext('2d');
@@ -228,7 +233,7 @@ function renderMiniFrame(canvasId, frameData) {
     }
     tCtx.putImageData(outData, 0, 0);
     
-    ctx.drawImage(tempC, 0, 0, 480, 480, 0, 0, 120, 120);
+    ctx.drawImage(tempC, 0, 0, 480, 480, 0, 0, outSize, outSize);
 }
 
 // CHARTS
@@ -471,4 +476,96 @@ function renderCharts() {
             }
         });
     }
+
+    // --- Per-Step Detail Charts (Basınç/Alan Profili ve COP Yolu) ---
+    gaitResults.processedSteps.forEach(step => {
+        let ctxProfile = document.getElementById(`profileChart_${step.id}`);
+        if (ctxProfile) {
+            let labels = Array.from({length: step.frames.length}, (_, i) => i+1);
+            let pressureData = step.frames.map(f => {
+                let sum = 0;
+                for(let i=0; i<2304; i++) sum += f[i];
+                return sum;
+            });
+            let maxP = Math.max(...pressureData) || 1;
+            let normPressure = pressureData.map(v => (v / maxP) * 100);
+
+            let areaData = step.frames.map(f => {
+                let count = 0;
+                for(let i=0; i<2304; i++) if(f[i] > 5) count++;
+                return count;
+            });
+            let maxA = Math.max(...areaData) || 1;
+            let normArea = areaData.map(v => (v / maxA) * 100);
+
+            chartInstances[`profile_${step.id}`] = new Chart(ctxProfile, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Basınç',
+                            data: normPressure,
+                            borderColor: 'blue',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0
+                        },
+                        {
+                            label: 'Alan',
+                            data: normArea,
+                            borderColor: 'green',
+                            borderDash: [5, 5],
+                            borderWidth: 2, fill: false, tension: 0.4, pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'Yürüme Fazları Analizi' }, legend: { display: true, position: 'left' } },
+                    scales: { y: { min: 0, max: 100, title: { display: true, text: 'Normalize Değer (%)' } } }
+                }
+            });
+        }
+
+        let ctxCopPath = document.getElementById(`copPath_${step.id}`);
+        if (ctxCopPath) {
+            let data = step.copPath.map(p => ({ x: p.x, y: p.y }));
+            chartInstances[`copPath_${step.id}`] = new Chart(ctxCopPath, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Yol',
+                            data: data,
+                            borderColor: 'rgba(156, 163, 175, 0.5)', // gray
+                            borderWidth: 2, showLine: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: 'rgba(239, 68, 68, 0.5)'
+                        },
+                        {
+                            label: 'Başlangıç',
+                            data: data.length > 0 ? [data[0]] : [],
+                            backgroundColor: 'green',
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'Bitiş',
+                            data: data.length > 0 ? [data[data.length-1]] : [],
+                            backgroundColor: 'red',
+                            pointStyle: 'crossRot',
+                            pointRadius: 8,
+                            borderWidth: 3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { title: { display: true, text: 'COP Yolu' }, legend: { display: true, position: 'right' } },
+                    scales: { 
+                        x: { reverse: false, title: { display: true, text: 'X' } },
+                        y: { reverse: true, title: { display: true, text: 'Y' } }
+                    }
+                }
+            });
+        }
+    });
+
 }
