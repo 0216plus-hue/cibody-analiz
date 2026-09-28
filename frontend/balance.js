@@ -9,7 +9,9 @@ function startBalanceTest() {
     if (balanceWs) balanceWs.close();
     
     balanceCopData = [];
-    balanceTimeLeft = 30;
+    const testTypeEl = document.getElementById('balanceTestType');
+    let testType = testTypeEl ? testTypeEl.value : 'cift_acik';
+    balanceTimeLeft = testType.includes('tek') ? 15 : 30;
     
     document.getElementById('balanceResultsSection').classList.add('hidden');
     document.getElementById('balanceRecordingSection').classList.remove('hidden');
@@ -160,25 +162,20 @@ function completeBalanceTest() {
     document.getElementById('btnSaveBalance').classList.remove('hidden');
     document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
     
-    analyzeBalanceData(balanceCopData);
+    const testTypeEl = document.getElementById('balanceTestType');
+    let testType = testTypeEl ? testTypeEl.value : 'cift_acik';
+    analyzeBalanceData(balanceCopData, testType);
 }
 
-function analyzeBalanceData(data) {
+function analyzeBalanceData(data, testType = 'cift_acik') {
     if(!data || data.length === 0) return;
     
-    let pathLength = 0;
+    let pathLength = 0; // mm
     let sumX = 0, sumY = 0;
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
     
     for(let i = 0; i < data.length; i++) {
         sumX += data[i].x;
         sumY += data[i].y;
-        if(data[i].x < minX) minX = data[i].x;
-        if(data[i].x > maxX) maxX = data[i].x;
-        if(data[i].y < minY) minY = data[i].y;
-        if(data[i].y > maxY) maxY = data[i].y;
-        
         if(i > 0) {
             let dx = data[i].x - data[i-1].x;
             let dy = data[i].y - data[i-1].y;
@@ -190,7 +187,6 @@ function analyzeBalanceData(data) {
     let meanX = sumX / n;
     let meanY = sumY / n;
     
-    // Covariance matrix for Ellipse
     let c11 = 0, c22 = 0, c12 = 0;
     let xData = [], yData = [];
     
@@ -201,34 +197,92 @@ function analyzeBalanceData(data) {
         c22 += dy*dy;
         c12 += dx*dy;
         
-        xData.push({x: i, y: dx}); // center at 0 for charts
+        xData.push({x: i, y: dx}); 
         yData.push({x: i, y: dy});
     }
     c11 /= (n-1);
     c22 /= (n-1);
     c12 /= (n-1);
     
-    // Eigenvalues
     let trace = c11 + c22;
     let det = c11*c22 - c12*c12;
     let root = Math.sqrt(Math.max(0, trace*trace - 4*det));
     let lambda1 = (trace + root) / 2;
     let lambda2 = (trace - root) / 2;
     
-    // 95% confidence ellipse area (Chi-square = 5.991 for 2 DOF)
-    let ellipseArea = Math.PI * 5.991 * Math.sqrt(Math.max(0, lambda1 * lambda2));
-    let meanVel = pathLength / 30.0;
+    let ellipseAreaMm = Math.PI * 5.991 * Math.sqrt(Math.max(0, lambda1 * lambda2));
     
-    document.getElementById('balMetricPath').innerText = pathLength.toFixed(1) + " mm";
-    document.getElementById('balMetricVel').innerText = meanVel.toFixed(1) + " mm/sn";
-    document.getElementById('balMetricArea').innerText = ellipseArea.toFixed(1) + " mm²";
+    let duration = testType.includes('tek') ? 15.0 : 30.0;
+    let meanVelMm = pathLength / duration;
     
-    // Build Romberg if history exists? For now N/A
+    // CONVERT TO CM
+    let pathCm = pathLength / 10.0;
+    let velCm = meanVelMm / 10.0;
+    let areaCm = ellipseAreaMm / 100.0;
+    
+    document.getElementById('balMetricPath').innerText = pathCm.toFixed(2) + " cm";
+    document.getElementById('balMetricVel').innerText = velCm.toFixed(2) + " cm/s";
+    document.getElementById('balMetricArea').innerText = areaCm.toFixed(2) + " cm²";
+    
+    // REFERENCE RANGES
+    let isSingle = testType.includes('tek');
+    let refTable = document.getElementById('balanceRefTableContainer');
+    let tbody = document.getElementById('balanceRefTableBody');
+    let refNote = document.getElementById('balanceRefNote');
+    
+    if(refTable && tbody && testType !== 'cift_kapali') {
+        refTable.style.display = 'block';
+        refNote.innerText = isSingle ? "Referans: Tek Ayak Göz Açık (15s)" : "Referans: Çift Ayak Göz Açık (30s)";
+        
+        let pathGood = isSingle ? 100 : 40;
+        let pathMed = isSingle ? 180 : 70;
+        
+        let areaGood = isSingle ? 20 : 4;
+        let areaMed = isSingle ? 40 : 8;
+        
+        let velGood = isSingle ? 5.0 : 1.2;
+        let velMed = isSingle ? 8.0 : 2.0;
+        
+        const getStatus = (val, good, med) => {
+            if(val < good) return { text: "İyi", color: "bg-emerald-100 text-emerald-800" };
+            if(val <= med) return { text: "Orta", color: "bg-amber-100 text-amber-800" };
+            return { text: "Yüksek", color: "bg-rose-100 text-rose-800" };
+        };
+        
+        let pathS = getStatus(pathCm, pathGood, pathMed);
+        let areaS = getStatus(areaCm, areaGood, areaMed);
+        let velS = getStatus(velCm, velGood, velMed);
+        
+        tbody.innerHTML = `
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Yol Uzunluğu (cm)</td>
+                <td class="px-4 py-3"><${pathGood}</td>
+                <td class="px-4 py-3">${pathGood}-${pathMed}</td>
+                <td class="px-4 py-3">>${pathMed}</td>
+                <td class="px-4 py-3 border-l font-bold ${pathS.color}">${pathCm.toFixed(2)} (${pathS.text})</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">Sallantı Alanı (cm²)</td>
+                <td class="px-4 py-3"><${areaGood}</td>
+                <td class="px-4 py-3">${areaGood}-${areaMed}</td>
+                <td class="px-4 py-3">>${areaMed}</td>
+                <td class="px-4 py-3 border-l font-bold ${areaS.color}">${areaCm.toFixed(2)} (${areaS.text})</td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 font-medium">COP Hızı (cm/s)</td>
+                <td class="px-4 py-3"><${velGood.toFixed(1)}</td>
+                <td class="px-4 py-3">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
+                <td class="px-4 py-3">>${velMed.toFixed(1)}</td>
+                <td class="px-4 py-3 border-l font-bold ${velS.color}">${velCm.toFixed(2)} (${velS.text})</td>
+            </tr>
+        `;
+    } else if (refTable) {
+        refTable.style.display = 'none';
+    }
     
     // Draw Charts
     drawBalanceCharts(data, meanX, meanY, xData, yData);
 }
-
 function drawBalanceCharts(data, meanX, meanY, xData, yData) {
     if(balanceChartInstances['scatter']) balanceChartInstances['scatter'].destroy();
     if(balanceChartInstances['xLine']) balanceChartInstances['xLine'].destroy();
@@ -341,7 +395,9 @@ function loadBalanceHistory(recordId) {
         document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
         
         balanceCopData = record.data;
-        analyzeBalanceData(record.data);
+        const testTypeEl = document.getElementById('balanceTestType');
+        if(testTypeEl) testTypeEl.value = record.type;
+        analyzeBalanceData(record.data, record.type);
     }
 }
 
@@ -356,7 +412,14 @@ function refreshBalanceHistoryDropdown() {
     history.reverse().forEach(record => {
         let opt = document.createElement('option');
         opt.value = record.id;
-        opt.innerText = `${record.date} - ${record.type === 'eyes_open' ? 'Gözler Açık' : 'Gözler Kapalı'}`;
+        let tName = record.type;
+        if(tName === 'cift_acik') tName = 'Çift Ayak Göz Açık';
+        if(tName === 'cift_kapali') tName = 'Çift Ayak Göz Kapalı';
+        if(tName === 'tek_sol_acik') tName = 'Tek Ayak (Sol) Göz Açık';
+        if(tName === 'tek_sag_acik') tName = 'Tek Ayak (Sağ) Göz Açık';
+        if(tName === 'eyes_open') tName = 'Gözler Açık';
+        if(tName === 'eyes_closed') tName = 'Gözler Kapalı';
+        opt.innerText = `${record.date} - ${tName}`;
         historySelect.appendChild(opt);
     });
 }
