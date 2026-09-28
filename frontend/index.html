@@ -431,7 +431,7 @@
                     <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> 3D Simülasyon
                 </button>
                 <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Ayak Basınç Analizi (AI)
+                    <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Statik Ayak Analiz
                 </button>
             </div>
 <!-- SEKME 1: POSTÜR ANALİZİ -->
@@ -1271,7 +1271,19 @@
         #footTab .bar-bottom { background: linear-gradient(90deg, #f59e0b, #eab308); transition: width 0.2s ease-out; }
     </style>
     
-    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-6">
+    <!-- Geçmiş Analizler Üst Çubuğu -->
+    <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş Analizler</h3>
+        </div>
+        <div>
+            <select id="staticFootHistorySelect" onchange="loadStaticFootHistory(this.value)" class="text-sm bg-slate-50 border border-slate-200 px-4 py-2 rounded-lg font-bold text-indigo-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-900 cursor-pointer">
+                <option value="">-- Geçmiş Analiz Seçin --</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
         <div class="relative bg-black rounded-2xl shadow-xl overflow-hidden border-4 border-slate-800 mx-auto lg:mx-0">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
@@ -1281,7 +1293,7 @@
         </div>
         
         <!-- İstatistikler -->
-        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0">
+        <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0" id="footAnalysisDataPanel">
             
             <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                 <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center"><i class="fa-solid fa-scale-balanced mr-2"></i>Sol / Sağ Dağılımı</h4>
@@ -1326,19 +1338,28 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- İşlem Butonları -->
+            <div class="flex flex-col gap-3 mt-2">
+                <button onclick="saveStaticFootAnalysis()" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Analizi Kaydet
+                </button>
+                <button onclick="downloadStaticFootPdf()" class="w-full bg-white hover:bg-slate-50 text-indigo-900 border border-slate-200 font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-red-500"></i> Analizi İndir (PDF)
+                </button>
+            </div>
 
         </div>
     </div>
 
-    <script>
+        let lastFootData = {};
+        
         (function() {
             const canvas = document.getElementById("foot_analysis_canvas");
             if (!canvas) return;
             const ctx = canvas.getContext("2d");
             
-            // --- AYAR ---
-            const HASSASIYET = 1.6; // Kırmızılığı artırmak/azaltmak için bunu değiştirebilirsin.
-            // ------------
+            const HASSASIYET = 1.6;
 
             const palCanvas = document.createElement('canvas');
             palCanvas.width = 1; palCanvas.height = 256;
@@ -1389,7 +1410,6 @@
                     tempFrame[i] = buffer[(start + i) % buffer.length];
                 }
 
-                // GÖRÜNTÜ SABİTLEME KİLİDİ
                 let rowSums = new Array(96).fill(0);
                 for(let r=0; r<96; r++) {
                     let sum = 0;
@@ -1438,7 +1458,6 @@
                     }
                 }
 
-                // RENKLENDİRME
                 let imgData = alphaCtx.getImageData(0,0,480,480);
                 let pixels = imgData.data;
                 for(let i=0; i<pixels.length; i+=4) {
@@ -1453,7 +1472,6 @@
                 }
                 ctx.putImageData(imgData, 0, 0);
 
-                // BİYOMEKANİK ÇİZİMLER (ABC ve OMURGA)
                 let ptsL = [], ptsR = [];
                 for (let i = 0; i < FRAME_SIZE; i++) {
                     let val = tempFrame[readStart + i];
@@ -1541,6 +1559,7 @@
                 }
 
                 let leftClarke = "-", leftArch = "-", rightClarke = "-", rightArch = "-";
+                let lPct = 0, rPct = 0, tPct = 0, bPct = 0;
 
                 ctx.fillStyle = "#0f0"; ctx.font = "bold 14px Arial";
                 if(lmK) {
@@ -1556,13 +1575,11 @@
                     ctx.fillText(`Ark İnd.: ${rightArch}`, 320, 50);
                 }
 
-                // Dinamik olarak HTML elementlerini güncelle
                 document.getElementById('val_left_clarke').innerText = leftClarke !== "-" ? leftClarke + "°" : "-°";
                 document.getElementById('val_left_arch').innerText = leftArch;
                 document.getElementById('val_right_clarke').innerText = rightClarke !== "-" ? rightClarke + "°" : "-°";
                 document.getElementById('val_right_arch').innerText = rightArch;
 
-                // GENEL AĞIRLIK MERKEZİ
                 if (totalP > 0) {
                     let copX = wX / totalP, copY = wY / totalP;
                     ctx.strokeStyle = "rgba(255, 128, 0, 0.7)"; ctx.lineWidth = 1.5;
@@ -1571,18 +1588,134 @@
                     ctx.moveTo(0, copY); ctx.lineTo(480, copY);
                     ctx.stroke();
 
-                    let lPct = (leftP / totalP * 100).toFixed(1);
-                    let rPct = (rightP / totalP * 100).toFixed(1);
-                    let tPct = (topP / totalP * 100).toFixed(1);
-                    let bPct = (bottomP / totalP * 100).toFixed(1);
+                    lPct = (leftP / totalP * 100).toFixed(1);
+                    rPct = (rightP / totalP * 100).toFixed(1);
+                    tPct = (topP / totalP * 100).toFixed(1);
+                    bPct = (bottomP / totalP * 100).toFixed(1);
 
                     document.getElementById('barL').style.width = lPct + "%"; document.getElementById('barL').innerText = "Sol %" + lPct;
                     document.getElementById('barR').style.width = rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + rPct;
                     document.getElementById('barT').style.width = tPct + "%"; document.getElementById('barT').innerText = "Ön %" + tPct;
                     document.getElementById('barB').style.width = bPct + "%"; document.getElementById('barB').innerText = "Arka %" + bPct;
                 }
+
+                lastFootData = {
+                    leftClarke, leftArch, rightClarke, rightArch,
+                    lPct, rPct, tPct, bPct,
+                    image: canvas.toDataURL('image/png')
+                };
             }
         })();
+
+        // -- YENİ: Geçmiş Kayıt, Yükleme ve PDF İndirme --
+        function saveStaticFootAnalysis() {
+            if (!currentPatientId) {
+                alert("Lütfen önce bir hasta seçin veya kaydedin.");
+                return;
+            }
+            if (!lastFootData || Object.keys(lastFootData).length === 0) {
+                alert("Kaydedilecek analiz verisi bulunamadı.");
+                return;
+            }
+
+            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
+            let newRecord = {
+                id: Date.now(),
+                date: new Date().toISOString(),
+                data: lastFootData
+            };
+            history.push(newRecord);
+            localStorage.setItem(`static_foot_history_${currentPatientId}`, JSON.stringify(history));
+
+            alert("Analiz başarıyla kaydedildi!");
+            refreshStaticFootHistoryDropdown();
+        }
+
+        function refreshStaticFootHistoryDropdown() {
+            if (!currentPatientId) return;
+            const select = document.getElementById('staticFootHistorySelect');
+            if(!select) return;
+            
+            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
+            select.innerHTML = '<option value="">-- Geçmiş Analiz Seçin --</option>';
+            
+            history.reverse().forEach(record => {
+                let d = new Date(record.date).toLocaleString('tr-TR');
+                let opt = document.createElement('option');
+                opt.value = record.id;
+                opt.text = d;
+                select.appendChild(opt);
+            });
+        }
+
+        function loadStaticFootHistory(recordId) {
+            if (!recordId) return;
+            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
+            let record = history.find(r => r.id == recordId);
+            if (record && record.data) {
+                let d = record.data;
+                
+                // İstatistikleri güncelle
+                document.getElementById('barL').style.width = d.lPct + "%"; document.getElementById('barL').innerText = "Sol %" + d.lPct;
+                document.getElementById('barR').style.width = d.rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + d.rPct;
+                document.getElementById('barT').style.width = d.tPct + "%"; document.getElementById('barT').innerText = "Ön %" + d.tPct;
+                document.getElementById('barB').style.width = d.bPct + "%"; document.getElementById('barB').innerText = "Arka %" + d.bPct;
+                
+                document.getElementById('val_left_clarke').innerText = d.leftClarke !== "-" ? d.leftClarke + "°" : "-°";
+                document.getElementById('val_left_arch').innerText = d.leftArch;
+                document.getElementById('val_right_clarke').innerText = d.rightClarke !== "-" ? d.rightClarke + "°" : "-°";
+                document.getElementById('val_right_arch').innerText = d.rightArch;
+
+                // Canvas'a geçmiş görüntüyü bas
+                const canvas = document.getElementById("foot_analysis_canvas");
+                const ctx = canvas.getContext("2d");
+                let img = new Image();
+                img.onload = () => {
+                    ctx.clearRect(0,0,480,480);
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = d.image;
+                
+                lastFootData = d;
+            }
+        }
+
+        function downloadStaticFootPdf() {
+            if (!currentPatientId) {
+                alert("Lütfen bir hasta seçin.");
+                return;
+            }
+            
+            const element = document.getElementById('footTab');
+            const opt = {
+                margin:       0.5,
+                filename:     `statik_ayak_analiz_${currentPatientId}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Butonları ve dropdownu gizle (PDF'te görünmesin)
+            const actionButtons = element.querySelector('.flex-col.gap-3.mt-2');
+            const historyDropdown = element.querySelector('.flex.justify-between.items-center.mb-6');
+            if(actionButtons) actionButtons.style.display = 'none';
+            if(historyDropdown) historyDropdown.style.display = 'none';
+            
+            html2pdf().set(opt).from(element).save().then(() => {
+                if(actionButtons) actionButtons.style.display = 'flex';
+                if(historyDropdown) historyDropdown.style.display = 'flex';
+            });
+        }
+
+        // Sayfa/Sekme açıldığında history'yi tetiklemek için ufak bir hack:
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabBtn = document.getElementById('btn_footTab');
+            if(tabBtn) {
+                tabBtn.addEventListener('click', () => {
+                    setTimeout(refreshStaticFootHistoryDropdown, 200);
+                });
+            }
+        });
     </script>
 </div>
 
