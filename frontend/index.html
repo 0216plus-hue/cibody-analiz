@@ -437,6 +437,9 @@
                 <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
                     <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Statik Ayak Analiz
                 </button>
+                <button onclick="switchTab('gaitTab')" id="btn_gaitTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-person-running mr-2 text-emerald-500"></i> Dinamik Yürüme Analizi
+                </button>
             </div>
 <!-- SEKME 1: POSTÜR ANALİZİ -->
 
@@ -1749,6 +1752,71 @@
     </script>
 </div>
 
+<!-- SEKME: YÜRÜME ANALİZİ -->
+<div id="gaitTab" class="hidden">
+    <!-- Üst Bar: Başlık ve Butonlar -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4">
+        <div>
+            <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-person-running mr-2 text-emerald-500"></i>Dinamik Yürüme Analizi</h2>
+            <p class="text-xs text-slate-500 mt-1">Hastayı mat üzerinde yürütünüz. Sistem adımları otomatik yakalayacaktır.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="btnStartGaitAnalysis" onclick="startGaitAnalysis()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-play"></i> Analizi Başlat
+            </button>
+            <button id="btnCompleteGaitAnalysis" onclick="completeGaitAnalysis()" class="bg-amber-500 hover:bg-amber-400 text-white font-bold py-2 px-5 rounded-xl transition-all shadow-md flex items-center gap-2 hidden">
+                <i class="fa-solid fa-flag-checkered"></i> Analizi Tamamla
+            </button>
+        </div>
+    </div>
+
+    <!-- Analiz Ekranı: Sol (Mat/Canlı) - Sağ (Adımlar) -->
+    <div class="flex flex-col lg:flex-row gap-6 h-[600px]" id="gaitRecordingSection">
+        
+        <!-- Canlı Matris Ekranı -->
+        <div class="lg:w-2/3 w-full bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex items-center justify-center">
+            <canvas id="gaitLiveCanvas" width="480" height="480" class="block"></canvas>
+            
+            <div id="gaitLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
+                <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
+            </div>
+            
+            <!-- Bilgi overlay -->
+            <div id="gaitInstructionOverlay" class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-8 text-center backdrop-blur-sm z-10 transition-opacity">
+                <div class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-person-running text-4xl text-emerald-500 animate-pulse"></i>
+                </div>
+                <h3 class="text-white text-xl font-bold mb-2">Yürüme Analizine Başlayın</h3>
+                <p class="text-slate-300 text-sm max-w-sm">"Analizi Başlat" butonuna tıkladıktan sonra, hastanın mat üzerinde doğal bir şekilde yürümesini sağlayın. Sistem adımları sağ tarafa otomatik dizecektir.</p>
+            </div>
+        </div>
+        
+        <!-- Kaydedilen Adımlar Listesi -->
+        <div class="lg:w-1/3 w-full bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                <h3 class="font-bold text-slate-700 text-sm"><i class="fa-solid fa-shoe-prints mr-2 text-indigo-400"></i>Kaydedilen Adımlar</h3>
+                <span id="gaitStepCountBadge" class="bg-indigo-100 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">0 Adım</span>
+            </div>
+            
+            <!-- Adım Kartları (Scrollable) -->
+            <div id="gaitStepsList" class="flex-1 overflow-y-auto p-4 flex flex-col gap-4 bg-slate-50/50">
+                <!-- Boş durum -->
+                <div id="gaitEmptyState" class="h-full flex flex-col items-center justify-center text-slate-400">
+                    <i class="fa-solid fa-list-check text-3xl mb-3 opacity-50"></i>
+                    <p class="text-xs text-center">Henüz kaydedilmiş<br>bir adım bulunmuyor.</p>
+                </div>
+                <!-- Kartlar buraya eklenecek -->
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
+    <div id="gaitResultsSection" class="hidden">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Rapor ve Grafikler (Yapım Aşamasında)</h3>
+    </div>
+</div>
+
         </div> <!-- /patientView -->
     </div>
 
@@ -1903,5 +1971,6 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="simulation.js?v=10.6"></script>
 
+<script src="gait.js?v=1.0"></script>
 </body>
 </html>
