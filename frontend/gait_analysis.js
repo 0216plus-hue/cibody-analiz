@@ -12,9 +12,35 @@ function analyzeGaitData(steps) {
     let processedSteps = steps.map(step => {
         let maxForce = 0;
         let copPath = [];
-        let regional = { heel: 0, mid: 0, fore: 0 }; // Topuk (y>30), Orta (15<y<=30), Ön (y<=15)
-        let totalPressureSum = 0;
         
+        let minY = 48, maxY = 0, minX = 48, maxX = 0;
+        for(let i=0; i<2304; i++) {
+            if (step.aggregate[i] > 5) {
+                let r = Math.floor(i/48);
+                let c = i%48;
+                if (r < minY) minY = r;
+                if (r > maxY) maxY = r;
+            }
+        }
+        let footLen = maxY - minY;
+        if (footLen < 5) footLen = 5;
+
+        let toeY = minY + footLen * 0.15;
+        let foreY = minY + footLen * 0.45;
+        let midY = minY + footLen * 0.70;
+
+        for(let i=0; i<2304; i++) {
+            if (step.aggregate[i] > 5 && Math.floor(i/48) <= toeY) {
+                let c = i%48;
+                if (c < minX) minX = c;
+                if (c > maxX) maxX = c;
+            }
+        }
+        let centerToeX = (minX + maxX) / 2;
+
+        let regional = { heel: 0, mid: 0, fore: 0 }; 
+        let regions5 = { toe1: 0, toes25: 0, fore: 0, mid: 0, heel: 0 };
+
         step.frames.forEach(frame => {
             let frameForce = 0;
             let sumX = 0;
@@ -23,18 +49,39 @@ function analyzeGaitData(steps) {
             for(let i=0; i<2304; i++) {
                 let v = frame[i];
                 if(v > 5) {
-                    let r = Math.floor(i/48); // y
-                    let c = i%48;             // x (data is already upright and mirrored from processGaitFrame)
+                    let r = Math.floor(i/48); 
+                    let c = i%48;             
                     
                     frameForce += v;
                     sumX += (c * v);
                     sumY += (r * v);
                     
                     totalPressureSum += v;
-                    if (r > 30) regional.heel += v;
-                    else if (r > 15) regional.mid += v;
+                    
+                    // Legacy 3 regions (for backwards compatibility in UI)
+                    if (r > midY) regional.heel += v;
+                    else if (r > foreY) regional.mid += v;
                     else regional.fore += v;
+                    
+                    // New 5 regions
+                    if (r > midY) {
+                        regions5.heel += v;
+                    } else if (r > foreY) {
+                        regions5.mid += v;
+                    } else if (r > toeY) {
+                        regions5.fore += v;
+                    } else {
+                        // Toes
+                        if (step.type === 'Sol Ayak') {
+                            if (c > centerToeX) regions5.toe1 += v; // Big toe inside (right)
+                            else regions5.toes25 += v;
+                        } else {
+                            if (c < centerToeX) regions5.toe1 += v; // Big toe inside (left)
+                            else regions5.toes25 += v;
+                        }
+                    }
                 }
+
             }
             if(frameForce > maxForce) maxForce = frameForce;
             
@@ -64,6 +111,13 @@ function analyzeGaitData(steps) {
                 heelPct: totalPressureSum > 0 ? (regional.heel / totalPressureSum * 100) : 0,
                 midPct: totalPressureSum > 0 ? (regional.mid / totalPressureSum * 100) : 0,
                 forePct: totalPressureSum > 0 ? (regional.fore / totalPressureSum * 100) : 0,
+            },
+            regions5: {
+                toe1: totalPressureSum > 0 ? (regions5.toe1 / totalPressureSum * 100) : 0,
+                toes25: totalPressureSum > 0 ? (regions5.toes25 / totalPressureSum * 100) : 0,
+                fore: totalPressureSum > 0 ? (regions5.fore / totalPressureSum * 100) : 0,
+                mid: totalPressureSum > 0 ? (regions5.mid / totalPressureSum * 100) : 0,
+                heel: totalPressureSum > 0 ? (regions5.heel / totalPressureSum * 100) : 0,
             }
         };
     });
@@ -236,6 +290,27 @@ function renderMiniFrame(canvasId, frameData, outSize=120) {
 }
 
 // CHARTS
+
+Chart.register({
+    id: 'barLabels',
+    afterDatasetsDraw: function(chart) {
+        if (chart.config.type !== 'bar') return;
+        const ctx = chart.ctx;
+        chart.data.datasets.forEach((dataset, i) => {
+            let meta = chart.getDatasetMeta(i);
+            meta.data.forEach((element, index) => {
+                let value = dataset.data[index];
+                if(value <= 0) return;
+                ctx.fillStyle = '#475569';
+                ctx.font = 'bold 11px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                let text = Math.round(value) + '%';
+                ctx.fillText(text, element.x, element.y - 5);
+            });
+        });
+    }
+});
 
 Chart.register({
     id: 'pieLabels',
@@ -707,6 +782,56 @@ function renderCharts() {
                     legend: { position: 'right' }
                 }
             }
+        });
+    }
+
+    
+    // --- 5 Bölge Yük Dağılımı Analizi ---
+    let fiveRegionSection = document.getElementById('fiveRegionSection');
+    let fiveRegionGrid = document.getElementById('fiveRegionGrid');
+    if (fiveRegionSection && fiveRegionGrid) {
+        fiveRegionSection.classList.remove('hidden');
+        fiveRegionGrid.innerHTML = '';
+        
+        gaitResults.processedSteps.forEach(step => {
+            let container = document.createElement('div');
+            container.className = "w-full h-64 relative border border-slate-200 rounded-lg p-2 bg-slate-50";
+            container.innerHTML = `<canvas id="chart5reg_${step.id}"></canvas>`;
+            fiveRegionGrid.appendChild(container);
+            
+            setTimeout(() => {
+                let ctx = document.getElementById(`chart5reg_${step.id}`);
+                if (ctx) {
+                    chartInstances[`chart5reg_${step.id}`] = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Başparmak', 'Parmaklar', 'Ön Ayak', 'Orta Ayak', 'Topuk'],
+                            datasets: [{
+                                data: [step.regions5.toe1, step.regions5.toes25, step.regions5.fore, step.regions5.mid, step.regions5.heel],
+                                backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'] // Purple, Blue, Green, Orange, Red
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { 
+                                title: { display: true, text: `Adım ${step.id} - ${step.type.replace(' Ayak','')}` },
+                                legend: { display: false },
+                                datalabels: {
+                                    display: true,
+                                    anchor: 'end',
+                                    align: 'top',
+                                    formatter: (val) => Math.round(val) + '%',
+                                    font: { weight: 'bold', size: 10 }
+                                }
+                            },
+                            scales: { 
+                                x: { ticks: { font: { size: 10 } } },
+                                y: { min: 0, max: 100, title: { display: true, text: '%' } } 
+                            }
+                        }
+                    });
+                }
+            }, 150);
         });
     }
 
