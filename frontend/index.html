@@ -307,6 +307,12 @@
                         <button onclick="openProfileModal(); document.getElementById('profileDropdown').classList.add('hidden');" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition">
                             <i class="fa-solid fa-pen-to-square text-indigo-500 w-4"></i> Bilgilerimi Düzenle
                         </button>
+                        
+                        <hr class="border-slate-100">
+                        <button onclick="if(confirm('Tüm önbelleği temizleyip sayfayı yenilemek istiyor musunuz?')){ localStorage.clear(); sessionStorage.clear(); window.location.href = window.location.pathname + '?bypass=' + Date.now(); }" class="w-full text-left px-4 py-3 text-sm text-amber-600 hover:bg-amber-50 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-broom w-4"></i> Sistemi Sıfırla
+                        </button>
+
                         <hr class="border-slate-100">
                         <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition">
                             <i class="fa-solid fa-right-from-bracket w-4"></i> Çıkış Yap
