@@ -181,6 +181,9 @@ class UserUpdate(BaseModel):
 class NoteUpdate(BaseModel):
     notes: str
 
+class AnalysisDataUpdate(BaseModel):
+    data: str
+
 # ────────────────────────────────
 #  AUTH ENDPOINTLERİ
 # ────────────────────────────────
@@ -537,6 +540,22 @@ def update_analysis_notes(analysis_id: int, payload: NoteUpdate,
     if not analysis:
         raise HTTPException(status_code=404, detail="Analiz bulunamadı")
     analysis.clinical_notes = payload.notes
+    db.commit()
+    return {"status": "success"}
+
+@app.put("/api/posture/{analysis_id}/data")
+def update_analysis_data(analysis_id: int, payload: AnalysisDataUpdate,
+                          db: Session = Depends(get_db),
+                          current_user: models.User = Depends(get_current_user)):
+    analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Analiz bulunamadı")
+    # Hastanın mevcut uzmana ait olduğunu doğrula
+    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id, models.Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=403, detail="Yetkisiz işlem")
+    
+    analysis.analysis_data = payload.data
     db.commit()
     return {"status": "success"}
 

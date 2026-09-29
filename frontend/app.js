@@ -144,7 +144,7 @@ function switchTab(tabId) {
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
@@ -175,6 +175,9 @@ function switchTab(tabId) {
         if(tabId === 'simulationTab') {
             if(window.resizeSimulation) setTimeout(() => window.resizeSimulation(), 100);
             if(typeof loadSimulationHistory === 'function') loadSimulationHistory();
+        }
+        if(tabId === 'aiReportTab' && currentPatientId) {
+            if(typeof loadAiSelectDropdowns === 'function') loadAiSelectDropdowns();
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -1068,13 +1071,27 @@ function setupDragEvents(canvasId, viewType) {
         refreshAllCanvases();
     });
 
-    const stopDrag = () => { 
+    const stopDrag = async () => { 
+        if(!isDragging) return;
         isDragging = false; 
         draggedPointKey = null; 
         currentDragView = null; 
         newCanvas.style.cursor = 'default';
         const zPanel = document.getElementById('zoomPanel');
         if(zPanel) zPanel.classList.add('hidden'); 
+        
+        // Otomatik kaydet
+        if(currentAnalysisId && globalPostureState) {
+            try {
+                await authFetch(`/api/posture/${currentAnalysisId}/data`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: JSON.stringify(globalPostureState) })
+                });
+            } catch(e) {
+                console.error("Nokta konumu kaydedilemedi:", e);
+            }
+        }
     };
 
     newCanvas.addEventListener('pointerup', stopDrag);
