@@ -542,7 +542,7 @@ function previewImage(input, previewId) {
     }
 }
 
-async function compressImage(file, maxWidth = 1080) {
+async function compressImage(file, maxWidth = 640) {
     return new Promise((resolve) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -561,9 +561,7 @@ async function compressImage(file, maxWidth = 1080) {
                 canvas.height = height;
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(img, 0, 0, width, height);
-                canvas.toBlob((blob) => {
-                    resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg", lastModified: Date.now() }));
-                }, "image/jpeg", 0.8);
+                canvas.toBlob((blob) => { resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg", lastModified: Date.now() })); }, "image/jpeg", 0.7);
             };
         };
     });
