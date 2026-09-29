@@ -2349,44 +2349,42 @@
 </div>
 
 <!-- SEKME: YAPAY ZEKA RAPOR (AI) -->
-<div id="aiReportTab" class="hidden max-w-7xl mx-auto px-4 mt-8">
-    <div class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-8 rounded-3xl shadow-2xl mb-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 opacity-10">
-            <i class="fa-solid fa-robot text-[200px] transform rotate-12 translate-x-10 -translate-y-10"></i>
+<div id="aiReportTab" class="hidden">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4">
+        <div>
+            <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-robot mr-2 text-purple-600"></i>Yapay Zeka Destekli Klinik Rapor</h2>
+            <p class="text-xs text-slate-500 mt-1">Geçmiş analizleri seçerek yapay zekanın detaylı klinik teşhis ve tabanlık önerisi sunmasını sağlayın.</p>
         </div>
-        <div class="relative z-10">
-            <h2 class="text-3xl font-black text-white mb-2">Yapay Zeka Destekli Klinik Rapor</h2>
-            <p class="text-purple-200 mb-8 max-w-2xl">Geçmiş analizleri seçerek yapay zekanın Ortez-Protez Uzmanı bakış açısıyla detaylı klinik teşhis ve tabanlık önerisi sunmasını sağlayın.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Statik Seçimi -->
-                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl">
-                    <h3 class="text-white font-bold mb-3 flex items-center"><i class="fa-solid fa-shoe-prints mr-2 text-red-400"></i>Statik Ayak Analizi</h3>
-                    <select id="aiSelectStatic" class="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
-                        <option value="">-- Dahil Etme --</option>
-                    </select>
-                </div>
-                
-                <!-- Dinamik Seçimi -->
-                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl">
-                    <h3 class="text-white font-bold mb-3 flex items-center"><i class="fa-solid fa-person-running mr-2 text-emerald-400"></i>Dinamik Yürüme Analizi</h3>
-                    <select id="aiSelectGait" class="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
-                        <option value="">-- Dahil Etme --</option>
-                    </select>
-                </div>
-                
-                <!-- Denge Seçimi -->
-                <div class="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl">
-                    <h3 class="text-white font-bold mb-3 flex items-center"><i class="fa-solid fa-scale-unbalanced mr-2 text-indigo-400"></i>Denge Testi (Postürografi)</h3>
-                    <select id="aiSelectBalance" class="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
-                        <option value="">-- Dahil Etme --</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button onclick="generateAiFootReport()" id="btnGenerateAiFootReport" class="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-black text-lg py-4 px-8 rounded-2xl shadow-[0_0_20px_rgba(168,85,247,0.4)] transition-all flex items-center justify-center gap-3 w-full md:w-auto">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Yapay Zeka Raporunu Oluştur
+        <div class="flex items-center gap-3">
+            <button onclick="generateAiFootReport()" id="btnGenerateAiFootReport" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Raporu Oluştur
             </button>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Statik Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i>Statik Ayak Analizi</h3>
+            <select id="aiSelectStatic" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                <option value="">-- Dahil Etme --</option>
+            </select>
+        </div>
+        
+        <!-- Dinamik Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-person-running mr-2 text-emerald-500"></i>Dinamik Yürüme Analizi</h3>
+            <select id="aiSelectGait" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                <option value="">-- Dahil Etme --</option>
+            </select>
+        </div>
+        
+        <!-- Denge Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-scale-unbalanced mr-2 text-indigo-500"></i>Denge Testi</h3>
+            <select id="aiSelectBalance" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                <option value="">-- Dahil Etme --</option>
+            </select>
         </div>
     </div>
     
