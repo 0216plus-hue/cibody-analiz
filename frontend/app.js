@@ -2438,7 +2438,9 @@ async function showPatientQr() {
     };
 
     try {
-        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+        const pdfBlob = await html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
+            applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
+        }).outputPdf('blob');
         
         // Restore DOM
         bStyles.forEach(item => item.el.style.display = item.display);
