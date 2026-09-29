@@ -45,6 +45,10 @@ function authHeaders() {
 
 async function authFetch(url, options = {}) {
     options.headers = { ...authHeaders(), ...(options.headers || {}) };
+    if (!options.method || options.method.toUpperCase() === 'GET') {
+        const separator = url.includes('?') ? '&' : '?';
+        url = url + separator + 't=' + Date.now();
+    }
     const res = await fetch(url, options);
     if (res.status === 401) {
         clearAuth();
