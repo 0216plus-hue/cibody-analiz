@@ -335,7 +335,7 @@ async function loadPatientData(id) {
         
         // Load Posture (Latest & History)
         if(data.posture_analyses && data.posture_analyses.length > 0) {
-            currentPatientAnalyses = data.posture_analyses;
+            currentPatientAnalyses = data.posture_analyses.sort((a,b) => b.id - a.id);
             
             // Tarih Dropdown'unu doldur
             const selectEl = document.getElementById('analysisHistorySelect');
@@ -355,7 +355,7 @@ async function loadPatientData(id) {
         }
         
         // Load Foot (Latest)
-        if(data.foot_analyses && data.foot_analyses.length > 0) {
+        if(data.foot_analyses && data.foot_analyses.length > 0) { data.foot_analyses.sort((a,b) => b.id - a.id);
             const latestFoot = data.foot_analyses[0];
             window.currentFootAnalysisId = latestFoot.id;
             document.getElementById('footResultsSection').classList.remove('hidden');
