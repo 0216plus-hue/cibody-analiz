@@ -90,6 +90,9 @@ function showDashboard(clearActive = false) {
         });
         const navP = document.getElementById('navPatientName');
         if (navP) navP.classList.add('hidden');
+        const nBack = document.getElementById('navBackBtn');
+        if (nBack) nBack.classList.add('hidden');
+
         fetchPatients();
     } catch(err) {
         console.error("showDashboard error:", err);
@@ -122,6 +125,9 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (patView) patView.classList.remove('hidden');
         const navP = document.getElementById('navPatientName');
         if (navP) {
+            const nBack = document.getElementById('navBackBtn');
+            if(nBack) nBack.classList.remove('hidden');
+
             navP.classList.remove('hidden');
             navP.innerText = patientName;
         }

@@ -294,7 +294,7 @@
                 </h1>
             </div>
             <div class="flex items-center gap-2 md:gap-3">
-                <div id="navPatientName" class="hidden font-semibold text-indigo-800 bg-indigo-100 px-4 py-1 rounded-full text-sm"></div>
+                <button id="navBackBtn" onclick="showDashboard(true)" class="hidden text-slate-500 hover:text-indigo-900 font-bold transition text-sm mr-2"><i class="fa-solid fa-arrow-left mr-1"></i> <span class="hidden md:inline">Tüm Kayıtlı Kişiler'e Dön</span></button><div id="navPatientName" class="hidden font-semibold text-indigo-800 bg-indigo-100 px-4 py-1 rounded-full text-sm"></div>
                 <button onclick="document.getElementById('newPatientModal').classList.remove('hidden')" class="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 text-sm">
                     <i class="fa-solid fa-user-plus"></i> <span class="hidden md:inline">Yeni Kayıt (Analizi Başlat)</span>
                 </button>
@@ -371,6 +371,8 @@
                 </div>
             </div>
             
+</div><!-- /dashboardView -->
+
             <!-- Yeni Hasta Modal -->
             <div id="newPatientModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
                 <div class="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-xl relative animate-fade-in">
@@ -434,17 +436,13 @@
                     </form>
                 </div>
             </div>
-
         </div>
 
         <!-- PATIENT PROFILE (Hasta Detayı) -->
         <div id="patientView" class="hidden">
-            <button onclick="showDashboard(true)" class="mb-6 text-slate-500 hover:text-indigo-900 font-medium transition">
-                <i class="fa-solid fa-arrow-left mr-2"></i> Tüm Kayıtlı Kişiler'e Dön
-            </button>
 
             <!-- Profil Başlığı -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex justify-between items-center">
+            <div class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 flex justify-between items-center">
                 <div>
                     <h2 class="text-2xl font-bold text-slate-800" id="detailName">Hasta Adı</h2>
                     <p class="text-slate-500 text-sm mt-1" id="detailInfo">Yaş: 0 | Kilo: 0kg | Cinsiyet: - | Tel: -</p>
