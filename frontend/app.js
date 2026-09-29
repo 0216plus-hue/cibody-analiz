@@ -642,45 +642,37 @@ function calcHorizontalAngle(pLeft, pRight) {
 
 function refreshAllCanvases() {
     let resFront=null, resBack=null, resLeft=null, resRight=null;
-    if(globalPostureState.front && !globalPostureState.front.error) {
+    if(globalPostureState.front) { if(globalPostureState.front.error) { document.getElementById('table_front').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.front.error + '</div>'; } else {
         const res = drawCanvas('canvas_front', 'preview_front', globalPostureState.front, 'front');
         let html = '';
         if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Omuz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '(Normal - '+res.shoulderSym.higher+' Yüksek)' : '('+res.shoulderSym.higher+' Yüksek)'}</span></div>`;
         if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Kalça Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '(Normal - '+res.hipSym.higher+' Yüksek)' : '('+res.hipSym.higher+' Yüksek)'}</span></div>`;
         if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Diz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '(Normal - '+res.kneeSym.higher+' Yüksek)' : '('+res.kneeSym.higher+' Yüksek)'}</span></div>`;
-        document.getElementById('table_front').innerHTML = html;
-        resFront = res;
-    }
+        document.getElementById('table_front').innerHTML = html; resFront = res; } }
     
-    if(globalPostureState.back && !globalPostureState.back.error) {
+    if(globalPostureState.back) { if(globalPostureState.back.error) { document.getElementById('table_back').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.back.error + '</div>'; } else {
         const res = drawCanvas('canvas_back', 'preview_back', globalPostureState.back, 'back');
         let html = '';
         if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Omuz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '(Normal - '+res.shoulderSym.higher+' Yüksek)' : '(Skolyoz Riski - '+res.shoulderSym.higher+' Yüksek)'}</span></div>`;
         if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Kalça Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '(Normal - '+res.hipSym.higher+' Yüksek)' : '(Pelvik Asimetri - '+res.hipSym.higher+' Yüksek)'}</span></div>`;
         if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Diz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '(Normal - '+res.kneeSym.higher+' Yüksek)' : '('+res.kneeSym.higher+' Yüksek)'}</span></div>`;
-        document.getElementById('table_back').innerHTML = html;
-        resBack = res;
-    }
+        document.getElementById('table_back').innerHTML = html; resBack = res; } }
     
-    if(globalPostureState.left && !globalPostureState.left.error) {
+    if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
         const res = drawCanvas('canvas_left', 'preview_left', globalPostureState.left, 'left');
         let html = '';
         if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Baş Öne Eğikliği</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
         if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Torakal Eğiklik</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
         if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Pelvik Eğim</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '(Nötr)' : '(Anterior/Posterior Tilt)'}</span></div>`;
-        document.getElementById('table_left').innerHTML = html;
-        resLeft = res;
-    }
+        document.getElementById('table_left').innerHTML = html; resLeft = res; } }
     
-    if(globalPostureState.right && !globalPostureState.right.error) {
+    if(globalPostureState.right) { if(globalPostureState.right.error) { document.getElementById('table_right').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.right.error + '</div>'; } else {
         const res = drawCanvas('canvas_right', 'preview_right', globalPostureState.right, 'right');
         let html = '';
         if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Baş Öne Eğikliği</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
         if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Torakal Eğiklik</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
         if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Pelvik Eğim</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '(Nötr)' : '(Anterior/Posterior Tilt)'}</span></div>`;
-        document.getElementById('table_right').innerHTML = html;
-        resRight = res;
-    }
+        document.getElementById('table_right').innerHTML = html; resRight = res; } }
 
     // Skor ve Bulgu Hesaplamaları
     let findings = new Map();
