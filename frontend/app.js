@@ -562,7 +562,7 @@ async function compressImage(file, maxWidth = 1080) {
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(img, 0, 0, width, height);
                 canvas.toBlob((blob) => {
-                    resolve(new File([blob], file.name, { type: "image/jpeg", lastModified: Date.now() }));
+                    resolve(new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: "image/jpeg", lastModified: Date.now() }));
                 }, "image/jpeg", 0.8);
             };
         };
