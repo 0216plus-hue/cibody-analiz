@@ -118,7 +118,7 @@
                 <div class="flex items-center gap-3">
                     <img src="/assets/logo.png" class="h-10 w-auto object-contain" alt="CIBODY Logo">
                     <div>
-                        <h1 class="text-lg font-bold text-indigo-900">CIBODY AI <span class="text-xs text-slate-400 font-normal">v2.1</span></h1>
+                        <h1 class="text-lg font-bold text-indigo-900">CIBODY AI <span class="text-xs text-slate-400 font-normal">v2.1 Analiz Sistemi</span></h1>
                         <p class="text-xs text-red-500 font-bold">SÜPER ADMİN PANELİ</p>
                     </div>
                 </div>
@@ -290,7 +290,7 @@
             <div class="flex items-center space-x-3 cursor-pointer" onclick="showDashboard(true)">
                 <img src="/assets/logo.png" class="h-10 w-auto object-contain" alt="CIBODY Logo">
                 <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-900 to-indigo-600">
-                    CIBODY AI <span class="text-sm text-slate-400 font-normal">v2.2 CRM</span>
+                    CIBODY AI <span class="text-sm text-slate-400 font-normal">v2.1 Analiz Sistemi</span>
                 </h1>
             </div>
             <div class="flex items-center gap-2 md:gap-3">
@@ -401,6 +401,16 @@
                         </div>
                         <div class="flex gap-4">
                             <div class="w-1/2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Boy (cm)</label>
+                                <input type="number" id="p_height" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 175">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Ayakkabı No</label>
+                                <input type="number" id="p_shoe_size" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 42">
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
                                 <label class="block text-xs font-bold text-slate-500 mb-1">Cinsiyet</label>
                                 <select id="p_gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm appearance-none">
                                     <option value="Erkek">Erkek</option>
@@ -410,16 +420,6 @@
                             <div class="w-1/2">
                                 <label class="block text-xs font-bold text-slate-500 mb-1">İletişim (Telefon)</label>
                                 <input type="text" id="p_phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="05XX XXX XX XX">
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Boy (cm)</label>
-                                <input type="number" id="p_height" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 175">
-                            </div>
-                            <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Ayakkabı No</label>
-                                <input type="number" id="p_shoe_size" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 42">
                             </div>
                         </div>
                         
