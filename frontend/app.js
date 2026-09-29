@@ -500,8 +500,10 @@ function renderHistoricalAnalysis(index) {
         right: parsed.right || null
     };
     
-    document.getElementById('postureResultsSection').classList.remove('hidden');
-    document.getElementById('postureUploadSection').classList.add('hidden');
+    const pResults = document.getElementById('postureResultsSection');
+    const pUpload = document.getElementById('postureUploadSection');
+    if(pResults) pResults.classList.remove('hidden');
+    if(pUpload) pUpload.classList.add('hidden');
     
     // Rapor Tarihini Güncelle
     const dateObj = new Date(targetAnalysis.created_at + 'Z');

@@ -588,7 +588,7 @@
                             <select id="analysisHistorySelect" onchange="loadHistoricalAnalysis(this.value)" class="text-sm bg-white border border-slate-200 px-4 py-2 rounded-lg font-bold text-indigo-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-900 cursor-pointer">
                                 <!-- Seçenekler JS ile dolacak -->
                             </select>
-                            <button onclick="document.getElementById('postureUploadSection').classList.toggle('hidden')" class="text-sm bg-slate-200 hover:bg-slate-300 px-4 py-2 rounded-lg font-bold text-slate-700 shadow-sm transition">Yeni Analiz Yükle</button>
+                            <button onclick="const u=document.getElementById('postureUploadSection'); const r=document.getElementById('postureResultsSection'); if(u){u.classList.remove('hidden');} if(r){r.classList.add('hidden');} u && u.scrollIntoView({behavior:'smooth'});" class="text-sm bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Yeni Analiz Yükle</button>
                         </div>
                     </div>
                     
