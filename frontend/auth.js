@@ -44,7 +44,7 @@ function authHeaders() {
 }
 
 async function authFetch(url, options = {}) {
-    options.headers = { ...authHeaders(), ...(options.headers || {}) };
+    options.headers = { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', ...authHeaders(), ...(options.headers || {}) };
     if (!options.method || options.method.toUpperCase() === 'GET') {
         const separator = url.includes('?') ? '&' : '?';
         url = url + separator + 't=' + Date.now();
