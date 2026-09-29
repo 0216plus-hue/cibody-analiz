@@ -124,7 +124,13 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="text-sm text-slate-600">Merhaba, <span id="adminWelcomeName" class="font-bold text-indigo-900"></span></span>
-                    <button onclick="logout()" class="text-sm text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition flex items-center gap-2">
+                    
+                <!-- Reset Button -->
+                <button onclick="if(confirm('Tüm önbelleği temizleyip sayfayı yenilemek istiyor musunuz?')){ localStorage.clear(); sessionStorage.clear(); window.location.href = window.location.pathname + '?bypass=' + Date.now(); }" class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-bold shadow-sm transition text-sm flex items-center">
+                    <i class="fa-solid fa-broom mr-2"></i> Sistemi Sıfırla
+                </button>
+
+                <button onclick="logout()" class="text-sm text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-4 py-2 rounded-lg transition flex items-center gap-2">
                         <i class="fa-solid fa-right-from-bracket"></i> Çıkış
                     </button>
                 </div>
