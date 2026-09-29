@@ -73,7 +73,7 @@ function showDashboard(clearActive = false) {
             currentSpineAnalysisId = null;
         }
         showAppView();
-        const user = getUser();
+        
         // Update nav username
         const navUserName = document.getElementById('navUserName');
         if(navUserName && user && user.name) navUserName.textContent = user.name;
