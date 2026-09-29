@@ -559,6 +559,21 @@ def update_analysis_data(analysis_id: int, payload: AnalysisDataUpdate,
     db.commit()
     return {"status": "success"}
 
+@app.post("/api/posture/{analysis_id}/pdf")
+def upload_posture_pdf(analysis_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
+    if not analysis: raise HTTPException(status_code=404)
+    # Hastanın uzmana ait olduğunu doğrula
+    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id, models.Patient.user_id == current_user.id).first()
+    if not patient: raise HTTPException(status_code=403)
+    
+    os.makedirs("uploads/generated_pdfs", exist_ok=True)
+    pdf_path = f"uploads/generated_pdfs/posture_{analysis_id}.pdf"
+    with open(pdf_path, "wb") as f:
+        f.write(file.file.read())
+    
+    return {"status": "success", "url": f"/{pdf_path}"}
+
 # ────────────────────────────────
 #  KLİNİK OMURGA & SKOLYOZ ANALİZİ
 # ────────────────────────────────

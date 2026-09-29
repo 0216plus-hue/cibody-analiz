@@ -2400,34 +2400,103 @@ function downloadSimulationPdf() {
     });
 }
 
-function showPatientQr() {
-    // Generate a public URL pointing to a new public report page
-    const publicUrl = window.location.origin + '/rapor.html?id=' + currentAnalysisId;
+async function showPatientQr() {
+    if(!currentAnalysisId) return;
     
-    let modal = document.getElementById('qrModal');
-    if(!modal) {
-        modal = document.createElement('div');
-        modal.id = 'qrModal';
-        modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden';
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl relative">
-                <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-                <h3 class="text-xl font-bold text-indigo-900 mb-2">Hasta Karekodu</h3>
-                <p class="text-sm text-slate-500 mb-6">Hastanız bu karekodu telefonuna okutunca PDF raporu otomatik olarak indirilir.</p>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4 inline-block">
-                    <img id="patientQrImg" src="" alt="Hasta QR" class="w-48 h-48 object-contain mx-auto">
-                </div>
-                <p class="text-xs text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-file-pdf text-red-400"></i> PDF otomatik indirilir</p>
-            </div>
-        `;
-        document.body.appendChild(modal);
+    showToast("Karekod hazırlanıyor, lütfen bekleyin...");
+    
+    // 1. Generate PDF exactly like downloadPdf()
+    const element = document.getElementById('postureTab');
+    const notesEl = document.getElementById('clinicalNotesInput');
+    let notesText = '';
+    let oldNotesDisplay = '';
+    let notesDiv = null;
+    if(notesEl) {
+        notesText = notesEl.value.trim();
+        oldNotesDisplay = notesEl.style.display;
+        notesEl.style.display = 'none'; 
+        notesDiv = document.createElement('div');
+        notesDiv.className = 'text-sm text-slate-700 whitespace-pre-wrap p-4 bg-slate-50 rounded-xl border border-slate-200 mt-2 avoid-break';
+        notesDiv.innerText = notesText || 'Klinik not girilmemiş.';
+        notesEl.parentNode.insertBefore(notesDiv, notesEl.nextSibling);
     }
     
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(publicUrl);
-    document.getElementById('patientQrImg').src = qrUrl;
-    modal.classList.remove('hidden');
+    const buttonsToHide = element.querySelectorAll('button, [data-html2canvas-ignore]');
+    const bStyles = [];
+    buttonsToHide.forEach(el => {
+        bStyles.push({ el, display: el.style.display });
+        el.style.display = 'none';
+    });
+
+    const opt = {
+      margin:       [0.60, 0.3, 0.5, 0.3],
+      filename:     `postur.pdf`,
+      image:        { type: 'jpeg', quality: 1.0 },
+      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+    };
+
+    try {
+        const pdfBlob = await html2pdf().set(opt).from(element).output('blob');
+        
+        // Restore DOM
+        bStyles.forEach(item => item.el.style.display = item.display);
+        if(notesEl) {
+            notesEl.style.display = oldNotesDisplay;
+            if(notesDiv) notesDiv.remove();
+        }
+        
+        // Upload PDF
+        const formData = new FormData();
+        formData.append("file", pdfBlob, "postur.pdf");
+        
+        const res = await authFetch(`/api/posture/${currentAnalysisId}/pdf`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        
+        if(data.status === 'success') {
+            const publicUrl = window.location.origin + data.url;
+            
+            let modal = document.getElementById('qrModal');
+            if(!modal) {
+                modal = document.createElement('div');
+                modal.id = 'qrModal';
+                modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl relative">
+                        <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                        <h3 class="text-xl font-bold text-indigo-900 mb-2">Hasta Karekodu</h3>
+                        <p class="text-sm text-slate-500 mb-6">Hastanız bu karekodu telefonuna okutunca PDF raporu otomatik olarak indirilir.</p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4 inline-block">
+                            <img id="patientQrImg" src="" alt="Hasta QR" class="w-48 h-48 object-contain mx-auto">
+                        </div>
+                        <p class="text-xs text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-file-pdf text-red-400"></i> PDF otomatik indirilir</p>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            
+            const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(publicUrl);
+            document.getElementById('patientQrImg').src = qrUrl;
+            modal.classList.remove('hidden');
+        } else {
+            showToast("Karekod oluşturulamadı.");
+        }
+        
+    } catch (err) {
+        console.error(err);
+        bStyles.forEach(item => item.el.style.display = item.display);
+        if(notesEl) {
+            notesEl.style.display = oldNotesDisplay;
+            if(notesDiv) notesDiv.remove();
+        }
+        showToast("PDF oluşturulurken hata oluştu.");
+    }
 }
 
 
