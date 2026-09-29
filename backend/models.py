@@ -171,3 +171,24 @@ class SimulationAnalysis(Base):
     end_vertebra = Column(String, default="")
     measurement_method = Column(String, default="")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class InsoleOrder(Base):
+    __tablename__ = "insole_orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    therapist_id = Column(Integer, ForeignKey("users.id"))
+    
+    status = Column(String, default="Bekliyor") # "Bekliyor", "Tabanlık Baskısı Yapıldı", "Kargolandı", "Tamamlandı", "İptal"
+    
+    static_data = Column(Text, nullable=True) # JSON snapshot of static foot analysis
+    gait_data = Column(Text, nullable=True) # JSON snapshot of dynamic gait analysis
+    balance_data = Column(Text, nullable=True) # JSON snapshot of balance analysis
+    
+    ai_report_text = Column(Text, nullable=True) # Any AI summary generated for this order
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    patient = relationship("Patient")
+    therapist = relationship("User")

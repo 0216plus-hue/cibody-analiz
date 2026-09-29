@@ -1594,3 +1594,99 @@ Lütfen raporunu şık bir Markdown (.md) formatında hazırla.
         raise HTTPException(status_code=500, detail=str(e))
 
 app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+
+# ────────────────────────────────
+#  KİŞİYE ÖZEL TABANLIK SİPARİŞLERİ
+# ────────────────────────────────
+class InsoleOrderCreate(BaseModel):
+    patient_id: int
+    static_data: Optional[str] = None
+    gait_data: Optional[str] = None
+    balance_data: Optional[str] = None
+    ai_report_text: Optional[str] = None
+
+class InsoleOrderStatusUpdate(BaseModel):
+    status: str
+
+@app.post("/api/orders")
+def create_insole_order(req: InsoleOrderCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    patient = db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Hasta bulunamadı")
+        
+    new_order = models.InsoleOrder(
+        patient_id=req.patient_id,
+        therapist_id=current_user.id,
+        static_data=req.static_data,
+        gait_data=req.gait_data,
+        balance_data=req.balance_data,
+        ai_report_text=req.ai_report_text,
+        status="Bekliyor"
+    )
+    db.add(new_order)
+    db.commit()
+    db.refresh(new_order)
+    return {"status": "success", "order_id": new_order.id}
+
+@app.get("/api/orders/therapist")
+def get_therapist_orders(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    orders = db.query(models.InsoleOrder).filter(models.InsoleOrder.therapist_id == current_user.id).order_by(models.InsoleOrder.created_at.desc()).all()
+    res = []
+    for o in orders:
+        res.append({
+            "id": o.id,
+            "patient_name": o.patient.name if o.patient else "Bilinmeyen Hasta",
+            "status": o.status,
+            "created_at": o.created_at.isoformat(),
+            "updated_at": o.updated_at.isoformat()
+        })
+    return res
+
+@app.get("/api/orders/patient/{patient_id}")
+def get_patient_orders(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    orders = db.query(models.InsoleOrder).filter(models.InsoleOrder.patient_id == patient_id).order_by(models.InsoleOrder.created_at.desc()).all()
+    res = []
+    for o in orders:
+        res.append({
+            "id": o.id,
+            "status": o.status,
+            "created_at": o.created_at.isoformat(),
+            "updated_at": o.updated_at.isoformat()
+        })
+    return res
+
+@app.get("/api/admin/orders")
+def get_all_orders_admin(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role != "superadmin":
+        raise HTTPException(status_code=403, detail="Yetkiniz yok")
+    
+    orders = db.query(models.InsoleOrder).order_by(models.InsoleOrder.created_at.desc()).all()
+    res = []
+    for o in orders:
+        res.append({
+            "id": o.id,
+            "patient_name": o.patient.name if o.patient else "-",
+            "therapist_name": o.therapist.name if o.therapist else "-",
+            "status": o.status,
+            "created_at": o.created_at.isoformat(),
+            "updated_at": o.updated_at.isoformat(),
+            "static_data": o.static_data,
+            "gait_data": o.gait_data,
+            "balance_data": o.balance_data,
+            "ai_report_text": o.ai_report_text
+        })
+    return res
+
+@app.put("/api/admin/orders/{order_id}/status")
+def update_order_status(order_id: int, req: InsoleOrderStatusUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    if current_user.role != "superadmin":
+        raise HTTPException(status_code=403, detail="Yetkiniz yok")
+        
+    order = db.query(models.InsoleOrder).filter(models.InsoleOrder.id == order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Sipariş bulunamadı")
+        
+    order.status = req.status
+    db.commit()
+    return {"status": "success"}
+

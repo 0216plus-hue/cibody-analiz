@@ -77,6 +77,11 @@ function showDashboard(clearActive = false) {
         if (dashView) dashView.classList.remove('hidden');
         const patView = document.getElementById('patientView');
         if (patView) patView.classList.add('hidden');
+        const tOrd = document.getElementById('therapistOrdersView');
+        if(tOrd) tOrd.classList.add('hidden');
+        const aOrd = document.getElementById('adminOrdersView');
+        if(aOrd) aOrd.classList.add('hidden');
+
         
         // Hide all extra tabs
         ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'].forEach(t => { 
@@ -108,6 +113,11 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 
         const dashView = document.getElementById('dashboardView');
         if (dashView) dashView.classList.add('hidden');
+        const tOrd = document.getElementById('therapistOrdersView');
+        if(tOrd) tOrd.classList.add('hidden');
+        const aOrd = document.getElementById('adminOrdersView');
+        if(aOrd) aOrd.classList.add('hidden');
+
         const patView = document.getElementById('patientView');
         if (patView) patView.classList.remove('hidden');
         const navP = document.getElementById('navPatientName');
@@ -137,7 +147,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 function switchTab(tabId) {
     try {
         // Hide all tabs
-        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab'];
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'];
         tabs.forEach(t => {
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden');
@@ -178,6 +188,10 @@ function switchTab(tabId) {
         }
         if(tabId === 'aiReportTab' && currentPatientId) {
             if(typeof loadAiSelectDropdowns === 'function') loadAiSelectDropdowns();
+        }
+        if(tabId === 'insoleTab' && currentPatientId) {
+            if(typeof loadInsoleDropdowns === 'function') loadInsoleDropdowns();
+
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -3270,3 +3284,264 @@ function downloadAiFootPdf() {
         window.location.href = window.location.pathname; // Parametreyi temizle
     }
 })();
+
+// ORDERS LOGIC
+
+function showTherapistOrders() {
+    const dash = document.getElementById('dashboardView');
+    const pat = document.getElementById('patientView');
+    if(dash) dash.classList.add('hidden');
+    if(pat) pat.classList.add('hidden');
+    
+    document.getElementById('adminOrdersView').classList.add('hidden');
+    document.getElementById('therapistOrdersView').classList.remove('hidden');
+    
+    fetchTherapistOrders();
+}
+
+function showAdminOrders() {
+    const av = document.getElementById('adminView');
+    if (av) av.classList.add('hidden');
+    const appV = document.getElementById('appView');
+    if (appV) appV.classList.remove('hidden');
+    const dash = document.getElementById('dashboardView');
+    const pat = document.getElementById('patientView');
+    if(dash) dash.classList.add('hidden');
+    if(pat) pat.classList.add('hidden');
+    document.getElementById('therapistOrdersView').classList.add('hidden');
+    document.getElementById('adminOrdersView').classList.remove('hidden');
+    fetchAdminOrders();
+
+}
+
+async function fetchTherapistOrders() {
+    try {
+        const res = await authFetch('/api/orders/therapist');
+        const data = await res.json();
+        const tbody = document.getElementById('therapistOrdersTableBody');
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Henüz siparişiniz bulunmamaktadır.</td></tr>';
+            return;
+        }
+        data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
+                <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
+                <td class="py-3 px-4 text-sm text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
+                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${o.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch(err) { console.error(err); }
+}
+
+async function fetchAdminOrders() {
+    try {
+        const res = await authFetch('/api/admin/orders');
+        const data = await res.json();
+        const tbody = document.getElementById('adminOrdersTableBody');
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Sipariş bulunamadı.</td></tr>';
+            return;
+        }
+        data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
+                <td class="py-3 px-4 text-sm text-slate-600">${o.therapist_name}</td>
+                <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
+                <td class="py-3 px-4 text-sm text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
+                <td class="py-3 px-4">
+                    <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-bold border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="Bekliyor" ${o.status==='Bekliyor'?'selected':''}>Bekliyor</option>
+                        <option value="Tabanlık Baskısı Yapıldı" ${o.status==='Tabanlık Baskısı Yapıldı'?'selected':''}>Baskı Yapıldı</option>
+                        <option value="Kargolandı" ${o.status==='Kargolandı'?'selected':''}>Kargolandı</option>
+                        <option value="Tamamlandı" ${o.status==='Tamamlandı'?'selected':''}>Tamamlandı</option>
+                        <option value="İptal" ${o.status==='İptal'?'selected':''}>İptal</option>
+                    </select>
+                </td>
+                <td class="py-3 px-4 text-center">
+                    <button onclick="openOrderReports(${o.id})" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition">Raporları Aç</button>
+                    <div id="order_data_${o.id}" class="hidden" data-static='${o.static_data ? o.static_data.replace(/'/g, "&#39;") : ""}' data-gait='${o.gait_data ? o.gait_data.replace(/'/g, "&#39;") : ""}' data-balance='${o.balance_data ? o.balance_data.replace(/'/g, "&#39;") : ""}'></div>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch(err) { console.error(err); }
+}
+
+function getStatusStyle(status) {
+    if(status === 'Bekliyor') return 'bg-amber-100 text-amber-700';
+    if(status === 'Tabanlık Baskısı Yapıldı') return 'bg-blue-100 text-blue-700';
+    if(status === 'Kargolandı') return 'bg-indigo-100 text-indigo-700';
+    if(status === 'Tamamlandı') return 'bg-emerald-100 text-emerald-700';
+    if(status === 'İptal') return 'bg-rose-100 text-rose-700';
+    return 'bg-slate-100 text-slate-700';
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+    try {
+        const res = await authFetch(`/api/admin/orders/${orderId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({status: newStatus})
+        });
+        if(res.ok) {
+            showToast("Durum güncellendi.");
+        } else {
+            showToast("Hata oluştu.");
+        }
+    } catch(err) { console.error(err); }
+}
+
+function openOrderReports(orderId) {
+    const dataDiv = document.getElementById(`order_data_${orderId}`);
+    if(!dataDiv) return;
+    
+    // For simplicity, we can just log or show a modal. To keep it simple, we download them as JSON or show a modal with text.
+    // The user wants to "open them one by one". Let's show a modal with 3 buttons that dump the json, or better yet, recreate the view!
+    // Recreating the view in the admin dashboard without the full DOM is hard. 
+    // We can open a new window and dump the data there.
+    const w = window.open('', '_blank');
+    w.document.write('<html><head><title>Sipariş Raporları</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-50 p-8">');
+    w.document.write(`<h1 class="text-2xl font-bold mb-4">Sipariş #${orderId} Rapor Verileri</h1>`);
+    
+    const sD = dataDiv.getAttribute('data-static');
+    const gD = dataDiv.getAttribute('data-gait');
+    const bD = dataDiv.getAttribute('data-balance');
+    
+    if(sD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Statik Ayak Analizi</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(sD), null, 2)}</pre>`);
+    if(gD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Dinamik Yürüme Analizi</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(gD), null, 2)}</pre>`);
+    if(bD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Denge Testi (Postürografi)</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(bD), null, 2)}</pre>`);
+    
+    w.document.write('</body></html>');
+    w.document.close();
+}
+
+function loadInsoleDropdowns() {
+    if(!currentPatientId) return;
+    
+    let statics = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
+    let selStat = document.getElementById('insoleSelectStatic');
+    if(selStat) {
+        selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+        statics.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+            selStat.appendChild(opt);
+        });
+    }
+    
+    let gaits = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
+    let selGait = document.getElementById('insoleSelectGait');
+    if(selGait) {
+        selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+        gaits.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+            selGait.appendChild(opt);
+        });
+    }
+    
+    let balances = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
+    let selBal = document.getElementById('insoleSelectBalance');
+    if(selBal) {
+        selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+        balances.forEach(s => {
+            let opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+            selBal.appendChild(opt);
+        });
+    }
+    
+    fetchPatientInsoleOrders();
+}
+
+async function fetchPatientInsoleOrders() {
+    try {
+        const res = await authFetch(`/api/orders/patient/${currentPatientId}`);
+        const data = await res.json();
+        const tbody = document.getElementById('patientOrdersTableBody');
+        tbody.innerHTML = '';
+        if(data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Bu hastaya ait sipariş bulunmamaktadır.</td></tr>';
+            return;
+        }
+        data.forEach(o => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-3 px-4 font-medium text-slate-700">#${o.id}</td>
+                <td class="py-3 px-4 text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
+                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${o.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch(err) { console.error(err); }
+}
+
+async function submitInsoleOrder() {
+    if(!currentPatientId) return;
+    
+    const staticId = document.getElementById('insoleSelectStatic').value;
+    const gaitId = document.getElementById('insoleSelectGait').value;
+    const balanceId = document.getElementById('insoleSelectBalance').value;
+    
+    if(!staticId && !gaitId && !balanceId) {
+        alert("Sipariş vermek için en az bir analiz seçmelisiniz.");
+        return;
+    }
+    
+    let staticData = null;
+    let gaitData = null;
+    let balanceData = null;
+    
+    if(staticId) {
+        const arr = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
+        const found = arr.find(x => x.id == staticId);
+        if(found) staticData = JSON.stringify(found);
+    }
+    if(gaitId) {
+        const arr = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
+        const found = arr.find(x => x.id == gaitId);
+        if(found) gaitData = JSON.stringify(found);
+    }
+    if(balanceId) {
+        const arr = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
+        const found = arr.find(x => x.id == balanceId);
+        if(found) balanceData = JSON.stringify(found);
+    }
+    
+    const btn = document.getElementById('btnSubmitInsoleOrder');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gönderiliyor...';
+    
+    try {
+        const res = await authFetch('/api/orders', {
+            method: 'POST',
+            body: JSON.stringify({
+                patient_id: currentPatientId,
+                static_data: staticData,
+                gait_data: gaitData,
+                balance_data: balanceData
+            })
+        });
+        
+        if(res.ok) {
+            showToast("Kişiye özel tabanlık siparişi başarıyla oluşturuldu.");
+            fetchPatientInsoleOrders();
+        } else {
+            showToast("Sipariş oluşturulurken bir hata oluştu.");
+        }
+    } catch(err) {
+        console.error(err);
+        showToast("Sunucu bağlantı hatası.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Sipariş Et';
+    }
+}

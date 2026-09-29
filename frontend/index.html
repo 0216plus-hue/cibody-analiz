@@ -124,6 +124,10 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="text-sm text-slate-600">Merhaba, <span id="adminWelcomeName" class="font-bold text-indigo-900"></span></span>
+                    <button onclick="showAdminOrders()" class="bg-indigo-100 text-indigo-700 hover:bg-indigo-200 px-4 py-2 rounded-lg font-bold shadow-sm transition text-sm flex items-center">
+                        <i class="fa-solid fa-box-open mr-2"></i> Siparişleri Yönet
+                    </button>
+
                     
                 <!-- Reset Button -->
                 <button onclick="if(confirm('Tüm önbelleği temizleyip sayfayı yenilemek istiyor musunuz?')){ localStorage.clear(); sessionStorage.clear(); window.location.href = window.location.pathname + '?bypass=' + Date.now(); }" class="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-bold shadow-sm transition text-sm flex items-center">
@@ -309,8 +313,8 @@
                         </button>
                         
                         <hr class="border-slate-100">
-                        <button onclick="if(confirm('Tüm önbelleği temizleyip sayfayı yenilemek istiyor musunuz?')){ localStorage.clear(); sessionStorage.clear(); window.location.href = window.location.pathname + '?bypass=' + Date.now(); }" class="w-full text-left px-4 py-3 text-sm text-amber-600 hover:bg-amber-50 flex items-center gap-3 transition">
-                            <i class="fa-solid fa-broom w-4"></i> Sistemi Sıfırla
+                        <button onclick="showTherapistOrders()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-box-open text-indigo-500 w-4"></i> Tabanlık Siparişleri
                         </button>
 
                         <hr class="border-slate-100">
@@ -485,6 +489,10 @@
                 <button onclick="switchTab('aiReportTab')" id="btn_aiReportTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
                     <i class="fa-solid fa-robot mr-2 text-purple-500"></i> Yapay Zeka Rapor (AI)
                 </button>
+                <button onclick="switchTab('insoleTab')" id="btn_insoleTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i> Kişiye Özel Tabanlık
+                </button>
+
             </div>
 
 <!-- SEKME 1: POSTÜR ANALİZİ -->
@@ -2410,6 +2418,65 @@
         
         <div id="aiFootReportContent" class="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg prose prose-slate max-w-none text-slate-700 leading-relaxed" style="font-size:15px; font-family:sans-serif;">
             <!-- Markdown rapor buraya html olarak gelecek -->
+        </div>
+    </div>
+</div>
+<!-- SEKME: KİŞİYE ÖZEL TABANLIK -->
+<div id="insoleTab" class="hidden">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm gap-4">
+        <div>
+            <h2 class="text-xl font-black text-slate-800"><i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i>Kişiye Özel Tabanlık Siparişi</h2>
+            <p class="text-xs text-slate-500 mt-1">Hastanın mevcut analizlerini seçerek doğrudan laboratuvara özel üretim tabanlık siparişi verin.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="submitInsoleOrder()" id="btnSubmitInsoleOrder" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Sipariş Et
+            </button>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Statik Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i>Statik Ayak Analizi</h3>
+            <select id="insoleSelectStatic" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- İsteğe Bağlı --</option>
+            </select>
+        </div>
+        
+        <!-- Dinamik Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-person-running mr-2 text-emerald-500"></i>Dinamik Yürüme Analizi</h3>
+            <select id="insoleSelectGait" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- İsteğe Bağlı --</option>
+            </select>
+        </div>
+        
+        <!-- Denge Seçimi -->
+        <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+            <h3 class="text-slate-700 font-bold mb-3 flex items-center text-sm"><i class="fa-solid fa-scale-unbalanced mr-2 text-indigo-500"></i>Denge Testi</h3>
+            <select id="insoleSelectBalance" class="w-full text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+                <option value="">-- İsteğe Bağlı --</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Sipariş Geçmişi -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-slate-400"></i>Hastanın Sipariş Geçmişi</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-500 text-xs border-b border-slate-100 uppercase">
+                        <th class="py-3 px-4 font-semibold">Sipariş ID</th>
+                        <th class="py-3 px-4 font-semibold">Tarih</th>
+                        <th class="py-3 px-4 font-semibold">Durum</th>
+                    </tr>
+                </thead>
+                <tbody id="patientOrdersTableBody" class="divide-y divide-slate-50 text-sm">
+                    <tr><td colspan="3" class="text-center py-4 text-slate-400 italic">Yükleniyor...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
