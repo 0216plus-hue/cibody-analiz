@@ -608,10 +608,21 @@ async function runPostureAnalysis() {
     try {
         const res = await authFetch('/api/posture/analyze', { method: 'POST', body: formData });
         const data = await res.json();
-        if(!res.ok) throw new Error(data.detail);
+        if(!res.ok) throw new Error(data.detail || 'Sunucu hatası');
         
-        loadPatientData(currentPatientId); // Yeniden yükle
-    } catch(err) { showToast("Analiz Hatası: " + err.message); console.error("Analiz Hatası", err); }
+        // data.analysis içinde YOLO hatası var mı kontrol et
+        const views = ['front','back','left','right'];
+        const allErrors = views.every(v => !data.analysis[v] || data.analysis[v].error);
+        if(allErrors) {
+            const firstErr = views.map(v => data.analysis[v]?.error).find(e=>e);
+            throw new Error('YOLO Hatası: ' + (firstErr || 'İnsan tespit edilemedi'));
+        }
+        
+        await loadPatientData(currentPatientId); // Yeniden yükle — await ile bekle
+    } catch(err) { 
+        showToast("Analiz Hatası: " + err.message); 
+        console.error("Analiz Hatası", err); 
+    }
     finally { document.getElementById('postureLoadingState').classList.add('hidden'); }
 }
 
