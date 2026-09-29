@@ -2959,10 +2959,10 @@ async function loadScoliometerHistory(patientId) {
 // ==========================================
 
 function loadAiSelectDropdowns() {
-    if(!activePatientId) return;
+    if(!currentPatientId) return;
     
     // Static Foot
-    let statics = JSON.parse(localStorage.getItem('static_foot_' + activePatientId) || '[]');
+    let statics = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
     let selStat = document.getElementById('aiSelectStatic');
     if(selStat) {
         selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
@@ -2975,7 +2975,7 @@ function loadAiSelectDropdowns() {
     }
     
     // Dynamic Gait
-    let gaits = JSON.parse(localStorage.getItem('gait_history_' + activePatientId) || '[]');
+    let gaits = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
     let selGait = document.getElementById('aiSelectGait');
     if(selGait) {
         selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
@@ -2988,7 +2988,7 @@ function loadAiSelectDropdowns() {
     }
     
     // Balance Test
-    let balances = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+    let balances = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
     let selBal = document.getElementById('aiSelectBalance');
     if(selBal) {
         selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
@@ -3019,7 +3019,7 @@ async function generateAiFootReport() {
     // Gather data
     let staticData = null;
     if(statId) {
-        let arr = JSON.parse(localStorage.getItem('static_foot_' + activePatientId) || '[]');
+        let arr = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
         let rec = arr.find(x => x.id === statId);
         if(rec) {
             staticData = {
@@ -3038,7 +3038,7 @@ async function generateAiFootReport() {
     
     let gaitData = null;
     if(gaitId) {
-        let arr = JSON.parse(localStorage.getItem('gait_history_' + activePatientId) || '[]');
+        let arr = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
         let rec = arr.find(x => x.id === gaitId);
         if(rec) {
             gaitData = {
@@ -3052,7 +3052,7 @@ async function generateAiFootReport() {
     
     let balData = null;
     if(balId) {
-        let arr = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+        let arr = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
         let rec = arr.find(x => x.id === balId);
         if(rec && rec.session) {
             balData = {
