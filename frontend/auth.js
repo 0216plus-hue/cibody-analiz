@@ -44,8 +44,11 @@ function authHeaders() {
 }
 
 async function authFetch(url, options = {}) {
-    options.headers = { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', ...authHeaders(), ...(options.headers || {}) };
-    if (!options.method || options.method.toUpperCase() === 'GET') {
+    const isGet = !options.method || options.method.toUpperCase() === 'GET';
+    // Cache-Control headers sadece GET isteklerinde — POST/PUT FormData isteklerinde ekleme, multipart boundary'yi bozar
+    const cacheHeaders = isGet ? { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } : {};
+    options.headers = { ...cacheHeaders, ...authHeaders(), ...(options.headers || {}) };
+    if (isGet) {
         const separator = url.includes('?') ? '&' : '?';
         url = url + separator + 't=' + Date.now();
     }
