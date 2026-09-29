@@ -1,3 +1,21 @@
+
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    const string = msg.toLowerCase();
+    const substring = "script error";
+    if (string.indexOf(substring) > -1){
+        showToast('Script Error: See Browser Console for Detail');
+    } else {
+        const message = [
+            'JS Hata: ' + msg,
+            'Satır: ' + lineNo,
+            'Kolon: ' + columnNo,
+            'Hata: ' + JSON.stringify(error)
+        ].join(' - ');
+        showToast(message);
+    }
+    return false;
+};
+
 let currentExerciseContext = 'posture';
 
 let globalPostureState = { front: null, back: null, left: null, right: null };
@@ -451,6 +469,7 @@ function loadHistoricalAnalysis(indexStr) {
 }
 
 function renderHistoricalAnalysis(index) {
+    try {
     if(!currentPatientAnalyses || currentPatientAnalyses.length <= index) return;
     
     const targetAnalysis = currentPatientAnalyses[index];
@@ -521,6 +540,7 @@ function renderHistoricalAnalysis(index) {
     if(targetAnalysis.right_image_path) loadImg('right', targetAnalysis.right_image_path);
 
     if(imagesToLoad === 0) refreshAllCanvases(); 
+    } catch(err) { showToast("Render hatası: " + err.message); console.error(err); }
 }
 
 // POSTÜR VE FOTOĞRAF İŞLEMLERİ
@@ -591,7 +611,7 @@ async function runPostureAnalysis() {
         if(!res.ok) throw new Error(data.detail);
         
         loadPatientData(currentPatientId); // Yeniden yükle
-    } catch(err) { showToast(err.message); }
+    } catch(err) { showToast("Analiz Hatası: " + err.message); console.error("Analiz Hatası", err); }
     finally { document.getElementById('postureLoadingState').classList.add('hidden'); }
 }
 
