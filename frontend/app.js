@@ -319,10 +319,14 @@ async function createPatient(e) {
 
 async function loadPatientData(id) {
     // Reset Views
-    document.getElementById('postureResultsSection').classList.add('hidden');
-    document.getElementById('postureUploadSection').classList.remove('hidden');
-    document.getElementById('footResultsSection').classList.add('hidden');
+    const postureResults = document.getElementById('postureResultsSection');
+    const postureUpload = document.getElementById('postureUploadSection');
+    const footResults = document.getElementById('footResultsSection');
+    if(postureResults) postureResults.classList.add('hidden');
+    if(postureUpload) postureUpload.classList.remove('hidden');
+    if(footResults) footResults.classList.add('hidden');
     globalPostureState = { front: null, back: null, left: null, right: null };
+
     
     // Clear old preview images
     ['front', 'back', 'left', 'right'].forEach(view => {
@@ -603,7 +607,8 @@ async function runPostureAnalysis() {
     if(l) formData.append('left_image', await compressImage(l));
     if(r) formData.append('right_image', await compressImage(r));
 
-    document.getElementById('postureLoadingState').classList.remove('hidden');
+    const loadingEl = document.getElementById('postureLoadingState');
+    if(loadingEl) loadingEl.classList.remove('hidden');
     
     try {
         const res = await authFetch('/api/posture/analyze', { method: 'POST', body: formData });
@@ -612,10 +617,11 @@ async function runPostureAnalysis() {
         
         // data.analysis içinde YOLO hatası var mı kontrol et
         const views = ['front','back','left','right'];
-        const allErrors = views.every(v => !data.analysis[v] || data.analysis[v].error);
+        const uploadedViews = views.filter(v => data.analysis && data.analysis[v]);
+        const allErrors = uploadedViews.length > 0 && uploadedViews.every(v => data.analysis[v].error);
         if(allErrors) {
-            const firstErr = views.map(v => data.analysis[v]?.error).find(e=>e);
-            throw new Error('YOLO Hatası: ' + (firstErr || 'İnsan tespit edilemedi'));
+            const firstErr = uploadedViews.map(v => data.analysis[v]?.error).find(e=>e);
+            throw new Error('YOLO: ' + (firstErr || 'İnsan tespit edilemedi. Tam boy fotoğraf yükleyin.'));
         }
         
         await loadPatientData(currentPatientId); // Yeniden yükle — await ile bekle
@@ -623,8 +629,12 @@ async function runPostureAnalysis() {
         showToast("Analiz Hatası: " + err.message); 
         console.error("Analiz Hatası", err); 
     }
-    finally { document.getElementById('postureLoadingState').classList.add('hidden'); }
+    finally { 
+        const el = document.getElementById('postureLoadingState');
+        if(el) el.classList.add('hidden'); 
+    }
 }
+
 
 // AYAK ANALİZİ İŞLEMİ
 async function runFootAnalysis(e) {
