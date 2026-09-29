@@ -2887,7 +2887,7 @@ function showInfoPopup(type) {
 let scoliometerPollInterval = null;
 
 async function generateScoliometerQR() {
-    if(!currentAnalysisId && !window.currentScoliosisId) {
+    if(!currentPatientId) {
         alert("Lütfen önce bir hasta seçin veya profilini açın.");
         return;
     }
