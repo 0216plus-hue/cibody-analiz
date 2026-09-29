@@ -3119,3 +3119,33 @@ function downloadAiFootPdf() {
     };
     html2pdf().set(opt).from(el).save();
 }
+
+
+// DUMMY PATIENT GENERATOR
+(async function checkDummy() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('add_dummy_patients') === 'true') {
+        const token = localStorage.getItem('token');
+        if(!token) return;
+        
+        let count = 0;
+        for(let i=1; i<=20; i++) {
+            let formData = new FormData();
+            formData.append('name', 'Test Hastası ' + i);
+            formData.append('age', Math.floor(Math.random() * 40) + 20);
+            formData.append('weight', Math.floor(Math.random() * 30) + 60);
+            formData.append('gender', i % 2 === 0 ? 'Erkek' : 'Kadın');
+            
+            try {
+                const res = await fetch(API_URL + '/api/patients', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                if(res.ok) count++;
+            } catch(e) {}
+        }
+        alert(count + " adet test hastası başarıyla eklendi!");
+        window.location.href = window.location.pathname; // Parametreyi temizle
+    }
+})();
