@@ -58,6 +58,14 @@ let currentDragView = null;
 // GÖRÜNÜM KONTROLLERİ
 function showDashboard(clearActive = false) {
     try {
+        const user = getUser();
+        if(user && user.role === 'superadmin') {
+            if(typeof showAdminView === 'function') {
+                showAdminView(user.name);
+                return;
+            }
+        }
+
         if (clearActive) {
             sessionStorage.removeItem('cibody_active_patient_id');
             sessionStorage.removeItem('cibody_active_tab');
