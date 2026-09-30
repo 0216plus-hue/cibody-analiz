@@ -652,7 +652,7 @@
                             <select id="analysisHistorySelect" onchange="loadHistoricalAnalysis(this.value)" class="text-sm bg-white border border-slate-200 px-4 py-2 rounded-lg font-bold text-indigo-900 shadow-sm focus:outline-none focus:ring-1 focus:ring-indigo-900 cursor-pointer">
                                 <!-- Seçenekler JS ile dolacak -->
                             </select>
-                            <button onclick="const u=document.getElementById('postureUploadSection'); const r=document.getElementById('postureResultsSection'); if(u){u.classList.remove('hidden');} if(r){r.classList.add('hidden');} u && u.scrollIntoView({behavior:'smooth'});" class="text-sm bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Yeni Analiz Yükle</button>
+                            <button onclick="const u=document.getElementById('postureUploadSection'); const r=document.getElementById('postureResultsSection'); if(u){u.classList.remove('hidden');} if(r){r.classList.add('hidden');} u && u.scrollIntoView({behavior:'smooth'});" class="text-sm bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Yeni Analiz Başlat</button>
                         </div>
                     </div>
                     
@@ -897,20 +897,6 @@
                         </div>
                     </div>
 
-                    <!-- ░ GEÇMİŞ ANALİZLER ░ -->
-                    <div id="spineHistoryCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h4 class="text-sm font-black text-slate-800 flex items-center">
-                                <i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i>
-                                Geçmiş Klinik Omurga Analizleri (<span id="spineHistoryCount">0</span>)
-                            </h4>
-                            <span class="text-xs text-slate-400">İncelemek istediğiniz analize tıklayın</span>
-                        </div>
-                        <div id="spineHistoryList" class="flex flex-wrap gap-3 pb-2 overflow-x-auto">
-                            <!-- Dinamik analiz kartları -->
-                        </div>
-                    </div>
-
                     <!-- ░ YÜKLEME ALANLARI ░ -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                         <!-- ARKA PROFİL -->
@@ -948,6 +934,20 @@
                         <p class="text-sm text-slate-400 mt-2">Koronal sapma ve sagital açılar hesaplanıyor...</p>
                     </div>
 
+                    <!-- ░ GEÇMİŞ ANALİZLER ░ -->
+                    <div id="spineHistoryCard" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-5 mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-sm font-black text-slate-800 flex items-center">
+                    <i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i>
+                    Geçmiş Klinik Omurga Analizleri (<span id="spineHistoryCount">0</span>)
+                    </h4>
+                    <span class="text-xs text-slate-400">İncelemek istediğiniz analize tıklayın</span>
+                    </div>
+                    <div id="spineHistoryList" class="flex flex-wrap gap-3 pb-2 overflow-x-auto">
+                    <!-- Dinamik analiz kartları -->
+                    </div>
+                    </div>
+                    
                     <!-- ░ SONUÇLAR ░ -->
                     <div id="spineResultsSection" class="hidden mt-8">
 
@@ -2158,8 +2158,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=13.0"></script>
-    <script src="app.js?v=13.0"></script>
+    <script src="auth.js?v=14.0"></script>
+    <script src="app.js?v=14.0"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2555,16 +2555,16 @@
     </div>
 </div>
     
-<script src="scoliosis.js?v=13.0"></script>
+<script src="scoliosis.js?v=14.0"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=13.0"></script>
+    <script src="simulation.js?v=14.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=13.0"></script>
-<script src="gait_analysis.js?v=13.0"></script>
+<script src="gait.js?v=14.0"></script>
+<script src="gait_analysis.js?v=14.0"></script>
     <script src="balance.js"></script>
 </body>
 </html>
