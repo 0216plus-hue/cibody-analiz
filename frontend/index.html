@@ -497,6 +497,24 @@
             </div>
         </div>
 
+
+        <!-- SİPARİŞ RAPOR MODAL (Admin) -->
+        <div id="orderReportModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-start justify-center p-4 overflow-y-auto" data-html2canvas-ignore="true">
+            <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl my-8 overflow-hidden flex flex-col">
+                <div class="flex items-center justify-between px-8 py-5 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-white">
+                    <div>
+                        <p class="text-xs font-semibold text-indigo-500 uppercase tracking-widest">Sipariş Analiz Raporu</p>
+                        <h2 id="orderReportTitle" class="text-xl font-extrabold text-slate-800 mt-0.5">Analiz Detayı</h2>
+                    </div>
+                    <button onclick="document.getElementById('orderReportModal').classList.add('hidden')" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <div id="orderReportContent" class="p-8 overflow-y-auto max-h-[75vh] text-slate-700 text-sm leading-relaxed">
+                </div>
+            </div>
+        </div>
+
         <div id="patientView" class="hidden">
 
             <!-- Profil Başlığı -->
@@ -2185,8 +2203,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=18.2"></script>
-    <script src="app.js?v=18.2"></script>
+    <script src="auth.js?v=18.3"></script>
+    <script src="app.js?v=18.3"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2582,16 +2600,16 @@
     </div>
 </div>
     
-<script src="scoliosis.js?v=18.2"></script>
+<script src="scoliosis.js?v=18.3"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=18.2"></script>
+    <script src="simulation.js?v=18.3"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=18.2"></script>
-<script src="gait_analysis.js?v=18.2"></script>
+<script src="gait.js?v=18.3"></script>
+<script src="gait_analysis.js?v=18.3"></script>
     <script src="balance.js"></script>
 </body>
 </html>

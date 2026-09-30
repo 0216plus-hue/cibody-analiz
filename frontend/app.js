@@ -3408,7 +3408,11 @@ async function fetchAdminOrders() {
                     </select>
                 </td>
                 <td class="py-3 px-4 text-center">
-                    <button onclick="openOrderReports(${o.id})" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition">Raporları Aç</button>
+                    <div class="flex flex-col gap-1 items-center">
+                        ${o.static_data  ? `<button onclick="openOrderReport(${o.id},'static')"  class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-bold transition w-full">📊 Statik Analiz</button>` : ''}
+                        ${o.gait_data    ? `<button onclick="openOrderReport(${o.id},'gait')"    class="text-xs bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold transition w-full">🚶 Yürüme Analizi</button>` : ''}
+                        ${o.balance_data ? `<button onclick="openOrderReport(${o.id},'balance')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition w-full">⚖️ Denge Testi</button>` : ''}
+                    </div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -3441,68 +3445,159 @@ async function updateOrderStatus(orderId, newStatus) {
     } catch(err) { console.error(err); }
 }
 
-function openOrderReports(orderId) {
+
+// Eski fonksiyon artık kullanılmıyor ama referanslar için bırakıldı
+function openOrderReports(orderId) { openOrderReport(orderId, 'static'); }
+
+function openOrderReport(orderId, type) {
     const orderData = window._adminOrdersData && window._adminOrdersData[orderId];
-    if(!orderData) {
-        alert("Sipariş verisi bulunamadı. Lütfen sayfayı yenileyin.");
+    if(!orderData) { alert("Sipariş verisi bulunamadı. Sayfayı yenileyin."); return; }
+
+    const modal = document.getElementById('orderReportModal');
+    const titleEl = document.getElementById('orderReportTitle');
+    const contentEl = document.getElementById('orderReportContent');
+    if(!modal || !titleEl || !contentEl) return;
+
+    let jsonStr = null;
+    let title = '';
+    let icon = '';
+    let accentColor = '';
+
+    if(type === 'static') {
+        jsonStr = orderData.static_data;
+        title = 'Statik Ayak Analizi';
+        icon = '📊';
+        accentColor = 'red';
+    } else if(type === 'gait') {
+        jsonStr = orderData.gait_data;
+        title = 'Dinamik Yürüme Analizi';
+        icon = '🚶';
+        accentColor = 'emerald';
+    } else if(type === 'balance') {
+        jsonStr = orderData.balance_data;
+        title = 'Denge Testi (Postürografi)';
+        icon = '⚖️';
+        accentColor = 'indigo';
+    }
+
+    titleEl.textContent = `${icon} ${title} — Sipariş #${orderId}`;
+
+    if(!jsonStr) {
+        contentEl.innerHTML = '<p class="text-slate-400 text-center py-12">Bu analiz türüne ait veri bulunamadı.</p>';
+        modal.classList.remove('hidden');
         return;
     }
 
-    const sD = orderData.static_data;
-    const gD = orderData.gait_data;
-    const bD = orderData.balance_data;
+    try {
+        const obj = JSON.parse(jsonStr);
 
-    if(!sD && !gD && !bD) {
-        alert("Bu siparişe ait rapor verisi bulunamadı.");
-        return;
-    }
+        // Statik analiz için özel gösterim
+        if(type === 'static' && obj.data) {
+            const d = obj.data;
+            contentEl.innerHTML = `
+                <p class="text-xs text-slate-400 mb-6">${obj.date ? 'Tarih: ' + new Date(obj.date).toLocaleString('tr-TR') : ''}</p>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-red-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-1">Sol Ayak</p>
+                        <p class="text-4xl font-extrabold text-red-600">${(d.lPct||0).toFixed(1)}<span class="text-lg">%</span></p>
+                    </div>
+                    <div class="bg-blue-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">Sağ Ayak</p>
+                        <p class="text-4xl font-extrabold text-blue-600">${(d.rPct||0).toFixed(1)}<span class="text-lg">%</span></p>
+                    </div>
+                    <div class="bg-amber-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">Ön Bölge</p>
+                        <p class="text-4xl font-extrabold text-amber-600">${(d.tPct||0).toFixed(1)}<span class="text-lg">%</span></p>
+                    </div>
+                    <div class="bg-slate-100 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Arka Bölge</p>
+                        <p class="text-4xl font-extrabold text-slate-600">${(d.bPct||0).toFixed(1)}<span class="text-lg">%</span></p>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600">
+                    <span class="font-bold">Değerlendirme:</span> ${(d.lPct||0) > (d.rPct||0) ? '⚠️ Sol ayak daha fazla yük alıyor.' : '⚠️ Sağ ayak daha fazla yük alıyor.'}
+                </div>`;
 
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html><head>
-        <title>Sipariş #${orderId} Rapor Verileri</title>
-        <meta charset="utf-8">
-        <script src="https://cdn.tailwindcss.com"><\/script>
-    </head><body class="bg-slate-50 p-8 font-sans">`);
+        // Yürüme analizi için özel gösterim
+        } else if(type === 'gait' && obj.steps) {
+            const steps = obj.steps;
+            const leftSteps = steps.filter(s => s.type === 'L').length;
+            const rightSteps = steps.filter(s => s.type === 'R').length;
+            contentEl.innerHTML = `
+                <p class="text-xs text-slate-400 mb-6">${obj.timestamp ? 'Tarih: ' + new Date(obj.timestamp).toLocaleString('tr-TR') : ''}</p>
+                <div class="grid grid-cols-3 gap-4 mb-6">
+                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Toplam Adım</p>
+                        <p class="text-4xl font-extrabold text-slate-700">${steps.length}</p>
+                    </div>
+                    <div class="bg-red-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-1">Sol Adım</p>
+                        <p class="text-4xl font-extrabold text-red-600">${leftSteps}</p>
+                    </div>
+                    <div class="bg-blue-50 rounded-2xl p-5 text-center">
+                        <p class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">Sağ Adım</p>
+                        <p class="text-4xl font-extrabold text-blue-600">${rightSteps}</p>
+                    </div>
+                </div>
+                <div class="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600">
+                    <span class="font-bold">Asimetri:</span> ${Math.abs(leftSteps - rightSteps) <= 2 ? '✅ Sol/sağ adım sayısı dengeli.' : '⚠️ Sol ve sağ adım sayıları arasında asimetri var.'}
+                </div>`;
 
-    w.document.write(`<div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Sipariş #${orderId}</h1>
-        <p class="text-slate-400 text-sm mb-8">Kişiye Özel Tabanlık Sipariş Raporu</p>`);
-
-    function renderSection(title, jsonStr, color) {
-        if(!jsonStr) return '';
-        try {
-            const obj = JSON.parse(jsonStr);
+        // Denge testi için özel gösterim
+        } else if(type === 'balance' && obj.session) {
+            const ses = obj.session;
+            const tests = [
+                { key: 'cift_acik',    label: 'Çift Ayak Gözler Açık' },
+                { key: 'cift_kapali',  label: 'Çift Ayak Gözler Kapalı' },
+                { key: 'tek_sol_acik', label: 'Tek Ayak (Sol) Gözler Açık' },
+                { key: 'tek_sag_acik', label: 'Tek Ayak (Sağ) Gözler Açık' },
+            ];
             let rows = '';
-            function flatten(o, prefix) {
+            tests.forEach(t => {
+                const d = ses[t.key];
+                if(d) rows += `<tr class="border-b border-slate-100">
+                    <td class="py-3 px-4 font-semibold text-slate-700 text-sm">${t.label}</td>
+                    <td class="py-3 px-4 text-sm text-slate-600">${(d.pathCm||0).toFixed(2)} cm</td>
+                    <td class="py-3 px-4 text-sm text-slate-600">${(d.areaCm||0).toFixed(2)} cm²</td>
+                    <td class="py-3 px-4 text-sm text-slate-600">${(d.velCm||0).toFixed(2)} cm/s</td>
+                </tr>`;
+            });
+            contentEl.innerHTML = `
+                <p class="text-xs text-slate-400 mb-4">${obj.date ? 'Tarih: ' + obj.date : ''}</p>
+                <table class="w-full">
+                    <thead><tr class="bg-slate-50 text-xs text-slate-400 uppercase">
+                        <th class="py-2 px-4 text-left">Test</th>
+                        <th class="py-2 px-4 text-left">Yol (cm)</th>
+                        <th class="py-2 px-4 text-left">Alan (cm²)</th>
+                        <th class="py-2 px-4 text-left">Hız (cm/s)</th>
+                    </tr></thead>
+                    <tbody>${rows || '<tr><td colspan="4" class="py-4 text-center text-slate-400">Tamamlanmış test bulunamadı.</td></tr>'}</tbody>
+                </table>`;
+
+        } else {
+            // Fallback: okunabilir tablo
+            let rows = '';
+            function flatRender(o, prefix) {
                 Object.entries(o).forEach(([k,v]) => {
+                    const label = prefix ? `${prefix}.${k}` : k;
                     if(v !== null && typeof v === 'object' && !Array.isArray(v)) {
-                        flatten(v, prefix ? prefix+'.'+k : k);
+                        flatRender(v, label);
                     } else {
                         rows += `<tr class="border-b border-slate-100">
-                            <td class="py-2 px-4 text-sm font-semibold text-slate-600 w-1/3">${prefix ? prefix+'.'+k : k}</td>
-                            <td class="py-2 px-4 text-sm text-slate-800">${Array.isArray(v) ? '['+v.length+' kayıt]' : (v ?? '-')}</td>
+                            <td class="py-2 px-4 text-xs font-semibold text-slate-500 w-1/2">${label}</td>
+                            <td class="py-2 px-4 text-xs text-slate-800">${Array.isArray(v) ? '['+v.length+' kayıt]' : (v ?? '-')}</td>
                         </tr>`;
                     }
                 });
             }
-            flatten(obj, '');
-            return `<div class="mb-8 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="bg-${color}-50 border-b border-${color}-100 px-6 py-4">
-                    <h2 class="text-lg font-bold text-${color}-800">${title}</h2>
-                </div>
-                <table class="w-full"><tbody>${rows}</tbody></table>
-            </div>`;
-        } catch(e) {
-            return `<div class="mb-8 p-4 bg-red-50 rounded-xl text-red-600 text-sm">Veri ayrıştırılamadı: ${e.message}</div>`;
+            flatRender(obj, '');
+            contentEl.innerHTML = `<table class="w-full"><tbody>${rows}</tbody></table>`;
         }
+    } catch(e) {
+        contentEl.innerHTML = `<p class="text-red-500 text-sm">Veri ayrıştırılamadı: ${e.message}</p>`;
     }
 
-    w.document.write(renderSection('📊 Statik Ayak Analizi', sD, 'red'));
-    w.document.write(renderSection('🚶 Dinamik Yürüme Analizi', gD, 'emerald'));
-    w.document.write(renderSection('⚖️ Denge Testi', bD, 'indigo'));
-
-    w.document.write(`</div></body></html>`);
-    w.document.close();
+    modal.classList.remove('hidden');
 }
 
 async function loadInsoleDropdowns() {
