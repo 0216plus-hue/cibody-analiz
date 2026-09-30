@@ -3256,7 +3256,11 @@ async function generateAiFootReport() {
             })
         });
         
-        if(!resp.ok) throw new Error("Yapay zeka sunucusu yanıt vermedi.");
+        if(!resp.ok) {
+            let errText = "Bilinmeyen hata";
+            try { errText = await resp.text(); } catch(e) {}
+            throw new Error(`Yapay zeka sunucusu yanıt vermedi. (${resp.status}): ${errText}`);
+        }
         let data = await resp.json();
         if(data.error) throw new Error(data.error);
         
