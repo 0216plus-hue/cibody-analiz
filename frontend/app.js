@@ -3548,8 +3548,8 @@ async function fetchPatientInsoleOrders() {
 async function submitInsoleOrder() {
     if(!currentPatientId) return;
     
-    const staticId = document.getElementById('insoleSelectStatic').value;
-    const gaitId = document.getElementById('insoleSelectGait').value;
+    const staticId  = document.getElementById('insoleSelectStatic').value;
+    const gaitId    = document.getElementById('insoleSelectGait').value;
     const balanceId = document.getElementById('insoleSelectBalance').value;
     
     if(!staticId && !gaitId && !balanceId) {
@@ -3557,24 +3557,43 @@ async function submitInsoleOrder() {
         return;
     }
     
-    let staticData = null;
-    let gaitData = null;
+    let staticData  = null;
+    let gaitData    = null;
     let balanceData = null;
     
-    if(staticId) {
-        const arr = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
-        const found = arr.find(x => x.id == staticId);
+    // Veriyi sunucu cache'inden al (localStorage değil)
+    if(staticId && window.cachedStaticFootHistory) {
+        const found = window.cachedStaticFootHistory.find(x => x.id == staticId);
         if(found) staticData = JSON.stringify(found);
     }
-    if(gaitId) {
-        const arr = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
-        const found = arr.find(x => x.id == gaitId);
+    if(!staticData && staticId) {
+        // Cache boşsa direkt sunucudan çek
+        try {
+            const r = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
+            if(r.ok) { const d = await r.json(); const f = d.find(x => x.session_data && x.session_data.id == staticId); if(f) staticData = JSON.stringify(f.session_data); }
+        } catch(e) {}
+    }
+
+    if(gaitId && window.cachedGaitHistory) {
+        const found = window.cachedGaitHistory.find(x => x.id == gaitId);
         if(found) gaitData = JSON.stringify(found);
     }
-    if(balanceId) {
-        const arr = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
-        const found = arr.find(x => x.id == balanceId);
+    if(!gaitData && gaitId) {
+        try {
+            const r = await authFetch(`/api/gait/patient/${currentPatientId}`);
+            if(r.ok) { const d = await r.json(); const f = d.find(x => x.session_data && x.session_data.id == gaitId); if(f) gaitData = JSON.stringify(f.session_data); }
+        } catch(e) {}
+    }
+
+    if(balanceId && window.cachedBalanceHistory) {
+        const found = window.cachedBalanceHistory.find(x => x.id == balanceId);
         if(found) balanceData = JSON.stringify(found);
+    }
+    if(!balanceData && balanceId) {
+        try {
+            const r = await authFetch(`/api/balance/patient/${currentPatientId}`);
+            if(r.ok) { const d = await r.json(); const f = d.find(x => x.session_data && x.session_data.id == balanceId); if(f) balanceData = JSON.stringify(f.session_data); }
+        } catch(e) {}
     }
     
     const btn = document.getElementById('btnSubmitInsoleOrder');
@@ -3584,6 +3603,7 @@ async function submitInsoleOrder() {
     try {
         const res = await authFetch('/api/orders', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 patient_id: currentPatientId,
                 static_data: staticData,
@@ -3596,7 +3616,8 @@ async function submitInsoleOrder() {
             showToast("Kişiye özel tabanlık siparişi başarıyla oluşturuldu.");
             fetchPatientInsoleOrders();
         } else {
-            showToast("Sipariş oluşturulurken bir hata oluştu.");
+            const errText = await res.text();
+            alert("Sipariş hatası (" + res.status + "): " + errText);
         }
     } catch(err) {
         console.error(err);
