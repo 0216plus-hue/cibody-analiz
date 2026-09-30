@@ -3492,19 +3492,22 @@ function openOrderReport(orderId, type) {
         document.getElementById('adminView').classList.add('hidden');
         document.getElementById('appView').classList.remove('hidden');
         document.getElementById('dashboardView').classList.add('hidden');
+        const adminOrdersView = document.getElementById('adminOrdersView');
+        if (adminOrdersView) adminOrdersView.classList.add('hidden');
         document.getElementById('patientView').classList.remove('hidden');
         
         // Hide all patient tabs, show target tab
         ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
-            document.getElementById(t).classList.add('hidden'); 
+            const el = document.getElementById(t);
+            if (el) el.classList.add('hidden'); 
         });
         document.getElementById(tabId).classList.remove('hidden');
 
-        // Hide top tab menu so admin only sees the selected analysis
+        // Hide top tab menus so admin only sees the selected analysis
         const btnFootTab = document.getElementById('btn_footTab');
-        if(btnFootTab && btnFootTab.parentElement) {
-            btnFootTab.parentElement.classList.add('hidden');
-        }
+        const btnPostureTab = document.getElementById('btn_postureTab');
+        if(btnFootTab && btnFootTab.parentElement) btnFootTab.parentElement.classList.add('hidden');
+        if(btnPostureTab && btnPostureTab.parentElement) btnPostureTab.parentElement.classList.add('hidden');
 
         // Hide "Analizi Başlat" / action buttons
         ['btnStartStaticFoot', 'btnStartGaitAnalysis', 'btnCompleteGaitAnalysis', 'btnStartBalance'].forEach(id => {
@@ -3525,9 +3528,8 @@ function openOrderReport(orderId, type) {
             navBackBtn.onclick = function() { showDashboard(true); };
             
             // Restore tabs container
-            if(btnFootTab && btnFootTab.parentElement) {
-                btnFootTab.parentElement.classList.remove('hidden');
-            }
+            if(btnFootTab && btnFootTab.parentElement) btnFootTab.parentElement.classList.remove('hidden');
+            if(btnPostureTab && btnPostureTab.parentElement) btnPostureTab.parentElement.classList.remove('hidden');
             
             showAdminOrders();
         };
