@@ -3465,151 +3465,93 @@ function openOrderReport(orderId, type) {
     const orderData = window._adminOrdersData && window._adminOrdersData[orderId];
     if(!orderData) { alert("Sipariş verisi bulunamadı. Sayfayı yenileyin."); return; }
 
-    const modal = document.getElementById('orderReportModal');
-    const titleEl = document.getElementById('orderReportTitle');
-    const contentEl = document.getElementById('orderReportContent');
-    if(!modal || !titleEl || !contentEl) return;
-
     let jsonStr = null;
-    let title = '';
-    let icon = '';
-    let accentColor = '';
-
+    let tabId = '';
+    
     if(type === 'static') {
         jsonStr = orderData.static_data;
-        title = 'Statik Ayak Analizi';
-        icon = '📊';
-        accentColor = 'red';
+        tabId = 'footTab';
     } else if(type === 'gait') {
         jsonStr = orderData.gait_data;
-        title = 'Dinamik Yürüme Analizi';
-        icon = '🚶';
-        accentColor = 'emerald';
+        tabId = 'gaitTab';
     } else if(type === 'balance') {
         jsonStr = orderData.balance_data;
-        title = 'Denge Testi (Postürografi)';
-        icon = '⚖️';
-        accentColor = 'indigo';
+        tabId = 'balanceTab';
     }
 
-    titleEl.textContent = `${icon} ${title} — Sipariş #${orderId}`;
-
     if(!jsonStr) {
-        contentEl.innerHTML = '<p class="text-slate-400 text-center py-12">Bu analiz türüne ait veri bulunamadı.</p>';
-        modal.classList.remove('hidden');
+        alert("Bu analize ait veri bulunamadı.");
         return;
     }
 
     try {
         const obj = JSON.parse(jsonStr);
+        obj.id = 'admin_preview'; // Force ID for history loaders
 
-        // Statik analiz için özel gösterim
-        if(type === 'static' && obj.data) {
-            const d = obj.data;
-            contentEl.innerHTML = `
-                <p class="text-xs text-slate-400 mb-6">${obj.date ? 'Tarih: ' + new Date(obj.date).toLocaleString('tr-TR') : ''}</p>
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-red-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-1">Sol Ayak</p>
-                        <p class="text-4xl font-extrabold text-red-600">${(d.lPct||0).toFixed(1)}<span class="text-lg">%</span></p>
-                    </div>
-                    <div class="bg-blue-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">Sağ Ayak</p>
-                        <p class="text-4xl font-extrabold text-blue-600">${(d.rPct||0).toFixed(1)}<span class="text-lg">%</span></p>
-                    </div>
-                    <div class="bg-amber-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">Ön Bölge</p>
-                        <p class="text-4xl font-extrabold text-amber-600">${(d.tPct||0).toFixed(1)}<span class="text-lg">%</span></p>
-                    </div>
-                    <div class="bg-slate-100 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Arka Bölge</p>
-                        <p class="text-4xl font-extrabold text-slate-600">${(d.bPct||0).toFixed(1)}<span class="text-lg">%</span></p>
-                    </div>
-                </div>
-                <div class="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600">
-                    <span class="font-bold">Değerlendirme:</span> ${(d.lPct||0) > (d.rPct||0) ? '⚠️ Sol ayak daha fazla yük alıyor.' : '⚠️ Sağ ayak daha fazla yük alıyor.'}
-                </div>`;
+        // 1. Setup view (hide admin orders, show app patient view)
+        document.getElementById('adminView').classList.add('hidden');
+        document.getElementById('appView').classList.remove('hidden');
+        document.getElementById('dashboardView').classList.add('hidden');
+        document.getElementById('patientView').classList.remove('hidden');
+        
+        // Hide all patient tabs, show target tab
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
+            document.getElementById(t).classList.add('hidden'); 
+        });
+        document.getElementById(tabId).classList.remove('hidden');
 
-        // Yürüme analizi için özel gösterim
-        } else if(type === 'gait' && obj.steps) {
-            const steps = obj.steps;
-            const leftSteps = steps.filter(s => s.type === 'L').length;
-            const rightSteps = steps.filter(s => s.type === 'R').length;
-            contentEl.innerHTML = `
-                <p class="text-xs text-slate-400 mb-6">${obj.timestamp ? 'Tarih: ' + new Date(obj.timestamp).toLocaleString('tr-TR') : ''}</p>
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    <div class="bg-slate-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Toplam Adım</p>
-                        <p class="text-4xl font-extrabold text-slate-700">${steps.length}</p>
-                    </div>
-                    <div class="bg-red-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-red-400 uppercase tracking-widest mb-1">Sol Adım</p>
-                        <p class="text-4xl font-extrabold text-red-600">${leftSteps}</p>
-                    </div>
-                    <div class="bg-blue-50 rounded-2xl p-5 text-center">
-                        <p class="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">Sağ Adım</p>
-                        <p class="text-4xl font-extrabold text-blue-600">${rightSteps}</p>
-                    </div>
-                </div>
-                <div class="bg-slate-50 rounded-2xl p-4 text-sm text-slate-600">
-                    <span class="font-bold">Asimetri:</span> ${Math.abs(leftSteps - rightSteps) <= 2 ? '✅ Sol/sağ adım sayısı dengeli.' : '⚠️ Sol ve sağ adım sayıları arasında asimetri var.'}
-                </div>`;
+        // Setup top navbar for "Preview Mode"
+        const navBackBtn = document.getElementById('navBackBtn');
+        const navPatientName = document.getElementById('navPatientName');
+        document.getElementById('navNewPatientBtn').classList.add('hidden');
+        
+        navBackBtn.classList.remove('hidden');
+        navBackBtn.innerHTML = '<i class="fa-solid fa-arrow-left mr-1"></i> Siparişlere Dön';
+        navBackBtn.onclick = function() {
+            // Restore back button
+            navBackBtn.innerHTML = '<i class="fa-solid fa-arrow-left mr-1"></i> <span class="hidden md:inline">Tüm Kayıtlı Kişiler\'e Dön</span>';
+            navBackBtn.onclick = function() { showDashboard(true); };
+            showAdminOrders();
+        };
 
-        // Denge testi için özel gösterim
-        } else if(type === 'balance' && obj.session) {
-            const ses = obj.session;
-            const tests = [
-                { key: 'cift_acik',    label: 'Çift Ayak Gözler Açık' },
-                { key: 'cift_kapali',  label: 'Çift Ayak Gözler Kapalı' },
-                { key: 'tek_sol_acik', label: 'Tek Ayak (Sol) Gözler Açık' },
-                { key: 'tek_sag_acik', label: 'Tek Ayak (Sağ) Gözler Açık' },
-            ];
-            let rows = '';
-            tests.forEach(t => {
-                const d = ses[t.key];
-                if(d) rows += `<tr class="border-b border-slate-100">
-                    <td class="py-3 px-4 font-semibold text-slate-700 text-sm">${t.label}</td>
-                    <td class="py-3 px-4 text-sm text-slate-600">${(d.pathCm||0).toFixed(2)} cm</td>
-                    <td class="py-3 px-4 text-sm text-slate-600">${(d.areaCm||0).toFixed(2)} cm²</td>
-                    <td class="py-3 px-4 text-sm text-slate-600">${(d.velCm||0).toFixed(2)} cm/s</td>
-                </tr>`;
-            });
-            contentEl.innerHTML = `
-                <p class="text-xs text-slate-400 mb-4">${obj.date ? 'Tarih: ' + obj.date : ''}</p>
-                <table class="w-full">
-                    <thead><tr class="bg-slate-50 text-xs text-slate-400 uppercase">
-                        <th class="py-2 px-4 text-left">Test</th>
-                        <th class="py-2 px-4 text-left">Yol (cm)</th>
-                        <th class="py-2 px-4 text-left">Alan (cm²)</th>
-                        <th class="py-2 px-4 text-left">Hız (cm/s)</th>
-                    </tr></thead>
-                    <tbody>${rows || '<tr><td colspan="4" class="py-4 text-center text-slate-400">Tamamlanmış test bulunamadı.</td></tr>'}</tbody>
-                </table>`;
+        // Görüntülenen sipariş için hasta adını yazalım
+        navPatientName.classList.remove('hidden');
+        navPatientName.innerHTML = `<i class="fa-solid fa-eye text-indigo-500 mr-2"></i>Sipariş Önizleme`;
 
-        } else {
-            // Fallback: okunabilir tablo
-            let rows = '';
-            function flatRender(o, prefix) {
-                Object.entries(o).forEach(([k,v]) => {
-                    const label = prefix ? `${prefix}.${k}` : k;
-                    if(v !== null && typeof v === 'object' && !Array.isArray(v)) {
-                        flatRender(v, label);
-                    } else {
-                        rows += `<tr class="border-b border-slate-100">
-                            <td class="py-2 px-4 text-xs font-semibold text-slate-500 w-1/2">${label}</td>
-                            <td class="py-2 px-4 text-xs text-slate-800">${Array.isArray(v) ? '['+v.length+' kayıt]' : (v ?? '-')}</td>
-                        </tr>`;
-                    }
-                });
+        // 2. Inject into global caches and trigger load
+        if(type === 'static') {
+            window.cachedStaticFootHistory = [obj];
+            if(typeof loadStaticFootHistory === 'function') loadStaticFootHistory('admin_preview');
+            // Geçmiş select box'ını da gizleyelim veya devre dışı bırakalım
+            const selectEl = document.getElementById('footHistorySelect');
+            if(selectEl) {
+                selectEl.innerHTML = '<option value="admin_preview">Sipariş Raporu (Salt Okunur)</option>';
+                selectEl.value = 'admin_preview';
+                selectEl.disabled = true;
             }
-            flatRender(obj, '');
-            contentEl.innerHTML = `<table class="w-full"><tbody>${rows}</tbody></table>`;
+        } else if(type === 'gait') {
+            window.cachedGaitHistory = [obj];
+            if(typeof window.loadGaitHistory === 'function') window.loadGaitHistory('admin_preview');
+            const selectEl = document.getElementById('gaitHistorySelect');
+            if(selectEl) {
+                selectEl.innerHTML = '<option value="admin_preview">Sipariş Raporu (Salt Okunur)</option>';
+                selectEl.value = 'admin_preview';
+                selectEl.disabled = true;
+            }
+        } else if(type === 'balance') {
+            window.cachedBalanceHistory = [obj];
+            if(typeof loadBalanceSessionHistory === 'function') loadBalanceSessionHistory('admin_preview');
+            const selectEl = document.getElementById('balanceHistorySelect');
+            if(selectEl) {
+                selectEl.innerHTML = '<option value="admin_preview">Sipariş Raporu (Salt Okunur)</option>';
+                selectEl.value = 'admin_preview';
+                selectEl.disabled = true;
+            }
         }
+        
     } catch(e) {
-        contentEl.innerHTML = `<p class="text-red-500 text-sm">Veri ayrıştırılamadı: ${e.message}</p>`;
+        alert("Veri ayrıştırılamadı: " + e.message);
     }
-
-    modal.classList.remove('hidden');
 }
 
 async function loadInsoleDropdowns() {
