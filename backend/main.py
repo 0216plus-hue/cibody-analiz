@@ -1569,19 +1569,32 @@ async def generate_ai_foot_report(req: AIFootReportRequest, current_user: models
 
     prompt = f"""Sen uzman bir ORTEZ-PROTEZ UZMANISIN.
 Aşağıda hastanın cihaz üzerinden alınmış statik ayak bası, dinamik yürüme ve postürografi (denge) analiz verileri (hangileri seçilmişse) verilmiştir.
-Senin görevin bu verileri kapsamlı bir şekilde inceleyerek bir rapor oluşturmaktır.
+Senin görevin bu verileri kapsamlı bir şekilde inceleyerek görsel olarak düzenli ve şık bir rapor oluşturmaktır.
 
-# İstenen Format:
-1. KLİNİK BULGULAR (Fizyoterapist / Doktor için): Hastanın problemi nedir? Hangi veriye dayanarak bunu söylüyorsun? Madde madde, klinik ve biyomekanik terimlerle (valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs.) açıkla.
-2. HASTA BİLGİLENDİRMESİ (Hasta için): Hastanın anlayabileceği çok basit, günlük dilde bir özet yap. Probleminin onun hayatını nasıl etkilediğini anlat.
-3. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ: Özellikle statik ayak bası dağılımına (ön/arka, sağ/sol dengesizliklerine) ve diğer analizlere bakarak, hastanın KİŞİYE ÖZEL TABANLIK kullanmasına gerek olup olmadığına kesin bir karar ver. Gerekliyse nasıl bir tabanlık tasarımı (medial ark desteği, metatarsal ped, topuk kaması vb.) gerektiğini yaz.
+# LÜTFEN RAPORU AŞAĞIDAKİ ŞABLONA VE KURALLARA GÖRE OLUŞTUR:
+
+# Kapsamlı Tabanlık AI Destekli Analiz Raporu
+
+---
+
+### 📋 1. KLİNİK BULGULAR
+(Bu bölümde hastanın problemini madde madde, klinik ve biyomekanik terimlerle - valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs. - açıkla. Verileri kalın harflerle (bold) vurgulayarak daha okunaklı yap. Paragraflar arasına boşluk bırak.)
+
+---
+
+### 🎯 2. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ
+(Özellikle statik ayak bası dağılımına - ön/arka, sağ/sol dengesizliklerine - ve diğer analizlere bakarak, hastanın KİŞİYE ÖZEL TABANLIK kullanmasına gerek olup olmadığına kesin bir karar ver. Gerekliyse nasıl bir tasarım - medial ark desteği, metatarsal ped, topuk kaması vb. - gerektiğini yaz.)
+
+**ÖNEMLİ KURALLAR:**
+- Raporu Markdown (.md) formatında, ferah bir okuma için paragraflar arasına ekstra boşluk bırakarak yaz.
+- "Hasta Bilgilendirmesi" adında bir bölüm kesinlikle OLMAYACAK. Sadece profesyonel klinik rapor oluştur.
+- Tabanlık önerisinde kesinlikle "Malzeme Tercihi" (örneğin EVA, karbon vs.) YAPMA. Sadece biyomekanik tasarım özelliklerini yaz.
+- Sadece benden istediğim 2 ana başlığı (Klinik Bulgular ve Ortez Önerisi) kullan. Aralarına `---` ile ayırıcı çizgi koy.
 
 # Veriler:
 Statik Analiz Verisi: {req.static_data}
 Dinamik Yürüme Analizi Verisi: {req.gait_data}
 Denge Testi Verisi: {req.balance_data}
-
-Lütfen raporunu şık bir Markdown (.md) formatında hazırla.
 """
     
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
