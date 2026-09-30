@@ -1967,23 +1967,25 @@ async function addPrescribed(exerciseId) {
  * Verilen html2pdf instance'ını çalıştırır, header/footer ekler ve
  * tarayıcı proxy'lerini atlayan blob indirme yöntemiyle kaydeder.
  */
-async function runPdf(instance, filename, reportSubtitle) {
-    try {
-        const pdfObj = await instance.toPdf().get('pdf');
-        applyCibodyPdfHeaderFooter(pdfObj, reportSubtitle);
-        // blob() yöntemi → <a download> → proxy'ler atlıyor
-        const blob = await instance.output('blob');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
-    } catch(err) {
-        console.error('PDF indirme hatası:', err);
-        showToast('PDF indirirken hata oluştu: ' + err.message);
-    }
+function runPdf(instance, filename, reportSubtitle) {
+    return new Promise((resolve, reject) => {
+        instance.toPdf().get('pdf').then(function(pdfObj) {
+            applyCibodyPdfHeaderFooter(pdfObj, reportSubtitle);
+        }).output('blob').then(function(blob) {
+            try {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { URL.revokeObjectURL(url); a.remove(); resolve(); }, 100);
+            } catch(e) {
+                reject(e);
+            }
+        }).catch(reject);
+    });
 }
 
 function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik Analiz Raporu") {
@@ -2137,6 +2139,9 @@ function downloadScoliometerPdf() {
     const printContainer = document.createElement('div');
     printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
     printContainer.style.maxWidth = '800px';
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px';
+    printContainer.style.top = '0';
 
     let latestThoracic = "—";
     let latestLumbar = "—";
@@ -2300,6 +2305,9 @@ function downloadSimulationPdf() {
     const printContainer = document.createElement('div');
     printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
     printContainer.style.maxWidth = '800px';
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px';
+    printContainer.style.top = '0';
 
     printContainer.innerHTML = `
         <div class="mb-6 border-b border-slate-200 pb-4">
