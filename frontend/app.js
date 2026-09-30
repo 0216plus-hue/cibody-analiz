@@ -3120,13 +3120,20 @@ async function loadScoliometerHistory(patientId) {
 async function loadAiSelectDropdowns() {
     if(!currentPatientId) return;
     
+    let selStat = document.getElementById('aiSelectStatic');
+    let selGait = document.getElementById('aiSelectGait');
+    let selBal = document.getElementById('aiSelectBalance');
+
+    if(selStat) selStat.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+    if(selGait) selGait.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+    if(selBal) selBal.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+
     // Static Foot
     try {
         const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
         if(res.ok) {
             const data = await res.json();
             const statics = data.map(d => d.session_data);
-            let selStat = document.getElementById('aiSelectStatic');
             if(selStat) {
                 selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
                 statics.forEach(s => {
@@ -3136,8 +3143,8 @@ async function loadAiSelectDropdowns() {
                     selStat.appendChild(opt);
                 });
             }
-        }
-    } catch(e) { console.error(e); }
+        } else if(selStat) { selStat.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
     
     // Dynamic Gait
     try {
@@ -3145,7 +3152,6 @@ async function loadAiSelectDropdowns() {
         if(res.ok) {
             const data = await res.json();
             const gaits = data.map(d => d.session_data);
-            let selGait = document.getElementById('aiSelectGait');
             if(selGait) {
                 selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
                 gaits.forEach(g => {
@@ -3155,8 +3161,8 @@ async function loadAiSelectDropdowns() {
                     selGait.appendChild(opt);
                 });
             }
-        }
-    } catch(e) { console.error(e); }
+        } else if(selGait) { selGait.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
     
     // Balance Test
     try {
@@ -3164,18 +3170,18 @@ async function loadAiSelectDropdowns() {
         if(res.ok) {
             const data = await res.json();
             const balances = data.map(d => d.session_data);
-            let selBal = document.getElementById('aiSelectBalance');
             if(selBal) {
                 selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
                 balances.forEach(b => {
                     let opt = document.createElement('option');
                     opt.value = b.id;
-                    opt.textContent = new Date(b.date).toLocaleString('tr-TR');
+                    // b.date is already localized string (dd.mm.yyyy), new Date(b.date) returns Invalid Date!
+                    opt.textContent = b.date.includes('.') ? b.date : new Date(b.date).toLocaleString('tr-TR');
                     selBal.appendChild(opt);
                 });
             }
-        }
-    } catch(e) { console.error(e); }
+        } else if(selBal) { selBal.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
 }
 
 async function generateAiFootReport() {
