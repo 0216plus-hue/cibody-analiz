@@ -621,10 +621,19 @@ function loadBalanceSessionHistory(recordId) {
     }
     
     // Load from history
-    let history = JSON.parse(localStorage.getItem('balance_history_' + activePatientId) || '[]');
+    let history = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
     let record = history.find(r => r.id === recordId);
     if(record) {
-        currentBalanceSession = record.session;
+        // Support old history records
+        if(record.data) {
+            currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
+            let fakeMetrics = calculateBalanceMetrics(record.data, record.type);
+            fakeMetrics.data = record.data;
+            currentBalanceSession[record.type === 'eyes_open' ? 'cift_acik' : 'cift_kapali'] = fakeMetrics;
+        } else {
+            currentBalanceSession = record.session;
+        }
+
         document.getElementById('balanceRecordingSection').classList.add('hidden');
         document.getElementById('balanceResultsSection').classList.remove('hidden');
         
@@ -639,63 +648,6 @@ function loadBalanceSessionHistory(recordId) {
         renderAllTestDetails();
     }
 }
-function saveBalanceSession() {
-    if(!currentPatientId) return showToast("Hasta seçili değil");
-    
-    let record = {
-        id: Date.now().toString(),
-        date: new Date().toLocaleString('tr-TR'),
-        session: currentBalanceSession
-    };
-    
-    let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
-    history.push(record);
-    localStorage.setItem(`balance_history_${currentPatientId}`, JSON.stringify(history));
-    
-    showToast("Denge testi oturumu kaydedildi.");
-    refreshBalanceSessionDropdown();
-}
-
-function loadBalanceSessionHistory(recordId) {
-    if(!recordId) {
-        // Reset to new session
-        currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
-        document.getElementById('balanceResultsSection').classList.add('hidden');
-        document.getElementById('balanceRecordingSection').classList.remove('hidden');
-        document.getElementById('btnDownloadBalancePdf').classList.add('hidden');
-        document.getElementById('btnSaveBalance').classList.add('hidden');
-        selectBalanceTest('cift_acik');
-        
-        let btnRep = document.getElementById('btnViewBalanceReport');
-        if(btnRep) btnRep.classList.add('opacity-50', 'cursor-not-allowed');
-        
-        // Hide all chart tabs
-        const types = ['cift_acik', 'cift_kapali', 'tek_sol_acik', 'tek_sag_acik'];
-        types.forEach(t => {
-            let tb = document.getElementById('tab_btn_' + t);
-            if(tb) tb.classList.add('hidden');
-        });
-        return;
-    }
-    
-    let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
-    let record = history.find(r => r.id === recordId);
-    if(record) {
-        // Support old history records
-        if(record.data) {
-            currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
-            let fakeMetrics = calculateBalanceMetrics(record.data, record.type);
-            fakeMetrics.data = record.data;
-            currentBalanceSession[record.type === 'eyes_open' ? 'cift_acik' : 'cift_kapali'] = fakeMetrics;
-        } else {
-            currentBalanceSession = record.session;
-        }
-        
-        viewBalanceReport();
-        document.getElementById('btnSaveBalance').classList.add('hidden');
-    }
-}
-
 function refreshBalanceSessionDropdown() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
