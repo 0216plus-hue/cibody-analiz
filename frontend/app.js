@@ -92,7 +92,7 @@ function showDashboard(clearActive = false) {
 
         
         // Hide all extra tabs
-        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab'].forEach(t => { 
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
             const el = document.getElementById(t); 
             if(el) el.classList.add('hidden'); 
         });
@@ -3322,11 +3322,23 @@ function downloadAiFootPdf() {
 // ORDERS LOGIC
 
 function showTherapistOrders() {
+    const user = getUser();
+    if(user && user.role === 'superadmin') {
+        showAdminOrders();
+        return;
+    }
+
     const dash = document.getElementById('dashboardView');
     const pat = document.getElementById('patientView');
     if(dash) dash.classList.add('hidden');
     if(pat) pat.classList.add('hidden');
     
+    // Hide all extra tabs just in case
+    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
+        const el = document.getElementById(t); 
+        if(el) el.classList.add('hidden'); 
+    });
+
     document.getElementById('adminOrdersView').classList.add('hidden');
     document.getElementById('therapistOrdersView').classList.remove('hidden');
     
