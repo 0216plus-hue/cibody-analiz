@@ -665,12 +665,13 @@ function loadBalanceSessionHistory(recordId) {
         renderAllTestDetails();
     }
 }
-async function refreshBalanceSessionDropdown() {
+window.refreshBalanceSessionDropdown = async function() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
-    
-    historySelect.innerHTML = '<option value="">-- Yeni Test Oturumu --</option>';
     if(!currentPatientId) return;
+    
+    // Yükleniyor placeholder
+    historySelect.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
     
     try {
         const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
@@ -679,6 +680,8 @@ async function refreshBalanceSessionDropdown() {
             window.cachedBalanceHistory = data.map(d => d.session_data);
         }
     } catch(e) { console.error(e); }
+    
+    historySelect.innerHTML = '<option value="">-- Yeni Test Oturumu --</option>';
     
     window.cachedBalanceHistory.forEach(record => {
         let opt = document.createElement('option');

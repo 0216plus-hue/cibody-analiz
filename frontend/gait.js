@@ -210,6 +210,10 @@ window.loadGaitHistory = function(recordId) {
 window.refreshGaitHistoryDropdown = async function() {
     const sel = document.getElementById('gaitHistorySelect');
     if(!sel) return;
+    if(!currentPatientId) return;
+
+    // Yükleniyor placeholder
+    sel.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
     
     try {
         const res = await authFetch(`/api/gait/patient/${currentPatientId}`);

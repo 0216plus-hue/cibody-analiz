@@ -155,7 +155,10 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
         if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
+        // Tüm geçmiş dropdown'larını eş zamanlı yükle (tab tıklaması bekleme)
         if (typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
+        if (typeof refreshGaitHistoryDropdown === 'function') refreshGaitHistoryDropdown();
+        if (typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
     } catch(err) {
         console.error("showPatient error:", err);
     }
