@@ -2072,17 +2072,13 @@ function downloadPdf() {
 
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
-        // Restore DOM immediately (canvas is already generated)
         bStyles.forEach(item => item.el.style.display = item.display);
         if(notesEl) {
             notesEl.style.display = oldNotesDisplay;
             if(notesDiv) notesDiv.remove();
         }
-    }).save().then(() => {
+        pdf.save(opt.filename);
         showToast("Postür analizi PDF raporu indirildi.");
-    }).catch(err => {
-        console.error("Posture PDF error:", err);
-        showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 
@@ -2112,11 +2108,8 @@ function downloadSpinePdf() {
     html2pdf().set(opt).from(section).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Omurga & Skolyoz Analiz Raporu");
         bStyles.forEach(item => item.el.style.display = item.display);
-    }).save().then(() => {
+        pdf.save(opt.filename);
         showToast("Omurga analizi PDF raporu indirildi.");
-    }).catch(err => {
-        console.error("Spine PDF error:", err);
-        showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 
@@ -2253,12 +2246,9 @@ function downloadScoliometerPdf() {
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Dijital Skolyometre (ATR) Analiz Raporu");
+        pdf.save(opt.filename);
         printContainer.remove();
-    }).save().then(() => {
         showToast("Skolyometre PDF raporu indirildi.");
-    }).catch(err => {
-        console.error("Scoliometer PDF error:", err);
-        showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 
@@ -2414,12 +2404,9 @@ function downloadSimulationPdf() {
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "3D Omurga Simülasyon Raporu");
+        pdf.save(opt.filename);
         printContainer.remove();
-    }).save().then(() => {
         showToast("3D simülasyon PDF raporu indirildi.");
-    }).catch(err => {
-        console.error("Simulation PDF error:", err);
-        showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 
@@ -2601,7 +2588,8 @@ function downloadFootPdf() {
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
         }
-    }).save();
+        pdf.save(opt.filename);
+    });
 }
 
 function showFootQr() {

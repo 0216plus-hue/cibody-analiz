@@ -681,7 +681,7 @@ window.downloadBalancePdf = function() {
         if (typeof applyCibodyPdfHeaderFooter === 'function') {
             applyCibodyPdfHeaderFooter(pdf, "Klinik Denge ve Postürografi Raporu");
         }
-    }).save().then(() => {
+        pdf.save(opt.filename);
         showToast("Denge PDF raporu indirildi.");
     });
 };

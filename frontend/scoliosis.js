@@ -564,12 +564,9 @@ function downloadScoliosisPdf() {
         if (typeof applyCibodyPdfHeaderFooter === 'function') {
             applyCibodyPdfHeaderFooter(pdf, "Skolyoz Cobb Açısı Analiz Raporu");
         }
+        pdf.save(opt.filename);
         printContainer.remove();
-    }).save().then(() => {
         if (typeof showToast === 'function') showToast("Skolyoz Cobb PDF raporu indirildi.");
-    }).catch(err => {
-        console.error("Scoliosis PDF error:", err);
-        if (typeof showToast === 'function') showToast("PDF oluşturulurken hata oluştu.");
     });
 }
 
