@@ -570,7 +570,9 @@ function drawChartsForSection(k, m) {
         }
     });
 }
-function saveBalanceSession() {
+window.cachedBalanceHistory = [];
+
+async function saveBalanceSession() {
     if(!currentPatientId) return showToast("Hasta seçili değil");
     
     let record = {
@@ -579,12 +581,21 @@ function saveBalanceSession() {
         session: currentBalanceSession
     };
     
-    let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
-    history.push(record);
-    localStorage.setItem(`balance_history_${currentPatientId}`, JSON.stringify(history));
+    try {
+        const res = await authFetch(`/api/balance/${currentPatientId}`, {
+            method: 'POST',
+            body: JSON.stringify({ session_data: JSON.stringify(record) }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if(res.ok) {
+            showToast("Denge testi oturumu kaydedildi.");
+        }
+    } catch(e) {
+        showToast("Kaydedilirken hata oluştu.");
+        console.error(e);
+    }
     
-    showToast("Denge testi oturumu kaydedildi.");
-    refreshBalanceSessionDropdown();
+    await refreshBalanceSessionDropdown();
 }
 
 function loadBalanceSessionHistory(recordId) {
@@ -621,8 +632,7 @@ function loadBalanceSessionHistory(recordId) {
     }
     
     // Load from history
-    let history = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
-    let record = history.find(r => r.id === recordId);
+    let record = window.cachedBalanceHistory.find(r => r.id === recordId);
     if(record) {
         // Support old history records
         if(record.data) {
@@ -648,15 +658,22 @@ function loadBalanceSessionHistory(recordId) {
         renderAllTestDetails();
     }
 }
-function refreshBalanceSessionDropdown() {
+async function refreshBalanceSessionDropdown() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
     
     historySelect.innerHTML = '<option value="">-- Yeni Test Oturumu --</option>';
     if(!currentPatientId) return;
     
-    let history = JSON.parse(localStorage.getItem(`balance_history_${currentPatientId}`)) || [];
-    history.reverse().forEach(record => {
+    try {
+        const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            window.cachedBalanceHistory = data.map(d => d.session_data);
+        }
+    } catch(e) { console.error(e); }
+    
+    window.cachedBalanceHistory.forEach(record => {
         let opt = document.createElement('option');
         opt.value = record.id;
         opt.innerText = `${record.date} Oturumu`;

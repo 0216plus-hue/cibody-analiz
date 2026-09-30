@@ -1746,7 +1746,9 @@
             }
         })();
 
-        function saveStaticFootAnalysis() {
+        window.cachedStaticFootHistory = [];
+
+        async function saveStaticFootAnalysis() {
             if (!currentPatientId) {
                 alert("Lütfen önce bir hasta seçin veya kaydedin.");
                 return;
@@ -1756,14 +1758,24 @@
                 return;
             }
 
-            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
             let newRecord = {
                 id: Date.now(),
                 date: new Date().toISOString(),
                 data: lastFootData
             };
-            history.push(newRecord);
-            localStorage.setItem(`static_foot_history_${currentPatientId}`, JSON.stringify(history));
+            
+            try {
+                const res = await authFetch(`/api/static-foot/${currentPatientId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ session_data: JSON.stringify(newRecord) }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if(!res.ok) throw new Error("Sunucu hatası");
+            } catch(e) {
+                console.error(e);
+                alert("Kaydedilirken hata oluştu!");
+                return;
+            }
 
             // Dondurma işlemi
             window.isFootLive = false;
@@ -1774,22 +1786,28 @@
             }
 
             alert("Analiz başarıyla kaydedildi!");
-            refreshStaticFootHistoryDropdown();
-            document.getElementById('staticFootHistorySelect').value = newRecord.id;
+            await refreshStaticFootHistoryDropdown();
             
             document.getElementById('btnSaveFootAnalysis').classList.add('hidden');
             document.getElementById('btnDownloadFootPdf').classList.remove('hidden');
         }
 
-        function refreshStaticFootHistoryDropdown() {
+        async function refreshStaticFootHistoryDropdown() {
             if (!currentPatientId) return;
             const select = document.getElementById('staticFootHistorySelect');
             if(!select) return;
             
-            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
+            try {
+                const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    window.cachedStaticFootHistory = data.map(d => d.session_data);
+                }
+            } catch(e) { console.error(e); }
+            
             select.innerHTML = '<option value="">-- Canlı Akışa Dön --</option>';
             
-            history.reverse().forEach(record => {
+            window.cachedStaticFootHistory.forEach(record => {
                 let d = new Date(record.date).toLocaleString('tr-TR');
                 let opt = document.createElement('option');
                 opt.value = record.id;
@@ -1821,8 +1839,7 @@
                 return;
             }
             
-            let history = JSON.parse(localStorage.getItem(`static_foot_history_${currentPatientId}`)) || [];
-            let record = history.find(r => r.id == recordId);
+            let record = window.cachedStaticFootHistory.find(r => r.id == recordId);
             if (record && record.data) {
                 window.isFootLive = false;
                 if (statusBadge) {
@@ -2158,8 +2175,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=15.0"></script>
-    <script src="app.js?v=15.0"></script>
+    <script src="auth.js?v=16.0"></script>
+    <script src="app.js?v=16.0"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2555,16 +2572,16 @@
     </div>
 </div>
     
-<script src="scoliosis.js?v=15.0"></script>
+<script src="scoliosis.js?v=16.0"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=15.0"></script>
+    <script src="simulation.js?v=16.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=15.0"></script>
-<script src="gait_analysis.js?v=15.0"></script>
+<script src="gait.js?v=16.0"></script>
+<script src="gait_analysis.js?v=16.0"></script>
     <script src="balance.js"></script>
 </body>
 </html>

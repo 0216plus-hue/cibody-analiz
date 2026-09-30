@@ -126,7 +126,9 @@ function completeGaitAnalysis() {
     saveGaitAnalysis();
 }
 
-function saveGaitAnalysis() {
+window.cachedGaitHistory = [];
+
+async function saveGaitAnalysis() {
     if(!currentPatientId) {
         if(typeof showToast === 'function') showToast("Hasta seçilmediği için kaydedilemedi.");
         return;
@@ -149,21 +151,21 @@ function saveGaitAnalysis() {
         steps: stepsToSave
     };
 
-    let history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
-    history.push(record);
-    
-    if(history.length > 5) {
-        history = history.slice(history.length - 5);
-    }
-    
     try {
-        localStorage.setItem(`gait_history_${currentPatientId}`, JSON.stringify(history));
-        if(typeof showToast === 'function') showToast("Yürüme analizi başarıyla kaydedildi.");
+        const res = await authFetch(`/api/gait/${currentPatientId}`, {
+            method: 'POST',
+            body: JSON.stringify({ session_data: JSON.stringify(record) }),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if(res.ok) {
+            if(typeof showToast === 'function') showToast("Yürüme analizi başarıyla kaydedildi.");
+        }
     } catch(e) {
-        if(typeof showToast === 'function') showToast("Depolama alanı dolu, en eski kayıtları silerek deneyin.");
+        if(typeof showToast === 'function') showToast("Kaydedilirken hata oluştu.");
         console.error(e);
     }
-    refreshGaitHistoryDropdown();
+    
+    await refreshGaitHistoryDropdown();
 }
 
 window.loadGaitHistory = function(recordId) {
@@ -185,8 +187,7 @@ window.loadGaitHistory = function(recordId) {
         return;
     }
 
-    let history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
-    let record = history.find(r => r.id === recordId);
+    let record = window.cachedGaitHistory.find(r => r.id === recordId);
     if(record) {
         recordedSteps = record.steps;
         document.getElementById('gaitRecordingSection').classList.add('hidden');
@@ -199,14 +200,21 @@ window.loadGaitHistory = function(recordId) {
     }
 };
 
-window.refreshGaitHistoryDropdown = function() {
+window.refreshGaitHistoryDropdown = async function() {
     const sel = document.getElementById('gaitHistorySelect');
     if(!sel) return;
     
-    const history = JSON.parse(localStorage.getItem(`gait_history_${currentPatientId}`)) || [];
+    try {
+        const res = await authFetch(`/api/gait/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            window.cachedGaitHistory = data.map(d => d.session_data);
+        }
+    } catch(e) { console.error(e); }
+    
     sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
     
-    history.reverse().forEach(r => {
+    window.cachedGaitHistory.forEach(r => {
         let opt = document.createElement('option');
         opt.value = r.id;
         let date = new Date(r.timestamp);

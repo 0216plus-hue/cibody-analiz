@@ -3096,47 +3096,65 @@ async function loadScoliometerHistory(patientId) {
 // AI REPORT (FOOT ANALYSIS) LOGIC
 // ==========================================
 
-function loadAiSelectDropdowns() {
+async function loadAiSelectDropdowns() {
     if(!currentPatientId) return;
     
     // Static Foot
-    let statics = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
-    let selStat = document.getElementById('aiSelectStatic');
-    if(selStat) {
-        selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
-        statics.forEach(s => {
-            let opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
-            selStat.appendChild(opt);
-        });
-    }
+    try {
+        const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const statics = data.map(d => d.session_data);
+            let selStat = document.getElementById('aiSelectStatic');
+            if(selStat) {
+                selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                statics.forEach(s => {
+                    let opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+                    selStat.appendChild(opt);
+                });
+            }
+        }
+    } catch(e) { console.error(e); }
     
     // Dynamic Gait
-    let gaits = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
-    let selGait = document.getElementById('aiSelectGait');
-    if(selGait) {
-        selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
-        gaits.forEach(g => {
-            let opt = document.createElement('option');
-            opt.value = g.id;
-            opt.textContent = new Date(g.date).toLocaleString('tr-TR');
-            selGait.appendChild(opt);
-        });
-    }
+    try {
+        const res = await authFetch(`/api/gait/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const gaits = data.map(d => d.session_data);
+            let selGait = document.getElementById('aiSelectGait');
+            if(selGait) {
+                selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                gaits.forEach(g => {
+                    let opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = new Date(g.timestamp || g.date).toLocaleString('tr-TR');
+                    selGait.appendChild(opt);
+                });
+            }
+        }
+    } catch(e) { console.error(e); }
     
     // Balance Test
-    let balances = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
-    let selBal = document.getElementById('aiSelectBalance');
-    if(selBal) {
-        selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
-        balances.forEach(b => {
-            let opt = document.createElement('option');
-            opt.value = b.id;
-            opt.textContent = new Date(b.date).toLocaleString('tr-TR');
-            selBal.appendChild(opt);
-        });
-    }
+    try {
+        const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const balances = data.map(d => d.session_data);
+            let selBal = document.getElementById('aiSelectBalance');
+            if(selBal) {
+                selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                balances.forEach(b => {
+                    let opt = document.createElement('option');
+                    opt.value = b.id;
+                    opt.textContent = new Date(b.date).toLocaleString('tr-TR');
+                    selBal.appendChild(opt);
+                });
+            }
+        }
+    } catch(e) { console.error(e); }
 }
 
 async function generateAiFootReport() {
@@ -3156,42 +3174,37 @@ async function generateAiFootReport() {
     
     // Gather data
     let staticData = null;
-    if(statId) {
-        let arr = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
-        let rec = arr.find(x => x.id === statId);
-        if(rec) {
+    if(statId && window.cachedStaticFootHistory) {
+        let rec = window.cachedStaticFootHistory.find(x => x.id == statId);
+        if(rec && rec.data) {
+            let d = rec.data;
             staticData = {
                 tarih: rec.date,
-                sol_yuzde: rec.metrics.left_weight_perc,
-                sag_yuzde: rec.metrics.right_weight_perc,
-                on_yuzde: rec.metrics.front_weight_perc,
-                arka_yuzde: rec.metrics.back_weight_perc,
-                max_basinc_sol: rec.metrics.left_max,
-                max_basinc_sag: rec.metrics.right_max,
-                ortalama_basinc: rec.metrics.avg_pressure,
-                degerlendirme: rec.metrics.left_weight_perc > rec.metrics.right_weight_perc ? "Sol ayak daha fazla yük alıyor." : "Sağ ayak daha fazla yük alıyor."
+                sol_yuzde: d.lPct,
+                sag_yuzde: d.rPct,
+                on_yuzde: d.tPct,
+                arka_yuzde: d.bPct,
+                degerlendirme: d.lPct > d.rPct ? "Sol ayak daha fazla yük alıyor." : "Sağ ayak daha fazla yük alıyor."
             };
         }
     }
     
     let gaitData = null;
-    if(gaitId) {
-        let arr = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
-        let rec = arr.find(x => x.id === gaitId);
+    if(gaitId && window.cachedGaitHistory) {
+        let rec = window.cachedGaitHistory.find(x => x.id == gaitId);
         if(rec) {
             gaitData = {
-                tarih: rec.date,
+                tarih: rec.timestamp || rec.date,
                 toplam_adim: rec.steps ? rec.steps.length : 0,
-                sol_adimlar: rec.steps ? rec.steps.filter(s => s.side === 'L').map(s => ({basinc: s.metrics.maxPressure, the_t: s.metrics.duration})) : [],
-                sag_adimlar: rec.steps ? rec.steps.filter(s => s.side === 'R').map(s => ({basinc: s.metrics.maxPressure, the_t: s.metrics.duration})) : []
+                sol_adim_sayisi: rec.steps ? rec.steps.filter(s => s.type === 'L').length : 0,
+                sag_adim_sayisi: rec.steps ? rec.steps.filter(s => s.type === 'R').length : 0
             };
         }
     }
     
     let balData = null;
-    if(balId) {
-        let arr = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
-        let rec = arr.find(x => x.id === balId);
+    if(balId && window.cachedBalanceHistory) {
+        let rec = window.cachedBalanceHistory.find(x => x.id == balId);
         if(rec && rec.session) {
             balData = {
                 tarih: rec.date,

@@ -192,3 +192,24 @@ class InsoleOrder(Base):
     
     patient = relationship("Patient")
     therapist = relationship("User")
+
+class StaticFootSession(Base):
+    __tablename__ = "static_foot_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    session_data = Column(Text, nullable=False) # JSON data
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class GaitSession(Base):
+    __tablename__ = "gait_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    session_data = Column(Text, nullable=False) # JSON data
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class BalanceSession(Base):
+    __tablename__ = "balance_sessions"
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    session_data = Column(Text, nullable=False) # JSON data
+    created_at = Column(DateTime, default=datetime.utcnow)
