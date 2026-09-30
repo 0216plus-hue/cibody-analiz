@@ -3500,6 +3500,18 @@ function openOrderReport(orderId, type) {
         });
         document.getElementById(tabId).classList.remove('hidden');
 
+        // Hide top tab menu so admin only sees the selected analysis
+        const btnFootTab = document.getElementById('btn_footTab');
+        if(btnFootTab && btnFootTab.parentElement) {
+            btnFootTab.parentElement.classList.add('hidden');
+        }
+
+        // Hide "Analizi Başlat" / action buttons
+        ['btnStartStaticFoot', 'btnStartGaitAnalysis', 'btnCompleteGaitAnalysis', 'btnStartBalance'].forEach(id => {
+            const btn = document.getElementById(id);
+            if(btn) btn.classList.add('hidden');
+        });
+
         // Setup top navbar for "Preview Mode"
         const navBackBtn = document.getElementById('navBackBtn');
         const navPatientName = document.getElementById('navPatientName');
@@ -3511,6 +3523,12 @@ function openOrderReport(orderId, type) {
             // Restore back button
             navBackBtn.innerHTML = '<i class="fa-solid fa-arrow-left mr-1"></i> <span class="hidden md:inline">Tüm Kayıtlı Kişiler\'e Dön</span>';
             navBackBtn.onclick = function() { showDashboard(true); };
+            
+            // Restore tabs container
+            if(btnFootTab && btnFootTab.parentElement) {
+                btnFootTab.parentElement.classList.remove('hidden');
+            }
+            
             showAdminOrders();
         };
 
