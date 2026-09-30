@@ -1578,9 +1578,13 @@ Senin görevin bu verileri kapsamlı bir şekilde inceleyerek görsel olarak dü
 ---
 
 ### 📋 1. KLİNİK BULGULAR
-(Bu bölümde hastanın problemini madde madde, klinik ve biyomekanik terimlerle - valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs. - açıkla. Verileri kalın harflerle (bold) vurgulayarak daha okunaklı yap. Paragraflar arasına boşluk bırak.)
+(Bu bölümde hastanın problemini madde madde, klinik ve biyomekanik terimlerle - valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs. - açıkla. Verileri kalın harflerle (bold) vurgulayarak daha okunaklı yap. Her maddenin altına bir boş satır bırak.)
+
+&nbsp;
 
 ---
+
+&nbsp;
 
 ### 🎯 2. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ
 (Özellikle statik ayak bası dağılımına - ön/arka, sağ/sol dengesizliklerine - ve diğer analizlere bakarak, hastanın KİŞİYE ÖZEL TABANLIK kullanmasına gerek olup olmadığına kesin bir karar ver. Gerekliyse nasıl bir tasarım - medial ark desteği, metatarsal ped, topuk kaması vb. - gerektiğini yaz.)

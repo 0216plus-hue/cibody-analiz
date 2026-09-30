@@ -3455,45 +3455,71 @@ function openOrderReports(orderId) {
     w.document.close();
 }
 
-function loadInsoleDropdowns() {
+async function loadInsoleDropdowns() {
     if(!currentPatientId) return;
     
-    let statics = JSON.parse(localStorage.getItem('static_foot_' + currentPatientId) || '[]');
     let selStat = document.getElementById('insoleSelectStatic');
-    if(selStat) {
-        selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-        statics.forEach(s => {
-            let opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
-            selStat.appendChild(opt);
-        });
-    }
-    
-    let gaits = JSON.parse(localStorage.getItem('gait_history_' + currentPatientId) || '[]');
     let selGait = document.getElementById('insoleSelectGait');
-    if(selGait) {
-        selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-        gaits.forEach(s => {
-            let opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
-            selGait.appendChild(opt);
-        });
-    }
-    
-    let balances = JSON.parse(localStorage.getItem('balance_history_' + currentPatientId) || '[]');
-    let selBal = document.getElementById('insoleSelectBalance');
-    if(selBal) {
-        selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-        balances.forEach(s => {
-            let opt = document.createElement('option');
-            opt.value = s.id;
-            opt.textContent = new Date(s.date).toLocaleString('tr-TR');
-            selBal.appendChild(opt);
-        });
-    }
-    
+    let selBal  = document.getElementById('insoleSelectBalance');
+
+    if(selStat) selStat.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+    if(selGait) selGait.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+    if(selBal)  selBal.innerHTML  = '<option value="">⏳ Yükleniyor...</option>';
+
+    // Statik Ayak
+    try {
+        const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const statics = data.map(d => d.session_data);
+            if(selStat) {
+                selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                statics.forEach(s => {
+                    let opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = new Date(s.date).toLocaleString('tr-TR');
+                    selStat.appendChild(opt);
+                });
+            }
+        } else if(selStat) selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+
+    // Dinamik Yürüme
+    try {
+        const res = await authFetch(`/api/gait/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const gaits = data.map(d => d.session_data);
+            if(selGait) {
+                selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                gaits.forEach(g => {
+                    let opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = new Date(g.timestamp || g.date).toLocaleString('tr-TR');
+                    selGait.appendChild(opt);
+                });
+            }
+        } else if(selGait) selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+
+    // Denge Testi
+    try {
+        const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const balances = data.map(d => d.session_data);
+            if(selBal) {
+                selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                balances.forEach(b => {
+                    let opt = document.createElement('option');
+                    opt.value = b.id;
+                    opt.textContent = b.date.includes('.') ? b.date : new Date(b.date).toLocaleString('tr-TR');
+                    selBal.appendChild(opt);
+                });
+            }
+        } else if(selBal) selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+
     fetchPatientInsoleOrders();
 }
 
