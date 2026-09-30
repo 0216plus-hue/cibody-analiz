@@ -3244,11 +3244,9 @@ async function generateAiFootReport() {
     }
     
     try {
-        const token = localStorage.getItem('token');
-        const resp = await fetch(API_URL + '/api/ai/foot-report', {
+        const resp = await authFetch('/api/ai/foot-report', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
@@ -3305,9 +3303,8 @@ function downloadAiFootPdf() {
             formData.append('gender', i % 2 === 0 ? 'Erkek' : 'Kadın');
             
             try {
-                const res = await fetch(API_URL + '/api/patients', {
+                const res = await authFetch('/api/patients', {
                     method: 'POST',
-                    headers: { 'Authorization': 'Bearer ' + token },
                     body: formData
                 });
                 if(res.ok) count++;
