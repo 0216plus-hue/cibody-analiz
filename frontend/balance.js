@@ -589,10 +589,14 @@ async function saveBalanceSession() {
         });
         if(res.ok) {
             showToast("Denge testi oturumu kaydedildi.");
+        } else {
+            const err = await res.text();
+            alert("Sunucu hatası (Balance): " + res.status + " - " + err);
         }
     } catch(e) {
         showToast("Kaydedilirken hata oluştu.");
         console.error(e);
+        alert("Bağlantı hatası: " + e.message);
     }
     
     await refreshBalanceSessionDropdown();

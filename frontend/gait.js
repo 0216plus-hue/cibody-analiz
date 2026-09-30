@@ -159,10 +159,14 @@ async function saveGaitAnalysis() {
         });
         if(res.ok) {
             if(typeof showToast === 'function') showToast("Yürüme analizi başarıyla kaydedildi.");
+        } else {
+            const err = await res.text();
+            alert("Sunucu hatası (Gait): " + res.status + " - " + err);
         }
     } catch(e) {
         if(typeof showToast === 'function') showToast("Kaydedilirken hata oluştu.");
         console.error(e);
+        alert("Bağlantı hatası: " + e.message);
     }
     
     await refreshGaitHistoryDropdown();
