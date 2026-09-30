@@ -3372,17 +3372,26 @@ async function fetchTherapistOrders() {
     } catch(err) { console.error(err); }
 }
 
+window._adminOrdersData = {};
+
 async function fetchAdminOrders() {
     try {
         const res = await authFetch('/api/admin/orders');
         const data = await res.json();
         const tbody = document.getElementById('adminOrdersTableBody');
         tbody.innerHTML = '';
+        window._adminOrdersData = {};
         if(data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Sipariş bulunamadı.</td></tr>';
             return;
         }
         data.forEach(o => {
+            // Veriyi global map'e sakla (HTML attribute olarak değil)
+            window._adminOrdersData[o.id] = {
+                static_data: o.static_data,
+                gait_data: o.gait_data,
+                balance_data: o.balance_data
+            };
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
@@ -3400,7 +3409,6 @@ async function fetchAdminOrders() {
                 </td>
                 <td class="py-3 px-4 text-center">
                     <button onclick="openOrderReports(${o.id})" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition">Raporları Aç</button>
-                    <div id="order_data_${o.id}" class="hidden" data-static='${o.static_data ? o.static_data.replace(/'/g, "&#39;") : ""}' data-gait='${o.gait_data ? o.gait_data.replace(/'/g, "&#39;") : ""}' data-balance='${o.balance_data ? o.balance_data.replace(/'/g, "&#39;") : ""}'></div>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -3421,37 +3429,79 @@ async function updateOrderStatus(orderId, newStatus) {
     try {
         const res = await authFetch(`/api/admin/orders/${orderId}/status`, {
             method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({status: newStatus})
         });
         if(res.ok) {
             showToast("Durum güncellendi.");
         } else {
-            showToast("Hata oluştu.");
+            const errText = await res.text();
+            showToast("Hata: " + errText);
         }
     } catch(err) { console.error(err); }
 }
 
 function openOrderReports(orderId) {
-    const dataDiv = document.getElementById(`order_data_${orderId}`);
-    if(!dataDiv) return;
-    
-    // For simplicity, we can just log or show a modal. To keep it simple, we download them as JSON or show a modal with text.
-    // The user wants to "open them one by one". Let's show a modal with 3 buttons that dump the json, or better yet, recreate the view!
-    // Recreating the view in the admin dashboard without the full DOM is hard. 
-    // We can open a new window and dump the data there.
+    const orderData = window._adminOrdersData && window._adminOrdersData[orderId];
+    if(!orderData) {
+        alert("Sipariş verisi bulunamadı. Lütfen sayfayı yenileyin.");
+        return;
+    }
+
+    const sD = orderData.static_data;
+    const gD = orderData.gait_data;
+    const bD = orderData.balance_data;
+
+    if(!sD && !gD && !bD) {
+        alert("Bu siparişe ait rapor verisi bulunamadı.");
+        return;
+    }
+
     const w = window.open('', '_blank');
-    w.document.write('<html><head><title>Sipariş Raporları</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-50 p-8">');
-    w.document.write(`<h1 class="text-2xl font-bold mb-4">Sipariş #${orderId} Rapor Verileri</h1>`);
-    
-    const sD = dataDiv.getAttribute('data-static');
-    const gD = dataDiv.getAttribute('data-gait');
-    const bD = dataDiv.getAttribute('data-balance');
-    
-    if(sD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Statik Ayak Analizi</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(sD), null, 2)}</pre>`);
-    if(gD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Dinamik Yürüme Analizi</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(gD), null, 2)}</pre>`);
-    if(bD) w.document.write(`<h2 class="text-xl font-bold mt-6 mb-2">Denge Testi (Postürografi)</h2><pre class="bg-slate-800 text-green-400 p-4 rounded text-xs overflow-auto max-h-64">${JSON.stringify(JSON.parse(bD), null, 2)}</pre>`);
-    
-    w.document.write('</body></html>');
+    w.document.write(`<!DOCTYPE html><html><head>
+        <title>Sipariş #${orderId} Rapor Verileri</title>
+        <meta charset="utf-8">
+        <script src="https://cdn.tailwindcss.com"><\/script>
+    </head><body class="bg-slate-50 p-8 font-sans">`);
+
+    w.document.write(`<div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Sipariş #${orderId}</h1>
+        <p class="text-slate-400 text-sm mb-8">Kişiye Özel Tabanlık Sipariş Raporu</p>`);
+
+    function renderSection(title, jsonStr, color) {
+        if(!jsonStr) return '';
+        try {
+            const obj = JSON.parse(jsonStr);
+            let rows = '';
+            function flatten(o, prefix) {
+                Object.entries(o).forEach(([k,v]) => {
+                    if(v !== null && typeof v === 'object' && !Array.isArray(v)) {
+                        flatten(v, prefix ? prefix+'.'+k : k);
+                    } else {
+                        rows += `<tr class="border-b border-slate-100">
+                            <td class="py-2 px-4 text-sm font-semibold text-slate-600 w-1/3">${prefix ? prefix+'.'+k : k}</td>
+                            <td class="py-2 px-4 text-sm text-slate-800">${Array.isArray(v) ? '['+v.length+' kayıt]' : (v ?? '-')}</td>
+                        </tr>`;
+                    }
+                });
+            }
+            flatten(obj, '');
+            return `<div class="mb-8 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-${color}-50 border-b border-${color}-100 px-6 py-4">
+                    <h2 class="text-lg font-bold text-${color}-800">${title}</h2>
+                </div>
+                <table class="w-full"><tbody>${rows}</tbody></table>
+            </div>`;
+        } catch(e) {
+            return `<div class="mb-8 p-4 bg-red-50 rounded-xl text-red-600 text-sm">Veri ayrıştırılamadı: ${e.message}</div>`;
+        }
+    }
+
+    w.document.write(renderSection('📊 Statik Ayak Analizi', sD, 'red'));
+    w.document.write(renderSection('🚶 Dinamik Yürüme Analizi', gD, 'emerald'));
+    w.document.write(renderSection('⚖️ Denge Testi', bD, 'indigo'));
+
+    w.document.write(`</div></body></html>`);
     w.document.close();
 }
 
