@@ -3135,7 +3135,7 @@ async function loadAiSelectDropdowns() {
             const data = await res.json();
             const statics = data.map(d => d.session_data);
             if(selStat) {
-                selStat.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                selStat.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 statics.forEach(s => {
                     let opt = document.createElement('option');
                     opt.value = s.id;
@@ -3143,8 +3143,8 @@ async function loadAiSelectDropdowns() {
                     selStat.appendChild(opt);
                 });
             }
-        } else if(selStat) { selStat.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
-    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+        } else if(selStat) { selStat.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
+    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
     
     // Dynamic Gait
     try {
@@ -3153,7 +3153,7 @@ async function loadAiSelectDropdowns() {
             const data = await res.json();
             const gaits = data.map(d => d.session_data);
             if(selGait) {
-                selGait.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                selGait.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 gaits.forEach(g => {
                     let opt = document.createElement('option');
                     opt.value = g.id;
@@ -3161,8 +3161,8 @@ async function loadAiSelectDropdowns() {
                     selGait.appendChild(opt);
                 });
             }
-        } else if(selGait) { selGait.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
-    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+        } else if(selGait) { selGait.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
+    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
     
     // Balance Test
     try {
@@ -3171,7 +3171,7 @@ async function loadAiSelectDropdowns() {
             const data = await res.json();
             const balances = data.map(d => d.session_data);
             if(selBal) {
-                selBal.innerHTML = '<option value="">-- Dahil Etme --</option>';
+                selBal.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 balances.forEach(b => {
                     let opt = document.createElement('option');
                     opt.value = b.id;
@@ -3180,8 +3180,8 @@ async function loadAiSelectDropdowns() {
                     selBal.appendChild(opt);
                 });
             }
-        } else if(selBal) { selBal.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
-    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- Dahil Etme --</option>'; }
+        } else if(selBal) { selBal.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
+    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
 }
 
 async function generateAiFootReport() {
@@ -3473,7 +3473,7 @@ async function loadInsoleDropdowns() {
             const data = await res.json();
             const statics = data.map(d => d.session_data);
             if(selStat) {
-                selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                selStat.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 statics.forEach(s => {
                     let opt = document.createElement('option');
                     opt.value = s.id;
@@ -3481,8 +3481,8 @@ async function loadInsoleDropdowns() {
                     selStat.appendChild(opt);
                 });
             }
-        } else if(selStat) selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+        } else if(selStat) selStat.innerHTML = '<option value="">-- Analiz Seç --</option>';
+    } catch(e) { console.error(e); if(selStat) selStat.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
 
     // Dinamik Yürüme
     try {
@@ -3491,7 +3491,7 @@ async function loadInsoleDropdowns() {
             const data = await res.json();
             const gaits = data.map(d => d.session_data);
             if(selGait) {
-                selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                selGait.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 gaits.forEach(g => {
                     let opt = document.createElement('option');
                     opt.value = g.id;
@@ -3499,8 +3499,8 @@ async function loadInsoleDropdowns() {
                     selGait.appendChild(opt);
                 });
             }
-        } else if(selGait) selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+        } else if(selGait) selGait.innerHTML = '<option value="">-- Analiz Seç --</option>';
+    } catch(e) { console.error(e); if(selGait) selGait.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
 
     // Denge Testi
     try {
@@ -3509,7 +3509,7 @@ async function loadInsoleDropdowns() {
             const data = await res.json();
             const balances = data.map(d => d.session_data);
             if(selBal) {
-                selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
+                selBal.innerHTML = '<option value="">-- Analiz Seç --</option>';
                 balances.forEach(b => {
                     let opt = document.createElement('option');
                     opt.value = b.id;
@@ -3517,8 +3517,8 @@ async function loadInsoleDropdowns() {
                     selBal.appendChild(opt);
                 });
             }
-        } else if(selBal) selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>';
-    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- İsteğe Bağlı --</option>'; }
+        } else if(selBal) selBal.innerHTML = '<option value="">-- Analiz Seç --</option>';
+    } catch(e) { console.error(e); if(selBal) selBal.innerHTML = '<option value="">-- Analiz Seç --</option>'; }
 
     fetchPatientInsoleOrders();
 }
