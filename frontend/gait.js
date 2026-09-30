@@ -158,6 +158,9 @@ async function saveGaitAnalysis() {
             headers: { 'Content-Type': 'application/json' }
         });
         if(res.ok) {
+            // Hemen local cache'e ekle — GET isteği tamamlanmadan dropdown güncellensin
+            if(!Array.isArray(window.cachedGaitHistory)) window.cachedGaitHistory = [];
+            window.cachedGaitHistory.unshift(record);
             if(typeof showToast === 'function') showToast("Yürüme analizi başarıyla kaydedildi.");
         } else {
             const err = await res.text();

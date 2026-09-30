@@ -588,6 +588,9 @@ async function saveBalanceSession() {
             headers: { 'Content-Type': 'application/json' }
         });
         if(res.ok) {
+            // Hemen local cache'e ekle — proxy GET önbelleğini beklemeden görünsün
+            if(!Array.isArray(window.cachedBalanceHistory)) window.cachedBalanceHistory = [];
+            window.cachedBalanceHistory.unshift(record);
             showToast("Denge testi oturumu kaydedildi.");
         } else {
             const err = await res.text();

@@ -5,7 +5,7 @@ from PIL import Image, ImageOps
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 
@@ -105,6 +105,17 @@ def startup_event():
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False,
                    allow_methods=["*"], allow_headers=["*"])
+
+# API yanıtlarına her zaman no-cache header ekle (Fortinet gibi proxy önbelleklerini engelle)
+@app.middleware("http")
+async def add_no_cache_header(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 
