@@ -704,14 +704,21 @@ window.downloadBalancePdf = function() {
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
     
-    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        if (typeof applyCibodyPdfHeaderFooter === 'function') {
-            applyCibodyPdfHeaderFooter(pdf, "Klinik Denge ve Postürografi Raporu");
-        }
-    }).save().then(() => {
-        showToast("Denge PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        showToast("PDF indirilirken hata oluştu.");
-    });
+    const instance = html2pdf().set(opt).from(element);
+    if(typeof runPdf === 'function') {
+        runPdf(instance, `denge_testi_${currentPatientId}.pdf`, "Klinik Denge ve Postürografi Raporu").then(() => {
+            showToast("Denge PDF raporu indirildi.");
+        });
+    } else {
+        instance.toPdf().get('pdf').then(function(pdf) {
+            if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                applyCibodyPdfHeaderFooter(pdf, "Klinik Denge ve Postürografi Raporu");
+            }
+        }).save().then(() => {
+            showToast("Denge PDF raporu indirildi.");
+        }).catch(err => {
+            console.error(err);
+            showToast("PDF indirilirken hata oluştu.");
+        });
+    }
 };

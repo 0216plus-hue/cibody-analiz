@@ -1925,18 +1925,29 @@
             element.style.maxWidth = '1000px';
             element.classList.add('pdf-export-mode-static');
             
-            html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-                if (typeof applyCibodyPdfHeaderFooter === 'function') {
-                    applyCibodyPdfHeaderFooter(pdf, "Statik Ayak Analizi Raporu");
-                }
-            }).save().then(() => {
-                element.style.width = originalWidth;
-                element.style.maxWidth = '';
-                element.classList.remove('pdf-export-mode-static');
-                
-                if(topBar) topBar.style.display = 'flex';
-                if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");
-            });
+            const instance = html2pdf().set(opt).from(element);
+            if(typeof runPdf === 'function') {
+                runPdf(instance, `statik_ayak_analiz_${currentPatientId}.pdf`, "Statik Ayak Analizi Raporu").then(() => {
+                    element.style.width = originalWidth;
+                    element.style.maxWidth = '';
+                    element.classList.remove('pdf-export-mode-static');
+                    if(topBar) topBar.style.display = 'flex';
+                    if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");
+                });
+            } else {
+                // Fallback
+                instance.toPdf().get('pdf').then(function(pdf) {
+                    if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                        applyCibodyPdfHeaderFooter(pdf, "Statik Ayak Analizi Raporu");
+                    }
+                }).save().then(() => {
+                    element.style.width = originalWidth;
+                    element.style.maxWidth = '';
+                    element.classList.remove('pdf-export-mode-static');
+                    if(topBar) topBar.style.display = 'flex';
+                    if(typeof showToast === 'function') showToast("Ayak Analizi PDF raporu indirildi.");
+                });
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -2203,8 +2214,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=18.7"></script>
-    <script src="app.js?v=18.7"></script>
+    <script src="auth.js?v=18.8"></script>
+    <script src="app.js?v=18.8"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2600,16 +2611,16 @@
     </div>
 </div>
     
-<script src="scoliosis.js?v=18.7"></script>
+<script src="scoliosis.js?v=18.8"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=18.7"></script>
+    <script src="simulation.js?v=18.8"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=18.7"></script>
-<script src="gait_analysis.js?v=18.7"></script>
+<script src="gait.js?v=18.8"></script>
+<script src="gait_analysis.js?v=18.8"></script>
     <script src="balance.js"></script>
 </body>
 </html>

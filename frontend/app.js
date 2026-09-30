@@ -1962,6 +1962,30 @@ async function addPrescribed(exerciseId) {
 
 // PDF & QR FUNCTIONS
 
+// ─── PDF Yardımcı: header/footer + blob indirme ───────────────────────────────
+/**
+ * Verilen html2pdf instance'ını çalıştırır, header/footer ekler ve
+ * tarayıcı proxy'lerini atlayan blob indirme yöntemiyle kaydeder.
+ */
+async function runPdf(instance, filename, reportSubtitle) {
+    try {
+        const pdfObj = await instance.toPdf().get('pdf');
+        applyCibodyPdfHeaderFooter(pdfObj, reportSubtitle);
+        // blob() yöntemi → <a download> → proxy'ler atlıyor
+        const blob = await instance.output('blob');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+    } catch(err) {
+        console.error('PDF indirme hatası:', err);
+        showToast('PDF indirirken hata oluştu: ' + err.message);
+    }
+}
+
 function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik Analiz Raporu") {
     const totalPages = pdf.internal.getNumberOfPages();
     const pageWidth = pdf.internal.pageSize.width;
@@ -2040,51 +2064,36 @@ window.applyCibodyPdfHeaderFooter = applyCibodyPdfHeaderFooter;
 function downloadPdf() {
     const element = document.getElementById('postureTab');
     
-    // 1. Handle clinical notes textarea
+    // Handle clinical notes textarea → static div for PDF
     const notesEl = document.getElementById('clinicalNotesInput');
-    let notesText = '';
-    let oldNotesDisplay = '';
     let notesDiv = null;
+    let notesText = '';
     if(notesEl) {
         notesText = notesEl.value.trim();
-        oldNotesDisplay = notesEl.style.display;
         notesEl.style.display = 'none'; 
-        
         notesDiv = document.createElement('div');
         notesDiv.className = 'text-sm text-slate-700 whitespace-pre-wrap p-4 bg-slate-50 rounded-xl border border-slate-200 mt-2 avoid-break';
         notesDiv.innerText = notesText || 'Klinik not girilmemiş.';
         notesEl.parentNode.insertBefore(notesDiv, notesEl.nextSibling);
     }
     
-    // 2. Hide buttons & Inputs
     const buttonsToHide = element.querySelectorAll('button, [data-html2canvas-ignore]');
     const bStyles = [];
-    buttonsToHide.forEach(el => {
-        bStyles.push({ el, display: el.style.display });
-        el.style.display = 'none';
-    });
+    buttonsToHide.forEach(el => { bStyles.push({ el, display: el.style.display }); el.style.display = 'none'; });
 
     const opt = {
       margin:       [0.60, 0.3, 0.5, 0.3],
-      filename:     `postur_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(element);
+    runPdf(instance, `postur_raporu_${currentPatientId || 'hasta'}.pdf`, "Klinik Biyomekanik Postur Analizi Raporu").then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
-        if(notesEl) {
-            notesEl.style.display = oldNotesDisplay;
-            if(notesDiv) notesDiv.remove();
-        }
+        if(notesEl) { notesEl.style.display = ''; if(notesDiv) notesDiv.remove(); }
         showToast("Postür analizi PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2097,28 +2106,20 @@ function downloadSpinePdf() {
 
     const buttonsToHide = section.querySelectorAll('button, [data-html2canvas-ignore]');
     const bStyles = [];
-    buttonsToHide.forEach(el => {
-        bStyles.push({ el, display: el.style.display });
-        el.style.display = 'none';
-    });
+    buttonsToHide.forEach(el => { bStyles.push({ el, display: el.style.display }); el.style.display = 'none'; });
 
     const opt = {
       margin:       [0.65, 0.3, 0.5, 0.3],
-      filename:     `omurga_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr', '.grid'] }
     };
 
-    html2pdf().set(opt).from(section).toPdf().get('pdf').then(function(pdf) {
-        applyCibodyPdfHeaderFooter(pdf, "Klinik Omurga & Skolyoz Analiz Raporu");
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(section);
+    runPdf(instance, `omurga_raporu_${currentPatientId || 'hasta'}.pdf`, "Klinik Omurga & Skolyoz Analiz Raporu").then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
         showToast("Omurga analizi PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2246,22 +2247,16 @@ function downloadScoliometerPdf() {
 
     const opt = {
       margin:       [0.65, 0.3, 0.5, 0.3],
-      filename:     `skolyometre_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
-        applyCibodyPdfHeaderFooter(pdf, "Dijital Skolyometre (ATR) Analiz Raporu");
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(printContainer);
+    runPdf(instance, `skolyometre_raporu_${currentPatientId || 'hasta'}.pdf`, "Dijital Skolyometre (ATR) Analiz Raporu").then(() => {
         printContainer.remove();
         showToast("Skolyometre PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        printContainer.remove();
-        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2408,22 +2403,16 @@ function downloadSimulationPdf() {
 
     const opt = {
       margin:       [0.65, 0.3, 0.5, 0.3],
-      filename:     `simulasyon_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
-        applyCibodyPdfHeaderFooter(pdf, "3D Omurga Simülasyon Raporu");
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(printContainer);
+    runPdf(instance, `simulasyon_raporu_${currentPatientId || 'hasta'}.pdf`, "3D Omurga Simulasyon Raporu").then(() => {
         printContainer.remove();
         showToast("3D simülasyon PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        printContainer.remove();
-        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2541,75 +2530,9 @@ function downloadFootPdf() {
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    let pName = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo) ? globalPatientInfo.name : (document.getElementById('navPatientName').innerText || 'Hasta');
-    const trMap = {'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'};
-    if (pName) pName = pName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
-    const patientAge = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-';
-    const patientWeight = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-';
-    const dateStr = new Date().toLocaleDateString('tr-TR');
-    
-    let currentUserName = "Uzman";
-    let currentUserEmail = "";
-    let currentUserPhone = "";
-    try {
-        const storedUser = localStorage.getItem('cibody_user');
-        if(storedUser) {
-            const parsed = JSON.parse(storedUser);
-            currentUserName = parsed.name || "Uzman";
-            currentUserEmail = parsed.email || "";
-            currentUserPhone = parsed.phone || "";
-            if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
-        }
-    } catch(e) {}
-
-    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        const totalPages = pdf.internal.getNumberOfPages();
-        const pageWidth = pdf.internal.pageSize.width;
-        const pageHeight = pdf.internal.pageSize.height;
-        
-        for (let i = 1; i <= totalPages; i++) {
-            pdf.setPage(i);
-            
-            // --- HEADER ---
-            pdf.setFillColor(30, 27, 75); // indigo-950
-            pdf.rect(0, 0, pageWidth, 0.55, 'F');
-            
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(14);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text("CIBODY AI", 0.3, 0.25);
-            
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text("Klinik Ayak Basinc & Biyomekanik Raporu", 0.3, 0.40);
-
-            // Sağ üstte hasta bilgileri
-            pdf.setFontSize(12);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(pName, pageWidth - 0.3, 0.25, { align: 'right' });
-            
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(`Yas: ${patientAge} | Kilo: ${patientWeight} kg | Tarih: ${dateStr}`, pageWidth - 0.3, 0.40, { align: 'right' });
-            
-            // --- FOOTER ---
-            pdf.setDrawColor(200, 200, 200);
-            pdf.setLineWidth(0.01);
-            pdf.line(0.3, pageHeight - 0.3, pageWidth - 0.3, pageHeight - 0.3);
-            
-            pdf.setTextColor(100, 100, 100);
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
-            
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
-        }
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(element);
+    runPdf(instance, `ayak_raporu_${currentPatientId}.pdf`, "Klinik Ayak Basinc & Biyomekanik Raporu").then(() => {
         showToast("Statik Ayak PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -3287,7 +3210,10 @@ function downloadAiFootPdf() {
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(el).save();
+    const instance = html2pdf().set(opt).from(el);
+    runPdf(instance, 'YapayZeka_Klinik_Rapor.pdf', "Yapay Zeka (AI) Destekli Biyomekanik Rapor").then(() => {
+        showToast("Yapay Zeka PDF raporu indirildi.");
+    });
 }
 
 

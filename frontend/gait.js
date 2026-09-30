@@ -479,16 +479,24 @@ window.downloadGaitPdf = function() {
     const topBar = document.getElementById('gaitTopBar');
     if(topBar) topBar.style.display = 'none';
     
-    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
-        if (typeof applyCibodyPdfHeaderFooter === 'function') {
-            applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
-        }
-    }).save().then(() => {
-        if(topBar) topBar.style.display = 'flex';
-        if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
-    }).catch(err => {
-        console.error(err);
-        if(topBar) topBar.style.display = 'flex';
-        if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
-    });
+    const instance = html2pdf().set(opt).from(element);
+    if(typeof runPdf === 'function') {
+        runPdf(instance, `dinamik_yurume_analizi_${currentPatientId}.pdf`, "Dinamik Yürüme Analizi Raporu").then(() => {
+            if(topBar) topBar.style.display = 'flex';
+            if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+        });
+    } else {
+        instance.toPdf().get('pdf').then(function(pdf) {
+            if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
+            }
+        }).save().then(() => {
+            if(topBar) topBar.style.display = 'flex';
+            if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+        }).catch(err => {
+            console.error(err);
+            if(topBar) topBar.style.display = 'flex';
+            if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
+        });
+    }
 };
