@@ -2065,20 +2065,23 @@ function downloadPdf() {
       margin:       [0.60, 0.3, 0.5, 0.3],
       filename:     `postur_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
+    }).save().then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
         if(notesEl) {
             notesEl.style.display = oldNotesDisplay;
             if(notesDiv) notesDiv.remove();
         }
-        pdf.save(opt.filename);
         showToast("Postür analizi PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2100,16 +2103,19 @@ function downloadSpinePdf() {
       margin:       [0.65, 0.3, 0.5, 0.3],
       filename:     `omurga_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr', '.grid'] }
     };
 
     html2pdf().set(opt).from(section).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Omurga & Skolyoz Analiz Raporu");
+    }).save().then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
-        pdf.save(opt.filename);
         showToast("Omurga analizi PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2239,16 +2245,20 @@ function downloadScoliometerPdf() {
       margin:       [0.65, 0.3, 0.5, 0.3],
       filename:     `skolyometre_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Dijital Skolyometre (ATR) Analiz Raporu");
-        pdf.save(opt.filename);
+    }).save().then(() => {
         printContainer.remove();
         showToast("Skolyometre PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        printContainer.remove();
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2397,16 +2407,20 @@ function downloadSimulationPdf() {
       margin:       [0.65, 0.3, 0.5, 0.3],
       filename:     `simulasyon_raporu_${currentPatientId || 'hasta'}.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "3D Omurga Simülasyon Raporu");
-        pdf.save(opt.filename);
+    }).save().then(() => {
         printContainer.remove();
         showToast("3D simülasyon PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        printContainer.remove();
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
@@ -2441,7 +2455,7 @@ async function showPatientQr() {
       margin:       [0.60, 0.3, 0.5, 0.3],
       filename:     `postur.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
@@ -2519,7 +2533,7 @@ function downloadFootPdf() {
       margin:       [0.75, 0.3, 0.5, 0.3],
       filename:     `ayak_raporu_${currentPatientId}.pdf`,
       image:        { type: 'jpeg', quality: 1.0 },
-      html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
@@ -2588,7 +2602,11 @@ function downloadFootPdf() {
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
         }
-        pdf.save(opt.filename);
+    }).save().then(() => {
+        showToast("Statik Ayak PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 

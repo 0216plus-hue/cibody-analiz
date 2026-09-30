@@ -457,7 +457,7 @@ window.downloadGaitPdf = function() {
         margin:       [0.75, 0.3, 0.5, 0.3],
         filename:     `dinamik_yurume_analizi_${currentPatientId}.pdf`,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, scrollY: 0 },
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
@@ -472,8 +472,12 @@ window.downloadGaitPdf = function() {
         if (typeof applyCibodyPdfHeaderFooter === 'function') {
             applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
         }
+    }).save().then(() => {
         if(topBar) topBar.style.display = 'flex';
-        pdf.save(opt.filename);
         if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+    }).catch(err => {
+        console.error(err);
+        if(topBar) topBar.style.display = 'flex';
+        if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
     });
 };
