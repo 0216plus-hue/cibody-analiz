@@ -464,8 +464,7 @@ window.downloadGaitPdf = function() {
         if (typeof applyCibodyPdfHeaderFooter === 'function') {
             applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
         }
-    }).save().then(() => {
-        
+        pdf.save(opt.filename);
         if(topBar) topBar.style.display = 'flex';
         if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
     });

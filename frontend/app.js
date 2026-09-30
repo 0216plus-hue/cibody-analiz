@@ -96,6 +96,9 @@ function showDashboard(clearActive = false) {
             const el = document.getElementById(t); 
             if(el) el.classList.add('hidden'); 
         });
+
+        const npBtn = document.getElementById('navNewPatientBtn');
+        if(npBtn) npBtn.classList.remove('hidden');
         const navP = document.getElementById('navPatientName');
         if (navP) navP.classList.add('hidden');
         const nBack = document.getElementById('navBackBtn');
@@ -2069,7 +2072,7 @@ function downloadPdf() {
 
     html2pdf().set(opt).from(element).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Biyomekanik Postür Analizi Raporu");
-    }).save().then(() => {
+        pdf.save(opt.filename);
         // Restore DOM
         bStyles.forEach(item => item.el.style.display = item.display);
         if(notesEl) {
@@ -2113,7 +2116,7 @@ function downloadSpinePdf() {
 
     html2pdf().set(opt).from(section).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Klinik Omurga & Skolyoz Analiz Raporu");
-    }).save().then(() => {
+        pdf.save(opt.filename);
         bStyles.forEach(item => item.el.style.display = item.display);
         showToast("Omurga analizi PDF raporu indirildi.");
     }).catch(err => {
@@ -2256,7 +2259,7 @@ function downloadScoliometerPdf() {
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "Dijital Skolyometre (ATR) Analiz Raporu");
-    }).save().then(() => {
+        pdf.save(opt.filename);
         printContainer.remove();
         showToast("Skolyometre PDF raporu indirildi.");
     }).catch(err => {
@@ -2418,7 +2421,7 @@ function downloadSimulationPdf() {
 
     html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
         applyCibodyPdfHeaderFooter(pdf, "3D Omurga Simülasyon Raporu");
-    }).save().then(() => {
+        pdf.save(opt.filename);
         printContainer.remove();
         showToast("3D simülasyon PDF raporu indirildi.");
     }).catch(err => {
@@ -2606,7 +2609,8 @@ function downloadFootPdf() {
             pdf.setFont('helvetica', 'normal');
             pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
         }
-    }).save().then(() => { /* nothing */ });
+        pdf.save(opt.filename);
+    });
 }
 
 function showFootQr() {
@@ -3262,7 +3266,9 @@ function downloadAiFootPdf() {
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(el).save();
+    html2pdf().set(opt).from(el).toPdf().get('pdf').then(function(pdf) {
+        pdf.save(opt.filename);
+    });
 }
 
 
@@ -3320,8 +3326,9 @@ function showAdminOrders() {
     if(pat) pat.classList.add('hidden');
     document.getElementById('therapistOrdersView').classList.add('hidden');
     document.getElementById('adminOrdersView').classList.remove('hidden');
+    const npBtn = document.getElementById('navNewPatientBtn');
+    if(npBtn) npBtn.classList.add('hidden');
     fetchAdminOrders();
-
 }
 
 async function fetchTherapistOrders() {
