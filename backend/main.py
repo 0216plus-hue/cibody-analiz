@@ -1593,7 +1593,7 @@ Lütfen raporunu şık bir Markdown (.md) formatında hazırla.
         print("AI Foot Report Error:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
+# app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
 # ────────────────────────────────
 #  KİŞİYE ÖZEL TABANLIK SİPARİŞLERİ
@@ -1758,3 +1758,5 @@ def delete_balance(session_id: int, db: Session = Depends(get_db)):
         db.delete(record)
         db.commit()
     return {"status": "success"}
+
+app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
