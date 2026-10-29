@@ -202,6 +202,10 @@ function switchTab(tabId) {
 
         sessionStorage.setItem('cibody_active_tab', tabId);
 
+        if (typeof applyTranslations === 'function' && activeTab) {
+            applyTranslations(activeTab);
+        }
+
         // Tab-specific loading
         if(tabId === 'scoliometerTab' && currentPatientId) {
             if(typeof loadScoliometerHistory === 'function') loadScoliometerHistory(currentPatientId);
