@@ -1518,6 +1518,7 @@
     </div>
     <script>
         window.isFootLive = false;
+        window.isFootWsConnected = false;
         
         window.startStaticFootAnalysis = function() {
             window.isFootLive = true;
@@ -1526,10 +1527,19 @@
             document.getElementById('btnSaveFootAnalysis').classList.remove('hidden');
             document.getElementById('btnDownloadFootPdf').classList.add('hidden');
             
+            if (window.ensureFootWs) {
+                window.ensureFootWs();
+            }
+
             let statusBadge = document.getElementById('footLiveStatus');
             if (statusBadge) {
-                statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> CANLI';
-                statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+                if (window.isFootWsConnected) {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> ' + (window.translateText ? window.translateText('CANLI') : 'CANLI');
+                    statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+                } else {
+                    statusBadge.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-amber-400"></i> ' + (window.translateText ? window.translateText('Bağlanılıyor...') : 'Bağlanılıyor...');
+                    statusBadge.className = "absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600";
+                }
             }
         };
         let lastFootData = {};
@@ -1568,14 +1578,33 @@
             let writeIdx = 0;
             let lastDrawIdx = 0;
 
+            const wsUrls = ["ws://127.0.0.1:8765", "ws://localhost:8765"];
+            let urlIdx = 0;
             let ws = null;
+
+            window.ensureFootWs = function() {
+                if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+                    connectWs();
+                }
+            };
+
             function connectWs() {
+                if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+                    return;
+                }
+                const targetUrl = wsUrls[urlIdx % wsUrls.length];
                 try {
-                    ws = new WebSocket("ws://localhost:8765");
+                    ws = new WebSocket(targetUrl);
                     ws.binaryType = "arraybuffer";
 
                     ws.onopen = () => {
-                        console.log("[CIBODY] Sensor köprüsüne bağlanıldı!");
+                        console.log("[CIBODY] Sensor köprüsüne bağlanıldı:", targetUrl);
+                        window.isFootWsConnected = true;
+                        let statusBadge = document.getElementById('footLiveStatus');
+                        if (statusBadge && window.isFootLive) {
+                            statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> ' + (window.translateText ? window.translateText('CANLI') : 'CANLI');
+                            statusBadge.className = "absolute top-4 left-4 bg-black/60 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2";
+                        }
                     };
 
                     ws.onmessage = (event) => {
@@ -1591,18 +1620,26 @@
                                 lastDrawIdx = writeIdx;
                             }
                         } else {
-                            lastDrawIdx = writeIdx; // Keep it caught up so it doesn't queue up old frames when unpaused
+                            lastDrawIdx = writeIdx;
                         }
                     };
 
                     ws.onclose = () => {
-                        setTimeout(connectWs, 2000);
+                        window.isFootWsConnected = false;
+                        let statusBadge = document.getElementById('footLiveStatus');
+                        if (statusBadge && window.isFootLive) {
+                            statusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> ' + (window.translateText ? window.translateText('Köprü Bekleniyor...') : 'Köprü Bekleniyor...');
+                            statusBadge.className = "absolute top-4 left-4 bg-amber-900/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-amber-500/50";
+                        }
+                        urlIdx++;
+                        setTimeout(connectWs, 1500);
                     };
                     ws.onerror = () => {
                         try { ws.close(); } catch(e) {}
                     };
                 } catch(e) {
-                    setTimeout(connectWs, 2000);
+                    urlIdx++;
+                    setTimeout(connectWs, 1500);
                 }
             }
             connectWs();
