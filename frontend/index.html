@@ -1568,25 +1568,44 @@
             let writeIdx = 0;
             let lastDrawIdx = 0;
 
-            const ws = new WebSocket("ws://localhost:8765");
-            ws.binaryType = "arraybuffer";
+            let ws = null;
+            function connectWs() {
+                try {
+                    ws = new WebSocket("ws://localhost:8765");
+                    ws.binaryType = "arraybuffer";
 
-            ws.onmessage = (event) => {
-                let data = new Uint8Array(event.data);
-                for (let i = 0; i < data.length; i++) {
-                    buffer[writeIdx % buffer.length] = data[i];
-                    writeIdx++;
+                    ws.onopen = () => {
+                        console.log("[CIBODY] Sensor köprüsüne bağlanıldı!");
+                    };
+
+                    ws.onmessage = (event) => {
+                        let data = new Uint8Array(event.data);
+                        for (let i = 0; i < data.length; i++) {
+                            buffer[writeIdx % buffer.length] = data[i];
+                            writeIdx++;
+                        }
+                        
+                        if (window.isFootLive) {
+                            if (writeIdx - lastDrawIdx >= FRAME_SIZE) {
+                                drawFrame();
+                                lastDrawIdx = writeIdx;
+                            }
+                        } else {
+                            lastDrawIdx = writeIdx; // Keep it caught up so it doesn't queue up old frames when unpaused
+                        }
+                    };
+
+                    ws.onclose = () => {
+                        setTimeout(connectWs, 2000);
+                    };
+                    ws.onerror = () => {
+                        try { ws.close(); } catch(e) {}
+                    };
+                } catch(e) {
+                    setTimeout(connectWs, 2000);
                 }
-                
-                if (window.isFootLive) {
-                    if (writeIdx - lastDrawIdx >= FRAME_SIZE) {
-                        drawFrame();
-                        lastDrawIdx = writeIdx;
-                    }
-                } else {
-                    lastDrawIdx = writeIdx; // Keep it caught up so it doesn't queue up old frames when unpaused
-                }
-            };
+            }
+            connectWs();
 
             function drawFrame() {
                 let tempFrame = new Uint8Array(FRAME_SIZE * 2);
