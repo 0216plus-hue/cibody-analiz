@@ -424,7 +424,8 @@ async function loadPatientData(id) {
                 currentPatientAnalyses.forEach((analysis, index) => {
                     const dateObj = new Date(analysis.created_at + 'Z');
                     const dateStr = dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    const label = index === 0 ? `En Güncel (${dateStr})` : `Geçmiş: ${dateStr}`;
+                    const _t = window.translateText || (s=>s);
+                    const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
                     selectEl.innerHTML += `<option value="${index}">${label}</option>`;
                 });
                 selectEl.value = "0"; // En günceli seç
@@ -492,18 +493,18 @@ document.getElementById('footReportContent').innerHTML = marked.parse(aiText);
                     foundFootRisks.forEach(f => {
                         const rData = FOOT_RISK_DATA[f];
                         if(rData) {
-                            let liHtml = rData.risks.map(r => `<li class="mb-2 text-slate-700">${r}</li>`).join('');
+                            let liHtml = rData.risks.map(r => `<li class="mb-2 text-slate-700">${(window.translateText||((s)=>s))(r)}</li>`).join('');
                             let cardHtml = `
                                 <div class="bg-white border border-slate-200 rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-sm items-stretch avoid-break">
                                     <div class="md:w-1/4 lg:w-1/5 bg-slate-50 border-r border-slate-100 flex flex-col items-center justify-center p-6">
                                         <img src="/${rData.img}" alt="${f}" class="w-full max-h-40 object-contain rounded-xl mix-blend-multiply opacity-80">
                                         <div class="w-full text-center text-[10px] font-bold mt-3 bg-white px-2 py-1.5 rounded-lg shadow-sm border border-slate-200">
-                                            <span class="text-slate-400">Şimdi</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">Sonra</span>
+                                            <span class="text-slate-400">${(window.translateText||((s)=>s))('Şimdi')}</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">${(window.translateText||((s)=>s))('Sonra')}</span>
                                         </div>
                                     </div>
                                     <div class="md:w-3/4 lg:w-4/5 p-5 md:p-6">
                                         <h4 class="text-lg font-bold text-slate-800 mb-1">${rData.title}</h4>
-                                        <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">Zamanla Oluşabilecek Olası Riskler</p>
+                                        <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">${(window.translateText||((s)=>s))('Zamanla Oluşabilecek Olası Riskler')}</p>
                                         <ul class="list-disc pl-5 text-sm">
                                             ${liHtml}
                                         </ul>
@@ -744,33 +745,33 @@ function refreshAllCanvases() {
     if(globalPostureState.front) { if(globalPostureState.front.error) { document.getElementById('table_front').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.front.error + '</div>'; } else {
         const res = drawCanvas('canvas_front', 'preview_front', globalPostureState.front, 'front');
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Omuz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '(Normal - '+res.shoulderSym.higher+' Yüksek)' : '('+res.shoulderSym.higher+' Yüksek)'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Kalça Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '(Normal - '+res.hipSym.higher+' Yüksek)' : '('+res.hipSym.higher+' Yüksek)'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Diz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '(Normal - '+res.kneeSym.higher+' Yüksek)' : '('+res.kneeSym.higher+' Yüksek)'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
         document.getElementById('table_front').innerHTML = html; resFront = res; } }
     
     if(globalPostureState.back) { if(globalPostureState.back.error) { document.getElementById('table_back').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.back.error + '</div>'; } else {
         const res = drawCanvas('canvas_back', 'preview_back', globalPostureState.back, 'back');
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Omuz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '(Normal - '+res.shoulderSym.higher+' Yüksek)' : '(Skolyoz Riski - '+res.shoulderSym.higher+' Yüksek)'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Kalça Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '(Normal - '+res.hipSym.higher+' Yüksek)' : '(Pelvik Asimetri - '+res.hipSym.higher+' Yüksek)'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Diz Simetrisi</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '(Normal - '+res.kneeSym.higher+' Yüksek)' : '('+res.kneeSym.higher+' Yüksek)'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+( (window.translateText||((s)=>s))('Skolyoz Riski'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+( (window.translateText||((s)=>s))('Pelvik Asimetri'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
         document.getElementById('table_back').innerHTML = html; resBack = res; } }
     
     if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
         const res = drawCanvas('canvas_left', 'preview_left', globalPostureState.left, 'left');
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Baş Öne Eğikliği</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Torakal Eğiklik</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Pelvik Eğim</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '(Nötr)' : '(Anterior/Posterior Tilt)'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+( (window.translateText||((s)=>s))('Nötr'))+')' : '(Anterior/Posterior Tilt)'}</span></div>`;
         document.getElementById('table_left').innerHTML = html; resLeft = res; } }
     
     if(globalPostureState.right) { if(globalPostureState.right.error) { document.getElementById('table_right').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.right.error + '</div>'; } else {
         const res = drawCanvas('canvas_right', 'preview_right', globalPostureState.right, 'right');
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Baş Öne Eğikliği</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Torakal Eğiklik</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">Pelvik Eğim</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '(Nötr)' : '(Anterior/Posterior Tilt)'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+( (window.translateText||((s)=>s))('Nötr'))+')' : '(Anterior/Posterior Tilt)'}</span></div>`;
         document.getElementById('table_right').innerHTML = html; resRight = res; } }
 
     // Skor ve Bulgu Hesaplamaları
@@ -931,18 +932,18 @@ function refreshAllCanvases() {
             findings.forEach((measureValue, f) => {
                 const data = RISK_DATA[f];
                 if (data) {
-                    let liHtml = data.risks.map(r => `<li class="mb-2 text-slate-700">${r}</li>`).join('');
+                    let liHtml = data.risks.map(r => `<li class="mb-2 text-slate-700">${(window.translateText||((s)=>s))(r)}</li>`).join('');
                     let cardHtml = `
                         <div class="bg-white border border-slate-200 rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-sm items-stretch">
                             <div class="md:w-1/4 lg:w-1/5 bg-slate-50 border-r border-slate-100 flex flex-col items-center justify-center p-6">
                                 <img src="/${data.img}" alt="${f}" class="w-full max-h-40 object-contain rounded-xl mix-blend-multiply">
                                 <div class="w-full text-center text-[10px] font-bold mt-2 bg-white px-2 py-1 rounded shadow-sm border border-slate-100">
-                                    <span class="text-slate-400">Şimdi</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">Sonra</span>
+                                    <span class="text-slate-400">${(window.translateText||((s)=>s))('Şimdi')}</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">${(window.translateText||((s)=>s))('Sonra')}</span>
                                 </div>
                             </div>
                             <div class="md:w-3/4 lg:w-4/5 p-5 md:p-6">
                                 <h4 class="text-lg font-bold text-slate-800 mb-1">${data.title}</h4>
-                                <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">Zamanla Oluşabilecek Olası Riskler</p>
+                                <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">${(window.translateText||((s)=>s))('Zamanla Oluşabilecek Olası Riskler')}</p>
                                 <ul class="list-disc pl-5 text-sm">
                                     ${liHtml}
                                 </ul>
@@ -970,47 +971,47 @@ function refreshAllCanvases() {
                     const riskColor = cData.risk === 'Yüksek' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-orange-100 text-orange-600 border-orange-200';
                     const riskDot = cData.risk === 'Yüksek' ? 'text-red-500' : 'text-orange-500';
                     
-                    let biyoHtml = cData.biyomekanik.map(r => `<li class="mb-1">${r}</li>`).join('');
-                    let onerilerHtml = cData.oneriler.map(r => `<li class="mb-1">${r}</li>`).join('');
+                    let biyoHtml = cData.biyomekanik.map(r => `<li class="mb-1">${(window.translateText||((s)=>s))(r)}</li>`).join('');
+                    let onerilerHtml = cData.oneriler.map(r => `<li class="mb-1">${(window.translateText||((s)=>s))(r)}</li>`).join('');
                     
                     let card = `
                         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8 avoid-break">
                             <!-- Header -->
                             <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-slate-800">${f} Sapması</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Postür analizinde <strong>${f.toLowerCase()}</strong> yönünde biyomekanik sapma gözlenmiştir. Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir. Bu bulgu bir hastalık tanısı değildir.</p>
+                                    <h3 class="text-xl font-bold text-slate-800">${f} ${(window.translateText||((s)=>s))('Sapması')}</h3>
+                                    <p class="text-sm text-slate-500 mt-1">${(window.translateText||((s)=>s))('Postür analizinde')} <strong>${f.toLowerCase()}</strong> ${(window.translateText||((s)=>s))('yönünde biyomekanik sapma gözlenmiştir.')} ${(window.translateText||((s)=>s))('Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir.')} ${(window.translateText||((s)=>s))('Bu bulgu bir hastalık tanısı değildir.')}</p>
                                 </div>
                                 <span class="${riskColor} border px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-circle text-[8px] ${riskDot}"></i> Risk: ${cData.risk}
+                                    <i class="fa-solid fa-circle text-[8px] ${riskDot}"></i> ${(window.translateText||((s)=>s))('Risk: ' + cData.risk)}
                                 </span>
                             </div>
                             
                             <!-- Measurement Box -->
                             <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-6 flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-500 tracking-wider">TESPİT EDİLEN ÖLÇÜM</span>
+                                <span class="text-xs font-bold text-slate-500 tracking-wider">${(window.translateText||((s)=>s))('TESPİT EDİLEN ÖLÇÜM')}</span>
                                 <span class="text-lg font-black text-indigo-900">${measureValue}</span>
                             </div>
 
                             <!-- 2 Column Details -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                                 <div>
-                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">KLİNİK ANLAMI</h4>
+                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('KLİNİK ANLAMI')}</h4>
                                     <p class="text-sm text-slate-700 mb-6">${cData.klinik_anlam}</p>
                                     
-                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">MUHTEMEL BİYOMEKANİK ETKİLER</h4>
+                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('MUHTEMEL BİYOMEKANİK ETKİLER')}</h4>
                                     <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
                                         ${biyoHtml}
                                     </ul>
                                 </div>
                                 <div>
-                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">MUHTEMEL KISA / ZAYIF KASLAR <span class="lowercase normal-case">(Janda yaklaşımı - kesin tanı değildir)</span></h4>
+                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('MUHTEMEL KISA / ZAYIF KASLAR')} <span class="lowercase normal-case">${(window.translateText||((s)=>s))('(Janda yaklaşımı - kesin tanı değildir)')}</span></h4>
                                     <div class="text-sm text-slate-700 mb-6 space-y-2">
-                                        <p><strong class="text-slate-800">Kısa/gergin olabilir:</strong> ${cData.kaslar.kisa}</p>
-                                        <p><strong class="text-slate-800">Zayıf/inhabe olabilir:</strong> ${cData.kaslar.zayif}</p>
+                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Kısa/gergin olabilir:')}</strong> ${cData.kaslar.kisa}</p>
+                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Zayıf/inhabe olabilir:')}</strong> ${cData.kaslar.zayif}</p>
                                     </div>
                                     
-                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">DÜZELTİCİ ÖNERİLER</h4>
+                                    <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('DÜZELTİCİ ÖNERİLER')}</h4>
                                     <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
                                         ${onerilerHtml}
                                     </ul>
@@ -1021,7 +1022,7 @@ function refreshAllCanvases() {
                             <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 flex items-start gap-4">
                                 <i class="fa-regular fa-comments text-emerald-600 text-2xl mt-1"></i>
                                 <div>
-                                    <h4 class="text-sm font-bold text-emerald-800 mb-1">Halk diliyle ne demek?</h4>
+                                    <h4 class="text-sm font-bold text-emerald-800 mb-1">${(window.translateText||((s)=>s))('Halk diliyle ne demek?')}</h4>
                                     <p class="text-sm text-emerald-700">${cData.halk_dili}</p>
                                 </div>
                             </div>
@@ -1655,8 +1656,8 @@ async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
             const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const isLatest = index === 0;
             const badge = isLatest 
-                ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700">En Güncel</span>' 
-                : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Geçmiş #${currentSpineHistory.length - index}</span>`;
+                ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700">${(window.translateText||((s)=>s))('En Güncel')}</span>` 
+                : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">${(window.translateText||((s)=>s))('Geçmiş')} #${currentSpineHistory.length - index}</span>`;
 
             const kifoz = item.sagittal && item.sagittal.kyphosis_angle_deg ? `${item.sagittal.kyphosis_angle_deg}°` : null;
             const lordoz = item.sagittal && item.sagittal.lordosis_angle_deg ? `${item.sagittal.lordosis_angle_deg}°` : null;
@@ -1759,7 +1760,7 @@ async function loadPrescribedExercises() {
 function renderPrescribedTable(data) {
     const tbody = document.getElementById('exerciseTableBody');
     if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Henüz egzersiz reçetesi oluşturulmadı.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">${(window.translateText||((s)=>s))('Henüz egzersiz reçetesi oluşturulmadı.')}</td></tr>`;
         return;
     }
     
@@ -1785,8 +1786,8 @@ function renderPrescribedTable(data) {
                     <div class="w-16 h-16 bg-white p-1 border border-slate-200 rounded-lg shrink-0">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.video_url)}" alt="QR" class="w-full h-full object-contain">
                     </div>
-                    <a href="${item.video_url}" target="_blank" class="text-[10px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap"><i class="fa-brands fa-youtube"></i> Video İzle</a>
-                </div>` : '<span class="text-xs text-slate-400">Video Yok</span>'}
+                    <a href="${item.video_url}" target="_blank" class="text-[10px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap"><i class="fa-brands fa-youtube"></i> ${(window.translateText||((s)=>s))('Video İzle')}</a>
+                </div>` : `<span class="text-xs text-slate-400">${(window.translateText||((s)=>s))('Video Yok')}</span>`}
             </td>
             <td class="p-3 text-center" data-html2canvas-ignore="true">
                 <button onclick="deletePrescribed(${item.id})" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
@@ -1810,7 +1811,7 @@ async function updatePrescribed(assignId, sets, reps) {
 }
 
 async function deletePrescribed(assignId) {
-    if(!confirm('Bu egzersizi silmek istediğinize emin misiniz?')) return;
+    if(!confirm((window.translateText||((s)=>s))('Bu egzersizi silmek istediğinize emin misiniz?'))) return;
     try {
         await authFetch(`/api/posture/${currentAnalysisId}/exercises/${assignId}`, {
             method: 'DELETE'
@@ -1827,7 +1828,7 @@ async function suggestExercises() {
         return;
     }
     const btn = document.getElementById('btnSuggest');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Öneriliyor...';
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${(window.translateText||((s)=>s))('Öneriliyor...')}`;
     btn.classList.add('opacity-50', 'pointer-events-none');
     
     try {
@@ -1840,7 +1841,7 @@ async function suggestExercises() {
     } catch(e) {
         console.error(e);
     } finally {
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Egzersiz Öner';
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${(window.translateText||((s)=>s))('AI ile Egzersiz Öner')}`;
         btn.classList.remove('opacity-50', 'pointer-events-none');
     }
 }
@@ -1903,14 +1904,14 @@ function renderExerciseList(list, showBack = false) {
         html += `
         <div class="col-span-full mb-2">
             <button onclick="renderCategories()" class="text-sm font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2 transition-colors px-2 py-1 bg-white border border-slate-200 rounded-lg inline-flex shadow-sm">
-                <i class="fa-solid fa-arrow-left"></i> Kategorilere Dön
+                <i class="fa-solid fa-arrow-left"></i> ${(window.translateText||((s)=>s))('Kategorilere Dön')}
             </button>
         </div>
         `;
     }
 
     if (list.length === 0) {
-        html += '<div class="col-span-full text-center text-slate-500 py-10">Sonuç bulunamadı.</div>';
+        html += `<div class="col-span-full text-center text-slate-500 py-10">${(window.translateText||((s)=>s))('Sonuç bulunamadı.')}</div>`;
     } else {
         html += list.map(item => `
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-indigo-300 transition-colors">
@@ -2187,14 +2188,14 @@ function downloadScoliometerPdf() {
         <!-- Özet Kartlar -->
         <div class="grid grid-cols-2 gap-4 mb-6 avoid-break">
             <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Son Torakal Açı (ATR)</span>
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${(window.translateText||((s)=>s))('Son Torakal Açı (ATR)')}</span>
                 <span class="text-3xl font-black text-indigo-900 block">${latestThoracic}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">Sırt (Göğüs) Omurgası Eğimi</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">${(window.translateText||((s)=>s))('Sırt (Göğüs) Omurgası Eğimi')}</span>
             </div>
             <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">Son Lumbar Açı (ATR)</span>
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${(window.translateText||((s)=>s))('Son Lumbar Açı (ATR)')}</span>
                 <span class="text-3xl font-black text-emerald-800 block">${latestLumbar}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">Bel Omurgası Eğimi</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">${(window.translateText||((s)=>s))('Bel Omurgası Eğimi')}</span>
             </div>
         </div>
 

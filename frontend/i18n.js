@@ -9549,6 +9549,396 @@ const I18N_PHRASES = {
     "es": "Perfil de Carga",
     "it": "Profilo di Carico",
     "pt": "Perfil de Carga"
+  },
+  "Sonra": {
+    "en": "Later",
+    "ru": "Потом",
+    "ar": "لاحقاً",
+    "de": "Später",
+    "fr": "Plus tard",
+    "es": "Después",
+    "it": "Dopo",
+    "pt": "Depois"
+  },
+  "Omuz Simetrisi": {
+    "en": "Shoulder Symmetry",
+    "ru": "Симметрия плеч",
+    "ar": "تماثل الكتفين",
+    "de": "Schultersymmetrie",
+    "fr": "Symétrie des épaules",
+    "es": "Simetría de Hombros",
+    "it": "Simmetria delle Spalle",
+    "pt": "Simetria dos Ombros"
+  },
+  "Diz Simetrisi": {
+    "en": "Knee Symmetry",
+    "ru": "Симметрия коленей",
+    "ar": "تماثل الركبتين",
+    "de": "Kniesymmetrie",
+    "fr": "Symétrie des genoux",
+    "es": "Simetría de Rodillas",
+    "it": "Simmetria delle Ginocchia",
+    "pt": "Simetria dos Joelhos"
+  },
+  "Halk diliyle ne demek?": {
+    "en": "What does it mean in plain language?",
+    "ru": "Что это значит простыми словами?",
+    "ar": "ماذا يعني بلغة بسيطة؟",
+    "de": "Was bedeutet das in einfacher Sprache?",
+    "fr": "Que cela signifie-t-il en langage courant?",
+    "es": "¿Qué significa en lenguaje sencillo?",
+    "it": "Cosa significa in linguaggio semplice?",
+    "pt": "O que significa em linguagem simples?"
+  },
+  "Sapması": {
+    "en": "Deviation",
+    "ru": "Отклонение",
+    "ar": "انحراف",
+    "de": "Abweichung",
+    "fr": "Déviation",
+    "es": "Desviación",
+    "it": "Deviazione",
+    "pt": "Desvio"
+  },
+  "Zamanla Oluşabilecek Olası Riskler": {
+    "en": "Possible Risks If No Action Is Taken Over Time",
+    "ru": "Возможные риски при отсутствии вмешательства",
+    "ar": "المخاطر المحتملة إذا لم يتم اتخاذ إجراء",
+    "de": "Mögliche Risiken ohne Maßnahmen über die Zeit",
+    "fr": "Risques possibles en l'absence d'intervention",
+    "es": "Posibles Riesgos si No se Toman Medidas",
+    "it": "Possibili Rischi in Assenza di Intervento",
+    "pt": "Possíveis Riscos sem Intervenção ao Longo do Tempo"
+  },
+  "TESPİT EDİLEN ÖLÇÜM": {
+    "en": "DETECTED MEASUREMENT",
+    "ru": "ОБНАРУЖЕННОЕ ИЗМЕРЕНИЕ",
+    "ar": "القياس المكتشف",
+    "de": "ERKANNTE MESSUNG",
+    "fr": "MESURE DÉTECTÉE",
+    "es": "MEDICIÓN DETECTADA",
+    "it": "MISURAZIONE RILEVATA",
+    "pt": "MEDIÇÃO DETECTADA"
+  },
+  "MUHTEMEL BİYOMEKANİK ETKİLER": {
+    "en": "POSSIBLE BIOMECHANICAL EFFECTS",
+    "ru": "ВОЗМОЖНЫЕ БИОМЕХАНИЧЕСКИЕ ЭФФЕКТЫ",
+    "ar": "التأثيرات الميكانيكية الحيوية المحتملة",
+    "de": "MÖGLICHE BIOMECHANISCHE AUSWIRKUNGEN",
+    "fr": "EFFETS BIOMÉCANIQUES POSSIBLES",
+    "es": "POSIBLES EFECTOS BIOMECÁNICOS",
+    "it": "POSSIBILI EFFETTI BIOMECCANICI",
+    "pt": "POSSÍVEIS EFEITOS BIOMECÂNICOS"
+  },
+  "MUHTEMEL KISA / ZAYIF KASLAR": {
+    "en": "POSSIBLE SHORT / WEAK MUSCLES",
+    "ru": "ВОЗМОЖНЫЕ КОРОТКИЕ / СЛАБЫЕ МЫШЦЫ",
+    "ar": "العضلات المحتملة القصيرة / الضعيفة",
+    "de": "MÖGLICHE KURZE / SCHWACHE MUSKELN",
+    "fr": "MUSCLES POSSIBLEMENT COURTS / FAIBLES",
+    "es": "POSIBLES MÚSCULOS CORTOS / DÉBILES",
+    "it": "POSSIBILI MUSCOLI CORTI / DEBOLI",
+    "pt": "POSSÍVEIS MÚSCULOS CURTOS / FRACOS"
+  },
+  "(Janda yaklaşımı - kesin tanı değildir)": {
+    "en": "(Janda approach — not a definitive diagnosis)",
+    "ru": "(Подход Янды — не окончательный диагноз)",
+    "ar": "(نهج Janda — ليس تشخيصاً نهائياً)",
+    "de": "(Janda-Ansatz – keine definitive Diagnose)",
+    "fr": "(Approche Janda — pas un diagnostic définitif)",
+    "es": "(Enfoque Janda — no es un diagnóstico definitivo)",
+    "it": "(Approccio Janda — non è una diagnosi definitiva)",
+    "pt": "(Abordagem Janda — não é um diagnóstico definitivo)"
+  },
+  "DÜZELTİCİ ÖNERİLER": {
+    "en": "CORRECTIVE RECOMMENDATIONS",
+    "ru": "КОРРЕКТИРУЮЩИЕ РЕКОМЕНДАЦИИ",
+    "ar": "التوصيات التصحيحية",
+    "de": "KORREKTURMASSNAHMEN",
+    "fr": "RECOMMANDATIONS CORRECTIVES",
+    "es": "RECOMENDACIONES CORRECTIVAS",
+    "it": "RACCOMANDAZIONI CORRETTIVE",
+    "pt": "RECOMENDAÇÕES CORRETIVAS"
+  },
+  "Kısa/gergin olabilir:": {
+    "en": "May be short/tight:",
+    "ru": "Может быть коротким/напряжённым:",
+    "ar": "قد يكون قصيراً/متوتراً:",
+    "de": "Kann kurz/verspannt sein:",
+    "fr": "Peut être court/tendu :",
+    "es": "Puede estar corto/tenso:",
+    "it": "Può essere corto/teso:",
+    "pt": "Pode estar curto/tenso:"
+  },
+  "Zayıf/inhabe olabilir:": {
+    "en": "May be weak/inhibited:",
+    "ru": "Может быть слабым/заторможенным:",
+    "ar": "قد يكون ضعيفاً/مثبطاً:",
+    "de": "Kann schwach/gehemmt sein:",
+    "fr": "Peut être faible/inhibé :",
+    "es": "Puede estar débil/inhibido:",
+    "it": "Può essere debole/inibito:",
+    "pt": "Pode estar fraco/inibido:"
+  },
+  "Postür analizinde": {
+    "en": "Posture analysis revealed",
+    "ru": "Анализ осанки выявил",
+    "ar": "كشف تحليل الوضعية عن",
+    "de": "Die Haltungsanalyse ergab",
+    "fr": "L'analyse posturale a révélé",
+    "es": "El análisis postural reveló",
+    "it": "L'analisi posturale ha rivelato",
+    "pt": "A análise postural revelou"
+  },
+  "yönünde biyomekanik sapma gözlenmiştir.": {
+    "en": "biomechanical deviation.",
+    "ru": "биомеханическое отклонение.",
+    "ar": "انحراف بيوميكانيكي.",
+    "de": "biomechanische Abweichung.",
+    "fr": "déviation biomécanique.",
+    "es": "desviación biomecánica.",
+    "it": "deviazione biomeccanica.",
+    "pt": "desvio biomecânico."
+  },
+  "Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir.": {
+    "en": "Findings may be consistent with muscle imbalance patterns.",
+    "ru": "Результаты могут соответствовать паттернам мышечного дисбаланса.",
+    "ar": "قد تكون النتائج متوافقة مع أنماط اختلال التوازن العضلي.",
+    "de": "Befunde können mit Muskelungleichgewichtsmustern übereinstimmen.",
+    "fr": "Les résultats peuvent être cohérents avec des schémas de déséquilibre musculaire.",
+    "es": "Los hallazgos pueden ser consistentes con patrones de desequilibrio muscular.",
+    "it": "I risultati possono essere coerenti con i modelli di squilibrio muscolare.",
+    "pt": "Os achados podem ser consistentes com padrões de desequilíbrio muscular."
+  },
+  "Bu bulgu bir hastalık tanısı değildir.": {
+    "en": "This finding is not a disease diagnosis.",
+    "ru": "Этот результат не является диагнозом заболевания.",
+    "ar": "هذه النتيجة ليست تشخيصاً للمرض.",
+    "de": "Dieser Befund ist keine Krankheitsdiagnose.",
+    "fr": "Ce résultat n'est pas un diagnostic de maladie.",
+    "es": "Este hallazgo no es un diagnóstico de enfermedad.",
+    "it": "Questo risultato non è una diagnosi di malattia.",
+    "pt": "Este achado não é um diagnóstico de doença."
+  },
+  "Pelvik Asimetri": {
+    "en": "Pelvic Asymmetry",
+    "ru": "Асимметрия таза",
+    "ar": "عدم تناسق الحوض",
+    "de": "Beckenasymmetrie",
+    "fr": "Asymétrie pelvienne",
+    "es": "Asimetría Pélvica",
+    "it": "Asimmetria Pelvica",
+    "pt": "Assimetria Pélvica"
+  },
+  "Tek tarafta omuz ve boyun ağrısı": {
+    "en": "One-sided shoulder and neck pain",
+    "ru": "Боль в плече и шее с одной стороны",
+    "ar": "ألم أحادي الجانب في الكتف والرقبة",
+    "de": "Einseitige Schulter- und Nackenschmerzen",
+    "fr": "Douleur unilatérale à l'épaule et au cou",
+    "es": "Dolor unilateral de hombro y cuello",
+    "it": "Dolore unilaterale a spalla e collo",
+    "pt": "Dor unilateral no ombro e no pescoço"
+  },
+  "Kürek kemiği çevresinde çabuk yorulma": {
+    "en": "Rapid fatigue around the shoulder blade",
+    "ru": "Быстрая усталость вокруг лопатки",
+    "ar": "تعب سريع حول لوح الكتف",
+    "de": "Schnelle Ermüdung rund um das Schulterblatt",
+    "fr": "Fatigue rapide autour de l'omoplate",
+    "es": "Fatiga rápida alrededor del omóplato",
+    "it": "Affaticamento rapido intorno alla scapola",
+    "pt": "Fadiga rápida ao redor da escápula"
+  },
+  "Zamanla omuz sıkışma sorunları": {
+    "en": "Progressive shoulder impingement issues over time",
+    "ru": "Нарастающие проблемы с плечом со временем",
+    "ar": "مشاكل الاصطدام في الكتف مع مرور الوقت",
+    "de": "Zunehmende Schulterimpingement-Probleme über die Zeit",
+    "fr": "Problèmes d'accrochage de l'épaule progressifs",
+    "es": "Problemas progresivos de pinzamiento de hombro",
+    "it": "Problemi progressivi di impingement della spalla",
+    "pt": "Problemas progressivos de impingement no ombro"
+  },
+  "Bel ağrısı ve tek tarafın sürekli zorlanması": {
+    "en": "Lower back pain and constant strain on one side",
+    "ru": "Боль в пояснице и постоянная нагрузка на одну сторону",
+    "ar": "ألم أسفل الظهر والإجهاد المستمر على جانب واحد",
+    "de": "Rückenschmerzen und ständige Belastung auf einer Seite",
+    "fr": "Douleur lombaire et tension constante d'un côté",
+    "es": "Dolor lumbar y tensión constante en un lado",
+    "it": "Dolore lombare e tensione costante su un lato",
+    "pt": "Dor lombar e tensão constante em um lado"
+  },
+  "Kalça ve dize dengesiz yük binmesi": {
+    "en": "Uneven load on the hip and knee",
+    "ru": "Неравномерная нагрузка на бедро и колено",
+    "ar": "حمل غير متكافئ على الورك والركبة",
+    "de": "Ungleichmäßige Belastung von Hüfte und Knie",
+    "fr": "Charge inégale sur la hanche et le genou",
+    "es": "Carga desigual sobre la cadera y la rodilla",
+    "it": "Carico non uniforme su anca e ginocchio",
+    "pt": "Carga desigual sobre o quadril e o joelho"
+  },
+  "Zamanla bir bacağı kısa hissetme / hafif topallama eğilimi": {
+    "en": "Progressive feeling of one leg being shorter / slight limping tendency",
+    "ru": "Нарастающее ощущение укорочения ноги / лёгкая хромота",
+    "ar": "شعور تدريجي بقصر أحد الساقين / ميل خفيف للعرج",
+    "de": "Zunehmendes Gefühl eines kürzeren Beins / leichte Hinktendenz",
+    "fr": "Sensation progressive d'un membre plus court / légère boiterie",
+    "es": "Sensación progresiva de una pierna más corta / tendencia a cojear",
+    "it": "Sensazione progressiva di una gamba più corta / lieve tendenza a zoppicare",
+    "pt": "Sensação progressiva de uma perna mais curta / tendência leve a mancar"
+  },
+  "Kronik boyun ve üst sırt ağrısı": {
+    "en": "Chronic neck and upper back pain",
+    "ru": "Хроническая боль в шее и верхней части спины",
+    "ar": "ألم مزمن في الرقبة وأعلى الظهر",
+    "de": "Chronische Nacken- und obere Rückenschmerzen",
+    "fr": "Douleurs cervicales et dorsales supérieures chroniques",
+    "es": "Dolor crónico de cuello y parte superior de la espalda",
+    "it": "Dolore cronico al collo e alla parte superiore della schiena",
+    "pt": "Dor crónica no pescoço e na parte superior das costas"
+  },
+  "Gerilim tipi baş ağrıları": {
+    "en": "Tension-type headaches",
+    "ru": "Головные боли напряжения",
+    "ar": "الصداع النفسي",
+    "de": "Spannungskopfschmerzen",
+    "fr": "Céphalées de tension",
+    "es": "Cefaleas tensionales",
+    "it": "Cefalee da tensione",
+    "pt": "Cefaleias de tensão"
+  },
+  "Zamanla üst sırtta kamburlaşma (dowager hump)": {
+    "en": "Progressive upper back rounding over time (dowager's hump)",
+    "ru": "Прогрессирующее округление верхней части спины (вдовий горб)",
+    "ar": "استدارة تدريجية في الظهر العلوي (حدبة الأرملة)",
+    "de": "Zunehmende Rundung des oberen Rückens (Witwenbuckel)",
+    "fr": "Arrondissement progressif du haut du dos (bosse de bison)",
+    "es": "Redondeo progresivo de la parte superior de la espalda (joroba de viuda)",
+    "it": "Arrotondamento progressivo della parte superiore della schiena (gobba della vedova)",
+    "pt": "Arredondamento progressivo da parte superior das costas (corcunda da viúva)"
+  },
+  "Omuz sıkışması ve kolu yukarı kaldırmada zorlanma": {
+    "en": "Shoulder impingement and difficulty raising the arm",
+    "ru": "Импингемент плеча и затруднение поднятия руки",
+    "ar": "اصطدام الكتف وصعوبة رفع الذراع",
+    "de": "Schulterimpingement und Schwierigkeiten beim Armheben",
+    "fr": "Accrochage de l'épaule et difficulté à lever le bras",
+    "es": "Pinzamiento de hombro y dificultad para levantar el brazo",
+    "it": "Impingement della spalla e difficoltà nel sollevare il braccio",
+    "pt": "Impingement do ombro e dificuldade em levantar o braço"
+  },
+  "Sırt ağrısı ve kas gerginliği": {
+    "en": "Back pain and muscle tension",
+    "ru": "Боль в спине и мышечное напряжение",
+    "ar": "ألم الظهر وتوتر العضلات",
+    "de": "Rückenschmerzen und Muskelverspannungen",
+    "fr": "Douleurs dorsales et tension musculaire",
+    "es": "Dolor de espalda y tensión muscular",
+    "it": "Dolore alla schiena e tensione muscolare",
+    "pt": "Dor nas costas e tensão muscular"
+  },
+  "Nefes kapasitesinde azalma": {
+    "en": "Reduced breathing capacity",
+    "ru": "Снижение дыхательной ёмкости",
+    "ar": "انخفاض القدرة التنفسية",
+    "de": "Verminderte Atemkapazität",
+    "fr": "Capacité respiratoire réduite",
+    "es": "Reducción de la capacidad respiratoria",
+    "it": "Ridotta capacità respiratoria",
+    "pt": "Redução da capacidade respiratória"
+  },
+  "Omuz hareketlerinde kısıtlılık": {
+    "en": "Restricted shoulder mobility",
+    "ru": "Ограниченная подвижность плеча",
+    "ar": "تقييد حركة الكتف",
+    "de": "Eingeschränkte Schulterbeweglichkeit",
+    "fr": "Mobilité de l'épaule restreinte",
+    "es": "Movilidad restringida del hombro",
+    "it": "Mobilità della spalla ridotta",
+    "pt": "Mobilidade restrita do ombro"
+  },
+  "Menisküs ve bağlarda asimetrik yıpranma": {
+    "en": "Asymmetric wear on the menisci and ligaments",
+    "ru": "Асимметричный износ менисков и связок",
+    "ar": "تآكل غير متماثل في الغضاريف الهلالية والأربطة",
+    "de": "Asymmetrischer Verschleiß von Menisken und Bändern",
+    "fr": "Usure asymétrique des ménisques et des ligaments",
+    "es": "Desgaste asimétrico de meniscos y ligamentos",
+    "it": "Usura asimmetrica di menischi e legamenti",
+    "pt": "Desgaste assimétrico dos meniscos e ligamentos"
+  },
+  "Erken diz kireçlenmesi (gonartroz)": {
+    "en": "Early knee osteoarthritis (gonarthrosis)",
+    "ru": "Ранний остеоартрит коленного сустава (гонартроз)",
+    "ar": "التهاب مفصل الركبة المبكر (الفصال العظمي)",
+    "de": "Frühzeitige Kniegelenksarthrose (Gonarthrose)",
+    "fr": "Arthrose précoce du genou (gonarthrose)",
+    "es": "Artrosis prematura de rodilla (gonartrosis)",
+    "it": "Artrosi precoce del ginocchio (gonartrosi)",
+    "pt": "Artrose precoce do joelho (gonartrose)"
+  },
+  "Ayak bileği ve kalçaya yansıyan ağrılar": {
+    "en": "Pain radiating to the ankle and hip",
+    "ru": "Боль, иррадиирующая в голеностоп и бедро",
+    "ar": "ألم ينتشر إلى الكاحل والورك",
+    "de": "Schmerzen, die in Knöchel und Hüfte ausstrahlen",
+    "fr": "Douleurs irradiant vers la cheville et la hanche",
+    "es": "Dolor que irradia al tobillo y la cadera",
+    "it": "Dolore irradiato alla caviglia e all'anca",
+    "pt": "Dor irradiada para o tornozelo e o quadril"
+  },
+  "Kronik bel ağrısı": {
+    "en": "Chronic lower back pain",
+    "ru": "Хроническая боль в пояснице",
+    "ar": "ألم مزمن في أسفل الظهر",
+    "de": "Chronische Lendenwirbelsäulenschmerzen",
+    "fr": "Douleurs lombaires chroniques",
+    "es": "Dolor lumbar crónico",
+    "it": "Dolore lombare cronico",
+    "pt": "Dor lombar crónica"
+  },
+  "Bel fıtığı riski artışı": {
+    "en": "Increased risk of lumbar disc herniation",
+    "ru": "Повышенный риск грыжи поясничного диска",
+    "ar": "زيادة خطر انزلاق الغضروف القطني",
+    "de": "Erhöhtes Risiko eines Lendenwirbel-Bandscheibenvorfalls",
+    "fr": "Risque accru de hernie discale lombaire",
+    "es": "Mayor riesgo de hernia discal lumbar",
+    "it": "Aumento del rischio di ernia del disco lombare",
+    "pt": "Maior risco de hérnia de disco lombar"
+  },
+  "Yürüyüş biyomekaniğinin bozulması": {
+    "en": "Disrupted gait biomechanics",
+    "ru": "Нарушение биомеханики ходьбы",
+    "ar": "اضطراب في ميكانيكيات المشي",
+    "de": "Gestörte Gangbiomechanik",
+    "fr": "Perturbation de la biomécanique de la marche",
+    "es": "Alteración de la biomecánica de la marcha",
+    "it": "Biomeccanica del cammino alterata",
+    "pt": "Biomecânica da marcha perturbada"
+  },
+  "Risk: Yüksek": {
+    "en": "Risk: High",
+    "ru": "Риск: Высокий",
+    "ar": "الخطر: مرتفع",
+    "de": "Risiko: Hoch",
+    "fr": "Risque : Élevé",
+    "es": "Riesgo: Alto",
+    "it": "Rischio: Alto",
+    "pt": "Risco: Alto"
+  },
+  "Risk: Orta": {
+    "en": "Risk: Moderate",
+    "ru": "Риск: Средний",
+    "ar": "الخطر: متوسط",
+    "de": "Risiko: Mittel",
+    "fr": "Risque : Modéré",
+    "es": "Riesgo: Moderado",
+    "it": "Rischio: Moderato",
+    "pt": "Risco: Moderado"
   }
 };
 
