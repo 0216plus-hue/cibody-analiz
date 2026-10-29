@@ -73,13 +73,14 @@ async function login(e) {
     errEl.classList.add('hidden');
 
     if (!email || !password) {
-        errEl.textContent = 'E-posta ve şifre zorunludur.';
+        errEl.textContent = (typeof t === 'function') ? t('login.error_required') : 'E-posta ve şifre zorunludur.';
         errEl.classList.remove('hidden');
         return;
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Giriş yapılıyor...';
+    const loggingInText = (typeof t === 'function') ? t('login.logging_in') : 'Giriş yapılıyor...';
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i>${loggingInText}`;
 
     try {
         const res = await fetch('/api/auth/login', {
@@ -89,18 +90,19 @@ async function login(e) {
         });
         const data = await res.json();
         if (!res.ok) {
-            errEl.textContent = data.detail || 'Giriş başarısız.';
+            errEl.textContent = data.detail || ((typeof t === 'function') ? t('login.error_default') : 'Giriş başarısız.');
             errEl.classList.remove('hidden');
             return;
         }
         saveAuth(data.access_token, { id: data.user_id, name: data.name, role: data.role, email: email, phone: data.phone || '', address: data.address || '' });
         afterLogin(data.role, data.name);
     } catch (err) {
-        errEl.textContent = 'Sunucuya bağlanılamadı.';
+        errEl.textContent = (typeof t === 'function') ? t('common.error') : 'Sunucuya bağlanılamadı.';
         errEl.classList.remove('hidden');
     } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i>Giriş Yap';
+        const btnText = (typeof t === 'function') ? t('login.btn_submit') : 'Giriş Yap';
+        btn.innerHTML = `<i class="fa-solid fa-right-to-bracket mr-2"></i>${btnText}`;
     }
 }
 
@@ -110,6 +112,9 @@ function logout() {
 }
 
 function afterLogin(role, name) {
+    if (typeof applyTranslations === 'function') {
+        applyTranslations();
+    }
     if (role === 'superadmin') {
         showAdminView(name);
     } else {

@@ -24,6 +24,7 @@
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="i18n.js?v=2.1"></script>
 
 
     <style id="pdf-export-css">
@@ -54,45 +55,50 @@
             <!-- Logo -->
             <div class="text-center mb-10">
                 <img src="/assets/logo.png" class="h-16 w-auto object-contain mx-auto mb-4" alt="CIBODY Logo">
-                <h1 class="text-3xl font-black text-white">CIBODY AI</h1>
-                <p class="text-indigo-300 text-sm mt-1">v2.1 — Klinik Biyomekanik Analiz Sistemi</p>
+                <h1 class="text-3xl font-black text-white" data-i18n="login.title">CIBODY AI</h1>
+                <p class="text-indigo-300 text-sm mt-1" data-i18n="login.subtitle">v2.1 — Klinik Biyomekanik Analiz Sistemi</p>
             </div>
 
             <!-- Login Card -->
             <div class="bg-white rounded-2xl shadow-2xl p-8">
-                <h2 class="text-xl font-bold text-slate-800 mb-6">Sisteme Giriş</h2>
+                <h2 class="text-xl font-bold text-slate-800 mb-6" data-i18n="login.card_title">Sisteme Giriş</h2>
 
-                <!-- Dil Seçimi (UI Placeholder) -->
+                <!-- Dil Seçimi (9 Dil Destekli) -->
                 <div class="mb-5">
-                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Dil / Language</label>
-                    <select id="langSelect" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900">
-                        <option value="tr">🇹🇷 Türkçe</option>
-                        <option value="en">🇬🇧 English</option>
-                        <option value="de">🇩🇪 Deutsch</option>
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="ar">🇸🇦 العربية</option>
-                        <option value="ru">🇷🇺 Русский</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider" data-i18n="login.lang_label">Dil / Language</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-globe absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
+                        <select id="langSelect" onchange="setLanguage(this.value)" class="cibody-lang-select w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 cursor-pointer">
+                            <option value="tr">🇹🇷 Türkçe</option>
+                            <option value="en">🇬🇧 English</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                            <option value="ar">🇸🇦 العربية</option>
+                            <option value="de">🇩🇪 Deutsch</option>
+                            <option value="fr">🇫🇷 Français</option>
+                            <option value="es">🇪🇸 Español</option>
+                            <option value="it">🇮🇹 Italiano</option>
+                            <option value="pt">🇵🇹 Português</option>
+                        </select>
+                    </div>
                 </div>
 
                 <form onsubmit="login(event)">
                     <div class="mb-4">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">E-posta</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider" data-i18n="login.email">E-posta</label>
                         <div class="relative">
                             <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                             <input type="email" id="loginEmail" autocomplete="email"
                                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 transition-all text-sm"
-                                placeholder="ornek@cibody.tr">
+                                data-i18n-placeholder="login.email_placeholder" placeholder="ornek@cibody.tr">
                         </div>
                     </div>
                     <div class="mb-5">
-                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Şifre</label>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider" data-i18n="login.password">Şifre</label>
                         <div class="relative">
                             <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
                             <input type="password" id="loginPassword" autocomplete="current-password"
                                 class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-900 focus:border-indigo-900 transition-all text-sm"
-                                placeholder="••••••••">
+                                data-i18n-placeholder="login.password_placeholder" placeholder="••••••••">
                         </div>
                     </div>
 
@@ -101,12 +107,13 @@
                     </div>
 
                     <button type="submit" id="loginBtn"
-                        class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap
+                        class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                        data-i18n="login.btn_submit">
+                        <i class="fa-solid fa-right-to-bracket"></i> <span>Giriş Yap</span>
                     </button>
                 </form>
             </div>
-            <p class="text-center text-indigo-400 text-xs mt-6">© 2024 CIBODY — Tüm hakları saklıdır.</p>
+            <p class="text-center text-indigo-400 text-xs mt-6" data-i18n="login.footer">© 2024 CIBODY — Tüm hakları saklıdır.</p>
         </div>
     </div>
 
@@ -290,32 +297,48 @@
                 </h1>
             </div>
             <div class="flex items-center gap-2 md:gap-3">
-                <button id="navBackBtn" onclick="showDashboard(true)" class="hidden text-slate-500 hover:text-indigo-900 font-bold transition text-sm mr-2"><i class="fa-solid fa-arrow-left mr-1"></i> <span class="hidden md:inline">Tüm Kayıtlı Kişiler'e Dön</span></button><div id="navPatientName" class="hidden font-semibold text-indigo-800 bg-indigo-100 px-4 py-1 rounded-full text-sm"></div>
-                <button id="navNewPatientBtn" onclick="document.getElementById('newPatientModal').classList.remove('hidden')" class="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 text-sm">
+                <button id="navBackBtn" onclick="showDashboard(true)" class="hidden text-slate-500 hover:text-indigo-900 font-bold transition text-sm mr-2" data-i18n="nav.back_to_patients"><i class="fa-solid fa-arrow-left mr-1"></i> <span class="hidden md:inline">Tüm Kayıtlı Kişiler'e Dön</span></button><div id="navPatientName" class="hidden font-semibold text-indigo-800 bg-indigo-100 px-4 py-1 rounded-full text-sm"></div>
+                <button id="navNewPatientBtn" onclick="document.getElementById('newPatientModal').classList.remove('hidden')" class="bg-indigo-900 hover:bg-indigo-800 text-white px-4 py-2 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2 text-sm" data-i18n="nav.new_patient">
                     <i class="fa-solid fa-user-plus"></i> <span class="hidden md:inline">Yeni Kayıt (Analizi Başlat)</span>
                 </button>
+
+                <!-- Dil Seçici (Header) -->
+                <div class="relative">
+                    <select id="headerLangSelect" onchange="setLanguage(this.value)" class="cibody-lang-select px-3 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-900 cursor-pointer transition shadow-sm">
+                        <option value="tr">🇹🇷 TR</option>
+                        <option value="en">🇬🇧 EN</option>
+                        <option value="ru">🇷🇺 RU</option>
+                        <option value="ar">🇸🇦 AR</option>
+                        <option value="de">🇩🇪 DE</option>
+                        <option value="fr">🇫🇷 FR</option>
+                        <option value="es">🇪🇸 ES</option>
+                        <option value="it">🇮🇹 IT</option>
+                        <option value="pt">🇵🇹 PT</option>
+                    </select>
+                </div>
+
                 <!-- Profil Dropdown -->
                 <div class="relative">
-                    <button onclick="document.getElementById('profileDropdown').classList.toggle('hidden')" class="w-9 h-9 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-900 flex items-center justify-center font-bold transition" title="Hesabım">
+                    <button onclick="document.getElementById('profileDropdown').classList.toggle('hidden')" class="w-9 h-9 rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-900 flex items-center justify-center font-bold transition" data-i18n-title="nav.account_title" title="Hesabım">
                         <i class="fa-solid fa-user text-sm"></i>
                     </button>
                     <div id="profileDropdown" class="hidden absolute right-0 top-full mt-2 w-52 bg-white border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                         <div class="px-4 py-3 bg-indigo-50 border-b border-slate-100">
-                            <p class="text-xs text-slate-500 font-medium">Giriş yapan hesap</p>
+                            <p class="text-xs text-slate-500 font-medium" data-i18n="nav.logged_in_as">Giriş yapan hesap</p>
                             <p id="navUserName" class="text-sm font-bold text-indigo-900 truncate">—</p>
                         </div>
-                        <button onclick="openProfileModal(); document.getElementById('profileDropdown').classList.add('hidden');" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition">
-                            <i class="fa-solid fa-pen-to-square text-indigo-500 w-4"></i> Bilgilerimi Düzenle
+                        <button onclick="openProfileModal(); document.getElementById('profileDropdown').classList.add('hidden');" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition" data-i18n="nav.edit_profile">
+                            <i class="fa-solid fa-pen-to-square text-indigo-500 w-4"></i> <span>Bilgilerimi Düzenle</span>
                         </button>
                         
                         <hr class="border-slate-100">
-                        <button onclick="showTherapistOrders()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition">
-                            <i class="fa-solid fa-box-open text-indigo-500 w-4"></i> Tabanlık Siparişleri
+                        <button onclick="showTherapistOrders()" class="w-full text-left px-4 py-3 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-3 transition" data-i18n="nav.insole_orders">
+                            <i class="fa-solid fa-box-open text-indigo-500 w-4"></i> <span>Tabanlık Siparişleri</span>
                         </button>
 
                         <hr class="border-slate-100">
-                        <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition">
-                            <i class="fa-solid fa-right-from-bracket w-4"></i> Çıkış Yap
+                        <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 flex items-center gap-3 transition" data-i18n="nav.logout">
+                            <i class="fa-solid fa-right-from-bracket w-4"></i> <span>Çıkış Yap</span>
                         </button>
                     </div>
                 </div>
@@ -331,13 +354,13 @@
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div class="flex items-center gap-3">
                         <i class="fa-solid fa-users text-indigo-900 text-xl"></i>
-                        <h2 class="text-2xl font-bold text-slate-800">Kayıtlı Hastalar</h2>
+                        <h2 class="text-2xl font-bold text-slate-800" data-i18n="dashboard.patients_title">Kayıtlı Hastalar</h2>
                     </div>
                     
                     <div class="flex w-full md:w-auto items-center gap-3">
                         <div class="relative w-full md:w-96">
                             <i class="fa-solid fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="patientSearch" oninput="renderPatients()" placeholder="Hasta Ara (İsim veya Tel)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
+                            <input type="text" id="patientSearch" oninput="renderPatients()" data-i18n-placeholder="dashboard.search_placeholder" placeholder="Hasta Ara (İsim veya Tel)..." class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
                         </div>
                     </div>
                 </div>
@@ -346,12 +369,12 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                                <th class="pb-4 font-semibold px-2 w-10 text-center">Sil</th>
+                                <th class="pb-4 font-semibold px-2 w-10 text-center" data-i18n="dashboard.btn_delete">Sil</th>
                                 <th class="pb-4 font-semibold px-2">ID</th>
-                                <th class="pb-4 font-semibold px-2">Hasta Adı</th>
-                                <th class="pb-4 font-semibold px-2">Profil</th>
-                                <th class="pb-4 font-semibold px-2">İletişim</th>
-                                <th class="pb-4 font-semibold px-2 text-right">İşlem</th>
+                                <th class="pb-4 font-semibold px-2" data-i18n="dashboard.col_name">Hasta Adı</th>
+                                <th class="pb-4 font-semibold px-2" data-i18n="dashboard.col_created">Profil</th>
+                                <th class="pb-4 font-semibold px-2" data-i18n="dashboard.col_phone">İletişim</th>
+                                <th class="pb-4 font-semibold px-2 text-right" data-i18n="dashboard.col_actions">İşlem</th>
                             </tr>
                         </thead>
                         <tbody id="patientTableBody" class="divide-y divide-slate-100 text-sm">
@@ -377,44 +400,44 @@
                     </button>
                     
                     <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus text-indigo-900"></i> Yeni Hasta Kaydı
+                        <i class="fa-solid fa-user-plus text-indigo-900"></i> <span data-i18n="nav.new_patient">Yeni Hasta Kaydı</span>
                     </h3>
                     
                     <form id="newPatientForm" onsubmit="createPatient(event)" class="flex flex-col gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Ad Soyad</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_name">Ad Soyad</label>
                             <input type="text" id="p_name" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: Ahmet Yılmaz">
                         </div>
                         <div class="flex gap-4">
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Yaş</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_age">Yaş</label>
                                 <input type="number" id="p_age" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
                             </div>
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Kilo (kg)</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_weight">Kilo (kg)</label>
                                 <input type="number" id="p_weight" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm">
                             </div>
                         </div>
                         <div class="flex gap-4">
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Boy (cm)</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_height">Boy (cm)</label>
                                 <input type="number" id="p_height" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 175">
                             </div>
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Ayakkabı No</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_shoe">Ayakkabı No</label>
                                 <input type="number" id="p_shoe_size" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="Örn: 42">
                             </div>
                         </div>
                         <div class="flex gap-4">
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">Cinsiyet</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_gender">Cinsiyet</label>
                                 <select id="p_gender" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm appearance-none">
                                     <option value="Erkek">Erkek</option>
                                     <option value="Kadın">Kadın</option>
                                 </select>
                             </div>
                             <div class="w-1/2">
-                                <label class="block text-xs font-bold text-slate-500 mb-1">İletişim (Telefon)</label>
+                                <label class="block text-xs font-bold text-slate-500 mb-1" data-i18n="dashboard.col_phone">İletişim (Telefon)</label>
                                 <input type="text" id="p_phone" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-900 focus:ring-1 focus:ring-indigo-900 transition-all text-sm" placeholder="05XX XXX XX XX">
                             </div>
                         </div>
@@ -427,7 +450,7 @@
                         </div>
 
                         <button type="submit" class="mt-2 w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-                            Kaydet ve Hasta Kartını Aç <i class="fa-solid fa-arrow-right"></i>
+                            <span data-i18n="common.save">Kaydet</span> &amp; <span data-i18n="dashboard.btn_analyze">Hasta Kartını Aç</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
                 </div>
@@ -532,39 +555,39 @@
             
             <!-- Üst Sekmeler (Postür ve Omurga) -->
             <div class="flex justify-between w-full border-b border-slate-100 mb-2 overflow-x-auto gap-4" style="scrollbar-width: none;">
-                <button onclick="switchTab('postureTab')" id="btn_postureTab" class="tab-btn active pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-indigo-600 text-indigo-600 focus:outline-none">
-                    <i class="fa-solid fa-person-walking mr-2 text-indigo-500"></i> Postür Analizi (AI)
+                <button onclick="switchTab('postureTab')" id="btn_postureTab" class="tab-btn active pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-indigo-600 text-indigo-600 focus:outline-none" data-i18n="tabs.posture">
+                    <i class="fa-solid fa-person-walking mr-2 text-indigo-500"></i> <span>Postür Analizi (AI)</span>
                 </button>
-                <button onclick="switchTab('spineTab')" id="btn_spineTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-ruler-combined mr-2 text-orange-500"></i> Klinik Omurga & Skolyoz (AI)
+                <button onclick="switchTab('spineTab')" id="btn_spineTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.spine">
+                    <i class="fa-solid fa-ruler-combined mr-2 text-orange-500"></i> <span>Klinik Omurga & Skolyoz (AI)</span>
                 </button>
-                <button onclick="switchTab('scoliosisTab')" id="btn_scoliosisTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-bone mr-2 text-blue-500"></i> Cobb Analizi (AI)
+                <button onclick="switchTab('scoliosisTab')" id="btn_scoliosisTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.scoliosis">
+                    <i class="fa-solid fa-bone mr-2 text-blue-500"></i> <span>Cobb Analizi (AI)</span>
                 </button>
-                <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-mobile-screen mr-2 text-indigo-500"></i> Skolyometre
+                <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.scoliometer">
+                    <i class="fa-solid fa-mobile-screen mr-2 text-indigo-500"></i> <span>Skolyometre</span>
                 </button>
-                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> 3D Simülasyon
+                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.simulation">
+                    <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> <span>3D Simülasyon</span>
                 </button>
             </div>
             
             <!-- Alt Sekmeler (Ayak Analizi) -->
             <div class="flex justify-between w-full border-b border-slate-200 mb-8 overflow-x-auto gap-4" style="scrollbar-width: none;">
-                <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> Statik Ayak Analiz
+                <button onclick="switchTab('footTab')" id="btn_footTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.static_foot">
+                    <i class="fa-solid fa-shoe-prints mr-2 text-red-500"></i> <span>Statik Ayak Analiz</span>
                 </button>
-                <button onclick="switchTab('gaitTab')" id="btn_gaitTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-person-running mr-2 text-emerald-500"></i> Dinamik Yürüme Analizi
+                <button onclick="switchTab('gaitTab')" id="btn_gaitTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.dynamic_gait">
+                    <i class="fa-solid fa-person-running mr-2 text-emerald-500"></i> <span>Dinamik Yürüme Analizi</span>
                 </button>
-                <button onclick="switchTab('balanceTab')" id="btn_balanceTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-scale-unbalanced mr-2 text-indigo-500"></i> Denge Testi
+                <button onclick="switchTab('balanceTab')" id="btn_balanceTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.balance">
+                    <i class="fa-solid fa-scale-unbalanced mr-2 text-indigo-500"></i> <span>Denge Testi</span>
                 </button>
-                <button onclick="switchTab('aiReportTab')" id="btn_aiReportTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-robot mr-2 text-purple-500"></i> Yapay Zeka Rapor (AI)
+                <button onclick="switchTab('aiReportTab')" id="btn_aiReportTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.ai_report">
+                    <i class="fa-solid fa-robot mr-2 text-purple-500"></i> <span>Yapay Zeka Rapor (AI)</span>
                 </button>
-                <button onclick="switchTab('insoleTab')" id="btn_insoleTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i> Kişiye Özel Tabanlık
+                <button onclick="switchTab('insoleTab')" id="btn_insoleTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.insole_order">
+                    <i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i> <span>Kişiye Özel Tabanlık</span>
                 </button>
 
             </div>
@@ -2206,8 +2229,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=18.9"></script>
-    <script src="app.js?v=18.9"></script>
+    <script src="auth.js?v=19.0"></script>
+    <script src="app.js?v=19.0"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2603,16 +2626,16 @@
     </div>
 </div>
     
-<script src="scoliosis.js?v=18.9"></script>
+<script src="scoliosis.js?v=19.0"></script>
 
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=18.9"></script>
+    <script src="simulation.js?v=19.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=18.9"></script>
-<script src="gait_analysis.js?v=18.9"></script>
+<script src="gait.js?v=19.0"></script>
+<script src="gait_analysis.js?v=19.0"></script>
     <script src="balance.js"></script>
 </body>
 </html>

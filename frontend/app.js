@@ -105,6 +105,9 @@ function showDashboard(clearActive = false) {
         if (nBack) nBack.classList.add('hidden');
 
         fetchPatients();
+        if (typeof applyTranslations === 'function') {
+            applyTranslations();
+        }
     } catch(err) {
         console.error("showDashboard error:", err);
         showAppView();
@@ -159,6 +162,10 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
         if (typeof refreshGaitHistoryDropdown === 'function') refreshGaitHistoryDropdown();
         if (typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
+
+        if (typeof applyTranslations === 'function') {
+            applyTranslations();
+        }
     } catch(err) {
         console.error("showPatient error:", err);
     }
@@ -291,24 +298,29 @@ function renderPatients() {
     }
 
     if(toShow.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">Kayıtlı hasta bulunamadı.</td></tr>';
+        const emptyMsg = (typeof t === 'function') ? t('dashboard.empty_search') : 'Kayıtlı hasta bulunamadı.';
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-500">${emptyMsg}</td></tr>`;
         return;
     }
+
+    const openCardText = (typeof t === 'function') ? t('dashboard.btn_analyze') : 'Hasta Kartını Aç';
+    const deleteText = (typeof t === 'function') ? t('dashboard.btn_delete') : 'Hastayı Sil';
+    const ageUnit = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 'yo' : 'Yaş';
 
     tbody.innerHTML = toShow.map(p => `
         <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50">
             <td class="py-4 px-2 align-middle text-center">
-                <button onclick="deletePatient(${p.id})" class="text-slate-300 hover:text-red-600 hover:bg-red-50 w-8 h-8 rounded-lg transition-colors flex items-center justify-center mx-auto" title="Hastayı Sil">
+                <button onclick="deletePatient(${p.id})" class="text-slate-300 hover:text-red-600 hover:bg-red-50 w-8 h-8 rounded-lg transition-colors flex items-center justify-center mx-auto" title="${deleteText}">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
             <td class="py-4 text-slate-500 px-2 align-middle font-medium">#${p.id}</td>
             <td class="py-4 font-bold text-slate-800 px-2 align-middle">${p.name}</td>
-            <td class="py-4 text-slate-600 px-2 align-middle">${p.age} Yaş, ${p.height || 0}cm, ${p.weight}kg</td>
+            <td class="py-4 text-slate-600 px-2 align-middle">${p.age} ${ageUnit}, ${p.height || 0}cm, ${p.weight}kg</td>
             <td class="py-4 text-slate-600 px-2 align-middle font-medium">${p.phone || '-'}</td>
             <td class="py-4 text-right px-2 align-middle">
                 <button onclick="showPatient(${p.id}, '${p.name}', ${p.age}, ${p.weight}, '${p.gender}', '${p.phone || ''}', ${p.height || 0}, ${p.shoe_size || 0})" class="bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-lg font-bold transition-colors text-sm inline-flex items-center justify-center shadow-sm">
-                    Hasta Kartını Aç <i class="fa-solid fa-arrow-right ml-2"></i>
+                    ${openCardText} <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </td>
         </tr>
@@ -3680,3 +3692,12 @@ async function submitInsoleOrder() {
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Sipariş Et';
     }
 }
+
+// ─────────────────────────────────────────────
+//  i18n Dil Değişimi Dinleyicisi
+// ─────────────────────────────────────────────
+window.addEventListener('cibody:languageChanged', function(e) {
+    if (typeof renderPatients === 'function' && Array.isArray(allPatients) && allPatients.length > 0) {
+        renderPatients();
+    }
+});
