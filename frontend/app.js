@@ -151,7 +151,11 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         if (dName) dName.innerText = patientName;
         const maskedPhone = patientPhone ? patientPhone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "Yok";
         const dInfo = document.getElementById('detailInfo');
-        if (dInfo) dInfo.innerText = `Yaş: ${patientAge} | Boy: ${patientHeight || 0}cm | Kilo: ${patientWeight}kg | Ayakkabı: ${patientShoeSize || 0} | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
+        if (dInfo) {
+            const rawInfo = `Yaş: ${patientAge} | Boy: ${patientHeight || 0}cm | Kilo: ${patientWeight}kg | Ayakkabı: ${patientShoeSize || 0} | Cinsiyet: ${patientGender} | Tel: ${maskedPhone}`;
+            dInfo._tr_orig = rawInfo;
+            dInfo.innerText = window.translateText ? window.translateText(rawInfo) : rawInfo;
+        }
         
         switchTab('postureTab');
         loadPatientData(patientId);
@@ -231,7 +235,8 @@ function switchTab(tabId) {
 
 function showToast(msg) {
     const toast = document.getElementById('toastNotification');
-    document.getElementById('toastMessage').innerText = msg;
+    const trans = window.translateText ? window.translateText(String(msg)) : msg;
+    document.getElementById('toastMessage').innerText = trans;
     toast.classList.remove('hidden');
     setTimeout(() => toast.classList.add('hidden'), 3000);
 }
@@ -3703,5 +3708,9 @@ async function submitInsoleOrder() {
 window.addEventListener('cibody:languageChanged', function(e) {
     if (typeof renderPatients === 'function' && Array.isArray(allPatients) && allPatients.length > 0) {
         renderPatients();
+    }
+    const dInfo = document.getElementById('detailInfo');
+    if (dInfo && dInfo._tr_orig) {
+        dInfo.innerText = window.translateText ? window.translateText(dInfo._tr_orig) : dInfo._tr_orig;
     }
 });

@@ -2301,14 +2301,14 @@ const I18N_PHRASES = {
     "pt": "Índice de Estabilidade Postural"
   },
   "ÖN CEPHE": {
-    "en": "ANTERIOR VIEW",
+    "en": "FRONT VIEW",
     "ru": "ВИД СПЕРЕДИ",
-    "ar": "المنظر الأمامي",
-    "de": "FRONTALANSICHT",
+    "ar": "منظر أمامي",
+    "de": "VORDERANSICHT",
     "fr": "VUE DE FACE",
     "es": "VISTA FRONTAL",
-    "it": "VISTA ANTERIORE",
-    "pt": "VISTA ANTERIOR"
+    "it": "VISTA FRONTALE",
+    "pt": "VISTA FRONTAL"
   },
   "Klinik Bulgular": {
     "en": "Clinical Findings",
@@ -2321,14 +2321,14 @@ const I18N_PHRASES = {
     "pt": "Achados Clínicos"
   },
   "ARKA CEPHE": {
-    "en": "POSTERIOR VIEW",
+    "en": "BACK VIEW",
     "ru": "ВИД СЗАДИ",
-    "ar": "المنظر الخلفي",
+    "ar": "منظر خلفي",
     "de": "RÜCKANSICHT",
-    "fr": "VUE DE DOS",
+    "fr": "VUE ARRIÈRE",
     "es": "VISTA POSTERIOR",
     "it": "VISTA POSTERIORE",
-    "pt": "VISTA POSTERIOR"
+    "pt": "VISTA TRASEIRA"
   },
   "SOL YAN": {
     "en": "LEFT SIDE",
@@ -3283,12 +3283,12 @@ const I18N_PHRASES = {
   "Kayıt bulunamadı.": {
     "en": "No records found.",
     "ru": "Записи не найдены.",
-    "ar": "لم يتم العثور على سجل.",
-    "de": "Kein Eintrag gefunden.",
+    "ar": "لم يتم العثور على سجلات.",
+    "de": "Keine Einträge gefunden.",
     "fr": "Aucun enregistrement trouvé.",
     "es": "No se encontraron registros.",
     "it": "Nessun record trovato.",
-    "pt": "Não se encontraron registros."
+    "pt": "Nenhum registo encontrado."
   },
   "Dijital Skolyometre": {
     "en": "Digital Scoliometer",
@@ -3388,7 +3388,7 @@ const I18N_PHRASES = {
     "fr": "Aucune mesure pour le moment.",
     "es": "Aún no hay mediciones.",
     "it": "Nessuna misurazione ancora presente.",
-    "pt": "Aún não hay medições."
+    "pt": "Nenhuma medição ainda."
   },
   "3D Skolyoz Simülasyonu": {
     "en": "3D Scoliosis Simulation",
@@ -4051,14 +4051,14 @@ const I18N_PHRASES = {
     "pt": "Asimetría general (RSI):"
   },
   "Yürüme Fazları Analizi": {
-    "en": "Gait Phase Analysis",
-    "ru": "Анализ фаз ходьбы",
+    "en": "Gait Phases Analysis",
+    "ru": "Анализ фаз походки",
     "ar": "تحليل مراحل المشي",
-    "de": "Analyse der Gangphasen",
-    "fr": "Analyse des phases de la marche",
-    "es": "Análisis de las fases de la marcha",
-    "it": "Analisi delle Fasi del Cammino",
-    "pt": "Análise das fases da marcha"
+    "de": "Ganganalyse-Phasen",
+    "fr": "Analyse des phases de marche",
+    "es": "Análisis de Fases de la Marcha",
+    "it": "Analisi delle Fasi del Passo",
+    "pt": "Análise de Fases da Marcha"
   },
   "5 Bölge Yük Dağılımı Analizi": {
     "en": "5-Zone Load Distribution Analysis",
@@ -4463,12 +4463,12 @@ const I18N_PHRASES = {
   "Kamera başlatılıyor...": {
     "en": "Starting camera...",
     "ru": "Запуск камеры...",
-    "ar": "جارٍ تشغيل الكاميرا...",
+    "ar": "جاري تشغيل الكاميرا...",
     "de": "Kamera wird gestartet...",
     "fr": "Démarrage de la caméra...",
     "es": "Iniciando cámara...",
-    "it": "Avvio fotocamera...",
-    "pt": "Iniciando cámara..."
+    "it": "Avvio fotocamera in corso...",
+    "pt": "A iniciar câmara..."
   },
   "Kamera hazırlanıyor...": {
     "en": "Preparing camera...",
@@ -4991,24 +4991,24 @@ const I18N_PHRASES = {
     "pt": "RECOMENDACIONES CORRECTIVAS"
   },
   "Rapor metni oluşturulamadı.": {
-    "en": "Report text could not be generated.",
-    "ru": "Не удалось сформировать текст отчёта.",
-    "ar": "تعذّر إنشاء نص التقرير.",
-    "de": "Berichtstext konnte nicht erstellt werden.",
+    "en": "Could not generate report text.",
+    "ru": "Не удалось создать текст отчета.",
+    "ar": "تعذر إنشاء نص التقرير.",
+    "de": "Berichtstext konnte nicht generiert werden.",
     "fr": "Impossible de générer le texte du rapport.",
     "es": "No se pudo generar el texto del informe.",
-    "it": "Non se pudo generar el texto del report.",
-    "pt": "Não se pudo generar el texto do relatório."
+    "it": "Impossibile generare il testo del report.",
+    "pt": "Não foi possível gerar o texto do relatório."
   },
   "En Güncel": {
     "en": "Most Recent",
     "ru": "Самый актуальный",
     "ar": "الأحدث",
-    "de": "Neueste",
+    "de": "Aktuellste",
     "fr": "Le plus récent",
-    "es": "Más reciente",
-    "it": "Más reciente",
-    "pt": "Más reciente"
+    "es": "Más Reciente",
+    "it": "Più Recente",
+    "pt": "Mais Recente"
   },
   "Henüz egzersiz reçetesi oluşturulmadı.": {
     "en": "No exercise prescription created yet.",
@@ -5057,8 +5057,8 @@ const I18N_PHRASES = {
     "de": "Keine Ergebnisse gefunden.",
     "fr": "Aucun résultat trouvé.",
     "es": "No se encontraron resultados.",
-    "it": "Non se encontraron resultados.",
-    "pt": "Não se encontraron resultados."
+    "it": "Nessun risultato trovato.",
+    "pt": "Nenhum resultado encontrado."
   },
   "Dijital Skolyometre (ATR) Ölçüm Raporu": {
     "en": "Digital Scoliometer (ATR) Measurement Report",
@@ -5181,24 +5181,24 @@ const I18N_PHRASES = {
     "pt": "Evaluação"
   },
   "İleri İnceleme": {
-    "en": "Further Investigation",
+    "en": "Further Examination",
     "ru": "Дополнительное обследование",
     "ar": "فحص متقدم",
     "de": "Weiterführende Untersuchung",
     "fr": "Examen approfondi",
-    "es": "Estudio adicional",
-    "it": "Estudio adicional",
-    "pt": "Estudio adicional"
+    "es": "Examen Adicional",
+    "it": "Ulteriore Esame",
+    "pt": "Exame Adicional"
   },
   "Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.": {
     "en": "No scoliometer measurements recorded yet.",
-    "ru": "Сохранённых измерений сколиометра пока нет.",
-    "ar": "لا توجد قياسات مسجلة لمقياس الجنف بعد.",
-    "de": "Noch keine gespeicherten Skoliometer-Messungen vorhanden.",
-    "fr": "Aucune mesure au scoliomètre enregistrée pour le moment.",
+    "ru": "Измерения сколиометра еще не записаны.",
+    "ar": "لم يتم تسجيل أي قياسات بمقياس الجنف بعد.",
+    "de": "Noch keine Skoliometer-Messungen aufgezeichnet.",
+    "fr": "Aucune mesure de scoliomètre enregistrée pour le moment.",
     "es": "Aún no hay mediciones de escoliómetro registradas.",
-    "it": "Aún non hay medizioni de escoliómetro registradas.",
-    "pt": "Aún não hay medições de escoliómetro registradas."
+    "it": "Nessuna misurazione dello scoliometro ancora registrata.",
+    "pt": "Nenhuma medição de escoliómetro registada ainda."
   },
   "Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.": {
     "en": "Based on Adam's Forward Bend Test and digital sensor measurements.",
@@ -5251,14 +5251,14 @@ const I18N_PHRASES = {
     "pt": "Vista 3D da deformidad da coluna"
   },
   "Simülasyon modeli yüklenemedi": {
-    "en": "Simulation model could not be loaded",
+    "en": "Failed to load simulation model",
     "ru": "Не удалось загрузить модель симуляции",
-    "ar": "تعذّر تحميل نموذج المحاكاة",
+    "ar": "فشل تحميل نموذج المحاكاة",
     "de": "Simulationsmodell konnte nicht geladen werden",
-    "fr": "Impossible de charger le modèle de simulation",
-    "es": "No se pudo cargar el modelo de simulación",
-    "it": "Non se pudo cargar el modelo de simulazione",
-    "pt": "Não se pudo carregar el modelo de simulação"
+    "fr": "Échec du chargement du modèle de simulation",
+    "es": "Error al cargar el modelo de simulación",
+    "it": "Caricamento modello di simulazione non riuscito",
+    "pt": "Falha ao carregar o modelo de simulação"
   },
   "Eğrilik Segmenti": {
     "en": "Curve Segment",
@@ -5341,24 +5341,24 @@ const I18N_PHRASES = {
     "pt": "⏳ A carregar..."
   },
   "Henüz siparişiniz bulunmamaktadır.": {
-    "en": "You have no orders yet.",
+    "en": "You do not have any orders yet.",
     "ru": "У вас пока нет заказов.",
-    "ar": "لا توجد لديك طلبات بعد.",
+    "ar": "ليس لديك أي طلبات بعد.",
     "de": "Sie haben noch keine Bestellungen.",
-    "fr": "Vous n'avez encore aucune commande.",
+    "fr": "Vous n'avez pas encore de commande.",
     "es": "Aún no tiene pedidos.",
-    "it": "Aún non tiene ordini.",
-    "pt": "Aún não tiene encomendas."
+    "it": "Non ci sono ancora ordini.",
+    "pt": "Ainda não tem encomendas."
   },
   "Sipariş bulunamadı.": {
-    "en": "No orders found.",
-    "ru": "Заказы не найдены.",
-    "ar": "لم يتم العثور على طلبات.",
-    "de": "Keine Bestellung gefunden.",
-    "fr": "Aucune commande trouvée.",
-    "es": "No se encontraron pedidos.",
-    "it": "Non se encontraron ordini.",
-    "pt": "Não se encontraron encomendas."
+    "en": "No order found.",
+    "ru": "Заказ не найден.",
+    "ar": "لم يتم العثور على الطلب.",
+    "de": "Bestellung nicht gefunden.",
+    "fr": "Commande non trouvée.",
+    "es": "No se encontró el pedido.",
+    "it": "Ordine non trovato.",
+    "pt": "Encomenda não encontrada."
   },
   "Baskı Yapıldı": {
     "en": "Printed",
@@ -5393,21 +5393,21 @@ const I18N_PHRASES = {
   "📊 Statik Analiz": {
     "en": "📊 Static Analysis",
     "ru": "📊 Статический анализ",
-    "ar": "📊 التحليل الثابت",
+    "ar": "📊 تحليل استاتيكي",
     "de": "📊 Statische Analyse",
     "fr": "📊 Analyse statique",
-    "es": "📊 Análisis estático",
-    "it": "📊 Analisi estático",
-    "pt": "📊 Análise estático"
+    "es": "📊 Análisis Estático",
+    "it": "📊 Analisi Statica",
+    "pt": "📊 Análise Estática"
   },
   "🚶 Yürüme Analizi": {
     "en": "🚶 Gait Analysis",
-    "ru": "🚶 Анализ ходьбы",
+    "ru": "🚶 Анализ походки",
     "ar": "🚶 تحليل المشي",
     "de": "🚶 Ganganalyse",
     "fr": "🚶 Analyse de la marche",
     "es": "🚶 Análisis de la marcha",
-    "it": "🚶 Analisi della marcha",
+    "it": "🚶 Analisi del cammino",
     "pt": "🚶 Análise da marcha"
   },
   "Tüm Kayıtlı Kişiler\\'e Dön": {
@@ -5422,23 +5422,23 @@ const I18N_PHRASES = {
   },
   "Sipariş Raporu (Salt Okunur)": {
     "en": "Order Report (Read-Only)",
-    "ru": "Отчёт заказа (только чтение)",
+    "ru": "Отчет по заказу (только чтение)",
     "ar": "تقرير الطلب (للقراءة فقط)",
     "de": "Bestellbericht (schreibgeschützt)",
-    "fr": "Rapport de commande (Lecture seule)",
-    "es": "Informe del pedido (solo lectura)",
-    "it": "Report del ordine (solo lectura)",
-    "pt": "Relatório do encomenda (solo lectura)"
+    "fr": "Rapport de commande (lecture seule)",
+    "es": "Informe de Pedido (Solo Lectura)",
+    "it": "Report Ordine (Sola Lettura)",
+    "pt": "Relatório de Encomenda (Apenas Leitura)"
   },
   "Bu hastaya ait sipariş bulunmamaktadır.": {
-    "en": "There are no orders for this patient.",
-    "ru": "У этого пациента нет заказов.",
+    "en": "No orders found for this patient.",
+    "ru": "Заказы для этого пациента не найдены.",
     "ar": "لا توجد طلبات لهذا المريض.",
-    "de": "Für diesen Patienten liegen keine Bestellungen vor.",
-    "fr": "Aucune commande pour ce patient.",
-    "es": "Este paciente no tiene pedidos.",
-    "it": "Este paciente non tiene ordini.",
-    "pt": "Este paciente não tiene encomendas."
+    "de": "Keine Bestellungen für diesen Patienten gefunden.",
+    "fr": "Aucune commande trouvée pour ce patient.",
+    "es": "No hay pedidos para este paciente.",
+    "it": "Nessun ordine trovato per questo paziente.",
+    "pt": "Nenhuma encomenda encontrada para este paciente."
   },
   "Satır:": {
     "en": "Row:",
@@ -6052,13 +6052,13 @@ const I18N_PHRASES = {
   },
   "Yüksek": {
     "en": "High",
-    "ru": "Выше",
+    "ru": "Высокий",
     "ar": "مرتفع",
     "de": "Hoch",
-    "fr": "Haute",
+    "fr": "Élevé",
     "es": "Alto",
-    "it": "Alto",
-    "pt": "Alto"
+    "it": "Elevato",
+    "pt": "Elevado"
   },
   "Omuz hattındaki yükseklik farkı; skapular kas dengesizliği, kısa/uzun ekstremite farkı veya postüral alışkanlıkla ilişkili olabilir.": {
     "en": "Height difference in the shoulder line; may be related to scapular muscle imbalance, limb length discrepancy or postural habits.",
@@ -6982,13 +6982,13 @@ const I18N_PHRASES = {
   },
   "Postür analizi PDF raporu indirildi.": {
     "en": "Posture analysis PDF report downloaded.",
-    "ru": "PDF-отчёт анализа осанки загружен.",
-    "ar": "تم تنزيل تقرير PDF لتحليل القوام.",
-    "de": "PDF-Bericht der Haltungsanalyse heruntergeladen.",
+    "ru": "PDF-отчет анализа осанки загружен.",
+    "ar": "تم تحميل تقرير PDF لتحليل القوام.",
+    "de": "Haltungsanalyse-PDF-Bericht heruntergeladen.",
     "fr": "Rapport PDF d'analyse posturale téléchargé.",
-    "es": "Se ha descargado el informe PDF del análisis postural.",
-    "it": "Se ha descargado el report PDF del analisi postural.",
-    "pt": "Se ha descargado el relatório PDF do análise postural."
+    "es": "Informe PDF de análisis postural descargado.",
+    "it": "Report PDF analisi posturale scaricato.",
+    "pt": "Relatório PDF de análise postural descarregado."
   },
   "Lütfen önce bir omurga analizi yapın veya geçmişten bir analiz seçin.": {
     "en": "Please perform a spine analysis first or select one from history.",
@@ -7003,12 +7003,12 @@ const I18N_PHRASES = {
   "Lütfen bir hasta seçin.": {
     "en": "Please select a patient.",
     "ru": "Пожалуйста, выберите пациента.",
-    "ar": "يُرجى اختيار مريض.",
+    "ar": "يرجى اختيار مريض.",
     "de": "Bitte wählen Sie einen Patienten aus.",
     "fr": "Veuillez sélectionner un patient.",
-    "es": "Seleccione un paciente.",
-    "it": "Seleccione un paciente.",
-    "pt": "Seleccione un paciente."
+    "es": "Por favor, seleccione un paciente.",
+    "it": "Selezionare un paziente.",
+    "pt": "Por favor, selecione um paciente."
   },
   "Henüz ölçüm bulunmuyor": {
     "en": "No measurements yet",
@@ -7032,23 +7032,23 @@ const I18N_PHRASES = {
   },
   "3D simülasyon PDF raporu indirildi.": {
     "en": "3D simulation PDF report downloaded.",
-    "ru": "PDF-отчёт 3D-симуляции загружен.",
-    "ar": "تم تنزيل تقرير PDF للمحاكاة 3D.",
-    "de": "PDF-Bericht der 3D-Simulation heruntergeladen.",
+    "ru": "PDF-отчет 3D-симуляции загружен.",
+    "ar": "تم تحميل تقرير PDF للمحاكاة ثلاثية الأبعاد.",
+    "de": "3D-Simulations-PDF-Bericht heruntergeladen.",
     "fr": "Rapport PDF de simulation 3D téléchargé.",
-    "es": "Se ha descargado el informe PDF de la simulación 3D.",
-    "it": "Se ha descargado el report PDF della simulazione 3D.",
-    "pt": "Se ha descargado el relatório PDF da simulação 3D."
+    "es": "Informe PDF de simulación 3D descargado.",
+    "it": "Report PDF simulazione 3D scaricato.",
+    "pt": "Relatório PDF de simulação 3D descarregado."
   },
   "Karekod hazırlanıyor, lütfen bekleyin...": {
     "en": "Preparing QR code, please wait...",
     "ru": "Подготовка QR-кода, пожалуйста, подождите...",
-    "ar": "جارٍ إعداد رمز QR، يُرجى الانتظار...",
+    "ar": "جاري تجهيز رمز QR، يرجى الانتظار...",
     "de": "QR-Code wird vorbereitet, bitte warten...",
     "fr": "Préparation du code QR, veuillez patienter...",
-    "es": "Preparando el código QR, espere por favor...",
-    "it": "Preparando el código QR, espere per favor...",
-    "pt": "Preparando el código QR, espere por favor..."
+    "es": "Preparando código QR, por favor espere...",
+    "it": "Preparazione codice QR, attendere prego...",
+    "pt": "A preparar código QR, por favor aguarde..."
   },
   "Klinik Biyomekanik Postür Analizi Raporu": {
     "en": "Clinical Biomechanical Posture Analysis Report",
@@ -7445,10 +7445,10 @@ const I18N_PHRASES = {
     "ru": "Распределение нагрузки (%)",
     "ar": "توزيع الحمل (%)",
     "de": "Lastverteilung (%)",
-    "fr": "Répartition des charges (%)",
-    "es": "Distribución de carga (%)",
-    "it": "Distribuzione de carga (%)",
-    "pt": "Distribução de carga (%)"
+    "fr": "Répartition de charge (%)",
+    "es": "Distribución de Carga (%)",
+    "it": "Distribuzione del Carico (%)",
+    "pt": "Distribuição de Carga (%)"
   },
   "Ortalama Çift Simetrisi": {
     "en": "Mean Pair Symmetry",
@@ -7467,8 +7467,8 @@ const I18N_PHRASES = {
     "de": "Vorfuß",
     "fr": "Avant-pied",
     "es": "Antepié",
-    "it": "Antepié",
-    "pt": "Antepié"
+    "it": "Avampiede",
+    "pt": "Antepé"
   },
   "Bölgesel Basınç Dağılımı": {
     "en": "Regional Pressure Distribution",
@@ -7512,13 +7512,13 @@ const I18N_PHRASES = {
   },
   "COP Trajektorileri (Kırmızı: Sol, Mavi: Sağ)": {
     "en": "COP Trajectories (Red: Left, Blue: Right)",
-    "ru": "Траектории COP (красный: левая, синий: правая)",
-    "ar": "مسارات COP (الأحمر: يسار، الأزرق: يمين)",
+    "ru": "Траектории COP (Красный: Левый, Синий: Правый)",
+    "ar": "مسارات COP (أحمر: يسار، أزرق: يمين)",
     "de": "COP-Trajektorien (Rot: Links, Blau: Rechts)",
-    "fr": "Trajectoires du COP (Rouge : Gauche, Bleu : Droite)",
-    "es": "Trayectorias del COP (rojo: izquierdo, azul: derecho)",
-    "it": "Trayectorias del COP (rojo: izquierdo, azul: derecho)",
-    "pt": "Trayectorias do COP (rojo: izquierdo, azul: derecho)"
+    "fr": "Trajectoires COP (Rouge : Gauche, Bleu : Droite)",
+    "es": "Trayectorias COP (Rojo: Izq, Azul: Der)",
+    "it": "Traiettorie COP (Rosso: Sinistra, Blu: Destra)",
+    "pt": "Trajetórias COP (Vermelho: Esq, Azul: Dir)"
   },
   "COP Yol Uzunluğu (Toplam)": {
     "en": "COP Path Length (Total)",
@@ -7532,33 +7532,33 @@ const I18N_PHRASES = {
   },
   "COP Metrikleri (Basınç Merkezi Analizi)": {
     "en": "COP Metrics (Center of Pressure Analysis)",
-    "ru": "Метрики COP (анализ центра давления)",
+    "ru": "Метрики COP (Анализ центра давления)",
     "ar": "مقاييس COP (تحليل مركز الضغط)",
-    "de": "COP-Metriken (Druckmittelpunktanalyse)",
-    "fr": "Métriques du COP (Analyse du centre de pression)",
-    "es": "Métricas del COP (análisis del centro de presiones)",
-    "it": "Métricas del COP (analisi del centro de presiones)",
-    "pt": "Métricas do COP (análise do centro de presiones)"
+    "de": "COP-Metriken (Druckpunktanalyse)",
+    "fr": "Métriques COP (Analyse du centre de pression)",
+    "es": "Métricas COP (Centro de Presión)",
+    "it": "Metriche COP (Centro di Pressione)",
+    "pt": "Métricas COP (Centro de Pressão)"
   },
   "Çift Bazlı Yük Dağılımı": {
-    "en": "Pair-Based Load Distribution",
-    "ru": "Распределение нагрузки по парам",
-    "ar": "توزيع الحمل حسب الأزواج",
-    "de": "Paarbasierte Lastverteilung",
-    "fr": "Répartition des charges par paire",
-    "es": "Distribución de carga por pares",
-    "it": "Distribuzione de carga per pares",
-    "pt": "Distribução de carga por pares"
+    "en": "Bilateral Load Distribution",
+    "ru": "Двустороннее распределение нагрузки",
+    "ar": "توزيع الحمل الثنائي",
+    "de": "Bilateraler Lastverteilungsgrad",
+    "fr": "Répartition de charge bilatérale",
+    "es": "Distribución de Carga Bilateral",
+    "it": "Distribuzione del Carico Bilaterale",
+    "pt": "Distribuição de Carga Bilateral"
   },
   "Çift Simetri İndeksleri": {
-    "en": "Pair Symmetry Indices",
-    "ru": "Индексы симметрии пар",
-    "ar": "مؤشرات تناظر الأزواج",
-    "de": "Paarsymmetrie-Indizes",
-    "fr": "Indices de symétrie par paire",
-    "es": "Índices de simetría por pares",
-    "it": "Índices de simetría per pares",
-    "pt": "Índices de simetría por pares"
+    "en": "Bilateral Symmetry Indices",
+    "ru": "Индексы билатеральной симметрии",
+    "ar": "مؤشرات التماثل الثنائي",
+    "de": "Bilateraler Symmetrieindex",
+    "fr": "Indices de symétrie bilatérale",
+    "es": "Índices de Simetría Bilateral",
+    "it": "Indici di Simmetria Bilaterale",
+    "pt": "Índices de Simetria Bilateral"
   },
   "Adım Çifti": {
     "en": "Step Pair",
@@ -7566,9 +7566,9 @@ const I18N_PHRASES = {
     "ar": "زوج الخطوات",
     "de": "Schrittpaar",
     "fr": "Paire de pas",
-    "es": "Par de pasos",
-    "it": "Par de pasos",
-    "pt": "Par de passos"
+    "es": "Par de Pasos",
+    "it": "Coppia di Passi",
+    "pt": "Par de Passos"
   },
   "Ortalama Yük Dağılımı": {
     "en": "Mean Load Distribution",
@@ -7581,14 +7581,14 @@ const I18N_PHRASES = {
     "pt": "Distribução media de carga"
   },
   "Başparmak": {
-    "en": "Hallux",
+    "en": "Hallux (Big Toe)",
     "ru": "Большой палец",
-    "ar": "الإبهام",
+    "ar": "إبهام القدم",
     "de": "Großzehe",
-    "fr": "Hallux",
-    "es": "Hallux",
-    "it": "Hallux",
-    "pt": "Hallux"
+    "fr": "Gros orteil",
+    "es": "Dedo gordo",
+    "it": "Alluce",
+    "pt": "Dedo grande"
   },
   "Basınç": {
     "en": "Pressure",
@@ -7602,33 +7602,33 @@ const I18N_PHRASES = {
   },
   "Normalize Değer (%)": {
     "en": "Normalized Value (%)",
-    "ru": "Нормализованное значение (%)",
+    "ru": "Нормированное значение (%)",
     "ar": "القيمة المعيارية (%)",
     "de": "Normalisierter Wert (%)",
     "fr": "Valeur normalisée (%)",
-    "es": "Valor normalizado (%)",
-    "it": "Valor normalizado (%)",
-    "pt": "Valor normalizado (%)"
+    "es": "Valor Normalizado (%)",
+    "it": "Valore Normalizzato (%)",
+    "pt": "Valor Normalizado (%)"
   },
   "Bölgesel Dağılım": {
     "en": "Regional Distribution",
     "ru": "Региональное распределение",
-    "ar": "التوزيع حسب المناطق",
+    "ar": "التوزيع الإقليمي",
     "de": "Regionale Verteilung",
-    "fr": "Répartition régionale",
-    "es": "Distribución regional",
-    "it": "Distribuzione regional",
-    "pt": "Distribução regional"
+    "fr": "Distribution régionale",
+    "es": "Distribución Regional",
+    "it": "Distribuzione Regionale",
+    "pt": "Distribuição Regional"
   },
   "Başlangıç": {
     "en": "Start",
     "ru": "Начало",
     "ar": "البداية",
-    "de": "Beginn",
+    "de": "Start",
     "fr": "Début",
     "es": "Inicio",
-    "it": "Inicio",
-    "pt": "Inicio"
+    "it": "Inizio",
+    "pt": "Início"
   },
   "Bitiş": {
     "en": "End",
@@ -7637,8 +7637,8 @@ const I18N_PHRASES = {
     "de": "Ende",
     "fr": "Fin",
     "es": "Fin",
-    "it": "Fin",
-    "pt": "Fin"
+    "it": "Fine",
+    "pt": "Fim"
   },
   "Referans Aralıkları ile Karşılaştırma": {
     "en": "Comparison with Reference Ranges",
@@ -7657,8 +7657,8 @@ const I18N_PHRASES = {
     "de": "Gut",
     "fr": "Bon",
     "es": "Bueno",
-    "it": "Bueno",
-    "pt": "Bueno"
+    "it": "Buono",
+    "pt": "Bom"
   },
   "Yüksek (Risk)": {
     "en": "High (Risk)",
@@ -7742,13 +7742,13 @@ const I18N_PHRASES = {
   },
   "Yeterli veri toplanamadı.": {
     "en": "Insufficient data collected.",
-    "ru": "Недостаточно данных.",
-    "ar": "تعذّر جمع بيانات كافية.",
-    "de": "Nicht genügend Daten erfasst.",
+    "ru": "Недостаточно данных для анализа.",
+    "ar": "لم يتم جمع بيانات كافية.",
+    "de": "Nicht genügend Daten gesammelt.",
     "fr": "Données insuffisantes collectées.",
-    "es": "No se recopilaron datos suficientes.",
-    "it": "Non se recopilaron datos suficientes.",
-    "pt": "Não se recopilaron datos suficientes."
+    "es": "Datos insuficientes recopilados.",
+    "it": "Dati raccolti insufficienti.",
+    "pt": "Dados insuficientes recolhidos."
   },
   "Test başarıyla kaydedildi. Diğer aşamalara geçebilirsiniz.": {
     "en": "Test saved successfully. You can proceed to the other stages.",
@@ -7772,13 +7772,13 @@ const I18N_PHRASES = {
   },
   "Tek Ayak Sağ": {
     "en": "Single Leg Right",
-    "ru": "Одна нога, правая",
-    "ar": "قدم واحدة يمنى",
-    "de": "Einbeinig rechts",
-    "fr": "Unipodal droit",
-    "es": "Monopodal derecho",
-    "it": "Monopodal derecho",
-    "pt": "Monopodal derecho"
+    "ru": "На правой ноге",
+    "ar": "قدم واحدة يمين",
+    "de": "Einbeinstand Rechts",
+    "fr": "Appui monopodal droit",
+    "es": "Monopodal Derecho",
+    "it": "Monopodalico Destro",
+    "pt": "Monopodal Direito"
   },
   "Çift Ayak (Göz Açık)": {
     "en": "Double Leg (Eyes Open)",
@@ -7872,12 +7872,12 @@ const I18N_PHRASES = {
   },
   "İLK (BEFORE)": {
     "en": "INITIAL (BEFORE)",
-    "ru": "ДО (BEFORE)",
-    "ar": "الأول (BEFORE)",
-    "de": "ERSTE (VORHER)",
+    "ru": "ПЕРВЫЙ (ДО)",
+    "ar": "الأولي (قبل)",
+    "de": "ERSTMALIG (VORHER)",
     "fr": "INITIAL (AVANT)",
     "es": "INICIAL (ANTES)",
-    "it": "INICIAL (ANTES)",
+    "it": "INIZIALE (PRIMA)",
     "pt": "INICIAL (ANTES)"
   },
   "Skolyoz Raporu Paylaş": {
@@ -7941,14 +7941,14 @@ const I18N_PHRASES = {
     "pt": "Radiografia marcada (X-Ray)"
   },
   "Röntgen görüntüsü yüklenemedi": {
-    "en": "X-ray image could not be loaded",
+    "en": "Failed to upload X-ray image",
     "ru": "Не удалось загрузить рентгеновский снимок",
-    "ar": "تعذّر تحميل صورة الأشعة",
+    "ar": "فشل تحميل صورة الأشعة السينية",
     "de": "Röntgenbild konnte nicht geladen werden",
-    "fr": "Impossible de charger l'image radiographique",
-    "es": "No se pudo cargar la imagen radiográfica",
-    "it": "Non se pudo cargar la imagen radiográfica",
-    "pt": "Não se pudo carregar la imagem radiográfica"
+    "fr": "Échec du téléchargement de la radiographie",
+    "es": "Error al cargar la imagen de rayos X",
+    "it": "Caricamento immagine radiografica non riuscito",
+    "pt": "Falha ao carregar a imagem de raio-X"
   },
   "4 Noktalı Dijital Cobb Açı Çizimi": {
     "en": "4-Point Digital Cobb Angle Drawing",
@@ -8063,12 +8063,12 @@ const I18N_PHRASES = {
   "Yüklenemedi": {
     "en": "Failed to load",
     "ru": "Не удалось загрузить",
-    "ar": "تعذّر التحميل",
-    "de": "Laden fehlgeschlagen",
+    "ar": "فشل التحميل",
+    "de": "Fehler beim Laden",
     "fr": "Échec du chargement",
-    "es": "No se pudo cargar",
-    "it": "Non se pudo cargar",
-    "pt": "Não se pudo carregar"
+    "es": "Error al cargar",
+    "it": "Caricamento non riuscito",
+    "pt": "Falha ao carregar"
   },
   "Lütfen önce bir hasta seçin veya yeni hasta ekleyin.": {
     "en": "Please select a patient or add a new patient first.",
@@ -8422,13 +8422,13 @@ const I18N_PHRASES = {
   },
   "Henüz terapist eklenmemiş.": {
     "en": "No therapists added yet.",
-    "ru": "Терапевты ещё не добавлены.",
-    "ar": "لم تتم إضافة أي معالج بعد.",
+    "ru": "Терапевты еще не добавлены.",
+    "ar": "لم تتم إضافة أي معالجين بعد.",
     "de": "Noch keine Therapeuten hinzugefügt.",
     "fr": "Aucun thérapeute ajouté pour le moment.",
     "es": "Aún no se han añadido terapeutas.",
-    "it": "Aún non se han añadido terapeutas.",
-    "pt": "Aún não se han añadido terapeutas."
+    "it": "Nessun terapista ancora aggiunto.",
+    "pt": "Nenhum terapeuta adicionado ainda."
   },
   "Düzenle": {
     "en": "Edit",
@@ -8447,8 +8447,8 @@ const I18N_PHRASES = {
     "de": "Keine registrierten Patienten.",
     "fr": "Aucun patient enregistré.",
     "es": "No hay pacientes registrados.",
-    "it": "Non hay pacientes registrados.",
-    "pt": "Não hay pacientes registrados."
+    "it": "Nessun paziente registrato.",
+    "pt": "Nenhum paciente registado."
   },
   "Kullanıcı verisi ayrıştırılamadı:": {
     "en": "User data could not be parsed:",
@@ -8699,6 +8699,856 @@ const I18N_PHRASES = {
     "es": "Fotogramas",
     "it": "Fotogrammi",
     "pt": "Fotogramas"
+  },
+  "Gönderiliyor...": {
+    "en": "Sending...",
+    "ru": "Отправка...",
+    "ar": "جاري الإرسال...",
+    "de": "Wird gesendet...",
+    "fr": "Envoi en cours...",
+    "es": "Enviando...",
+    "it": "Invio in corso...",
+    "pt": "A enviar..."
+  },
+  "Oluşturuluyor...": {
+    "en": "Creating...",
+    "ru": "Создание...",
+    "ar": "جاري الإنشاء...",
+    "de": "Wird erstellt...",
+    "fr": "Création en cours...",
+    "es": "Creando...",
+    "it": "Creazione in corso...",
+    "pt": "A criar..."
+  },
+  "Öneriliyor...": {
+    "en": "Recommending...",
+    "ru": "Рекомендация...",
+    "ar": "جاري الاقتراح...",
+    "de": "Wird empfohlen...",
+    "fr": "Recommandation...",
+    "es": "Recomendando...",
+    "it": "In raccomandazione...",
+    "pt": "A recomendar..."
+  },
+  "Üretiliyor...": {
+    "en": "Generating...",
+    "ru": "Генерация...",
+    "ar": "جاري التوليد...",
+    "de": "Wird generiert...",
+    "fr": "Génération en cours...",
+    "es": "Generando...",
+    "it": "Generazione in corso...",
+    "pt": "A gerar..."
+  },
+  "QR Kod Oluştur": {
+    "en": "Generate QR Code",
+    "ru": "Создать QR-код",
+    "ar": "إنشاء رمز QR",
+    "de": "QR-Code erstellen",
+    "fr": "Générer code QR",
+    "es": "Generar Código QR",
+    "it": "Genera Codice QR",
+    "pt": "Gerar Código QR"
+  },
+  "Yeni QR Kod Oluştur": {
+    "en": "Generate New QR Code",
+    "ru": "Создать новый QR-код",
+    "ar": "إنشاء رمز QR جديد",
+    "de": "Neuen QR-Code erstellen",
+    "fr": "Générer nouveau code QR",
+    "es": "Generar Nuevo Código QR",
+    "it": "Genera Nuovo Codice QR",
+    "pt": "Gerar Novo Código QR"
+  },
+  "Siparişlere Dön": {
+    "en": "Back to Orders",
+    "ru": "Вернуться к заказам",
+    "ar": "العودة إلى الطلبات",
+    "de": "Zurück zu Bestellungen",
+    "fr": "Retour aux commandes",
+    "es": "Volver a Pedidos",
+    "it": "Torna agli Ordini",
+    "pt": "Voltar às Encomendas"
+  },
+  "Sipariş Önizleme": {
+    "en": "Order Preview",
+    "ru": "Предпросмотр заказа",
+    "ar": "معاينة الطلب",
+    "de": "Bestellvorschau",
+    "fr": "Aperçu de la commande",
+    "es": "Vista Previa de Pedido",
+    "it": "Anteprima Ordine",
+    "pt": "Pré-visualização da Encomenda"
+  },
+  "Masaüstüne Gönder": {
+    "en": "Send to Desktop",
+    "ru": "Отправить на рабочий стол",
+    "ar": "إرسال إلى سطح المكتب",
+    "de": "An Desktop senden",
+    "fr": "Envoyer vers le bureau",
+    "es": "Enviar al Escritorio",
+    "it": "Invia al Desktop",
+    "pt": "Enviar para o Ambiente de Trabalho"
+  },
+  "Başarıyla Gönderildi!": {
+    "en": "Successfully Sent!",
+    "ru": "Успешно отправлено!",
+    "ar": "تم الإرسال بنجاح!",
+    "de": "Erfolgreich gesendet!",
+    "fr": "Envoyé avec succès !",
+    "es": "¡Enviado con éxito!",
+    "it": "Inviato con successo!",
+    "pt": "Enviado com sucesso!"
+  },
+  "SAĞ YAN CEPHE": {
+    "en": "RIGHT SIDE VIEW",
+    "ru": "ВИД СПРАВА",
+    "ar": "منظر الجانب الأيمن",
+    "de": "RECHTE SEITENANSICHT",
+    "fr": "VUE LATÉRALE DROITE",
+    "es": "VISTA LATERAL DERECHA",
+    "it": "VISTA LATO DESTRO",
+    "pt": "VISTA LATERAL DIREITA"
+  },
+  "SOL YAN CEPHE": {
+    "en": "LEFT SIDE VIEW",
+    "ru": "ВИД СЛЕВА",
+    "ar": "منظر الجانب الأيسر",
+    "de": "LINKE SEITENANSICHT",
+    "fr": "VUE LATÉRALE GAUCHE",
+    "es": "VISTA LATERAL IZQUIERDA",
+    "it": "VISTA LATO SINISTRO",
+    "pt": "VISTA LATERAL ESQUERDA"
+  },
+  "Kamera açılamadı:": {
+    "en": "Could not open camera:",
+    "ru": "Не удалось открыть камеру:",
+    "ar": "تعذر فتح الكاميرا:",
+    "de": "Kamera konnte nicht geöffnet werden:",
+    "fr": "Impossible d'ouvrir la caméra :",
+    "es": "No se pudo abrir la cámara:",
+    "it": "Impossibile aprire la fotocamera:",
+    "pt": "Não foi possível abrir a câmara:"
+  },
+  "SONRAKİ (AFTER)": {
+    "en": "FOLLOW-UP (AFTER)",
+    "ru": "КОНТРОЛЬ (ПОСЛЕ)",
+    "ar": "متابعة (بعد)",
+    "de": "FOLGE (NACHHER)",
+    "fr": "SUIVI (APRÈS)",
+    "es": "SEGUIMIENTO (DESPUÉS)",
+    "it": "FOLLOW-UP (DOPO)",
+    "pt": "SEGUIMENTO (DEPOIS)"
+  },
+  "Kollar ve bacaklar hafif açık Kameraya bakın": {
+    "en": "Arms and legs slightly apart, look at the camera",
+    "ru": "Руки и ноги слегка разведены, смотрите в камеру",
+    "ar": "افتح الذراعين والساقين قليلاً، انظر إلى الكاميرا",
+    "de": "Arme und Beine leicht geöffnet, in die Kamera schauen",
+    "fr": "Bras et jambes légèrement écartés, regardez la caméra",
+    "es": "Brazos y piernas ligeramente abiertos, mire a la cámara",
+    "it": "Braccia e gambe leggermente divaricate, guardare la telecamera",
+    "pt": "Braços e pernas ligeiramente afastados, olhe para a câmara"
+  },
+  "Kollar ve bacaklar hafif açık<br>Kameraya bakın": {
+    "en": "Arms and legs slightly apart<br>Look at the camera",
+    "ru": "Руки и ноги слегка разведены<br>Смотрите в камеру",
+    "ar": "افتح الذراعين والساقين قليلاً<br>انظر إلى الكاميرا",
+    "de": "Arme und Beine leicht geöffnet<br>In die Kamera schauen",
+    "fr": "Bras et jambes légèrement écartés<br>Regardez la caméra",
+    "es": "Brazos y piernas ligeramente abiertos<br>Mire a la cámara",
+    "it": "Braccia e gambe leggermente divaricate<br>Guardare la telecamera",
+    "pt": "Braços e pernas ligeiramente afastados<br>Olhe para a câmara"
+  },
+  "Kollar öne doğru uzatılmış Sağ profiliniz kameraya dönük olsun": {
+    "en": "Arms extended forward, face right profile to camera",
+    "ru": "Руки вытянуты вперед, правый профиль к камере",
+    "ar": "امد الذراعين للأمام، واجعل الجانب الأيمن مواجهًا للكاميرا",
+    "de": "Arme nach vorne gestreckt, rechtes Profil zur Kamera",
+    "fr": "Bras tendus vers l'avant, profil droit face à la caméra",
+    "es": "Brazos extendidos hacia adelante, perfil derecho a la cámara",
+    "it": "Braccia tese in avanti, profilo destro rivolto alla telecamera",
+    "pt": "Braços estendidos para a frente, perfil direito virado para a câmara"
+  },
+  "Kollar öne doğru uzatılmış<br>Sağ profiliniz kameraya dönük olsun": {
+    "en": "Arms extended forward<br>Right profile facing camera",
+    "ru": "Руки вытянуты вперед<br>Правый профиль к камере",
+    "ar": "امد الذراعين للأمام<br>اجعل الجانب الأيمن مواجهًا للكاميرا",
+    "de": "Arme nach vorne gestreckt<br>Rechtes Profil zur Kamera",
+    "fr": "Bras tendus vers l'avant<br>Profil droit face à la caméra",
+    "es": "Brazos extendidos hacia adelante<br>Perfil derecho a la cámara",
+    "it": "Braccia tese in avanti<br>Profilo destro rivolto alla telecamera",
+    "pt": "Braços estendidos para a frente<br>Perfil direito virado para a câmara"
+  },
+  "Kollar ve bacaklar hafif açık Kameraya sırtınızı dönün": {
+    "en": "Arms and legs slightly apart, turn back to the camera",
+    "ru": "Руки и ноги слегка разведены, повернитесь спиной к камере",
+    "ar": "افتح الذراعين والساقين قليلاً، أدر ظهرك للكاميرا",
+    "de": "Arme und Beine leicht geöffnet, Rücken zur Kamera drehen",
+    "fr": "Bras et jambes légèrement écartés, tournez le dos à la caméra",
+    "es": "Brazos y piernas ligeramente abiertos, dé la espalda a la cámara",
+    "it": "Braccia e gambe leggermente divaricate, dare le spalle alla telecamera",
+    "pt": "Braços e pernas ligeiramente afastados, vire as costas para a câmara"
+  },
+  "Kollar ve bacaklar hafif açık<br>Kameraya sırtınızı dönün": {
+    "en": "Arms and legs slightly apart<br>Turn back to the camera",
+    "ru": "Руки и ноги слегка разведены<br>Повернитесь спиной к камере",
+    "ar": "افتح الذراعين والساقين قليلاً<br>أدر ظهرك للكاميرا",
+    "de": "Arme und Beine leicht geöffnet<br>Rücken zur Kamera drehen",
+    "fr": "Bras et jambes légèrement écartés<br>Tournez le dos à la caméra",
+    "es": "Brazos y piernas ligeramente abiertos<br>Dé la espalda a la cámara",
+    "it": "Braccia e gambe leggermente divaricate<br>Dare le spalle alla telecamera",
+    "pt": "Braços e pernas ligeiramente afastados<br>Vire as costas para a câmara"
+  },
+  "Kollar öne doğru uzatılmış Sol profiliniz kameraya dönük olsun": {
+    "en": "Arms extended forward, face left profile to camera",
+    "ru": "Руки вытянуты вперед, левый профиль к камере",
+    "ar": "امد الذراعين للأمام، واجعل الجانب الأيسر مواجهًا للكاميرا",
+    "de": "Arme nach vorne gestreckt, linkes Profil zur Kamera",
+    "fr": "Bras tendus vers l'avant, profil gauche face à la caméra",
+    "es": "Brazos extendidos hacia adelante, perfil izquierdo a la cámara",
+    "it": "Braccia tese in avanti, profilo sinistro rivolto alla telecamera",
+    "pt": "Braços estendidos para a frente, perfil esquerdo virado para a câmara"
+  },
+  "Kollar öne doğru uzatılmış<br>Sol profiliniz kameraya dönük olsun": {
+    "en": "Arms extended forward<br>Left profile facing camera",
+    "ru": "Руки вытянуты вперед<br>Левый профиль к камере",
+    "ar": "امد الذراعين للأمام<br>اجعل الجانب الأيسر مواجهًا للكاميرا",
+    "de": "Arme nach vorne gestreckt<br>Linkes Profil zur Kamera",
+    "fr": "Bras tendus vers l'avant<br>Profil gauche face à la caméra",
+    "es": "Brazos extendidos hacia adelante<br>Perfil izquierdo a la cámara",
+    "it": "Braccia tese in avanti<br>Profilo sinistro rivolto alla telecamera",
+    "pt": "Braços estendidos para a frente<br>Perfil esquerdo virado para a câmara"
+  },
+  "Bağlantı başarılı! Sensörü başlatmak için butona basınız.": {
+    "en": "Connection successful! Press the button to start the sensor.",
+    "ru": "Подключение успешно! Нажмите кнопку для запуска датчика.",
+    "ar": "تم الاتصال بنجاح! اضغط على الزر لبدء المستشعر.",
+    "de": "Verbindung erfolgreich! Drücken Sie die Taste, um den Sensor zu starten.",
+    "fr": "Connexion réussie ! Appuyez sur le bouton pour démarrer le capteur.",
+    "es": "¡Conexión exitosa! Pulse el botón para iniciar el sensor.",
+    "it": "Connessione riuscita! Premere il pulsante per avviare il sensore.",
+    "pt": "Ligação bem-sucedida! Prima o botão para iniciar o sensor."
+  },
+  "Bağlantı süresi dolmuş.": {
+    "en": "Connection timed out.",
+    "ru": "Время подключения истекло.",
+    "ar": "انتهت مهلة الاتصال.",
+    "de": "Verbindungszeit abgelaufen.",
+    "fr": "Délai de connexion expiré.",
+    "es": "La conexión ha caducado.",
+    "it": "Connessione scaduta.",
+    "pt": "Ligação expirada."
+  },
+  "Geçersiz bağlantı. QR kodu tekrar okutun.": {
+    "en": "Invalid connection. Please scan the QR code again.",
+    "ru": "Недействительное подключение. Отсканируйте QR-код заново.",
+    "ar": "اتصال غير صالح. يرجى مسح رمز QR مرة أخرى.",
+    "de": "Ungültige Verbindung. Bitte scannen Sie den QR-Code erneut.",
+    "fr": "Connexion invalide. Veuillez scanner à nouveau le code QR.",
+    "es": "Conexión no válida. Escanee el código QR de nuevo.",
+    "it": "Connessione non valida. Scansiona nuovamente il codice QR.",
+    "pt": "Ligação inválida. Leia o código QR novamente."
+  },
+  "Gönderim başarısız oldu.": {
+    "en": "Sending failed.",
+    "ru": "Не удалось отправить.",
+    "ar": "فشل الإرسال.",
+    "de": "Senden fehlgeschlagen.",
+    "fr": "Échec de l'envoi.",
+    "es": "Error en el envío.",
+    "it": "Invio non riuscito.",
+    "pt": "Falha no envio."
+  },
+  "Sensör izni alınamadı.": {
+    "en": "Could not obtain sensor permission.",
+    "ru": "Не удалось получить разрешение датчика.",
+    "ar": "تعذر الحصول على إذن المستشعر.",
+    "de": "Sensorberechtigung konnte nicht abgerufen werden.",
+    "fr": "Impossible d'obtenir l'autorisation du capteur.",
+    "es": "No se pudo obtener el permiso del sensor.",
+    "it": "Impossibile ottenere l'autorizzazione del sensore.",
+    "pt": "Não foi possível obter permissão do sensor."
+  },
+  "Sensör izni reddedildi.": {
+    "en": "Sensor permission was denied.",
+    "ru": "В разрешении датчика отказано.",
+    "ar": "تم رفض إذن المستشعر.",
+    "de": "Sensorberechtigung wurde verweigert.",
+    "fr": "Autorisation du capteur refusée.",
+    "es": "Permiso del sensor denegado.",
+    "it": "Autorizzazione del sensore negata.",
+    "pt": "Permissão do sensor negada."
+  },
+  "Sunucuya ulaşılamıyor.": {
+    "en": "Cannot reach the server.",
+    "ru": "Сервер недоступен.",
+    "ar": "تعذر الاتصال بالخادم.",
+    "de": "Server nicht erreichbar.",
+    "fr": "Impossible de joindre le serveur.",
+    "es": "No se puede contactar con el servidor.",
+    "it": "Impossibile raggiungere il server.",
+    "pt": "Não é possível contactar o servidor."
+  },
+  "Sıfırlandı (0° Referansı Alındı)": {
+    "en": "Reset (0° Reference Captured)",
+    "ru": "Сброшено (Принят ориентир 0°)",
+    "ar": "تمت إعادة الضبط (تم التقاط مرجع 0°)",
+    "de": "Zurückgesetzt (0°-Referenz erfasst)",
+    "fr": "Réinitialisé (Référence 0° capturée)",
+    "es": "Restablecido (Referencia 0° capturada)",
+    "it": "Reimpostato (Riferimento 0° acquisito)",
+    "pt": "Reposto (Referência 0° capturada)"
+  },
+  "Sınırda / Takip (5° - 7°)": {
+    "en": "Borderline / Follow-up (5° - 7°)",
+    "ru": "Погранично / Наблюдение (5° - 7°)",
+    "ar": "حدي / متابعة (5° - 7°)",
+    "de": "Grenzwertig / Kontrolle (5° - 7°)",
+    "fr": "Limite / Suivi (5° - 7°)",
+    "es": "Límite / Seguimiento (5° - 7°)",
+    "it": "Limite / Monitoraggio (5° - 7°)",
+    "pt": "Limite / Acompanhamento (5° - 7°)"
+  },
+  "Yaş:": {
+    "en": "Age:",
+    "ru": "Возраст:",
+    "ar": "العمر:",
+    "de": "Alter:",
+    "fr": "Âge :",
+    "es": "Edad:",
+    "it": "Età:",
+    "pt": "Idade:"
+  },
+  "Boy:": {
+    "en": "Height:",
+    "ru": "Рост:",
+    "ar": "الطول:",
+    "de": "Größe:",
+    "fr": "Taille :",
+    "es": "Altura:",
+    "it": "Altezza:",
+    "pt": "Altura:"
+  },
+  "Kilo:": {
+    "en": "Weight:",
+    "ru": "Вес:",
+    "ar": "الوزن:",
+    "de": "Gewicht:",
+    "fr": "Poids :",
+    "es": "Peso:",
+    "it": "Peso:",
+    "pt": "Peso:"
+  },
+  "Ayakkabı:": {
+    "en": "Shoe:",
+    "ru": "Обувь:",
+    "ar": "الحذاء:",
+    "de": "Schuh:",
+    "fr": "Pointure :",
+    "es": "Calzado:",
+    "it": "Scarpa:",
+    "pt": "Calçado:"
+  },
+  "Cinsiyet:": {
+    "en": "Gender:",
+    "ru": "Пол:",
+    "ar": "الجنس:",
+    "de": "Geschlecht:",
+    "fr": "Genre :",
+    "es": "Género:",
+    "it": "Genere:",
+    "pt": "Género:"
+  },
+  "Tel:": {
+    "en": "Phone:",
+    "ru": "Тел:",
+    "ar": "الهاتف:",
+    "de": "Tel:",
+    "fr": "Tél :",
+    "es": "Tel:",
+    "it": "Tel:",
+    "pt": "Tel:"
+  },
+  "Yok": {
+    "en": "None",
+    "ru": "Нет",
+    "ar": "لا يوجد",
+    "de": "Keine",
+    "fr": "Aucun",
+    "es": "Ninguno",
+    "it": "Nessuno",
+    "pt": "Nenhum"
+  },
+  "Analiz başarıyla kaydedildi!": {
+    "en": "Analysis saved successfully!",
+    "ru": "Анализ успешно сохранен!",
+    "ar": "تم حفظ التحليل بنجاح!",
+    "de": "Analyse erfolgreich gespeichert!",
+    "fr": "Analyse enregistrée avec succès !",
+    "es": "¡Análisis guardado con éxito!",
+    "it": "Analisi salvata con successo!",
+    "pt": "Análise guardada com sucesso!"
+  },
+  "Sipariş başarıyla oluşturuldu.": {
+    "en": "Order created successfully.",
+    "ru": "Заказ успешно создан.",
+    "ar": "تم إنشاء الطلب بنجاح.",
+    "de": "Bestellung erfolgreich erstellt.",
+    "fr": "Commande créée avec succès.",
+    "es": "Pedido creado con éxito.",
+    "it": "Ordine creato con successo.",
+    "pt": "Encomenda criada com sucesso."
+  },
+  "Ayak Analizi PDF raporu indirildi.": {
+    "en": "Foot Analysis PDF report downloaded.",
+    "ru": "PDF-отчет анализа стопы загружен.",
+    "ar": "تم تحميل تقرير PDF لتحليل القدم.",
+    "de": "Fußanalyse-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF d'analyse du pied téléchargé.",
+    "es": "Informe PDF de análisis del pie descargado.",
+    "it": "Report PDF analisi del piede scaricato.",
+    "pt": "Relatório PDF de análise do pé descarregado."
+  },
+  "Denge testi PDF raporu indirildi.": {
+    "en": "Balance test PDF report downloaded.",
+    "ru": "PDF-отчет теста баланса загружен.",
+    "ar": "تم تحميل تقرير PDF لاختبار التوازن.",
+    "de": "Gleichgewichtstest-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF du test d'équilibre téléchargé.",
+    "es": "Informe PDF de prueba de equilibrio descargado.",
+    "it": "Report PDF test di equilibrio scaricato.",
+    "pt": "Relatório PDF de teste de equilíbrio descarregado."
+  },
+  "Yürüme analizi PDF raporu indirildi.": {
+    "en": "Gait analysis PDF report downloaded.",
+    "ru": "PDF-отчет анализа походки загружен.",
+    "ar": "تم تحميل تقرير PDF لتحليل المشي.",
+    "de": "Ganganalyse-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF d'analyse de la marche téléchargé.",
+    "es": "Informe PDF de análisis de la marcha descargado.",
+    "it": "Report PDF analisi del cammino scaricato.",
+    "pt": "Relatório PDF de análise da marcha descarregado."
+  },
+  "Bu endeks, vücudun genel denge ve duruş stabilizasyonunu gösterir.<br><br>Sistem tarafından tespit edilen majör bulgu (anomali) sayısı üzerinden hesaplanır. Bulunan her bir belirgin duruş bozukluğu (örneğin; başın öne eğikliği, pelvik asimetri, omuz düşüklüğü vb.) stabilite oranını belirli bir yüzdede düşürür.<br><br>Yüksek oran, vücut ağırlık merkezinin dengeli dağıldığını; düşük oran ise telafi edici (kompansatuar) kas yüklenmelerinin fazla olduğunu işaret eder.": {
+    "en": "This index indicates the body's overall balance and postural stability.<br><br>It is calculated based on the number of major findings (anomalies) detected by the system. Each distinct postural imbalance (e.g. forward head tilt, pelvic asymmetry, shoulder drop, etc.) decreases stability by a calculated percentage.<br><br>A high ratio indicates well-distributed center of gravity; a low ratio indicates excessive compensatory muscular strain.",
+    "ru": "Этот индекс отражает общий баланс и стабильность позы тела.<br><br>Он рассчитывается на основе количества выявленных системой основных аномалий. Каждое выраженное постуральное нарушение (например, наклон головы вперед, асимметрия таза, опущение плеча и т.д.) снижает показатель стабильности на определенный процент.<br><br>Высокий показатель означает сбалансированное распределение центра тяжести, низкий — избыточные компенсаторные мышечные нагрузки.",
+    "ar": "يعكس هذا المؤشر التوازن العام للجسم واستقرار القوام.<br><br>يتم حسابه استنادًا إلى عدد النتائج (التشوهات) الرئيسية التي يكتشفها النظام. يقلل كل خلل قوامي واضح (مثل انحناء الرأس للأمام، عدم تناسق الحوض، هبوط الكتف، إلخ) من نسبة الاستقرار بنسبة معينة.<br><br>المعدل المرتفع يشير إلى توزيع متوازن لمركز ثقل الجسم، بينما المعدل المنخفض يشير إلى إجهاد عضلي تعويضي مفرط.",
+    "de": "Dieser Index zeigt das allgemeine Gleichgewicht und die Haltungsstabilität des Körpers.<br><br>Er wird anhand der Anzahl der vom System erfassten Befunde (Anomalien) berechnet. Jede Fehlhaltung (z. B. Kopfvorneigung, Beckenasymmetrie, Schulterhochstand etc.) reduziert die Stabilität um einen bestimmten Prozentsatz.<br><br>Ein hoher Wert steht für eine gleichmäßige Gewichtsverteilung; ein niedriger Wert deutet auf kompensatorische Muskelüberlastungen hin.",
+    "fr": "Cet indice reflète l'équilibre général et la stabilité posturale du corps.<br><br>Il est calculé d'après le nombre d'anomalies majeures détectées par le système. Chaque déséquilibre postural marqué (ex. inclinaison antérieure de la tête, asymétrie pelvienne, bascule des épaules, etc.) réduit la stabilité d'un certain pourcentage.<br><br>Un taux élevé indique une répartition harmonieuse du centre de gravité ; un taux faible signale des contraintes musculaires compensatoires importantes.",
+    "es": "Este índice refleja el equilibrio general y la estabilidad postural del cuerpo.<br><br>Se calcula a partir del número de anomalías mayores detectadas por el sistema. Cada desequilibrio postural notable (inclinación de la cabeza, asimetría pélvica, desnivel de hombros, etc.) reduce la estabilidad en un porcentaje determinado.<br><br>Un valor alto indica una distribución equilibrada del centro de gravedad; un valor bajo alerta de sobrecargas musculares compensatorias.",
+    "it": "Questo indice indica l'equilibrio generale e la stabilità posturale del corpo.<br><br>È calcolato sul numero di anomalie maggiori rilevate dal sistema. Ogni alterazione posturale significativa (inclinazione del capo, asimmetria pelvica, spalle disallineate, ecc.) riduce la stabilità di una percentuale calcolata.<br><br>Un valore elevato indica una buona distribuzione del centro di gravità; un valore basso segnala un carico muscolare compensatorio eccessivo.",
+    "pt": "Este índice indica o equilíbrio geral e a estabilidade postural do corpo.<br><br>É calculado com base no número de anomalias principais detetadas pelo sistema. Cada desequilíbrio postural evidente (inclinação anterior da cabeça, assimetria pélvica, desnível de ombros, etc.) reduz a estabilidade numa percentagem calculada.<br><br>Uma taxa elevada indica uma distribuição equilibrada do centro de gravidade; uma taxa baixa sinaliza sobrecargas musculares compensatórias excessivas."
+  },
+  "Topuk": {
+    "en": "Heel",
+    "ru": "Пятка",
+    "ar": "الكعب",
+    "de": "Ferse",
+    "fr": "Talon",
+    "es": "Talón",
+    "it": "Tallone",
+    "pt": "Calcanhar"
+  },
+  "Orta Ayak": {
+    "en": "Midfoot",
+    "ru": "Средний отдел стопы",
+    "ar": "وسط القدم",
+    "de": "Mittelfuß",
+    "fr": "Médio-pied",
+    "es": "Mediopié",
+    "it": "Mesopiede",
+    "pt": "Médio-pé"
+  },
+  "Parmaklar": {
+    "en": "Toes",
+    "ru": "Пальцы",
+    "ar": "أصابع القدم",
+    "de": "Zehen",
+    "fr": "Orteils",
+    "es": "Dedos",
+    "it": "Dita",
+    "pt": "Dedos"
+  },
+  "Lateral Sapma (Med-Lat)": {
+    "en": "Lateral Deviation (Med-Lat)",
+    "ru": "Латеральное отклонение (Мед-Лат)",
+    "ar": "الانحراف الجانبي (إنسي-وحشي)",
+    "de": "Laterale Abweichung (Med-Lat)",
+    "fr": "Déviation latérale (Méd-Lat)",
+    "es": "Desviación Lateral (Med-Lat)",
+    "it": "Deviazione Laterale (Med-Lat)",
+    "pt": "Desvio Lateral (Med-Lat)"
+  },
+  "Simetrik": {
+    "en": "Symmetric",
+    "ru": "Симметрично",
+    "ar": "متماثل",
+    "de": "Symmetrisch",
+    "fr": "Symétrique",
+    "es": "Simétrico",
+    "it": "Simmetrico",
+    "pt": "Simétrico"
+  },
+  "Hafif Asimetri": {
+    "en": "Mild Asymmetry",
+    "ru": "Легкая асимметрия",
+    "ar": "عدم تناسق خفيف",
+    "de": "Leichte Asymmetrie",
+    "fr": "Légère asymétrie",
+    "es": "Asimetría Leve",
+    "it": "Lieve Asimmetria",
+    "pt": "Assimetria Ligeira"
+  },
+  "Belirgin Asimetri": {
+    "en": "Significant Asymmetry",
+    "ru": "Выраженная асимметрия",
+    "ar": "عدم تناسق واضح",
+    "de": "Deutliche Asymmetrie",
+    "fr": "Asymétrie marquée",
+    "es": "Asimetría Significativa",
+    "it": "Asimmetria Evidente",
+    "pt": "Assimetria Significativa"
+  },
+  "Optimal": {
+    "en": "Optimal",
+    "ru": "Оптимально",
+    "ar": "مثالي",
+    "de": "Optimal",
+    "fr": "Optimal",
+    "es": "Óptimo",
+    "it": "Ottimale",
+    "pt": "Ótimo"
+  },
+  "Orta": {
+    "en": "Moderate",
+    "ru": "Умеренно",
+    "ar": "متوسط",
+    "de": "Mäßig",
+    "fr": "Modéré",
+    "es": "Moderado",
+    "it": "Moderato",
+    "pt": "Moderado"
+  },
+  "Tek Ayak Sol": {
+    "en": "Single Leg Left",
+    "ru": "На левой ноге",
+    "ar": "قدم واحدة يسار",
+    "de": "Einbeinstand Links",
+    "fr": "Appui monopodal gauche",
+    "es": "Monopodal Izquierdo",
+    "it": "Monopodalico Sinistro",
+    "pt": "Monopodal Esquerdo"
+  },
+  "Yol": {
+    "en": "Path",
+    "ru": "Траектория",
+    "ar": "المسار",
+    "de": "Weg",
+    "fr": "Trajectoire",
+    "es": "Trayectoria",
+    "it": "Percorso",
+    "pt": "Trajetória"
+  },
+  "3D Omurga Simulasyon Raporu": {
+    "en": "3D Spine Simulation Report",
+    "ru": "Отчет 3D-симуляции позвоночника",
+    "ar": "تقرير محاكاة العمود الفقري ثلاثي الأبعاد",
+    "de": "3D-Wirbelsäulensimulationsbericht",
+    "fr": "Rapport de simulation 3D de la colonne vertébrale",
+    "es": "Informe de Simulación 3D de Columna",
+    "it": "Report Simulazione 3D della Colonna",
+    "pt": "Relatório de Simulação 3D da Coluna"
+  },
+  "Analiz Tarihi:": {
+    "en": "Analysis Date:",
+    "ru": "Дата анализа:",
+    "ar": "تاريخ التحليل:",
+    "de": "Analysedatum:",
+    "fr": "Date de l'analyse :",
+    "es": "Fecha del Análisis:",
+    "it": "Data di Analisi:",
+    "pt": "Data de Análise:"
+  },
+  "Analizi Sil": {
+    "en": "Delete Analysis",
+    "ru": "Удалить анализ",
+    "ar": "حذف التحليل",
+    "de": "Analyse löschen",
+    "fr": "Supprimer l'analyse",
+    "es": "Eliminar Análisis",
+    "it": "Elimina Analisi",
+    "pt": "Eliminar Análise"
+  },
+  "Bilinmeyen hata": {
+    "en": "Unknown error",
+    "ru": "Неизвестная ошибка",
+    "ar": "خطأ غير معروف",
+    "de": "Unbekannter Fehler",
+    "fr": "Erreur inconnue",
+    "es": "Error desconocido",
+    "it": "Errore sconosciuto",
+    "pt": "Erro desconhecido"
+  },
+  "Dijital Skolyometre (ATR) Analiz Raporu": {
+    "en": "Digital Scoliometer (ATR) Analysis Report",
+    "ru": "Отчет анализа цифрового сколиометра (ATR)",
+    "ar": "تقرير تحليل مقياس الجنف الرقمي (ATR)",
+    "de": "Digitaler Skoliometer (ATR) Analysebericht",
+    "fr": "Rapport d'analyse du scoliomètre numérique (ATR)",
+    "es": "Informe de Análisis de Escoliómetro Digital (ATR)",
+    "it": "Report di Analisi dello Scoliometro Digitale (ATR)",
+    "pt": "Relatório de Análise do Escoliómetro Digital (ATR)"
+  },
+  "Hata:": {
+    "en": "Error:",
+    "ru": "Ошибка:",
+    "ar": "خطأ:",
+    "de": "Fehler:",
+    "fr": "Erreur :",
+    "es": "Error:",
+    "it": "Errore:",
+    "pt": "Erro:"
+  },
+  "JS Hata:": {
+    "en": "JS Error:",
+    "ru": "Ошибка JS:",
+    "ar": "خطأ JS:",
+    "de": "JS-Fehler:",
+    "fr": "Erreur JS :",
+    "es": "Error JS:",
+    "it": "Errore JS:",
+    "pt": "Erro JS:"
+  },
+  "Klinik Ayak Basinc & Biyomekanik Raporu": {
+    "en": "Clinical Foot Pressure & Biomechanical Report",
+    "ru": "Клинический отчет о давлении стопы и биомеханике",
+    "ar": "التقرير السريري لضغط القدم والميكانيكا الحيوية",
+    "de": "Klinischer Fußdruck- und Biomechanikbericht",
+    "fr": "Rapport clinique de pression plantaire et biomécanique",
+    "es": "Informe Clínico de Presión Plantar y Biomecánica",
+    "it": "Report Clinico di Pressione Plantare e Biomeccanica",
+    "pt": "Relatório Clínico de Pressão Plantar e Biomecânica"
+  },
+  "Klinik Biyomekanik Analiz Raporu": {
+    "en": "Clinical Biomechanical Analysis Report",
+    "ru": "Клинический отчет биомеханического анализа",
+    "ar": "تقرير التحليل الميكانيكي الحيوي السريري",
+    "de": "Klinischer Biomechanik-Analysebericht",
+    "fr": "Rapport clinique d'analyse biomécanique",
+    "es": "Informe de Análisis Biomecánico Clínico",
+    "it": "Report di Analisi Biomeccanica Clinica",
+    "pt": "Relatório de Análise Biomecânica Clínica"
+  },
+  "Klinik Biyomekanik Postur Analizi Raporu": {
+    "en": "Clinical Biomechanical Posture Analysis Report",
+    "ru": "Клинический отчет анализа биомеханической осанки",
+    "ar": "تقرير تحليل القوام الميكانيكي الحيوي السريري",
+    "de": "Klinischer biomechanischer Haltungsanalysebericht",
+    "fr": "Rapport clinique d'analyse posturale biomécanique",
+    "es": "Informe Clínico de Análisis Postural Biomecánico",
+    "it": "Report Clinico di Analisi Posturale Biomeccanica",
+    "pt": "Relatório Clínico de Análise Postural Biomecânica"
+  },
+  "Klinik Omurga & Skolyoz Analiz Raporu": {
+    "en": "Clinical Spine & Scoliosis Analysis Report",
+    "ru": "Клинический отчет анализа позвоночника и сколиоза",
+    "ar": "تقرير التحليل السريري للعمود الفقري والجنف",
+    "de": "Klinischer Wirbelsäulen- und Skolioseanalysebericht",
+    "fr": "Rapport clinique d'analyse de la colonne et scoliose",
+    "es": "Informe Clínico de Análisis de Columna y Escoliosis",
+    "it": "Report Clinico di Analisi della Colonna e Scoliosi",
+    "pt": "Relatório Clínico de Análise da Coluna e Escoliose"
+  },
+  "Omurga analizi PDF raporu indirildi.": {
+    "en": "Spine analysis PDF report downloaded.",
+    "ru": "PDF-отчет анализа позвоночника загружен.",
+    "ar": "تم تحميل تقرير PDF لتحليل العمود الفقري.",
+    "de": "Wirbelsäulenanalyse-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF d'analyse de la colonne vertébrale téléchargé.",
+    "es": "Informe PDF de análisis de columna descargado.",
+    "it": "Report PDF analisi della colonna scaricato.",
+    "pt": "Relatório PDF de análise da coluna descarregado."
+  },
+  "Resim yuklenemedi:": {
+    "en": "Image could not be loaded:",
+    "ru": "Не удалось загрузить изображение:",
+    "ar": "تعذر تحميل الصورة:",
+    "de": "Bild konnte nicht geladen werden:",
+    "fr": "L'image n'a pas pu être chargée :",
+    "es": "No se pudo cargar la imagen:",
+    "it": "Impossibile caricare l'immagine:",
+    "pt": "Não foi possível carregar a imagem:"
+  },
+  "Skolyometre PDF raporu indirildi.": {
+    "en": "Scoliometer PDF report downloaded.",
+    "ru": "PDF-отчет сколиометра загружен.",
+    "ar": "تم تحميل تقرير PDF لمقياس الجنف.",
+    "de": "Skoliometer-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF du scoliomètre téléchargé.",
+    "es": "Informe PDF del escoliómetro descargado.",
+    "it": "Report PDF dello scoliometro scaricato.",
+    "pt": "Relatório PDF do escoliómetro descarregado."
+  },
+  "Statik Ayak PDF raporu indirildi.": {
+    "en": "Static Foot PDF report downloaded.",
+    "ru": "PDF-отчет статического анализа стопы загружен.",
+    "ar": "تم تحميل تقرير PDF للتحليل الاستاتيكي للقدم.",
+    "de": "Statischer Fuß-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF d'analyse statique du pied téléchargé.",
+    "es": "Informe PDF de análisis estático del pie descargado.",
+    "it": "Report PDF analisi statica del piede scaricato.",
+    "pt": "Relatório PDF de análise estática do pé descarregado."
+  },
+  "Yapay Zeka (AI) Destekli Biyomekanik Rapor": {
+    "en": "AI-Powered Biomechanical Report",
+    "ru": "Биомеханический отчет с поддержкой ИИ",
+    "ar": "تقرير الميكانيكا الحيوية المدعوم بالذكاء الاصطناعي",
+    "de": "KI-gestützter biomechanischer Bericht",
+    "fr": "Rapport biomécanique assisté par IA",
+    "es": "Informe Biomecánico Asistido por IA",
+    "it": "Report Biomeccanico Guidato dall'IA",
+    "pt": "Relatório Biomecânico com Suporte de IA"
+  },
+  "Yapay Zeka PDF raporu indirildi.": {
+    "en": "AI PDF report downloaded.",
+    "ru": "PDF-отчет ИИ загружен.",
+    "ar": "تم تحميل تقرير الذكاء الاصطناعي PDF.",
+    "de": "KI-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF de l'IA téléchargé.",
+    "es": "Informe PDF de IA descargado.",
+    "it": "Report PDF dell'IA scaricato.",
+    "pt": "Relatório PDF da IA descarregado."
+  },
+  "Yapay zeka sunucusu yanıt vermedi.": {
+    "en": "AI server did not respond.",
+    "ru": "Сервер ИИ не ответил.",
+    "ar": "لم يستجب خادم الذكاء الاصطناعي.",
+    "de": "KI-Server hat nicht geantwortet.",
+    "fr": "Le serveur d'IA n'a pas répondu.",
+    "es": "El servidor de IA no respondió.",
+    "it": "Il server IA non ha risposto.",
+    "pt": "O servidor de IA não respondeu."
+  },
+  "Yeni Analiz": {
+    "en": "New Analysis",
+    "ru": "Новый анализ",
+    "ar": "تحليل جديد",
+    "de": "Neue Analyse",
+    "fr": "Nouvelle analyse",
+    "es": "Nuevo Análisis",
+    "it": "Nuova Analisi",
+    "pt": "Nova Análise"
+  },
+  "Y (piksel)": {
+    "en": "Y (pixels)",
+    "ru": "Y (пикс)",
+    "ar": "Y (بكسل)",
+    "de": "Y (Pixel)",
+    "fr": "Y (pixels)",
+    "es": "Y (píxeles)",
+    "it": "Y (pixel)",
+    "pt": "Y (pixels)"
+  },
+  "X (piksel)": {
+    "en": "X (pixels)",
+    "ru": "X (пикс)",
+    "ar": "X (بكسل)",
+    "de": "X (Pixel)",
+    "fr": "X (pixels)",
+    "es": "X (píxeles)",
+    "it": "X (pixel)",
+    "pt": "X (pixels)"
+  },
+  "piksel": {
+    "en": "pixel",
+    "ru": "пикс",
+    "ar": "بكسل",
+    "de": "Pixel",
+    "fr": "pixel",
+    "es": "píxel",
+    "it": "pixel",
+    "pt": "píxel"
+  },
+  "Zaman (ms)": {
+    "en": "Time (ms)",
+    "ru": "Время (мс)",
+    "ar": "الوقت (ملي ثانية)",
+    "de": "Zeit (ms)",
+    "fr": "Temps (ms)",
+    "es": "Tiempo (ms)",
+    "it": "Tempo (ms)",
+    "pt": "Tempo (ms)"
+  },
+  "Kuvvet (N)": {
+    "en": "Force (N)",
+    "ru": "Сила (Н)",
+    "ar": "القوة (نيوتن)",
+    "de": "Kraft (N)",
+    "fr": "Force (N)",
+    "es": "Fuerza (N)",
+    "it": "Forza (N)",
+    "pt": "Força (N)"
+  },
+  "COP Yolu": {
+    "en": "COP Path",
+    "ru": "Траектория COP",
+    "ar": "مسار COP",
+    "de": "COP-Weg",
+    "fr": "Trajectoire COP",
+    "es": "Trayectoria COP",
+    "it": "Percorso COP",
+    "pt": "Trajetória COP"
+  },
+  "Basınç - Zaman Eğrisi (GRF)": {
+    "en": "Pressure - Time Curve (GRF)",
+    "ru": "Кривая давление - время (GRF)",
+    "ar": "منحنى الضغط - الوقت (GRF)",
+    "de": "Druck-Zeit-Kurve (GRF)",
+    "fr": "Courbe pression - temps (GRF)",
+    "es": "Curva Presión - Tiempo (GRF)",
+    "it": "Curva Pressione - Tempo (GRF)",
+    "pt": "Curva Pressão - Tempo (GRF)"
+  },
+  "COP İlerleme Yolu (Kelebek Grafiği)": {
+    "en": "COP Progression Path (Butterfly Diagram)",
+    "ru": "Траектория COP (График бабочки)",
+    "ar": "مسار تقدم COP (رسم الفراشة)",
+    "de": "COP-Verlaufspfad (Schmetterlingsdiagramm)",
+    "fr": "Trajectoire COP (Diagramme papillon)",
+    "es": "Trayectoria COP (Diagrama de Mariposa)",
+    "it": "Percorso COP (Diagramma a Farfalla)",
+    "pt": "Trajetória COP (Diagrama de Borboleta)"
+  },
+  "Yük Dağılım Simetrisi (Sol / Sağ)": {
+    "en": "Load Distribution Symmetry (Left / Right)",
+    "ru": "Симметрия распределения нагрузки (Левая / Правая)",
+    "ar": "تماثل توزيع الحمل (يسار / يمين)",
+    "de": "Lastverteilungssymmetrie (Links / Rechts)",
+    "fr": "Symétrie de répartition de charge (Gauche / Droite)",
+    "es": "Simetría de Distribución de Carga (Izq / Der)",
+    "it": "Simmetria di Distribuzione del Carico (Sin / Des)",
+    "pt": "Simetria de Distribuição de Carga (Esq / Dir)"
+  },
+  "RSI Değişkenliği (Adım Bazlı)": {
+    "en": "RSI Variability (Step-Based)",
+    "ru": "Вариабельность RSI (по шагам)",
+    "ar": "تغير RSI (حسب الخطوة)",
+    "de": "RSI-Variabilität (Schrittbasiert)",
+    "fr": "Variabilité RSI (par pas)",
+    "es": "Variabilidad RSI (Por Paso)",
+    "it": "Variabilità RSI (Per Passo)",
+    "pt": "Variabilidade RSI (Por Passo)"
+  },
+  "Yük Profili": {
+    "en": "Load Profile",
+    "ru": "Профиль нагрузки",
+    "ar": "ملف الحمل",
+    "de": "Lastprofil",
+    "fr": "Profil de charge",
+    "es": "Perfil de Carga",
+    "it": "Profilo di Carico",
+    "pt": "Perfil de Carga"
   }
 };
 
@@ -8710,7 +9560,11 @@ const I18N_DYNAMIC_WORDS = {
     arka: { en: 'Back', ru: 'Зад', ar: 'خلفي', de: 'Hinten', fr: 'Arrière', es: 'Posterior', it: 'Posteriore', pt: 'Posterior' },
     adim: { en: 'Step', ru: 'Шаг', ar: 'خطوة', de: 'Schritt', fr: 'Pas', es: 'Paso', it: 'Passo', pt: 'Passo' },
     adimlar: { en: 'Steps', ru: 'Шагов', ar: 'خطوات', de: 'Schritte', fr: 'Pas', es: 'Pasos', it: 'Passi', pt: 'Passos' },
-    kare: { en: 'Frames', ru: 'Кадров', ar: 'إطارات', de: 'Bilder', fr: 'Images', es: 'Fotogramas', it: 'Fotogrammi', pt: 'Fotogramas' }
+    kare: { en: 'Frames', ru: 'Кадров', ar: 'إطارات', de: 'Bilder', fr: 'Images', es: 'Fotogramas', it: 'Fotogrammi', pt: 'Fotogramas' },
+    gecmis: { en: 'History', ru: 'История', ar: 'السجل', de: 'Historie', fr: 'Historique', es: 'Historial', it: 'Cronologia', pt: 'Histórico' },
+    guncel: { en: 'Most Recent', ru: 'Самый актуальный', ar: 'الأحدث', de: 'Aktuellste', fr: 'Le plus récent', es: 'Más Reciente', it: 'Più Recente', pt: 'Mais Recente' },
+    baslangic: { en: 'Start', ru: 'Начало', ar: 'البداية', de: 'Start', fr: 'Début', es: 'Inicio', it: 'Inizio', pt: 'Início' },
+    bitis: { en: 'End', ru: 'Конец', ar: 'النهاية', de: 'Ende', fr: 'Fin', es: 'Fin', it: 'Fine', pt: 'Fim' }
 };
 
 let currentLang = 'tr';
@@ -8721,6 +9575,8 @@ function initI18n() {
     const savedLang = (typeof localStorage !== 'undefined' && localStorage.getItem('cibody_lang')) || 'tr';
     setLanguage(savedLang, false);
     setupI18nObserver();
+    setupWindowOverrides();
+    setupChartJsTranslator();
 }
 
 // 2. Dil Değiştirme
@@ -8805,7 +9661,24 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, translated);
     }
 
-    // B. Noktalama / İki nokta işareti kontrolü (örn: "Omuz Seviye Farkı:")
+    // B. Bileşik Boru (' | ') Ayrımı (Hasta detay çubuğu vb.)
+    if (trimmed.includes(' | ')) {
+        const parts = trimmed.split(' | ');
+        const translatedParts = parts.map(p => translateText(p, targetLang));
+        return text.replace(trimmed, translatedParts.join(' | '));
+    }
+
+    // C. Etiket + Değer Kalıbı (Örn: "Yaş: 25", "Boy: 175cm", "Kilo: 70kg", "Cinsiyet: Erkek")
+    const labelValMatch = trimmed.match(/^([A-Za-zğüşıöçĞÜŞİÖÇ]+:)\s*(.*)$/);
+    if (labelValMatch) {
+        const lbl = labelValMatch[1];
+        const val = labelValMatch[2];
+        const transLbl = (I18N_PHRASES[lbl] && I18N_PHRASES[lbl][targetLang]) || lbl;
+        const transVal = (I18N_PHRASES[val] && I18N_PHRASES[val][targetLang]) || val;
+        return text.replace(trimmed, `${transLbl} ${transVal}`);
+    }
+
+    // D. Noktalama / İki nokta işareti kontrolü (örn: "Omuz Seviye Farkı:")
     if (trimmed.endsWith(':')) {
         const base = trimmed.slice(0, -1).trim();
         if (I18N_PHRASES[base] && I18N_PHRASES[base][targetLang]) {
@@ -8814,7 +9687,7 @@ function translateText(text, targetLang = currentLang) {
         }
     }
 
-    // C. Dinamik Yüzdelik Dağılım Kalıpları: Sol %50, Sağ %50, Ön %30, Arka %70
+    // E. Dinamik Yüzdelik Dağılım Kalıpları: Sol %50, Sağ %50, Ön %30, Arka %70
     const pctMatch = trimmed.match(/^(Sol|Sağ|Ön|Arka)\s*%\s*([\d\.]+)$/i);
     if (pctMatch) {
         const dirKey = pctMatch[1].toLowerCase().replace('ğ','g');
@@ -8823,23 +9696,30 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, `${dirTrans} %${pct}`);
     }
 
-    // D. Dinamik Adım Sayısı Kalıpları: 0 Adım, 12 Adım vb.
-    const stepMatch = trimmed.match(/^(\d+)\s*Adım$/i);
+    // F. Dinamik Adım Sayısı Kalıpları: 0 Adım, 12 Adım, (12 Adım)
+    const stepMatch = trimmed.match(/^\(?(\d+)\s*Adım\)?$/i);
     if (stepMatch) {
         const count = parseInt(stepMatch[1], 10);
         const word = count === 1 ? I18N_DYNAMIC_WORDS.adim[targetLang] : I18N_DYNAMIC_WORDS.adimlar[targetLang];
-        return text.replace(trimmed, `${count} ${word || 'Steps'}`);
+        const hasParens = trimmed.startsWith('(') && trimmed.endsWith(')');
+        const res = `${count} ${word || 'Steps'}`;
+        return text.replace(trimmed, hasParens ? `(${res})` : res);
     }
 
-    // E. Dinamik Adım Sırası: Adım 1, Adım 2 vb.
-    const stepNumMatch = trimmed.match(/^Adım\s+(\d+)$/i);
-    if (stepNumMatch) {
-        const num = stepNumMatch[1];
+    // G. Dinamik Adım Sırası / Başlangıç - Bitiş: Adım 1, Adım 2 Başlangıç vb.
+    const stepStartEndMatch = trimmed.match(/^Adım\s+(\d+)(\s+(Başlangıç|Bitiş))?$/i);
+    if (stepStartEndMatch) {
+        const num = stepStartEndMatch[1];
+        const suffix = stepStartEndMatch[3];
         const stepWord = I18N_DYNAMIC_WORDS.adim[targetLang] || 'Step';
-        return text.replace(trimmed, `${stepWord} ${num}`);
+        let suffixWord = '';
+        if (suffix) {
+            suffixWord = suffix === 'Başlangıç' ? (' ' + I18N_DYNAMIC_WORDS.baslangic[targetLang]) : (' ' + I18N_DYNAMIC_WORDS.bitis[targetLang]);
+        }
+        return text.replace(trimmed, `${stepWord} ${num}${suffixWord}`);
     }
 
-    // F. Dinamik Kare Sayısı: 12 Kare, 45 Kare vb.
+    // H. Dinamik Kare Sayısı: 12 Kare, 45 Kare vb.
     const frameMatch = trimmed.match(/^(\d+)\s+Kare$/i);
     if (frameMatch) {
         const num = frameMatch[1];
@@ -8847,7 +9727,47 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, `${num} ${frameWord}`);
     }
 
-    // G. Durum Rozetleri
+    // I. Dinamik Geçmiş Tarih Kalıbı: "Geçmiş: 15.10.2026", "Geçmiş #2", "En Güncel (15.10.2026)"
+    const histMatch = trimmed.match(/^Geçmiş\s*:\s*(.*)$/i);
+    if (histMatch) {
+        const word = I18N_DYNAMIC_WORDS.gecmis[targetLang] || 'History';
+        return text.replace(trimmed, `${word}: ${histMatch[1]}`);
+    }
+    const histNumMatch = trimmed.match(/^Geçmiş\s*#(\d+)$/i);
+    if (histNumMatch) {
+        const word = I18N_DYNAMIC_WORDS.gecmis[targetLang] || 'History';
+        return text.replace(trimmed, `${word} #${histNumMatch[1]}`);
+    }
+    const latestDateMatch = trimmed.match(/^En Güncel\s*\((.*)\)$/i);
+    if (latestDateMatch) {
+        const word = I18N_DYNAMIC_WORDS.guncel[targetLang] || 'Most Recent';
+        return text.replace(trimmed, `${word} (${latestDateMatch[1]})`);
+    }
+
+    // J. FTI ve Yüklenme Hızı Kalıpları
+    const ftiMatch = trimmed.match(/^FTI:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
+    if (ftiMatch) {
+        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
+        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
+        return text.replace(trimmed, `FTI: ${leftWord} %${ftiMatch[1]} / ${rightWord} %${ftiMatch[2]}`);
+    }
+    const lrMatch = trimmed.match(/^Yüklenme Hızı:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
+    if (lrMatch) {
+        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
+        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
+        const lrLabel = targetLang === 'de' ? 'Belastungsrate' : (targetLang === 'fr' ? 'Taux de charge' : (targetLang === 'es' ? 'Tasa de carga' : 'Loading Rate'));
+        return text.replace(trimmed, `${lrLabel}: ${leftWord} %${lrMatch[1]} / ${rightWord} %${lrMatch[2]}`);
+    }
+
+    // K. Ayak Adım Sayısı (n=X)
+    const footNMatch = trimmed.match(/^(Sol|Sağ)\s*Ayak\s*\(n=(\d+)\)$/i);
+    if (footNMatch) {
+        const footKey = footNMatch[1] === 'Sol' ? 'SOL AYAK' : 'SAĞ AYAK';
+        const footTrans = (I18N_PHRASES[footKey] && I18N_PHRASES[footKey][targetLang]) || (footNMatch[1] + ' Foot');
+        return text.replace(trimmed, `${footTrans} (n=${footNMatch[2]})`);
+    }
+
+    // L. Durum Rozetleri
     if (trimmed.toUpperCase() === 'CANLI') return I18N_PHRASES['CANLI'] ? I18N_PHRASES['CANLI'][targetLang] : 'LIVE';
     if (trimmed.toUpperCase() === 'KAYDEDİLDİ') return I18N_PHRASES['KAYDEDİLDİ'] ? I18N_PHRASES['KAYDEDİLDİ'][targetLang] : 'SAVED';
     if (trimmed.toUpperCase() === 'GEÇMİŞ') return I18N_PHRASES['GEÇMİŞ'] ? I18N_PHRASES['GEÇMİŞ'][targetLang] : 'PAST';
@@ -9056,7 +9976,69 @@ function setupI18nObserver() {
     });
 }
 
-// 9. Dil Seçici Menüleri Güncelle
+// 9. Window Global Metotlarını Sar (alert, confirm, showToast)
+function setupWindowOverrides() {
+    if (typeof window === 'undefined') return;
+
+    // alert override
+    if (window.alert && !window._origAlert) {
+        window._origAlert = window.alert;
+        window.alert = function(msg) {
+            const trans = window.translateText ? window.translateText(String(msg)) : msg;
+            return window._origAlert(trans);
+        };
+    }
+
+    // confirm override
+    if (window.confirm && !window._origConfirm) {
+        window._origConfirm = window.confirm;
+        window.confirm = function(msg) {
+            const trans = window.translateText ? window.translateText(String(msg)) : msg;
+            return window._origConfirm(trans);
+        };
+    }
+}
+
+// 10. Chart.js Otomatik Çevirici Entegrasyonu
+function setupChartJsTranslator() {
+    if (typeof window === 'undefined') return;
+    const tryRegister = () => {
+        if (typeof Chart !== 'undefined' && Chart.register && !window._chartJsI18nRegistered) {
+            window._chartJsI18nRegistered = true;
+            try {
+                Chart.register({
+                    id: 'cibodyI18nPlugin',
+                    beforeInit: function(chart) {
+                        if (currentLang === 'tr') return;
+                        if (chart.options && chart.options.plugins && chart.options.plugins.title && chart.options.plugins.title.text) {
+                            if (typeof chart.options.plugins.title.text === 'string') {
+                                chart.options.plugins.title.text = translateText(chart.options.plugins.title.text);
+                            }
+                        }
+                        if (chart.data && chart.data.labels && Array.isArray(chart.data.labels)) {
+                            chart.data.labels = chart.data.labels.map(l => typeof l === 'string' ? translateText(l) : l);
+                        }
+                        if (chart.data && chart.data.datasets && Array.isArray(chart.data.datasets)) {
+                            chart.data.datasets.forEach(ds => {
+                                if (ds.label && typeof ds.label === 'string') {
+                                    ds.label = translateText(ds.label);
+                                }
+                            });
+                        }
+                    }
+                });
+            } catch(e) {}
+        }
+    };
+
+    tryRegister();
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', tryRegister);
+    }
+    window.addEventListener('load', tryRegister);
+}
+
+// 11. Dil Seçici Menüleri Güncelle
 function updateLangSelectors() {
     if (typeof document === 'undefined') return;
     const selectors = document.querySelectorAll('select.cibody-lang-select, #langSelect, #headerLangSelect');
