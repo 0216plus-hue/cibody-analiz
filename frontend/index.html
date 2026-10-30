@@ -24,7 +24,7 @@
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="i18n.js?v=20.9"></script>
+<script src="i18n.js?v=21.0"></script>
 
 
     <style id="pdf-export-css">
@@ -1441,10 +1441,7 @@
 
     <div id="footContentSection" class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
-        <div id="footCanvasContainer" class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex flex-col items-center justify-center">
-            <div id="footCanvasPdfTitle" class="hidden text-xs font-bold text-white uppercase tracking-wider mb-2 text-center z-20">
-                <i class="fa-solid fa-shoe-prints text-indigo-400 mr-2"></i><span data-i18n="Plantar Basınç Haritası">Plantar Basınç Haritası</span>
-            </div>
+        <div id="footCanvasContainer" class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block w-full h-full object-contain"></canvas>
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
@@ -2007,7 +2004,6 @@
             const canvasContainer = document.getElementById('footCanvasContainer');
             const dataPanel = document.getElementById('footAnalysisDataPanel');
             const liveBadge = document.getElementById('footLiveStatus');
-            const canvasPdfTitle = document.getElementById('footCanvasPdfTitle');
             const loadPanel = document.getElementById('footLoadReportPanel');
             const bioPanel = document.getElementById('footBiomechanicalReportPanel');
             const loadRef = document.getElementById('footLoadRefNote');
@@ -2041,7 +2037,7 @@
             const prevBadgeDisp = liveBadge ? liveBadge.style.display : '';
 
             // PDF için tek A4 sayfasına sığacak dikey hiyerarşi:
-            // ÜSTTE: Büyütülmüş ve Ortalanmış Ayak Basınç Haritası (Canvas - 390px)
+            // ÜSTTE: Daha da Büyütülmüş ve Ortalanmış Ayak Isı Haritası (Canvas - 430px)
             // ALTTA: 2 Farklı Rapor Yan Yana (Yük Dağılımı ve Biyomekanik Parametreler)
             element.style.display = 'flex';
             element.style.flexDirection = 'column';
@@ -2055,16 +2051,12 @@
             element.style.gap = '14px';
 
             if (canvasContainer) {
-                canvasContainer.style.width = '390px';
-                canvasContainer.style.height = '390px';
-                canvasContainer.style.maxWidth = '390px';
-                canvasContainer.style.maxHeight = '390px';
-                canvasContainer.style.flex = '0 0 390px';
+                canvasContainer.style.width = '430px';
+                canvasContainer.style.height = '430px';
+                canvasContainer.style.maxWidth = '430px';
+                canvasContainer.style.maxHeight = '430px';
+                canvasContainer.style.flex = '0 0 430px';
                 canvasContainer.style.margin = '0 auto';
-            }
-
-            if (canvasPdfTitle) {
-                canvasPdfTitle.style.display = 'block';
             }
 
             if (liveBadge) {
@@ -2100,9 +2092,24 @@
                 bioRef.style.display = 'block';
             }
 
+            const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+            const filenamePrefixes = {
+                tr: 'statik_ayak_analiz',
+                en: 'static_foot_analysis',
+                ru: 'static_foot_analysis',
+                ar: 'static_foot_analysis',
+                de: 'statische_fussanalyse',
+                fr: 'analyse_statique_pied',
+                es: 'analisis_estatico_pie',
+                it: 'analisi_statica_piede',
+                pt: 'analise_estatica_pe'
+            };
+            const prefix = filenamePrefixes[lang] || 'statik_ayak_analiz';
+            const pdfFilename = `${prefix}_${currentPatientId}.pdf`;
+
             const opt = {
                 margin:       [0.65, 0.35, 0.45, 0.35],
-                filename:     `statik_ayak_analiz_${currentPatientId}.pdf`,
+                filename:     pdfFilename,
                 image:        { type: 'jpeg', quality: 1.0 },
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -2130,10 +2137,6 @@
                     canvasContainer.style.maxHeight = prevCanvasMaxH;
                     canvasContainer.style.flex = prevCanvasFlex;
                     canvasContainer.style.margin = prevCanvasMargin;
-                }
-
-                if (canvasPdfTitle) {
-                    canvasPdfTitle.style.display = '';
                 }
 
                 if (liveBadge) {
@@ -2167,7 +2170,7 @@
             };
 
             if (typeof runPdf === 'function') {
-                runPdf(instance, `statik_ayak_analiz_${currentPatientId}.pdf`, transSubtitle).then(() => {
+                runPdf(instance, pdfFilename, transSubtitle).then(() => {
                     cleanup();
                     if (typeof showToast === 'function') {
                         showToast(_trans("Ayak Analizi PDF raporu indirildi."));
