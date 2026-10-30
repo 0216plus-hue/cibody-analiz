@@ -176,6 +176,8 @@ function analyzeGaitData(steps) {
 }
 
 function renderGaitResults() {
+    const _t = (s) => (window.translateText ? window.translateText(s) : s);
+
     // Summary Update
     document.getElementById('gSummaryTotal').innerText = gaitResults.totalSteps;
     document.getElementById('gSummaryLeft').innerText = gaitResults.leftCount;
@@ -189,8 +191,9 @@ function renderGaitResults() {
     document.getElementById('gMetricRightLoad').innerText = "%" + gaitResults.metrics.rightLoad.toFixed(1);
     document.getElementById('gMetricPeakAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1);
     
-    let severity = gaitResults.metrics.forceAsym < 10 ? ' (Simetrik)' : (gaitResults.metrics.forceAsym < 20 ? ' (Hafif Asimetri)' : ' (Belirgin Asimetri)');
-    document.getElementById('gMetricForceAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1) + severity;
+    let severityKey = gaitResults.metrics.forceAsym < 10 ? 'Simetrik' : (gaitResults.metrics.forceAsym < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+    let severity = _t(severityKey);
+    document.getElementById('gMetricForceAsym').innerText = "%" + gaitResults.metrics.forceAsym.toFixed(1) + " (" + severity + ")";
     
     // Adım Detaylarını Çiz
     let detailsContainer = document.getElementById('gaitStepDetailsContainer');
@@ -204,16 +207,18 @@ function renderGaitResults() {
             for(let i=0; i<5; i++) {
                 phaseHtml += `<div class="flex flex-col items-center">
                     <canvas id="phase_${step.id}_${i}" width="100" height="100" class="bg-black rounded-lg border border-slate-800"></canvas>
-                    <span class="text-xs text-slate-500 mt-2 font-medium">Faz ${i+1}</span>
+                    <span class="text-xs text-slate-500 mt-2 font-medium">${_t('Faz')} ${i+1}</span>
                 </div>`;
             }
             
             let titleColor = step.type === 'Sol Ayak' ? 'text-red-600' : 'text-blue-600';
+            let stepTrans = _t('Adım');
+            let typeTrans = _t(step.type);
             
             div.innerHTML = `
-                <h4 class="text-xl font-bold ${titleColor} mb-4 border-b border-slate-100 pb-2">Adım ${step.id} - ${step.type}</h4>
+                <h4 class="text-xl font-bold ${titleColor} mb-4 border-b border-slate-100 pb-2">${stepTrans} ${step.id} - ${typeTrans}</h4>
                 
-                <p class="text-sm font-bold text-slate-700 mb-3">5 Faz Görüntüleri</p>
+                <p class="text-sm font-bold text-slate-700 mb-3">${_t('5 Faz Görüntüleri')}</p>
                 <div class="flex gap-4 overflow-x-auto mb-8">
                     ${phaseHtml}
                 </div>
@@ -388,14 +393,14 @@ function renderCharts() {
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Topuk', data: heelData, backgroundColor: '#f43f5e' },
-                    { label: 'Orta Ayak', data: midData, backgroundColor: '#14b8a6' },
-                    { label: 'Ön Ayak', data: foreData, backgroundColor: '#0ea5e9' }
+                    { label: _t('Topuk'), data: heelData, backgroundColor: '#f43f5e' },
+                    { label: _t('Orta Ayak'), data: midData, backgroundColor: '#14b8a6' },
+                    { label: _t('Ön Ayak'), data: foreData, backgroundColor: '#0ea5e9' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Bölgesel Basınç Dağılımı' } },
+                plugins: { title: { display: true, text: _t('Bölgesel Basınç Dağılımı') } },
                 scales: { y: { beginAtZero: true, max: 100 } }
             }
         });
@@ -414,7 +419,7 @@ function renderCharts() {
         chartInstances['avgRegional'] = new Chart(ctxAvgRegional, {
             type: 'pie',
             data: {
-                labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'],
+                labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'].map(l => _t(l)),
                 datasets: [{
                     data: [avgHeel, avgMid, avgFore],
                     backgroundColor: ['#f43f5e', '#14b8a6', '#0ea5e9']
@@ -422,7 +427,7 @@ function renderCharts() {
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Ortalama Bölgesel Basınç Dağılımı' } }
+                plugins: { title: { display: true, text: _t('Ortalama Bölgesel Basınç Dağılımı') } }
             }
         });
     }
@@ -440,7 +445,7 @@ function renderCharts() {
                 return { x: i * 25, y: sum / 300 }; 
             });
             return {
-                label: `Adım ${step.id}`,
+                label: `${_t('Adım')} ${step.id}`,
                 data: data,
                 borderColor: colorBase,
                 borderWidth: 1.5,
@@ -450,15 +455,16 @@ function renderCharts() {
             };
         });
 
+        let adimWord = steps.length === 1 ? _t('Adım') : _t('Adımlar');
         chartInstances[ctxId] = new Chart(ctx, {
             type: 'line',
             data: { datasets: datasets },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: title + ` (${steps.length} Adım)` }, legend: { display: false } },
+                plugins: { title: { display: true, text: `${_t(title)} (${steps.length} ${adimWord})` }, legend: { display: false } },
                 scales: { 
-                    x: { type: 'linear', title: { display: true, text: 'Zaman (ms)' } },
-                    y: { title: { display: true, text: 'Kuvvet (N)' }, min: 0 }
+                    x: { type: 'linear', title: { display: true, text: _t('Zaman (ms)') } },
+                    y: { title: { display: true, text: _t('Kuvvet (N)') }, min: 0 }
                 }
             }
         });
@@ -508,10 +514,10 @@ function renderCharts() {
     let lrRightPct = (rightLR / totalLR * 100).toFixed(1);
     
     const elFTI = document.getElementById('grfFTI');
-    if(elFTI) elFTI.innerText = `FTI: Sol %${ftiLeftPct} / Sağ %${ftiRightPct}`;
+    if(elFTI) elFTI.innerText = _t(`FTI: Sol %${ftiLeftPct} / Sağ %${ftiRightPct}`);
     
     const elLR = document.getElementById('grfLoadingRate');
-    if(elLR) elLR.innerText = `Yüklenme Hızı: Sol %${lrLeftPct} / Sağ %${lrRightPct}`;
+    if(elLR) elLR.innerText = _t(`Yüklenme Hızı: Sol %${lrLeftPct} / Sağ %${lrRightPct}`);
 
     // --- COP Trajektorisi ve Metrikler ---
     let ctxCop = document.getElementById('gaitCopChart');
@@ -524,7 +530,7 @@ function renderCharts() {
             let color = step.type === 'Sol Ayak' ? 'rgba(239, 68, 68, 0.7)' : 'rgba(59, 130, 246, 0.7)';
             
             datasets.push({
-                label: `Adım ${step.id}`,
+                label: `${_t('Adım')} ${step.id}`,
                 data: data,
                 borderColor: color,
                 borderWidth: 2,
@@ -535,7 +541,7 @@ function renderCharts() {
             
             // Start point (circle)
             datasets.push({
-                label: `Adım ${step.id} Başlangıç`,
+                label: `${_t('Adım')} ${step.id} ${_t('Başlangıç')}`,
                 data: [data[0]],
                 backgroundColor: color,
                 pointRadius: 5
@@ -543,7 +549,7 @@ function renderCharts() {
             
             // End point (cross)
             datasets.push({
-                label: `Adım ${step.id} Bitiş`,
+                label: `${_t('Adım')} ${step.id} ${_t('Bitiş')}`,
                 data: [data[data.length-1]],
                 backgroundColor: color,
                 pointStyle: 'crossRot',
@@ -558,12 +564,12 @@ function renderCharts() {
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { 
-                    title: { display: true, text: 'COP Trajektorileri (Kırmızı: Sol, Mavi: Sağ)' },
+                    title: { display: true, text: _t('COP Trajektorileri (Kırmızı: Sol, Mavi: Sağ)') },
                     legend: { display: false } 
                 },
                 scales: {
-                    x: { title: { display: true, text: 'X (piksel)' } },
-                    y: { reverse: true, title: { display: true, text: 'Y (piksel)' } }
+                    x: { title: { display: true, text: `${_t('X')} (${_t('piksel') || 'px'})` } },
+                    y: { reverse: true, title: { display: true, text: `${_t('Y')} (${_t('piksel') || 'px'})` } }
                 }
             }
         });
@@ -603,16 +609,16 @@ function renderCharts() {
         chartInstances['copMet'] = new Chart(ctxCopMet, {
             type: 'bar',
             data: {
-                labels: ['Lateral Sapma (Med-Lat)', 'COP Yol Uzunluğu (Toplam)'],
+                labels: ['Lateral Sapma (Med-Lat)', 'COP Yol Uzunluğu (Toplam)'].map(l => _t(l)),
                 datasets: [
-                    { label: 'Sol Ayak', data: [avgLeftLat, avgLeftLen], backgroundColor: '#ef4444' },
-                    { label: 'Sağ Ayak', data: [avgRightLat, avgRightLen], backgroundColor: '#3b82f6' }
+                    { label: _t('Sol Ayak'), data: [avgLeftLat, avgLeftLen], backgroundColor: '#ef4444' },
+                    { label: _t('Sağ Ayak'), data: [avgRightLat, avgRightLen], backgroundColor: '#3b82f6' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'COP Metrikleri (Basınç Merkezi Analizi)' } },
-                scales: { y: { title: { display: true, text: 'piksel' } } }
+                plugins: { title: { display: true, text: _t('COP Metrikleri (Basınç Merkezi Analizi)') } },
+                scales: { y: { title: { display: true, text: _t('piksel') || 'px' } } }
             }
         });
     }
@@ -620,8 +626,8 @@ function renderCharts() {
     // --- Sol - Sağ Ayak Karşılaştırması ---
     let compLeftTitle = document.getElementById('compLeftTitle');
     let compRightTitle = document.getElementById('compRightTitle');
-    if (compLeftTitle) compLeftTitle.innerText = `Sol Ayak (n=${leftSteps.length})`;
-    if (compRightTitle) compRightTitle.innerText = `Sağ Ayak (n=${rightSteps.length})`;
+    if (compLeftTitle) compLeftTitle.innerText = `${_t('Sol Ayak')} (n=${leftSteps.length})`;
+    if (compRightTitle) compRightTitle.innerText = `${_t('Sağ Ayak')} (n=${rightSteps.length})`;
 
     // Composite aggregates
     let leftComposite = new Uint8Array(2304);
@@ -658,9 +664,9 @@ function renderCharts() {
             let tr = document.createElement('tr');
             tr.className = 'border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors';
             tr.innerHTML = `
-                <td class="px-4 py-2.5 font-medium text-slate-700">Çift ${i+1}</td>
-                <td class="px-4 py-2.5">Adım ${leftSteps[i].id}</td>
-                <td class="px-4 py-2.5">Adım ${rightSteps[i].id}</td>
+                <td class="px-4 py-2.5 font-medium text-slate-700">${_t('Çift')} ${i+1}</td>
+                <td class="px-4 py-2.5">${_t('Adım')} ${leftSteps[i].id}</td>
+                <td class="px-4 py-2.5">${_t('Adım')} ${rightSteps[i].id}</td>
                 <td class="px-4 py-2.5">%${lPct} / %${rPct}</td>
                 <td class="px-4 py-2.5 ${bgClass} font-bold text-slate-700 text-center">%${rsi}</td>
             `;
@@ -672,12 +678,12 @@ function renderCharts() {
     if (tbodyAvg) {
         tbodyAvg.innerHTML = `
             <tr class="border-b border-slate-100">
-                <td class="px-4 py-2.5 font-medium text-slate-700">Çift Sayısı</td>
+                <td class="px-4 py-2.5 font-medium text-slate-700">${_t('Çift Sayısı')}</td>
                 <td class="px-4 py-2.5">${leftSteps.length}</td>
                 <td class="px-4 py-2.5">${rightSteps.length}</td>
             </tr>
             <tr>
-                <td class="px-4 py-2.5 font-medium text-slate-700">Yük Dağılımı (%)</td>
+                <td class="px-4 py-2.5 font-medium text-slate-700">${_t('Yük Dağılımı (%)')}</td>
                 <td class="px-4 py-2.5 font-bold">${gaitResults.metrics.leftLoad.toFixed(1)}%</td>
                 <td class="px-4 py-2.5 font-bold">${gaitResults.metrics.rightLoad.toFixed(1)}%</td>
             </tr>
@@ -687,12 +693,13 @@ function renderCharts() {
     let tbodyEval = document.getElementById('compEvalTableBody');
     if (tbodyEval) {
         let rsi = gaitResults.metrics.forceAsym;
-        let severity = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        let severityKey = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        let severity = _t(severityKey);
         let bgClass = rsi < 10 ? 'bg-green-100' : (rsi < 20 ? 'bg-amber-100' : 'bg-red-100');
         
         tbodyEval.innerHTML = `
             <tr>
-                <td class="px-4 py-3 font-medium text-slate-700">Ortalama Çift Simetrisi</td>
+                <td class="px-4 py-3 font-medium text-slate-700">${_t('Ortalama Çift Simetrisi')}</td>
                 <td class="px-4 py-3 ${bgClass} font-bold text-slate-800 text-center">%${rsi.toFixed(1)} - ${severity}</td>
             </tr>
         `;
@@ -704,7 +711,7 @@ function renderCharts() {
         let labels = [], leftL = [], rightL = [];
         let pairs = Math.min(leftSteps.length, rightSteps.length);
         for(let i=0; i<pairs; i++) {
-            labels.push('Çift ' + (i+1));
+            labels.push(`${_t('Çift')} ${i+1}`);
             let total = leftSteps[i].maxForce + rightSteps[i].maxForce;
             leftL.push( (leftSteps[i].maxForce / total) * 100 );
             rightL.push( (rightSteps[i].maxForce / total) * 100 );
@@ -715,14 +722,14 @@ function renderCharts() {
             data: {
                 labels: labels,
                 datasets: [
-                    { label: 'Sol', data: leftL, backgroundColor: '#ef4444' },
-                    { label: 'Sağ', data: rightL, backgroundColor: '#3b82f6' }
+                    { label: _t('Sol'), data: leftL, backgroundColor: '#ef4444' },
+                    { label: _t('Sağ'), data: rightL, backgroundColor: '#3b82f6' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Çift Bazlı Yük Dağılımı' } },
-                scales: { y: { max: 100, title: { display: true, text: 'Yük Dağılımı (%)' } } },
+                plugins: { title: { display: true, text: _t('Çift Bazlı Yük Dağılımı') } },
+                scales: { y: { max: 100, title: { display: true, text: _t('Yük Dağılımı (%)') } } },
                 horizontalLines: [{ y: 50, color: 'green', dash: [5, 5], width: 2 }]
             }
         });
@@ -744,15 +751,15 @@ function renderCharts() {
                 labels: labels,
                 datasets: [
                     { label: 'RSI (%)', data: data, backgroundColor: 'green' },
-                    { label: 'Simetrik (<10%)', data: [], borderColor: 'green', borderDash: [5,5], type: 'line' },
-                    { label: 'Hafif (<20%)', data: [], borderColor: 'orange', borderDash: [5,5], type: 'line' }
+                    { label: _t('Simetrik (<10%)'), data: [], borderColor: 'green', borderDash: [5,5], type: 'line' },
+                    { label: _t('Hafif (<20%)'), data: [], borderColor: 'orange', borderDash: [5,5], type: 'line' }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { title: { display: true, text: 'Çift Simetri İndeksleri' } },
+                plugins: { title: { display: true, text: _t('Çift Simetri İndeksleri') } },
                 scales: { 
-                    x: { title: { display: true, text: 'Adım Çifti' } },
+                    x: { title: { display: true, text: _t('Adım Çifti') } },
                     y: { max: 25, title: { display: true, text: 'RSI (%)' } } 
                 },
                 horizontalLines: [
@@ -766,12 +773,13 @@ function renderCharts() {
     let ctxSymAvg = document.getElementById('chartSymAvgLoad');
     if (ctxSymAvg) {
         let rsi = gaitResults.metrics.forceAsym;
-        let severity = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        let severityKey = rsi < 10 ? 'Simetrik' : (rsi < 20 ? 'Hafif Asimetri' : 'Belirgin Asimetri');
+        let severity = _t(severityKey);
         
         chartInstances['symAvg'] = new Chart(ctxSymAvg, {
             type: 'pie',
             data: {
-                labels: ['Sol Ayak', 'Sağ Ayak'],
+                labels: [_t('Sol Ayak'), _t('Sağ Ayak')],
                 datasets: [{
                     data: [gaitResults.metrics.leftLoad, gaitResults.metrics.rightLoad],
                     backgroundColor: ['#ef4444', '#3b82f6']
@@ -782,7 +790,7 @@ function renderCharts() {
                 plugins: { 
                     title: { 
                         display: true, 
-                        text: ['Ortalama Yük Dağılımı', `RSI: %${rsi.toFixed(1)} (${severity})`]
+                        text: [_t('Ortalama Yük Dağılımı'), `RSI: %${rsi.toFixed(1)} (${severity})`]
                     },
                     legend: { position: 'right' }
                 }
@@ -810,7 +818,7 @@ function renderCharts() {
                     chartInstances[`chart5reg_${step.id}`] = new Chart(ctx, {
                         type: 'bar',
                         data: {
-                            labels: ['Başparmak', 'Parmaklar', 'Ön Ayak', 'Orta Ayak', 'Topuk'],
+                            labels: ['Başparmak', 'Parmaklar', 'Ön Ayak', 'Orta Ayak', 'Topuk'].map(l => _t(l)),
                             datasets: [{
                                 data: [step.regions5.toe1, step.regions5.toes25, step.regions5.fore, step.regions5.mid, step.regions5.heel],
                                 backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'] // Purple, Blue, Green, Orange, Red
@@ -819,7 +827,7 @@ function renderCharts() {
                         options: {
                             responsive: true, maintainAspectRatio: false,
                             plugins: { 
-                                title: { display: true, text: `Adım ${step.id} - ${step.type.replace(' Ayak','')}` },
+                                title: { display: true, text: `${_t('Adım')} ${step.id} - ${_t(step.type.replace(' Ayak',''))}` },
                                 legend: { display: false },
                                 datalabels: {
                                     display: true,
@@ -867,14 +875,14 @@ function renderCharts() {
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Basınç',
+                            label: _t('Basınç'),
                             data: normPressure,
                             borderColor: 'blue',
                             backgroundColor: 'rgba(59, 130, 246, 0.2)',
                             borderWidth: 2, fill: true, tension: 0.4, pointRadius: 0
                         },
                         {
-                            label: 'Alan',
+                            label: _t('Alan'),
                             data: normArea,
                             borderColor: 'green',
                             borderDash: [5, 5],
@@ -884,8 +892,8 @@ function renderCharts() {
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { title: { display: true, text: 'Yürüme Fazları Analizi' }, legend: { display: true, position: 'top', align: 'center' } },
-                    scales: { y: { min: 0, max: 100, title: { display: true, text: 'Normalize Değer (%)' } } }
+                    plugins: { title: { display: true, text: _t('Yürüme Fazları Analizi') }, legend: { display: true, position: 'top', align: 'center' } },
+                    scales: { y: { min: 0, max: 100, title: { display: true, text: _t('Normalize Değer (%)') } } }
                 }
             });
         }
@@ -895,7 +903,7 @@ function renderCharts() {
             chartInstances[`regionalChart_${step.id}`] = new Chart(ctxRegional, {
                 type: 'bar',
                 data: {
-                    labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'],
+                    labels: ['Topuk', 'Orta Ayak', 'Ön Ayak'].map(l => _t(l)),
                     datasets: [{
                         data: [step.regional.heelPct, step.regional.midPct, step.regional.forePct],
                         backgroundColor: ['#ef4444', '#10b981', '#f59e0b'] // Red, Green, Orange
@@ -904,7 +912,7 @@ function renderCharts() {
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { 
-                        title: { display: true, text: 'Bölgesel Dağılım' },
+                        title: { display: true, text: _t('Bölgesel Dağılım') },
                         legend: { display: false },
                         datalabels: {
                             display: true,
@@ -927,19 +935,19 @@ function renderCharts() {
                 data: {
                     datasets: [
                         {
-                            label: 'Yol',
+                            label: _t('Yol'),
                             data: data,
                             borderColor: 'rgba(156, 163, 175, 0.5)', // gray
                             borderWidth: 2, showLine: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: 'rgba(239, 68, 68, 0.5)'
                         },
                         {
-                            label: 'Başlangıç',
+                            label: _t('Başlangıç'),
                             data: data.length > 0 ? [data[0]] : [],
                             backgroundColor: 'green',
                             pointRadius: 6
                         },
                         {
-                            label: 'Bitiş',
+                            label: _t('Bitiş'),
                             data: data.length > 0 ? [data[data.length-1]] : [],
                             backgroundColor: 'red',
                             pointStyle: 'crossRot',
@@ -950,10 +958,10 @@ function renderCharts() {
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { title: { display: true, text: 'COP Yolu' }, legend: { display: true, position: 'right' } },
+                    plugins: { title: { display: true, text: _t('COP Yolu') }, legend: { display: true, position: 'right' } },
                     scales: { 
-                        x: { reverse: false, title: { display: true, text: 'X' } },
-                        y: { reverse: true, title: { display: true, text: 'Y' } }
+                        x: { reverse: false, title: { display: true, text: _t('X') } },
+                        y: { reverse: true, title: { display: true, text: _t('Y') } }
                     }
                 }
             });
@@ -961,3 +969,9 @@ function renderCharts() {
     });
 
 }
+
+window.addEventListener('cibody:languageChanged', function() {
+    if (typeof renderGaitResults === 'function' && gaitResults && gaitResults.processedSteps && gaitResults.processedSteps.length > 0) {
+        renderGaitResults();
+    }
+});

@@ -24,7 +24,7 @@
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="i18n.js?v=20.1"></script>
+<script src="i18n.js?v=20.2"></script>
 
 
     <style id="pdf-export-css">
@@ -1831,10 +1831,11 @@
                     tPct = (topP / totalP * 100).toFixed(1);
                     bPct = (bottomP / totalP * 100).toFixed(1);
 
-                    document.getElementById('barL').style.width = lPct + "%"; document.getElementById('barL').innerText = "Sol %" + lPct;
-                    document.getElementById('barR').style.width = rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + rPct;
-                    document.getElementById('barT').style.width = tPct + "%"; document.getElementById('barT').innerText = "Ön %" + tPct;
-                    document.getElementById('barB').style.width = bPct + "%"; document.getElementById('barB').innerText = "Arka %" + bPct;
+                    const _trans = (window.translateText || (s => s));
+                    document.getElementById('barL').style.width = lPct + "%"; document.getElementById('barL').innerText = _trans("Sol") + " %" + lPct;
+                    document.getElementById('barR').style.width = rPct + "%"; document.getElementById('barR').innerText = _trans("Sağ") + " %" + rPct;
+                    document.getElementById('barT').style.width = tPct + "%"; document.getElementById('barT').innerText = _trans("Ön") + " %" + tPct;
+                    document.getElementById('barB').style.width = bPct + "%"; document.getElementById('barB').innerText = _trans("Arka") + " %" + bPct;
                 }
 
                 lastFootData = {
@@ -1960,10 +1961,11 @@
                 document.getElementById('btnDownloadFootPdf').classList.remove('hidden');
 
                 let d = record.data;
-                document.getElementById('barL').style.width = d.lPct + "%"; document.getElementById('barL').innerText = "Sol %" + d.lPct;
-                document.getElementById('barR').style.width = d.rPct + "%"; document.getElementById('barR').innerText = "Sağ %" + d.rPct;
-                document.getElementById('barT').style.width = d.tPct + "%"; document.getElementById('barT').innerText = "Ön %" + d.tPct;
-                document.getElementById('barB').style.width = d.bPct + "%"; document.getElementById('barB').innerText = "Arka %" + d.bPct;
+                const _trans = (window.translateText || (s => s));
+                document.getElementById('barL').style.width = d.lPct + "%"; document.getElementById('barL').innerText = _trans("Sol") + " %" + d.lPct;
+                document.getElementById('barR').style.width = d.rPct + "%"; document.getElementById('barR').innerText = _trans("Sağ") + " %" + d.rPct;
+                document.getElementById('barT').style.width = d.tPct + "%"; document.getElementById('barT').innerText = _trans("Ön") + " %" + d.tPct;
+                document.getElementById('barB').style.width = d.bPct + "%"; document.getElementById('barB').innerText = _trans("Arka") + " %" + d.bPct;
                 
                 document.getElementById('val_left_clarke').innerText = d.leftClarke !== "-" ? d.leftClarke + "°" : "-°";
                 document.getElementById('val_left_arch').innerText = d.leftArch;
@@ -2288,7 +2290,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=20.1"></script>
+    <script src="app.js?v=20.2"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -2689,11 +2691,11 @@
     <!-- Three.js ve OrbitControls -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="simulation.js?v=19.3"></script>
+    <script src="simulation.js?v=20.2"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=19.3"></script>
-<script src="gait_analysis.js?v=19.3"></script>
-    <script src="balance.js?v=19.3"></script>
+<script src="gait.js?v=20.2"></script>
+<script src="gait_analysis.js?v=20.2"></script>
+    <script src="balance.js?v=20.2"></script>
 </body>
 </html>

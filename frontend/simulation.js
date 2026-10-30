@@ -269,6 +269,61 @@ async function saveSimulationRecord() {
 
 let currentSimulationHistory = [];
 
+function renderSimulationHistoryTable() {
+    const tbody = document.getElementById('simHistoryList');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    if (!currentSimulationHistory || currentSimulationHistory.length === 0) {
+        const emptyMsg = (window.translateText ? window.translateText('Henüz kayıt bulunmuyor.') : 'Henüz kayıt bulunmuyor.');
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-400">${emptyMsg}</td></tr>`;
+        return;
+    }
+    
+    const _t = (window.translateText ? window.translateText : (s => s));
+    const editTitle = _t('Bu kaydı simülatöre yükle ve düzenle');
+    const editLabel = _t('Seç & Düzenle');
+    const deleteTitle = _t('Kaydı Sil');
+    const deleteLabel = _t('Sil');
+
+    currentSimulationHistory.forEach(item => {
+        let dateStr = '';
+        if (typeof formatAppDate === 'function') {
+            dateStr = formatAppDate(item.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } else {
+            const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+            const localeMap = { tr: 'tr-TR', en: 'en-US', ru: 'ru-RU', ar: 'ar-SA', de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT', pt: 'pt-PT' };
+            dateStr = new Date(item.created_at + 'Z').toLocaleString(localeMap[lang] || 'tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+        const methodTrans = _t(item.measurement_method);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="px-4 py-3 whitespace-nowrap"><div class="font-medium text-slate-700">${dateStr}</div></td>
+            <td class="px-4 py-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-xs font-bold">${item.start_vertebra} - ${item.end_vertebra}</span></td>
+            <td class="px-4 py-3 font-bold text-slate-700">${item.cobb_angle}°</td>
+            <td class="px-4 py-3 text-slate-600">${item.rotation_angle}°</td>
+            <td class="px-4 py-3 text-slate-600">${item.torsion_angle}°</td>
+            <td class="px-4 py-3 text-slate-600">${item.lateral_shift} mm</td>
+            <td class="px-4 py-3 text-xs text-slate-500">${methodTrans}</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+                <button onclick="applySimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg text-xs transition border border-emerald-200 shadow-sm" title="${editTitle}">
+                    <i class="fa-solid fa-pen-to-square"></i> ${editLabel}
+                </button>
+                <button onclick="deleteSimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-xs transition border border-red-200 shadow-sm ml-1.5" title="${deleteTitle}">
+                    <i class="fa-solid fa-trash"></i> ${deleteLabel}
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+window.addEventListener('cibody:languageChanged', function() {
+    if (typeof renderSimulationHistoryTable === 'function' && currentSimulationHistory && currentSimulationHistory.length > 0) {
+        renderSimulationHistoryTable();
+    }
+});
+
 async function loadSimulationHistory() {
     if (!currentPatientId) return;
     
@@ -277,36 +332,7 @@ async function loadSimulationHistory() {
         if (res.ok) {
             const data = await res.json();
             currentSimulationHistory = data.history || [];
-            const tbody = document.getElementById('simHistoryList');
-            tbody.innerHTML = '';
-            
-            if (currentSimulationHistory.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-slate-400">Henüz kayıt bulunmuyor.</td></tr>';
-                return;
-            }
-            
-            currentSimulationHistory.forEach(item => {
-                const dateStr = new Date(item.created_at + 'Z').toLocaleString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 whitespace-nowrap"><div class="font-medium text-slate-700">${dateStr}</div></td>
-                    <td class="px-4 py-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md text-xs font-bold">${item.start_vertebra} - ${item.end_vertebra}</span></td>
-                    <td class="px-4 py-3 font-bold text-slate-700">${item.cobb_angle}°</td>
-                    <td class="px-4 py-3 text-slate-600">${item.rotation_angle}°</td>
-                    <td class="px-4 py-3 text-slate-600">${item.torsion_angle}°</td>
-                    <td class="px-4 py-3 text-slate-600">${item.lateral_shift} mm</td>
-                    <td class="px-4 py-3 text-xs text-slate-500">${item.measurement_method}</td>
-                    <td class="px-4 py-3 text-right whitespace-nowrap">
-                        <button onclick="applySimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg text-xs transition border border-emerald-200 shadow-sm" title="Bu kaydı simülatöre yükle ve düzenle">
-                            <i class="fa-solid fa-pen-to-square"></i> Seç & Düzenle
-                        </button>
-                        <button onclick="deleteSimulationRecord(${item.id})" class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg text-xs transition border border-red-200 shadow-sm ml-1.5" title="Kaydı Sil">
-                            <i class="fa-solid fa-trash"></i> Sil
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
+            renderSimulationHistoryTable();
         }
     } catch (e) {
         console.error(e);

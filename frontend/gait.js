@@ -375,7 +375,8 @@ function updateGaitUI() {
     const badgeEl = document.getElementById('gaitStepCountBadge');
     const emptyState = document.getElementById('gaitEmptyState');
     
-    if(badgeEl) badgeEl.innerText = `${recordedSteps.length} Adım`;
+    const _t = (window.translateText || (s => s));
+    if(badgeEl) badgeEl.innerText = _t(`${recordedSteps.length} Adım`);
     
     if (recordedSteps.length === 0) {
         if(emptyState) emptyState.classList.remove('hidden');
@@ -430,12 +431,15 @@ function updateGaitUI() {
         
         let card = document.createElement('div');
         card.className = "bg-white border border-slate-200 p-3 rounded-xl shadow-sm flex gap-4 items-center shrink-0";
+        const _stepLabel = _t(`Adım ${s.id}`);
+        const _typeLabel = _t(s.type);
+        const _frameLabel = _t(`${s.frameCount} Kare`);
         card.innerHTML = `
             <img src="${c.toDataURL()}" class="w-16 h-16 bg-black rounded-lg object-cover border border-slate-800">
             <div class="flex-1">
-                <h4 class="font-bold text-sm text-slate-800">Adım ${s.id}</h4>
-                <p class="text-xs font-semibold ${s.type === 'Sağ Ayak' ? 'text-blue-500' : 'text-red-500'} mb-1">${s.type}</p>
-                <p class="text-[10px] text-slate-500">${s.frameCount} Kare</p>
+                <h4 class="font-bold text-sm text-slate-800">${_stepLabel}</h4>
+                <p class="text-xs font-semibold ${s.type === 'Sağ Ayak' ? 'text-blue-500' : 'text-red-500'} mb-1">${_typeLabel}</p>
+                <p class="text-[10px] text-slate-500">${_frameLabel}</p>
             </div>
             <div class="flex flex-col gap-1">
                 <button onclick="toggleStepSide(${index})" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1 rounded transition border border-slate-200"><i class="fa-solid fa-right-left"></i></button>

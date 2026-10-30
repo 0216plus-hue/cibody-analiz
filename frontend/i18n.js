@@ -10879,6 +10879,76 @@ const I18N_PHRASES = {
       "es": "inclinación pélvica",
       "it": "inclinazione pelvica",
       "pt": "inclinação pélvica"
+  },
+  "Faz": {
+    "en": "Phase",
+    "ru": "Фаза",
+    "ar": "مرحلة",
+    "de": "Phase",
+    "fr": "Phase",
+    "es": "Fase",
+    "it": "Fase",
+    "pt": "Fase"
+  },
+  "Yüklenme Hızı": {
+    "en": "Loading Rate",
+    "ru": "Скорость нагрузки",
+    "ar": "معدل التحميل",
+    "de": "Belastungsrate",
+    "fr": "Taux de charge",
+    "es": "Tasa de carga",
+    "it": "Velocità di carico",
+    "pt": "Taxa de carga"
+  },
+  "Adım": {
+    "en": "Step",
+    "ru": "Шаг",
+    "ar": "خطوة",
+    "de": "Schritt",
+    "fr": "Pas",
+    "es": "Paso",
+    "it": "Passo",
+    "pt": "Passo"
+  },
+  "Adımlar": {
+    "en": "Steps",
+    "ru": "Шаги",
+    "ar": "خطوات",
+    "de": "Schritte",
+    "fr": "Pas",
+    "es": "Pasos",
+    "it": "Passi",
+    "pt": "Passos"
+  },
+  "Simetrik (<10%)": {
+    "en": "Symmetric (<10%)",
+    "ru": "Симметрично (<10%)",
+    "ar": "متماثل (<10%)",
+    "de": "Symmetrisch (<10%)",
+    "fr": "Symétrique (<10%)",
+    "es": "Simétrico (<10%)",
+    "it": "Simmetrico (<10%)",
+    "pt": "Simétrico (<10%)"
+  },
+  "Hafif (<20%)": {
+    "en": "Mild (<20%)",
+    "ru": "Легкая (<20%)",
+    "ar": "طفيف (<20%)",
+    "de": "Leicht (<20%)",
+    "fr": "Léger (<20%)",
+    "es": "Leve (<20%)",
+    "it": "Lieve (<20%)",
+    "pt": "Ligeiro (<20%)"
+  },
+  "Alan": {
+    "en": "Area",
+    "ru": "Площадь",
+    "ar": "المساحة",
+    "de": "Fläche",
+    "fr": "Surface",
+    "es": "Área",
+    "it": "Area",
+    "pt": "Área"
   }
 };
 
@@ -10887,7 +10957,11 @@ const I18N_DYNAMIC_WORDS = {
     sol: { en: 'Left', ru: 'Левый', ar: 'يسار', de: 'Links', fr: 'Gauche', es: 'Izquierda', it: 'Sinistra', pt: 'Esquerda' },
     sag: { en: 'Right', ru: 'Правый', ar: 'يمين', de: 'Rechts', fr: 'Droite', es: 'Derecha', it: 'Destra', pt: 'Direita' },
     on: { en: 'Front', ru: 'Перед', ar: 'أمامي', de: 'Vorne', fr: 'Avant', es: 'Anterior', it: 'Anteriore', pt: 'Anterior' },
+    ön: { en: 'Front', ru: 'Перед', ar: 'أمامي', de: 'Vorne', fr: 'Avant', es: 'Anterior', it: 'Anteriore', pt: 'Anterior' },
     arka: { en: 'Back', ru: 'Зад', ar: 'خلفي', de: 'Hinten', fr: 'Arrière', es: 'Posterior', it: 'Posteriore', pt: 'Posterior' },
+    cift: { en: 'Pair', ru: 'Пара', ar: 'زوج', de: 'Paar', fr: 'Paire', es: 'Par', it: 'Paio', pt: 'Par' },
+    ciftler: { en: 'Pairs', ru: 'Пары', ar: 'أزواج', de: 'Paare', fr: 'Paires', es: 'Pares', it: 'Paia', pt: 'Pares' },
+    faz: { en: 'Phase', ru: 'Фаза', ar: 'مرحلة', de: 'Phase', fr: 'Phase', es: 'Fase', it: 'Fase', pt: 'Fase' },
     adim: { en: 'Step', ru: 'Шаг', ar: 'خطوة', de: 'Schritt', fr: 'Pas', es: 'Paso', it: 'Passo', pt: 'Passo' },
     adimlar: { en: 'Steps', ru: 'Шагов', ar: 'خطوات', de: 'Schritte', fr: 'Pas', es: 'Pasos', it: 'Passi', pt: 'Passos' },
     kare: { en: 'Frames', ru: 'Кадров', ar: 'إطارات', de: 'Bilder', fr: 'Images', es: 'Fotogramas', it: 'Fotogrammi', pt: 'Fotogramas' },
@@ -10998,13 +11072,48 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, translatedParts.join(' | '));
     }
 
+    // B2. Dinamik Özel Kalıplar (RSI, GRF, FTI, Yüklenme Hızı)
+    const rsiMatch = trimmed.match(/^RSI:\s*%\s*([\d\.]+)\s*\(([^)]+)\)$/i);
+    if (rsiMatch) {
+        const rsiVal = rsiMatch[1];
+        const sevTr = rsiMatch[2].trim();
+        const sevTrans = (I18N_PHRASES[sevTr] && I18N_PHRASES[sevTr][targetLang]) || translateText(sevTr, targetLang);
+        return text.replace(trimmed, `RSI: %${rsiVal} (${sevTrans})`);
+    }
+
+    const grfMatch = trimmed.match(/^(Sol|Sağ)\s+Ayak\s+GRF\s+Eğrileri\s*\((.*)\)$/i);
+    if (grfMatch) {
+        const side = grfMatch[1];
+        const fullBase = `${side} Ayak GRF Eğrileri`;
+        const baseTrans = (I18N_PHRASES[fullBase] && I18N_PHRASES[fullBase][targetLang]) || fullBase;
+        const inside = translateText(grfMatch[2], targetLang);
+        return text.replace(trimmed, `${baseTrans} (${inside})`);
+    }
+
+    const ftiMatch = trimmed.match(/^FTI:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
+    if (ftiMatch) {
+        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
+        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
+        return text.replace(trimmed, `FTI: ${leftWord} %${ftiMatch[1]} / ${rightWord} %${ftiMatch[2]}`);
+    }
+
+    const lrMatch = trimmed.match(/^Yüklenme Hızı:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
+    if (lrMatch) {
+        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
+        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
+        const lrLabel = (I18N_PHRASES['Yüklenme Hızı'] && I18N_PHRASES['Yüklenme Hızı'][targetLang]) || 'Loading Rate';
+        return text.replace(trimmed, `${lrLabel}: ${leftWord} %${lrMatch[1]} / ${rightWord} %${lrMatch[2]}`);
+    }
+
     // C. Etiket + Değer Kalıbı (Örn: "Yaş: 25", "Boy: 175cm", "Kilo: 70kg", "Cinsiyet: Erkek")
-    const labelValMatch = trimmed.match(/^([A-Za-zğüşıöçĞÜŞİÖÇ]+:)\s*(.*)$/);
+    const labelValMatch = trimmed.match(/^([A-Za-zğüşıöçĞÜŞİÖÇ\s]+:)\s*(.*)$/);
     if (labelValMatch) {
         const lbl = labelValMatch[1];
         const val = labelValMatch[2];
-        const transLbl = (I18N_PHRASES[lbl] && I18N_PHRASES[lbl][targetLang]) || lbl;
-        const transVal = (I18N_PHRASES[val] && I18N_PHRASES[val][targetLang]) || val;
+        const baseLbl = lbl.slice(0, -1).trim();
+        const transLbl = (I18N_PHRASES[lbl] && I18N_PHRASES[lbl][targetLang]) ||
+                         (I18N_PHRASES[baseLbl] && (I18N_PHRASES[baseLbl][targetLang] + ':')) || lbl;
+        const transVal = translateText(val, targetLang);
         return text.replace(trimmed, `${transLbl} ${transVal}`);
     }
 
@@ -11020,11 +11129,30 @@ function translateText(text, targetLang = currentLang) {
     // E. Dinamik Yüzdelik Dağılım Kalıpları: Sol %50, Sağ %50, Ön %30, Arka %70
     const pctMatch = trimmed.match(/^(Sol|Sağ|Ön|Arka)\s*%\s*([\d\.]+)$/i);
     if (pctMatch) {
-        const dirKey = pctMatch[1].toLowerCase().replace('ğ','g');
+        let dirKey = pctMatch[1].toLowerCase().replace('ğ','g');
+        if (dirKey === 'ön' || dirKey === 'on') dirKey = 'on';
         const pct = pctMatch[2];
         const dirTrans = (I18N_DYNAMIC_WORDS[dirKey] && I18N_DYNAMIC_WORDS[dirKey][targetLang]) || pctMatch[1];
         return text.replace(trimmed, `${dirTrans} %${pct}`);
     }
+
+    // Çift 1, Çift 2
+    const pairMatch = trimmed.match(/^Çift\s+(\d+)$/i);
+    if (pairMatch) {
+        const num = pairMatch[1];
+        const pairWord = (I18N_DYNAMIC_WORDS.cift && I18N_DYNAMIC_WORDS.cift[targetLang]) || 'Pair';
+        return text.replace(trimmed, `${pairWord} ${num}`);
+    }
+
+    // Faz 1, Faz 2
+    const phaseMatch = trimmed.match(/^Faz\s+(\d+)$/i);
+    if (phaseMatch) {
+        const num = phaseMatch[1];
+        const phaseWord = (I18N_DYNAMIC_WORDS.faz && I18N_DYNAMIC_WORDS.faz[targetLang]) || 'Phase';
+        return text.replace(trimmed, `${phaseWord} ${num}`);
+    }
+
+
 
     // F. Dinamik Adım Sayısı Kalıpları: 0 Adım, 12 Adım, (12 Adım)
     const stepMatch = trimmed.match(/^\(?(\d+)\s*Adım\)?$/i);
@@ -11074,20 +11202,7 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, `${word} (${latestDateMatch[1]})`);
     }
 
-    // J. FTI ve Yüklenme Hızı Kalıpları
-    const ftiMatch = trimmed.match(/^FTI:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
-    if (ftiMatch) {
-        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
-        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
-        return text.replace(trimmed, `FTI: ${leftWord} %${ftiMatch[1]} / ${rightWord} %${ftiMatch[2]}`);
-    }
-    const lrMatch = trimmed.match(/^Yüklenme Hızı:\s*Sol\s*%\s*([\d\.]+)\s*\/\s*Sağ\s*%\s*([\d\.]+)/i);
-    if (lrMatch) {
-        const leftWord = I18N_DYNAMIC_WORDS.sol[targetLang] || 'Left';
-        const rightWord = I18N_DYNAMIC_WORDS.sag[targetLang] || 'Right';
-        const lrLabel = targetLang === 'de' ? 'Belastungsrate' : (targetLang === 'fr' ? 'Taux de charge' : (targetLang === 'es' ? 'Tasa de carga' : 'Loading Rate'));
-        return text.replace(trimmed, `${lrLabel}: ${leftWord} %${lrMatch[1]} / ${rightWord} %${lrMatch[2]}`);
-    }
+
 
     // K. Ayak Adım Sayısı (n=X)
     const footNMatch = trimmed.match(/^(Sol|Sağ)\s*Ayak\s*\(n=(\d+)\)$/i);
@@ -11363,7 +11478,16 @@ function setupChartJsTranslator() {
                         if (chart.options && chart.options.plugins && chart.options.plugins.title && chart.options.plugins.title.text) {
                             if (typeof chart.options.plugins.title.text === 'string') {
                                 chart.options.plugins.title.text = translateText(chart.options.plugins.title.text);
+                            } else if (Array.isArray(chart.options.plugins.title.text)) {
+                                chart.options.plugins.title.text = chart.options.plugins.title.text.map(t => typeof t === 'string' ? translateText(t) : t);
                             }
+                        }
+                        if (chart.options && chart.options.scales) {
+                            Object.values(chart.options.scales).forEach(scale => {
+                                if (scale && scale.title && typeof scale.title.text === 'string') {
+                                    scale.title.text = translateText(scale.title.text);
+                                }
+                            });
                         }
                         if (chart.data && chart.data.labels && Array.isArray(chart.data.labels)) {
                             chart.data.labels = chart.data.labels.map(l => typeof l === 'string' ? translateText(l) : l);
@@ -11593,6 +11717,8 @@ if (typeof window !== 'undefined') {
     window.applyTranslations = applyTranslations;
     window.translateDom = translateDom;
     window.I18N_LANGUAGES = I18N_LANGUAGES;
+    window.I18N_PHRASES = I18N_PHRASES;
+    window.I18N_DYNAMIC_WORDS = I18N_DYNAMIC_WORDS;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
