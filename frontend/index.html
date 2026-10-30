@@ -24,7 +24,7 @@
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="i18n.js?v=20.5"></script>
+<script src="i18n.js?v=20.6"></script>
 
 
     <style id="pdf-export-css">
@@ -1439,7 +1439,7 @@
         </div>
     </div>
 
-    <div class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
+    <div id="footContentSection" class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
         <div id="footCanvasContainer" class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
             <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
@@ -1978,227 +1978,116 @@
                 return;
             }
 
-            const canvas = document.getElementById("foot_analysis_canvas");
-            let footImgData = "";
-            if (canvas) {
-                try {
-                    footImgData = canvas.toDataURL("image/png");
-                } catch(e) {
-                    console.warn("Foot canvas snapshot error:", e);
-                }
+            const element = document.getElementById('footContentSection') || document.getElementById('footTab');
+            if (!element) {
+                console.error("Foot content section not found");
+                return;
             }
 
-            const _trans = (window.translateText || (s => s));
+            const canvasContainer = document.getElementById('footCanvasContainer');
+            const dataPanel = document.getElementById('footAnalysisDataPanel');
+            const liveBadge = document.getElementById('footLiveStatus');
 
-            // Güncel değerleri topla
-            const lPct = (window.lastFootData && window.lastFootData.lPct) || (document.getElementById('barL') ? (document.getElementById('barL').style.width.replace('%','').trim() || '50') : '50');
-            const rPct = (window.lastFootData && window.lastFootData.rPct) || (document.getElementById('barR') ? (document.getElementById('barR').style.width.replace('%','').trim() || '50') : '50');
-            const tPct = (window.lastFootData && window.lastFootData.tPct) || (document.getElementById('barT') ? (document.getElementById('barT').style.width.replace('%','').trim() || '30') : '30');
-            const bPct = (window.lastFootData && window.lastFootData.bPct) || (document.getElementById('barB') ? (document.getElementById('barB').style.width.replace('%','').trim() || '70') : '70');
+            // Mevcut stilleri yedekle
+            const prevSectionFlex = element.style.flexDirection;
+            const prevSectionDisplay = element.style.display;
+            const prevSectionJustify = element.style.justifyContent;
+            const prevSectionGap = element.style.gap;
+            const prevSectionWidth = element.style.width;
 
-            const leftClarke = document.getElementById('val_left_clarke') ? document.getElementById('val_left_clarke').innerText : '-°';
-            const leftArch = document.getElementById('val_left_arch') ? document.getElementById('val_left_arch').innerText : '-';
-            const rightClarke = document.getElementById('val_right_clarke') ? document.getElementById('val_right_clarke').innerText : '-°';
-            const rightArch = document.getElementById('val_right_arch') ? document.getElementById('val_right_arch').innerText : '-';
+            const prevCanvasW = canvasContainer ? canvasContainer.style.width : '';
+            const prevCanvasH = canvasContainer ? canvasContainer.style.height : '';
+            const prevCanvasFlex = canvasContainer ? canvasContainer.style.flex : '';
 
-            // Çoklu Dil Başlıkları
-            const tTitle = _trans("Statik Ayak Analizi");
-            const tSubtitle = _trans("Statik Basınç Dağılımı ve Biyomekanik Parametreler");
-            const tPlantarMap = _trans("Plantar Basınç Haritası");
-            const tLrDist = _trans("Sol / Sağ Dağılımı");
-            const tFrDist = _trans("Ön / Arka Dağılımı");
-            const tLeftFoot = _trans("Sol Ayak");
-            const tRightFoot = _trans("Sağ Ayak");
-            const tLeft = _trans("Sol");
-            const tRight = _trans("Sağ");
-            const tFront = _trans("Ön");
-            const tRear = _trans("Arka");
-            const tRef = _trans("Klinik Referans Değerleri");
-            const tNormal = _trans("Normal");
-            const tFlat = _trans("Düz Taban");
-            const tHigh = _trans("Çukur Ayak");
-            const tClarke = _trans("Clarke Açısı");
-            const tArchIdx = _trans("Ark İndeksi");
+            const prevPanelW = dataPanel ? dataPanel.style.width : '';
+            const prevPanelH = dataPanel ? dataPanel.style.height : '';
+            const prevPanelFlex = dataPanel ? dataPanel.style.flex : '';
+            const prevPanelOverflow = dataPanel ? dataPanel.style.overflow : '';
 
-            let dateStr = "";
-            if (typeof formatAppDate === 'function') {
-                dateStr = formatAppDate(new Date(), { day: 'numeric', month: 'short', year: 'numeric' });
-            } else {
-                dateStr = new Date().toLocaleDateString();
+            const prevBadgeDisp = liveBadge ? liveBadge.style.display : '';
+
+            // PDF için yan yana, orantılı ve tek A4 sayfasına sabit düzen uygula
+            element.style.display = 'flex';
+            element.style.flexDirection = 'row';
+            element.style.justifyContent = 'center';
+            element.style.alignItems = 'flex-start';
+            element.style.gap = '24px';
+            element.style.width = '960px';
+
+            if (canvasContainer) {
+                canvasContainer.style.width = '460px';
+                canvasContainer.style.height = '460px';
+                canvasContainer.style.flex = '0 0 460px';
             }
-
-            // PDF için izole, tek sayfalık A4 konteyneri oluştur
-            const printContainer = document.createElement('div');
-            printContainer.id = 'printContainerStaticFoot';
-            printContainer.style.width = '750px';
-            printContainer.style.maxWidth = '750px';
-            printContainer.style.background = '#ffffff';
-            printContainer.style.position = 'absolute';
-            printContainer.style.left = '-9999px';
-            printContainer.style.top = '0';
-            printContainer.style.padding = '14px 16px';
-            printContainer.style.fontFamily = 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-            printContainer.style.color = '#1e293b';
-            printContainer.style.boxSizing = 'border-box';
-
-            printContainer.innerHTML = `
-                <!-- Rapor Başlığı -->
-                <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end;">
-                    <div>
-                        <h2 style="font-size: 17px; font-weight: 900; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
-                            <span style="color: #ef4444;">👣</span> ${tTitle}
-                        </h2>
-                        <p style="font-size: 11px; color: #64748b; margin: 3px 0 0 0;">${tSubtitle}</p>
-                    </div>
-                    <div style="font-size: 11px; font-weight: 700; color: #4338ca; background: #eef2ff; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px;">
-                        ${dateStr}
-                    </div>
-                </div>
-
-                <!-- Ana Bölüm (Yan Yana): Sol Isı Haritası (350px) + Sağ Veri Paneli (360px) -->
-                <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px;">
-                    
-                    <!-- Sol: 1:1 Kare Ayak Basınç Haritası (Kırpılma ve bozulma kesinlikle olmaz) -->
-                    <div style="width: 350px; height: 350px; flex: 0 0 350px; background: #000000; border-radius: 16px; border: 3px solid #1e293b; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                        ${footImgData ? `<img src="${footImgData}" style="width: 344px; height: 344px; object-fit: contain; display: block;" />` : `<div style="color: #64748b; font-size: 12px;">${tPlantarMap}</div>`}
-                        <div style="position: absolute; bottom: 8px; left: 10px; background: rgba(15,23,42,0.85); color: #cbd5e1; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);">
-                            ${tPlantarMap}
-                        </div>
-                    </div>
-
-                    <!-- Sağ: İstatistik ve Metrik Kartları -->
-                    <div style="width: 360px; flex: 0 0 360px; display: flex; flex-direction: column; gap: 10px;">
-                        
-                        <!-- Sol / Sağ Yük Dağılımı -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                            <div style="font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; text-align: center;">
-                                ⚖️ ${tLrDist}
-                            </div>
-                            <div style="height: 28px; background: #f1f5f9; border-radius: 8px; overflow: hidden; display: flex; position: relative; border: 1px solid #e2e8f0;">
-                                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.7); z-index: 5; transform: translateX(-50%);"></div>
-                                <div style="width: ${lPct}%; background: linear-gradient(90deg, #3b82f6, #06b6d4); color: #ffffff; font-size: 11px; font-weight: 800; display: flex; align-items: center; padding-left: 8px;">
-                                    ${tLeft} %${lPct}
-                                </div>
-                                <div style="width: ${rPct}%; background: linear-gradient(90deg, #10b981, #84cc16); color: #ffffff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
-                                    ${tRight} %${rPct}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ön / Arka Yük Dağılımı -->
-                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                            <div style="font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; text-align: center;">
-                                ↕️ ${tFrDist}
-                            </div>
-                            <div style="height: 28px; background: #f1f5f9; border-radius: 8px; overflow: hidden; display: flex; position: relative; border: 1px solid #e2e8f0;">
-                                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.7); z-index: 5; transform: translateX(-50%);"></div>
-                                <div style="width: ${tPct}%; background: linear-gradient(90deg, #8b5cf6, #ec4899); color: #ffffff; font-size: 11px; font-weight: 800; display: flex; align-items: center; padding-left: 8px;">
-                                    ${tFront} %${tPct}
-                                </div>
-                                <div style="width: ${bPct}%; background: linear-gradient(90deg, #f59e0b, #eab308); color: #ffffff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;">
-                                    ${tRear} %${bPct}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sol Ayak & Sağ Ayak Parametreleri (2 Sütun) -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            
-                            <!-- Sol Ayak -->
-                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; text-align: center; margin-bottom: 8px;">
-                                    ${tLeftFoot}
-                                </div>
-                                <div style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 6px 8px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 10px; font-weight: 700; color: #64748b;">CLARKE</span>
-                                    <span style="font-size: 14px; font-weight: 900; color: #312e81;">${leftClarke}</span>
-                                </div>
-                                <div style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 6px 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 10px; font-weight: 700; color: #64748b;">${_trans('ARK İND.')}</span>
-                                    <span style="font-size: 14px; font-weight: 900; color: #059669;">${leftArch}</span>
-                                </div>
-                            </div>
-
-                            <!-- Sağ Ayak -->
-                            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                                <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; text-align: center; margin-bottom: 8px;">
-                                    ${tRightFoot}
-                                </div>
-                                <div style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 6px 8px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 10px; font-weight: 700; color: #64748b;">CLARKE</span>
-                                    <span style="font-size: 14px; font-weight: 900; color: #312e81;">${rightClarke}</span>
-                                </div>
-                                <div style="background: #f8fafc; border: 1px solid #f1f5f9; padding: 6px 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="font-size: 10px; font-weight: 700; color: #64748b;">${_trans('ARK İND.')}</span>
-                                    <span style="font-size: 14px; font-weight: 900; color: #059669;">${rightArch}</span>
-                                </div>
-                            </div>
-
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- Alt Kısım: Klinik Biyomekanik Referans Cetveli -->
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 14px;">
-                    <div style="font-size: 10px; font-weight: 800; color: #4338ca; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
-                        <span>📋</span> ${tRef}
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 9.5px; color: #475569; line-height: 1.4;">
-                        <div>
-                            <span style="font-weight: 700; color: #0f172a;">${tClarke}:</span>
-                            <span style="color: #16a34a; font-weight: 600;">${tNormal}: 42° - 45°</span> | 
-                            <span>${tFlat}: &lt; 35°</span> | 
-                            <span>${tHigh}: &gt; 45°</span>
-                        </div>
-                        <div>
-                            <span style="font-weight: 700; color: #0f172a;">${tArchIdx}:</span>
-                            <span style="color: #16a34a; font-weight: 600;">${tNormal}: 0.21 - 0.26</span> | 
-                            <span>${tFlat}: &gt; 0.26</span> | 
-                            <span>${tHigh}: &lt; 0.21</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(printContainer);
+            if (dataPanel) {
+                dataPanel.style.width = '440px';
+                dataPanel.style.flex = '0 0 440px';
+                dataPanel.style.height = 'auto';
+                dataPanel.style.overflow = 'visible';
+            }
+            if (liveBadge) {
+                liveBadge.style.display = 'none';
+            }
 
             const opt = {
-                margin:       [0.65, 0.3, 0.5, 0.3],
+                margin:       [0.70, 0.3, 0.5, 0.3],
                 filename:     `statik_ayak_analiz_${currentPatientId}.pdf`,
                 image:        { type: 'jpeg', quality: 1.0 },
                 html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['avoid-all'] }
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
             };
 
+            const _trans = (window.translateText || (s => s));
             const transSubtitle = _trans("Statik Ayak Analizi Raporu");
-            const instance = html2pdf().set(opt).from(printContainer);
+            const instance = html2pdf().set(opt).from(element);
 
-            if(typeof runPdf === 'function') {
+            const cleanup = () => {
+                element.style.display = prevSectionDisplay;
+                element.style.flexDirection = prevSectionFlex;
+                element.style.justifyContent = prevSectionJustify;
+                element.style.gap = prevSectionGap;
+                element.style.width = prevSectionWidth;
+
+                if (canvasContainer) {
+                    canvasContainer.style.width = prevCanvasW;
+                    canvasContainer.style.height = prevCanvasH;
+                    canvasContainer.style.flex = prevCanvasFlex;
+                }
+                if (dataPanel) {
+                    dataPanel.style.width = prevPanelW;
+                    dataPanel.style.height = prevPanelH;
+                    dataPanel.style.flex = prevPanelFlex;
+                    dataPanel.style.overflow = prevPanelOverflow;
+                }
+                if (liveBadge) {
+                    liveBadge.style.display = prevBadgeDisp;
+                }
+            };
+
+            if (typeof runPdf === 'function') {
                 runPdf(instance, `statik_ayak_analiz_${currentPatientId}.pdf`, transSubtitle).then(() => {
-                    printContainer.remove();
-                    if(typeof showToast === 'function') {
+                    cleanup();
+                    if (typeof showToast === 'function') {
                         showToast(_trans("Ayak Analizi PDF raporu indirildi."));
                     }
                 }).catch(err => {
-                    printContainer.remove();
-                    console.error("PDF generation error:", err);
+                    cleanup();
+                    console.error("PDF export error:", err);
                 });
             } else {
-                // Fallback
                 instance.toPdf().get('pdf').then(function(pdf) {
                     if (typeof applyCibodyPdfHeaderFooter === 'function') {
                         applyCibodyPdfHeaderFooter(pdf, transSubtitle);
                     }
                 }).save().then(() => {
-                    printContainer.remove();
-                    if(typeof showToast === 'function') {
+                    cleanup();
+                    if (typeof showToast === 'function') {
                         showToast(_trans("Ayak Analizi PDF raporu indirildi."));
                     }
                 }).catch(err => {
-                    printContainer.remove();
-                    console.error("PDF generation error:", err);
+                    cleanup();
+                    console.error("PDF export error:", err);
                 });
             }
         }
@@ -2468,7 +2357,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=20.5"></script>
+    <script src="app.js?v=20.6"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
