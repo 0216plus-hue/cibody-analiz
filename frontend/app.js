@@ -1422,6 +1422,8 @@ async function runSpineAnalysis() {
     try {
         const formData = new FormData();
         formData.append('patient_id', currentPatientId);
+        const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr';
+        formData.append('lang', lang);
         if (backFile) {
             const compBack = await compressImage(backFile);
             formData.append('back_image', compBack);
@@ -1476,17 +1478,22 @@ function statusColor(status) {
     if (!status) return 'text-slate-400';
     const s = status.toLowerCase();
     if (s === 'normal') return 'text-emerald-600';
-    if (s === 'hafif') return 'text-amber-500';
-    if (s.includes('artmış') || s.includes('belirgin')) return 'text-orange-600';
-    if (s.includes('ciddi') || s === 'high') return 'text-red-600';
+    if (s === 'hafif' || s === 'mild') return 'text-amber-500';
+    if (s.includes('artmış') || s.includes('belirgin') || s.includes('increased') || s.includes('significant')) return 'text-orange-600';
+    if (s.includes('ciddi') || s.includes('severe') || s === 'high') return 'text-red-600';
     if (s === 'low') return 'text-emerald-600';
     if (s === 'moderate') return 'text-amber-500';
     return 'text-slate-600';
 }
 
 function scoliosisLabel(risk) {
-    const map = { 'low': '🟢 Düşük Risk', 'moderate': '🟡 Orta Risk', 'high': '🔴 Yüksek Risk' };
-    return map[risk] || risk || '—';
+    const _t = window.translateText || (s=>s);
+    const map = {
+        'low': '🟢 ' + _t('Düşük Risk'),
+        'moderate': '🟡 ' + _t('Orta Risk'),
+        'high': '🔴 ' + _t('Yüksek Risk')
+    };
+    return map[risk] || (risk ? _t(risk) : '—');
 }
 
 function deviationBar(mm) {
@@ -1560,15 +1567,15 @@ function renderSpineResults(data, selectedId = null) {
         document.getElementById('metricFHP').textContent = fhp != null ? fhp + ' mm' : '—';
 
         const kyEl = document.getElementById('metricKyphosisStatus');
-        kyEl.textContent = sagittal.kyphosis_status || '';
+        kyEl.textContent = _t(sagittal.kyphosis_status) || '';
         kyEl.className = 'text-xs font-bold mt-1 ' + statusColor(sagittal.kyphosis_status);
 
         const loEl = document.getElementById('metricLordosisStatus');
-        loEl.textContent = sagittal.lordosis_status || '';
+        loEl.textContent = _t(sagittal.lordosis_status) || '';
         loEl.className = 'text-xs font-bold mt-1 ' + statusColor(sagittal.lordosis_status);
 
         const fhpEl = document.getElementById('metricFHPStatus');
-        fhpEl.textContent = sagittal.fhp_status || '';
+        fhpEl.textContent = _t(sagittal.fhp_status) || '';
         fhpEl.className = 'text-xs font-bold mt-1 ' + statusColor(sagittal.fhp_status);
     } else {
         document.getElementById('metricKyphosis').textContent = '—';
@@ -1594,13 +1601,13 @@ function renderSpineResults(data, selectedId = null) {
     if (coronal && coronal.markers) {
         if (corSec) corSec.classList.remove('hidden');
         const tbody = document.getElementById('coronalTableBody');
-        const markerLabels = { 'C7': 'C7 Vertebra', 'T7': 'T7/T8 Bölgesi', 'L3': 'L3/L4 Bölgesi', 'S1': 'S1 Vertebra' };
+        const markerLabels = { 'C7': 'C7 Vertebra', 'T7': _t('T7/T8 Bölgesi'), 'L3': _t('L3/L4 Bölgesi'), 'S1': 'S1 Vertebra' };
         tbody.innerHTML = Object.entries(coronal.markers).map(([key, m]) => {
             const dev = m.dev_mm || 0;
-            const dir = m.direction === 'right' ? '→ Sağa' : m.direction === 'left' ? '← Sola' : 'Merkez';
-            const status = Math.abs(dev) < 5 ? '<span class="text-emerald-600 font-bold">Normal</span>'
-                         : Math.abs(dev) < 15 ? '<span class="text-amber-500 font-bold">Hafif Sapma</span>'
-                         : '<span class="text-red-600 font-bold">Belirgin Sapma</span>';
+            const dir = m.direction === 'right' ? ('→ ' + _t('Sağa')) : m.direction === 'left' ? ('← ' + _t('Sola')) : _t('Merkez');
+            const status = Math.abs(dev) < 5 ? `<span class="text-emerald-600 font-bold">${_t('Normal')}</span>`
+                         : Math.abs(dev) < 15 ? `<span class="text-amber-500 font-bold">${_t('Hafif Sapma')}</span>`
+                         : `<span class="text-red-600 font-bold">${_t('Belirgin Sapma')}</span>`;
             return `<tr class="hover:bg-slate-50">
                 <td class="py-2.5 px-2 font-bold text-slate-700">${markerLabels[key] || key}</td>
                 <td class="py-2.5 px-2 text-center font-black text-slate-800">${dev} mm</td>
@@ -1620,6 +1627,7 @@ function renderSpineResults(data, selectedId = null) {
 
     // ── Sagital Özet ──
     const sagSec = document.getElementById('sagittalSection');
+    const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr';
     if (sagittal) {
         if (sagSec) sagSec.classList.remove('hidden');
         document.getElementById('sagKyphosis').textContent =
@@ -1638,18 +1646,65 @@ function renderSpineResults(data, selectedId = null) {
     const repText = data.report || data.ai_report_text || '';
     const reportEl = document.getElementById('spineAiReport');
     if (repText) {
+        const translatedMd = (window.translateSpineReportMarkdown ? window.translateSpineReportMarkdown(repText, lang) : repText);
         if (typeof marked !== 'undefined') {
-            reportEl.innerHTML = marked.parse(repText);
+            reportEl.innerHTML = marked.parse(translatedMd);
         } else {
-            reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + repText + '</pre>';
+            reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + translatedMd + '</pre>';
+        }
+
+        const analysisId = selectedId || data.id || data.analysis_id;
+        if (analysisId && lang !== 'tr') {
+            fetchSpineReportTranslation(analysisId, lang);
         }
     } else {
-        reportEl.innerHTML = '<p class="text-sm text-slate-400">Rapor metni oluşturulamadı.</p>';
+        reportEl.innerHTML = `<p class="text-sm text-slate-400">${_t('Rapor metni oluşturulamadı.')}</p>`;
     }
 
     results.classList.remove('hidden');
     if (selectedId) {
         highlightSpineCard(selectedId);
+    }
+}
+
+window._spineReportTranslationCache = window._spineReportTranslationCache || {};
+
+async function fetchSpineReportTranslation(analysisId, lang) {
+    const cacheKey = `${analysisId}_${lang}`;
+    if (window._spineReportTranslationCache[cacheKey]) {
+        applyTranslatedSpineReport(window._spineReportTranslationCache[cacheKey]);
+        return;
+    }
+    try {
+        const res = await authFetch(`/api/spine/${analysisId}/translate-report?target_lang=${lang}`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && (data.report || data.sagittal_summary)) {
+                window._spineReportTranslationCache[cacheKey] = data;
+                if (currentSpineAnalysisId === analysisId) {
+                    applyTranslatedSpineReport(data);
+                }
+            }
+        }
+    } catch(err) {
+        console.error("Spine report translate fetch error:", err);
+    }
+}
+
+function applyTranslatedSpineReport(data) {
+    const reportEl = document.getElementById('spineAiReport');
+    if (reportEl && data.report) {
+        if (typeof marked !== 'undefined') {
+            reportEl.innerHTML = marked.parse(data.report);
+        } else {
+            reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + data.report + '</pre>';
+        }
+    }
+    const sagEl = document.getElementById('sagittalSummaryText');
+    if (sagEl && data.sagittal_summary) {
+        sagEl.textContent = data.sagittal_summary;
     }
 }
 
@@ -1693,8 +1748,7 @@ async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
         cardEl.classList.remove('hidden');
 
         listEl.innerHTML = currentSpineHistory.map((item, index) => {
-            const d = new Date(item.created_at + (item.created_at && !item.created_at.endsWith('Z') ? 'Z' : ''));
-            const dateStr = formatAppDate(d, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const dateStr = formatAppDate(item.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const isLatest = index === 0;
             const badge = isLatest 
                 ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700">${(window.translateText||((s)=>s))('En Güncel')}</span>` 
@@ -1705,9 +1759,10 @@ async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
             const skolyoz = item.coronal && item.coronal.scoliosis_risk ? scoliosisLabel(item.coronal.scoliosis_risk) : null;
 
             let metricsPill = [];
-            if (kifoz) metricsPill.push(`Kifoz: <b>${kifoz}</b>`);
-            if (lordoz) metricsPill.push(`Lordoz: <b>${lordoz}</b>`);
-            if (skolyoz) metricsPill.push(`Skolyoz: <b>${skolyoz}</b>`);
+            const _t = window.translateText || (s=>s);
+            if (kifoz) metricsPill.push(`${_t('Kifoz')}: <b>${kifoz}</b>`);
+            if (lordoz) metricsPill.push(`${_t('Lordoz')}: <b>${lordoz}</b>`);
+            if (skolyoz) metricsPill.push(`${_t('Skolyoz')}: <b>${skolyoz}</b>`);
 
             const previewImg = item.side_image_path || item.back_image_path;
             const imgHtml = previewImg 
@@ -3771,5 +3826,12 @@ window.addEventListener('cibody:languageChanged', function(e) {
         loadPrescribedExercises();
     } else if (typeof renderPrescribedTable === 'function' && Array.isArray(window.currentPrescribedData)) {
         renderPrescribedTable(window.currentPrescribedData);
+    }
+    if (typeof loadSpineHistory === 'function' && currentPatientId) {
+        loadSpineHistory(currentPatientId, false);
+    }
+    if (typeof renderSpineResults === 'function' && currentSpineAnalysisId && Array.isArray(currentSpineHistory)) {
+        const item = currentSpineHistory.find(x => x.id === currentSpineAnalysisId);
+        if (item) renderSpineResults(item, currentSpineAnalysisId);
     }
 });

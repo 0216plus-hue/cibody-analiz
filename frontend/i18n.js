@@ -10570,6 +10570,306 @@ const I18N_PHRASES = {
       "it": "postura della testa in avanti",
       "pt": "postura de cabeça para a frente"
   },
+  "Düşük Risk": {
+      "en": "Low Risk",
+      "ru": "Низкий риск",
+      "ar": "خطر منخفض",
+      "de": "Geringes Risiko",
+      "fr": "Faible risque",
+      "es": "Riesgo bajo",
+      "it": "Basso rischio",
+      "pt": "Baixo risco"
+  },
+  "Orta Risk": {
+      "en": "Moderate Risk",
+      "ru": "Умеренный риск",
+      "ar": "خطر متوسط",
+      "de": "Mittleres Risiko",
+      "fr": "Risque modéré",
+      "es": "Riesgo moderado",
+      "it": "Rischio moderato",
+      "pt": "Risco moderado"
+  },
+  "Yüksek Risk": {
+      "en": "High Risk",
+      "ru": "Высокий риск",
+      "ar": "خطر مرتفع",
+      "de": "Hohes Risiko",
+      "fr": "Risque élevé",
+      "es": "Riesgo alto",
+      "it": "Rischio elevato",
+      "pt": "Risco elevado"
+  },
+  "hafif": {
+      "en": "mild",
+      "ru": "легкий",
+      "ar": "طفيف",
+      "de": "leicht",
+      "fr": "léger",
+      "es": "leve",
+      "it": "lieve",
+      "pt": "ligeiro"
+  },
+  "Hafif": {
+      "en": "Mild",
+      "ru": "Легкий",
+      "ar": "طفيف",
+      "de": "Leicht",
+      "fr": "Léger",
+      "es": "Leve",
+      "it": "Lieve",
+      "pt": "Ligeiro"
+  },
+  "artmış": {
+      "en": "increased",
+      "ru": "увеличенный",
+      "ar": "متزايد",
+      "de": "erhöht",
+      "fr": "augmenté",
+      "es": "aumentado",
+      "it": "aumentato",
+      "pt": "aumentado"
+  },
+  "Artmış": {
+      "en": "Increased",
+      "ru": "Увеличенный",
+      "ar": "متزايد",
+      "de": "Erhöht",
+      "fr": "Augmenté",
+      "es": "Aumentado",
+      "it": "Aumentato",
+      "pt": "Aumentado"
+  },
+  "azalmış": {
+      "en": "decreased",
+      "ru": "уменьшенный",
+      "ar": "منخفض",
+      "de": "vermindert",
+      "fr": "diminué",
+      "es": "disminuido",
+      "it": "diminuito",
+      "pt": "diminuído"
+  },
+  "Azalmış": {
+      "en": "Decreased",
+      "ru": "Уменьшенный",
+      "ar": "منخفض",
+      "de": "Vermindert",
+      "fr": "Diminué",
+      "es": "Disminuido",
+      "it": "Diminuito",
+      "pt": "Diminuído"
+  },
+  "belirgin": {
+      "en": "significant",
+      "ru": "значительный",
+      "ar": "ملحوظ",
+      "de": "deutlich",
+      "fr": "marqué",
+      "es": "marcado",
+      "it": "marcato",
+      "pt": "significativo"
+  },
+  "Belirgin": {
+      "en": "Significant",
+      "ru": "Значительный",
+      "ar": "ملحوظ",
+      "de": "Deutlich",
+      "fr": "Marqué",
+      "es": "Marcado",
+      "it": "Marcato",
+      "pt": "Significativo"
+  },
+  "ciddi": {
+      "en": "severe",
+      "ru": "выраженный",
+      "ar": "شديد",
+      "de": "schwer",
+      "fr": "sévère",
+      "es": "severo",
+      "it": "grave",
+      "pt": "grave"
+  },
+  "Ciddi": {
+      "en": "Severe",
+      "ru": "Выраженный",
+      "ar": "شديد",
+      "de": "Schwer",
+      "fr": "Sévère",
+      "es": "Severo",
+      "it": "Grave",
+      "pt": "Grave"
+  },
+  "Merkez": {
+      "en": "Center",
+      "ru": "Центр",
+      "ar": "المركز",
+      "de": "Zentrum",
+      "fr": "Centre",
+      "es": "Centro",
+      "it": "Centro",
+      "pt": "Centro"
+  },
+  "Sağa": {
+      "en": "Right",
+      "ru": "Вправо",
+      "ar": "يمين",
+      "de": "Rechts",
+      "fr": "Droite",
+      "es": "Derecha",
+      "it": "Destra",
+      "pt": "Direita"
+  },
+  "Sola": {
+      "en": "Left",
+      "ru": "Влево",
+      "ar": "يسار",
+      "de": "Links",
+      "fr": "Gauche",
+      "es": "Izquierda",
+      "it": "Sinistra",
+      "pt": "Esquerda"
+  },
+  "Hafif Sapma": {
+      "en": "Mild Deviation",
+      "ru": "Легкое отклонение",
+      "ar": "انحراف طفيف",
+      "de": "Leichte Abweichung",
+      "fr": "Déviation légère",
+      "es": "Desviación leve",
+      "it": "Lieve deviazione",
+      "pt": "Desvio ligeiro"
+  },
+  "Belirgin Sapma": {
+      "en": "Significant Deviation",
+      "ru": "Значительное отклонение",
+      "ar": "انحراف ملحوظ",
+      "de": "Deutliche Abweichung",
+      "fr": "Déviation marquée",
+      "es": "Desviación marcada",
+      "it": "Deviazione marcata",
+      "pt": "Desvio significativo"
+  },
+  "Kifoz": {
+      "en": "Kyphosis",
+      "ru": "Кифоз",
+      "ar": "الحداب",
+      "de": "Kyphose",
+      "fr": "Cyphose",
+      "es": "Cifosis",
+      "it": "Cifosi",
+      "pt": "Cifose"
+  },
+  "Lordoz": {
+      "en": "Lordosis",
+      "ru": "Лордоз",
+      "ar": "القعس",
+      "de": "Lordose",
+      "fr": "Lordose",
+      "es": "Lordosis",
+      "it": "Lordosi",
+      "pt": "Lordose"
+  },
+  "Skolyoz": {
+      "en": "Scoliosis",
+      "ru": "Сколиоз",
+      "ar": "الجنف",
+      "de": "Skoliose",
+      "fr": "Scoliose",
+      "es": "Escoliosis",
+      "it": "Scoliosi",
+      "pt": "Escoliose"
+  },
+  "Yeni Analiz": {
+      "en": "New Analysis",
+      "ru": "Новый анализ",
+      "ar": "تحليل جديد",
+      "de": "Neue Analyse",
+      "fr": "Nouvelle analyse",
+      "es": "Nuevo análisis",
+      "it": "Nuova analisi",
+      "pt": "Nova análise"
+  },
+  "Analiz Tarihi:": {
+      "en": "Analysis Date:",
+      "ru": "Дата анализа:",
+      "ar": "تاريخ التحليل:",
+      "de": "Analysedatum:",
+      "fr": "Date d'analyse :",
+      "es": "Fecha de análisis:",
+      "it": "Data analisi:",
+      "pt": "Data da análise:"
+  },
+  "Ölçüm kaydı": {
+      "en": "Measurement record",
+      "ru": "Запись измерения",
+      "ar": "سجل القياس",
+      "de": "Messaufzeichnung",
+      "fr": "Enregistrement de mesure",
+      "es": "Registro de medición",
+      "it": "Registrazione misurazione",
+      "pt": "Registo de medição"
+  },
+  "C7 Vertebra": {
+      "en": "C7 Vertebra",
+      "ru": "Позвонок C7",
+      "ar": "الفقرة C7",
+      "de": "C7 Wirbel",
+      "fr": "Vertèbre C7",
+      "es": "Vértebra C7",
+      "it": "Vertebra C7",
+      "pt": "Vértebra C7"
+  },
+  "S1 Vertebra": {
+      "en": "S1 Vertebra",
+      "ru": "Позвонок S1",
+      "ar": "الفقرة S1",
+      "de": "S1 Wirbel",
+      "fr": "Vertèbre S1",
+      "es": "Vértebra S1",
+      "it": "Vertebra S1",
+      "pt": "Vértebra S1"
+  },
+  "T7/T8 Bölgesi": {
+      "en": "T7/T8 Region",
+      "ru": "Область T7/T8",
+      "ar": "منطقة T7/T8",
+      "de": "T7/T8 Region",
+      "fr": "Région T7/T8",
+      "es": "Región T7/T8",
+      "it": "Regione T7/T8",
+      "pt": "Região T7/T8"
+  },
+  "L3/L4 Bölgesi": {
+      "en": "L3/L4 Region",
+      "ru": "Область L3/L4",
+      "ar": "منطقة L3/L4",
+      "de": "L3/L4 Region",
+      "fr": "Région L3/L4",
+      "es": "Región L3/L4",
+      "it": "Regione L3/L4",
+      "pt": "Região L3/L4"
+  },
+  "CIBODY AI Klinik Değerlendirmesi": {
+      "en": "CIBODY AI Clinical Assessment",
+      "ru": "Клиническая оценка CIBODY AI",
+      "ar": "التقييم السريري CIBODY AI",
+      "de": "CIBODY AI Klinische Beurteilung",
+      "fr": "Évaluation clinique CIBODY AI",
+      "es": "Evaluación clínica CIBODY AI",
+      "it": "Valutazione clinica CIBODY AI",
+      "pt": "Avaliação clínica CIBODY AI"
+  },
+  "Rapor metni oluşturulamadı.": {
+      "en": "Report text could not be generated.",
+      "ru": "Текст отчета не удалось сформировать.",
+      "ar": "تعذر إنشاء نص التقرير.",
+      "de": "Berichtstext konnte nicht generiert werden.",
+      "fr": "Le texte du rapport n'a pas pu être généré.",
+      "es": "No se pudo generar el texto del informe.",
+      "it": "Impossibile generare il testo del referto.",
+      "pt": "Não foi possível gerar o texto do relatório."
+  },
   "pelvik eğim": {
       "en": "pelvic tilt",
       "ru": "наклон таза",
@@ -11108,10 +11408,186 @@ if (typeof document !== 'undefined') {
     }
 }
 
+// 12. Klinik Omurga AI Rapor Başlık & Terim Çevirici
+function translateSpineReportMarkdown(md, targetLang = currentLang) {
+    if (!md || typeof md !== 'string' || targetLang === 'tr') return md;
+    const headerMap = {
+        'KLİNİK OMURGA ANALİZ RAPORU': {
+            en: 'CLINICAL SPINE ANALYSIS REPORT',
+            ru: 'КЛИНИЧЕСКИЙ ОТЧЕТ ОБ АНАЛИЗЕ ПОЗВОНОЧНИКА',
+            ar: 'تقرير تحليل العمود الفقري السريري',
+            de: 'KLINISCHER WIRBELSÄULEN-ANALYSEBERICHT',
+            fr: 'RAPPORT D\'ANALYSE CLINIQUE DU RACHIS',
+            es: 'INFORME DE ANÁLISIS CLÍNICO DE COLUMNA',
+            it: 'REFERTO DI ANALISI CLINICA DELLA COLONNA',
+            pt: 'RELATÓRIO DE ANÁLISE CLÍNICA DA COLUNA'
+        },
+        'KORONAL DÜZLEM': {
+            en: 'CORONAL PLANE',
+            ru: 'ФРОНТАЛЬНАЯ ПЛОСКОСТЬ',
+            ar: 'المستوى التاجي',
+            de: 'KORONALEEBENE',
+            fr: 'PLAN CORONAL',
+            es: 'PLANO CORONAL',
+            it: 'PIANO CORONALE',
+            pt: 'PLANO CORONAL'
+        },
+        'Skolyoz Değerlendirmesi': {
+            en: 'Scoliosis Assessment',
+            ru: 'Оценка сколиоза',
+            ar: 'تقييم الجنف',
+            de: 'Skoliose-Beurteilung',
+            fr: 'Évaluation de la scoliose',
+            es: 'Evaluación de escoliosis',
+            it: 'Valutazione della scoliosi',
+            pt: 'Avaliação da escoliose'
+        },
+        'SAGİTAL DÜZLEM': {
+            en: 'SAGITTAL PLANE',
+            ru: 'САГИТТАЛЬНАЯ ПЛОСКОСТЬ',
+            ar: 'المستوى السهمي',
+            de: 'SAGITTALEBENE',
+            fr: 'PLAN SAGITTAL',
+            es: 'PLANO SAGITAL',
+            it: 'PIANO SAGITTALE',
+            pt: 'PLANO SAGITAL'
+        },
+        'Kifoz / Lordoz / Boyun Postürü': {
+            en: 'Kyphosis / Lordosis / Forward Head Posture',
+            ru: 'Кифоз / Лордоз / Положение головы',
+            ar: 'الحداب / القعس / وضعية الرأس',
+            de: 'Kyphose / Lordose / Kopfhaltung',
+            fr: 'Cyphose / Lordose / Posture de la tête',
+            es: 'Cifosis / Lordosis / Postura de cabeza',
+            it: 'Cifosi / Lordosi / Postura del collo',
+            pt: 'Cifose / Lordose / Postura da cabeça'
+        },
+        'RİSK DEĞERLENDİRMESİ': {
+            en: 'RISK ASSESSMENT',
+            ru: 'ОЦЕНКА РИСКОВ',
+            ar: 'تقييم المخاطر',
+            de: 'RISIKOBEWERTUNG',
+            fr: 'ÉVALUATION DES RISQUES',
+            es: 'EVALUACIÓN DE RIESGOS',
+            it: 'VALUTAZIONE DEL RISCHIO',
+            pt: 'AVALIAÇÃO DE RISCO'
+        },
+        'ÖNERİLEN EGZERSİZ VE DÜZELTİCİ YAKLAŞIM': {
+            en: 'RECOMMENDED EXERCISES AND CORRECTIVE APPROACH',
+            ru: 'РЕКОМЕНДУЕМЫЕ УПРАЖНЕНИЯ И КОРРЕКЦИОННЫЙ ПОДХОД',
+            ar: 'التمارين الموصى بها والنهج التصحيحي',
+            de: 'EMPFOHLENE ÜBUNGEN UND KORREKTIVER ANSATZ',
+            fr: 'EXERCICES RECOMMANDÉS ET APPROCHE CORRECTIVE',
+            es: 'EJERCICIOS RECOMENDADOS Y ENFOQUE CORRECTIVO',
+            it: 'ESERCIZI RACCOMANDATI E APPROCCIO CORRETTIVO',
+            pt: 'EXERCÍCIOS RECOMENDADOS E ABORDAGEM CORRETIVA'
+        },
+        'ÖNERİLEN YAKLAŞIM': {
+            en: 'RECOMMENDED APPROACH',
+            ru: 'РЕКОМЕНДУЕМЫЙ ПОДХОД',
+            ar: 'النهج الموصى به',
+            de: 'EMPFOHLENER ANSATZ',
+            fr: 'APPROCHE RECOMMANDÉE',
+            es: 'ENFOQUE RECOMENDADO',
+            it: 'APPROCCIO RACCOMANDATO',
+            pt: 'ABORDAGEM RECOMENDADA'
+        },
+        'Bulgular:': {
+            en: 'Findings:',
+            ru: 'Результаты:',
+            ar: 'النتائج:',
+            de: 'Befunde:',
+            fr: 'Constatations :',
+            es: 'Hallazgos:',
+            it: 'Risultati:',
+            pt: 'Achados:'
+        },
+        'Klinik Yorum:': {
+            en: 'Clinical Assessment:',
+            ru: 'Клиническое заключение:',
+            ar: 'التعليق السريري:',
+            de: 'Klinische Beurteilung:',
+            fr: 'Commentaire clinique :',
+            es: 'Comentario clínico:',
+            it: 'Commento clinico:',
+            pt: 'Comentário clínico:'
+        },
+        'Skolyoz riski DÜŞÜK': {
+            en: 'Scoliosis risk is LOW',
+            ru: 'Риск сколиоза НИЗКИЙ',
+            ar: 'خطر الجنف منخفض',
+            de: 'Skoliose-Risiko ist GERING',
+            fr: 'Le risque de scoliose est FAIBLE',
+            es: 'El riesgo de escoliosis es BAJO',
+            it: 'Il rischio di scoliosi è BASSO',
+            pt: 'O risco de escoliose é BAIXO'
+        },
+        'Skolyoz riski ORTA': {
+            en: 'Scoliosis risk is MODERATE',
+            ru: 'Риск сколиоза СРЕДНИЙ',
+            ar: 'خطر الجنف متوسط',
+            de: 'Skoliose-Risiko ist MITTEL',
+            fr: 'Le risque de scoliose est MODÉRÉ',
+            es: 'El riesgo de escoliosis es MODERADO',
+            it: 'Il rischio di scoliosi è MODERATO',
+            pt: 'O risco de escoliose é MODERADO'
+        },
+        'Skolyoz riski YÜKSEK': {
+            en: 'Scoliosis risk is HIGH',
+            ru: 'Риск сколиоза ВЫСОКИЙ',
+            ar: 'خطر الجنف مرتفع',
+            de: 'Skoliose-Risiko ist HOCH',
+            fr: 'Le risque de scoliose est ÉLEVÉ',
+            es: 'El riesgo de escoliosis es ALTO',
+            it: 'Il rischio di scoliosi è ELEVATO',
+            pt: 'O risco de escoliose é ELEVADO'
+        },
+        'Torakal Kifoz:': {
+            en: 'Thoracic Kyphosis:',
+            ru: 'Грудной кифоз:',
+            ar: 'الحداب الصدري:',
+            de: 'Thorakale Kyphose:',
+            fr: 'Cyphose thoracique :',
+            es: 'Cifosis torácica:',
+            it: 'Cifosi toracica:',
+            pt: 'Cifose torácica:'
+        },
+        'Lomber Lordoz:': {
+            en: 'Lumbar Lordosis:',
+            ru: 'Поясничный лордоз:',
+            ar: 'القعس القطني:',
+            de: 'Lumbale Lordose:',
+            fr: 'Lordose lombaire :',
+            es: 'Lordosis lumbar:',
+            it: 'Lordosi lombare:',
+            pt: 'Lordose lombar:'
+        },
+        'Skolyoz Riski:': {
+            en: 'Scoliosis Risk:',
+            ru: 'Риск сколиоза:',
+            ar: 'خطر الجنف:',
+            de: 'Skoliose-Risiko:',
+            fr: 'Risque de scoliose :',
+            es: 'Riesgo de escoliosis:',
+            it: 'Rischio di scoliosi:',
+            pt: 'Risco de escoliose:'
+        }
+    };
+
+    let result = md;
+    for (const [trKey, transObj] of Object.entries(headerMap)) {
+        if (transObj[targetLang]) {
+            result = result.split(trKey).join(transObj[targetLang]);
+        }
+    }
+    return result;
+}
+
 // Global dışa aktarmalar
 if (typeof window !== 'undefined') {
     window.t = t;
     window.translateText = translateText;
+    window.translateSpineReportMarkdown = translateSpineReportMarkdown;
     window.setLanguage = setLanguage;
     window.getCurrentLanguage = getCurrentLanguage;
     window.applyTranslations = applyTranslations;
@@ -11121,6 +11597,6 @@ if (typeof window !== 'undefined') {
 
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
-        t, translateText, setLanguage, getCurrentLanguage, applyTranslations, translateDom, I18N_LANGUAGES, I18N_PHRASES
+        t, translateText, translateSpineReportMarkdown, setLanguage, getCurrentLanguage, applyTranslations, translateDom, I18N_LANGUAGES, I18N_PHRASES
     };
 }

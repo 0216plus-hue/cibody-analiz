@@ -808,6 +808,7 @@ async def analyze_spine(
     patient_id: int = Form(...),
     back_image: UploadFile = File(None),
     side_image: UploadFile = File(None),
+    lang: Optional[str] = Form("tr"),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
@@ -884,10 +885,23 @@ async def analyze_spine(
     coronal_raw = sagittal_raw = None
 
     try:
+        lang_name_map = {
+            "en": "English", "ru": "Russian", "ar": "Arabic", "de": "German",
+            "fr": "French", "es": "Spanish", "it": "Italian", "pt": "Portuguese"
+        }
+        target_lang_name = lang_name_map.get(lang, "Turkish") if lang and lang != "tr" else "Turkish"
+
+        sagittal_prompt = SPINE_SAGITTAL_PROMPT
+        if lang and lang != "tr":
+            sagittal_prompt = SPINE_SAGITTAL_PROMPT.replace(
+                "7. 2 cümlelik profesyonel Türkçe klinik özet (sagittal_summary) yaz.",
+                f"7. Write a 2-sentence professional {target_lang_name} clinical summary (sagittal_summary)."
+            )
+
         # Arka ve Yan analizleri paralel çalıştırarak bekleme süresini yarıya indir
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             fut_coronal = executor.submit(call_gemini, SPINE_CORONAL_PROMPT, back_bytes, True, 40) if back_bytes else None
-            fut_sagittal = executor.submit(call_gemini, SPINE_SAGITTAL_PROMPT, side_bytes, True, 40) if side_bytes else None
+            fut_sagittal = executor.submit(call_gemini, sagittal_prompt, side_bytes, True, 40) if side_bytes else None
 
             if fut_coronal:
                 try:
@@ -909,15 +923,39 @@ async def analyze_spine(
         # Klinik rapor üretimi
         summary_parts = []
         if coronal_data:
-            summary_parts.append(f"Koronal Düzlem Analizi: {json.dumps(coronal_data, ensure_ascii=False)}")
+            summary_parts.append(f"Coronal Plane Analysis Data: {json.dumps(coronal_data, ensure_ascii=False)}")
         else:
-            summary_parts.append("Koronal Düzlem: Arka görsel yüklenmedi.")
+            summary_parts.append("Coronal Plane: Posterior image not provided.")
         if sagittal_data:
-            summary_parts.append(f"Sagital Düzlem Analizi: {json.dumps(sagittal_data, ensure_ascii=False)}")
+            summary_parts.append(f"Sagittal Plane Analysis Data: {json.dumps(sagittal_data, ensure_ascii=False)}")
         else:
-            summary_parts.append("Sagital Düzlem: Yan görsel yüklenmedi.")
+            summary_parts.append("Sagittal Plane: Lateral image not provided.")
         summary_data = "\n".join(summary_parts)
-        report_prompt = SPINE_REPORT_PROMPT + f"\n\nANALİZ VERİLERİ:\n{summary_data}"
+
+        if lang and lang != "tr":
+            report_prompt = f"""You are a clinical biomechanics specialist. Coronal Plane (Scoliosis) and Sagittal Plane (Kyphosis/Lordosis/Forward Head Posture) analysis data of a client has been provided to you.
+Based on these data, generate a professional, concise clinical evaluation report in {target_lang_name}, INTENDED FOR A PHYSIOTHERAPIST AND POSTURE SPECIALIST.
+
+Report format:
+
+### CLINICAL SPINE ANALYSIS REPORT
+
+#### 🔵 CORONAL PLANE (Scoliosis Assessment)
+[Findings and clinical assessment]
+
+#### 🟠 SAGITTAL PLANE (Kyphosis / Lordosis / Forward Head Posture)
+[Findings and clinical assessment]
+
+#### ⚠️ RISK ASSESSMENT
+[Overall risk level and urgency]
+
+#### 💊 RECOMMENDED EXERCISES AND CORRECTIVE APPROACH
+[Personalized posture corrective exercises and physiotherapy approaches]
+
+ANALYSIS DATA:
+{summary_data}"""
+        else:
+            report_prompt = SPINE_REPORT_PROMPT + f"\n\nANALİZ VERİLERİ:\n{summary_data}"
 
         ai_report = ""
         try:
@@ -927,7 +965,10 @@ async def analyze_spine(
             kifoz = sagittal_data.get('kyphosis_angle_deg', '—') if sagittal_data else '—'
             lordoz = sagittal_data.get('lordosis_angle_deg', '—') if sagittal_data else '—'
             skolyoz = coronal_data.get('scoliosis_risk', '—') if coronal_data else '—'
-            ai_report = f"### KLİNİK OMURGA ANALİZ RAPORU\n\n#### 🔵 KORONAL DÜZLEM\nSkolyoz Riski: {skolyoz}\n\n#### 🟠 SAGİTAL DÜZLEM\nTorakal Kifoz: {kifoz}° | Lomber Lordoz: {lordoz}°\n\n#### 💊 ÖNERİLEN YAKLAŞIM\nKlinik değerlendirme metrikleri tablolarda detaylandırılmıştır."
+            if lang and lang != "tr":
+                ai_report = f"### CLINICAL SPINE ANALYSIS REPORT\n\n#### 🔵 CORONAL PLANE\nScoliosis Risk: {skolyoz}\n\n#### 🟠 SAGITTAL PLANE\nThoracic Kyphosis: {kifoz}° | Lumbar Lordosis: {lordoz}°\n\n#### 💊 RECOMMENDED APPROACH\nClinical evaluation metrics are detailed in the tables above."
+            else:
+                ai_report = f"### KLİNİK OMURGA ANALİZ RAPORU\n\n#### 🔵 KORONAL DÜZLEM\nSkolyoz Riski: {skolyoz}\n\n#### 🟠 SAGİTAL DÜZLEM\nTorakal Kifoz: {kifoz}° | Lomber Lordoz: {lordoz}°\n\n#### 💊 ÖNERİLEN YAKLAŞIM\nKlinik değerlendirme metrikleri tablolarda detaylandırılmıştır."
 
     except HTTPException:
         raise
@@ -1020,6 +1061,97 @@ def delete_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
     db.delete(analysis)
     db.commit()
     return {"status": "success"}
+
+@app.post("/api/spine/{analysis_id}/translate-report")
+def translate_spine_report(
+    analysis_id: int,
+    target_lang: Optional[str] = "en",
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    analysis = db.query(models.SpineAnalysis).filter(models.SpineAnalysis.id == analysis_id).first()
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id, models.Patient.user_id == current_user.id).first()
+    if not patient:
+        raise HTTPException(status_code=403, detail="Yetkisiz işlem")
+
+    lang_name_map = {
+        "en": "English", "ru": "Russian", "ar": "Arabic", "de": "German",
+        "fr": "French", "es": "Spanish", "it": "Italian", "pt": "Portuguese", "tr": "Turkish"
+    }
+    target_lang_name = lang_name_map.get(target_lang, "English")
+
+    from sqlalchemy import text
+    try:
+        db.execute(text("""
+            CREATE TABLE IF NOT EXISTS spine_report_translations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                spine_analysis_id INTEGER NOT NULL,
+                lang VARCHAR(10) NOT NULL,
+                translated_report TEXT,
+                translated_summary TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT uq_spine_trans UNIQUE (spine_analysis_id, lang)
+            )
+        """))
+        db.commit()
+
+        cached = db.execute(text("SELECT translated_report, translated_summary FROM spine_report_translations WHERE spine_analysis_id = :id AND lang = :lang"),
+                            {"id": analysis_id, "lang": target_lang}).first()
+        if cached and cached[0]:
+            return {"report": cached[0], "sagittal_summary": cached[1] or ""}
+    except Exception as e:
+        print("Spine trans cache lookup err:", e)
+
+    orig_report = analysis.ai_report_text or ""
+    sag_data = json.loads(analysis.sagittal_data) if analysis.sagittal_data else {}
+    orig_summary = sag_data.get("sagittal_summary", "")
+
+    if not API_KEY or (not orig_report and not orig_summary):
+        return {"report": orig_report, "sagittal_summary": orig_summary}
+
+    trans_prompt = f"""You are a professional medical translator specialized in clinical biomechanics and physiotherapy.
+Translate the following spine posture report and summary into {target_lang_name}.
+Preserve all markdown structure, bullet points, numbers and anatomical accuracy.
+Do not add introductory or conversational text. Return ONLY a JSON object:
+{{
+  "report": "...translated markdown report...",
+  "sagittal_summary": "...translated summary..."
+}}
+
+REPORT TO TRANSLATE:
+{orig_report}
+
+SUMMARY TO TRANSLATE:
+{orig_summary}
+"""
+    try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
+        payload = {
+            "contents": [{"parts": [{"text": trans_prompt}]}],
+            "generationConfig": {"temperature": 0.1, "response_mime_type": "application/json"}
+        }
+        r = requests.post(url, json=payload, timeout=25)
+        if r.ok:
+            parsed = json.loads(r.json()["candidates"][0]["content"]["parts"][0]["text"])
+            trans_rep = parsed.get("report", orig_report)
+            trans_sum = parsed.get("sagittal_summary", orig_summary)
+
+            try:
+                db.execute(text("""
+                    INSERT OR REPLACE INTO spine_report_translations (spine_analysis_id, lang, translated_report, translated_summary)
+                    VALUES (:id, :lang, :rep, :sum)
+                """), {"id": analysis_id, "lang": target_lang, "rep": trans_rep, "sum": trans_sum})
+                db.commit()
+            except Exception as e:
+                print("Cache save err:", e)
+
+            return {"report": trans_rep, "sagittal_summary": trans_sum}
+    except Exception as e:
+        print("Gemini translate err:", e)
+
+    return {"report": orig_report, "sagittal_summary": orig_summary}
 
 # ────────────────────────────────
 #  EGZERSİZ YÖNETİMİ
