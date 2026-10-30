@@ -499,6 +499,16 @@ window.downloadGaitPdf = async function() {
     // A4 Dikey genişliğine (700px) tam sığması için PDF modunu aktif et
     element.classList.add('gait-pdf-mode');
 
+    // 5 bölge analizi kapalı/boş olduğunda ardışık sayfa sonu oluşturup orta sayfayı boş bırakmasını engelle
+    const fiveRegionEl = document.getElementById('fiveRegionSection');
+    const isFiveHidden = !fiveRegionEl || fiveRegionEl.classList.contains('hidden') || fiveRegionEl.style.display === 'none';
+    const breaks = element.querySelectorAll('.gait-pdf-break');
+    let suppressedBreak = null;
+    if (isFiveHidden && breaks.length >= 2) {
+        suppressedBreak = breaks[1];
+        suppressedBreak.classList.add('hidden');
+    }
+
     // Chart.js grafiklerini 700px genişliğe göre hemen yeniden boyutlandır
     if (typeof window.resizeGaitCharts === 'function') {
         window.resizeGaitCharts();
@@ -545,6 +555,9 @@ window.downloadGaitPdf = async function() {
         });
         if (typeof window.resizeGaitCharts === 'function') {
             window.resizeGaitCharts();
+        }
+        if (suppressedBreak) {
+            suppressedBreak.classList.remove('hidden');
         }
     };
 

@@ -2471,6 +2471,14 @@ async function downloadSimulationPdf() {
     if (simCanvas) {
         try {
             if (typeof simRenderer !== 'undefined' && simRenderer && typeof simScene !== 'undefined' && typeof simCamera !== 'undefined') {
+                const curW = simCanvas.clientWidth || simCanvas.width || 640;
+                const curH = simCanvas.clientHeight || simCanvas.height || 480;
+                const targetW = curW > 100 ? curW : 640;
+                const targetH = curH > 100 ? curH : 480;
+                
+                simRenderer.setSize(targetW, targetH, false);
+                simCamera.aspect = targetW / targetH;
+                simCamera.updateProjectionMatrix();
                 simRenderer.render(simScene, simCamera);
             }
             simImgData = simCanvas.toDataURL('image/png');
@@ -2573,23 +2581,26 @@ async function downloadSimulationPdf() {
         window.applyTranslations(reportEl);
     }
 
-    if (simImgData && simImgData.length > 100) {
+    if (imgEl && simImgData && simImgData.length > 100) {
         await new Promise((resolve) => {
-            const preImg = new Image();
-            preImg.onload = resolve;
-            preImg.onerror = resolve;
-            preImg.src = simImgData;
+            if (imgEl.complete && imgEl.naturalWidth > 0) {
+                resolve();
+            } else {
+                imgEl.onload = resolve;
+                imgEl.onerror = resolve;
+                setTimeout(resolve, 400);
+            }
         });
     }
     await new Promise(r => setTimeout(r, 200));
 
     const opt = {
-      margin:       [0.65, 0.35, 0.45, 0.35],
+      margin:       [0.45, 0.35, 0.4, 0.35],
       filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, logging: false },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css'] }
+      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break'] }
     };
 
     const cleanup = () => {
