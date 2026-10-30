@@ -350,7 +350,7 @@ function renderMasterTable() {
                 <td class="px-4 py-3 font-mono ${pathS}">${m.pathCm.toFixed(2)}</td>
                 <td class="px-4 py-3 font-mono ${areaS}">${m.areaCm.toFixed(2)}</td>
                 <td class="px-4 py-3 font-mono ${velS}">${m.velCm.toFixed(2)}</td>
-                <td class="px-4 py-3 text-emerald-600 font-bold">Optimal</td>
+                <td class="px-4 py-3 text-emerald-600 font-bold">${_t('Optimal')}</td>
             </tr>
         `;
         
@@ -378,17 +378,26 @@ function renderAllTestDetails() {
         {k: 'tek_sag_acik', l: 'Tek Ayak Sağ (Göz Açık)'}
     ];
     
+    let renderedCount = 0;
     types.forEach(t => {
         let m = currentBalanceSession[t.k];
         if(!m) return;
         
+        // Birden fazla test varsa sonraki testleri yeni sayfadan başlat (tek test varsa tek sayfa kalır)
+        if (renderedCount > 0) {
+            let breakDiv = document.createElement('div');
+            breakDiv.className = "balance-pdf-break";
+            container.appendChild(breakDiv);
+        }
+        renderedCount++;
+        
         let section = document.createElement('div');
-        section.className = "flex flex-col gap-6 avoid-break bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 mb-8";
+        section.className = "balance-test-section flex flex-col gap-6 avoid-break bg-slate-50 p-6 rounded-2xl border-2 border-slate-200 mb-8";
         
         // Header
         let header = document.createElement('h2');
         header.className = "text-xl font-black text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-2";
-        header.innerHTML = `<i class="fa-solid fa-shoe-prints mr-2"></i>${_t(t.l)} - ${_t('Detaylı Analiz')}`;
+        header.innerHTML = `<i class="fa-solid fa-shoe-prints mr-2"></i><span>${_t(t.l)}</span> - <span>${_t('Detaylı Analiz')}</span>`;
         section.appendChild(header);
         
         // Reference Table
@@ -412,7 +421,7 @@ function renderAllTestDetails() {
             let velS = getStatus(m.velCm, velGood, velMed);
             
             let refHTML = `
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="balance-ref-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                 <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>${_t('Referans Aralıkları ile Karşılaştırma')}</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-600">
@@ -455,30 +464,30 @@ function renderAllTestDetails() {
         } else {
             // For cift kapali, we don't have hard references, just a note.
             section.innerHTML += `
-            <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
+            <div class="balance-ref-card bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
                 <i class="fa-solid fa-circle-info mr-2"></i> ${_t('Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.')}
             </div>`;
         }
         
         // Canvas Container
         let chartHTML = `
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-2">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full">
+        <div class="balance-charts-row grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-2">
+            <div class="balance-scatter-box bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full">
                 <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">${_t('Statokinezigram (COP Yörüngesi)')}</h3>
-                <div style="position: relative; height:300px;">
+                <div class="balance-scatter-canvas-container" style="position: relative; height:300px;">
                     <canvas id="scatter_${t.k}"></canvas>
                 </div>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full flex flex-col gap-4">
+            <div class="balance-stabilo-box bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full flex flex-col gap-4">
                 <div>
                     <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram X (ML)')}</h3>
-                    <div style="position: relative; height:120px;">
+                    <div class="balance-line-canvas-container" style="position: relative; height:120px;">
                         <canvas id="xline_${t.k}"></canvas>
                     </div>
                 </div>
                 <div>
                     <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram Y (AP)')}</h3>
-                    <div style="position: relative; height:120px;">
+                    <div class="balance-line-canvas-container" style="position: relative; height:120px;">
                         <canvas id="yline_${t.k}"></canvas>
                     </div>
                 </div>
@@ -510,70 +519,126 @@ function drawChartsForSection(k, m) {
         yData.push(sy);
         labels.push('');
     }
+
+    if (!window.balanceChartInstances) {
+        window.balanceChartInstances = {};
+    }
     
-    new Chart(document.getElementById('scatter_' + k), {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'COP Path',
-                data: scatterData,
-                backgroundColor: 'rgba(79, 70, 229, 0.5)',
-                borderColor: 'rgba(79, 70, 229, 0.8)',
-                showLine: true,
-                borderWidth: 1.5,
-                pointRadius: 0
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { title: { display: true, text: 'ML (mm)' } },
-                y: { title: { display: true, text: 'AP (mm)' } }
+    const scatterCanvas = document.getElementById('scatter_' + k);
+    if (scatterCanvas) {
+        if (window.balanceChartInstances['scatter_' + k]) {
+            try { window.balanceChartInstances['scatter_' + k].destroy(); } catch(e) {}
+        }
+        window.balanceChartInstances['scatter_' + k] = new Chart(scatterCanvas, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'COP Path',
+                    data: scatterData,
+                    backgroundColor: 'rgba(79, 70, 229, 0.5)',
+                    borderColor: 'rgba(79, 70, 229, 0.8)',
+                    showLine: true,
+                    borderWidth: 1.5,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'ML (mm)', font: { size: 10 } },
+                        ticks: { font: { size: 9 } }
+                    },
+                    y: {
+                        title: { display: true, text: 'AP (mm)', font: { size: 10 } },
+                        ticks: { font: { size: 9 } }
+                    }
+                }
             }
-        }
-    });
+        });
+    }
     
-    new Chart(document.getElementById('xline_' + k), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'X (ML)',
-                data: xData,
-                borderColor: '#10b981',
-                borderWidth: 1.5,
-                pointRadius: 0,
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false } }
+    const xCanvas = document.getElementById('xline_' + k);
+    if (xCanvas) {
+        if (window.balanceChartInstances['xline_' + k]) {
+            try { window.balanceChartInstances['xline_' + k].destroy(); } catch(e) {}
         }
-    });
+        window.balanceChartInstances['xline_' + k] = new Chart(xCanvas, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'X (ML)',
+                    data: xData,
+                    borderColor: '#10b981',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { ticks: { font: { size: 8 } } }
+                }
+            }
+        });
+    }
     
-    new Chart(document.getElementById('yline_' + k), {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Y (AP)',
-                data: yData,
-                borderColor: '#f59e0b',
-                borderWidth: 1.5,
-                pointRadius: 0,
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false } }
+    const yCanvas = document.getElementById('yline_' + k);
+    if (yCanvas) {
+        if (window.balanceChartInstances['yline_' + k]) {
+            try { window.balanceChartInstances['yline_' + k].destroy(); } catch(e) {}
         }
-    });
+        window.balanceChartInstances['yline_' + k] = new Chart(yCanvas, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Y (AP)',
+                    data: yData,
+                    borderColor: '#f59e0b',
+                    borderWidth: 1.5,
+                    pointRadius: 0,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: {
+                    x: { display: false },
+                    y: { ticks: { font: { size: 8 } } }
+                }
+            }
+        });
+    }
 }
+
+window.resizeBalanceCharts = function() {
+    Object.values(window.balanceChartInstances || {}).forEach(c => {
+        try {
+            if (c && typeof c.resize === 'function') {
+                c.resize();
+            }
+        } catch(e) {}
+    });
+};
 window.cachedBalanceHistory = [];
 
 async function saveBalanceSession() {
@@ -723,33 +788,110 @@ window.addEventListener('cibody:languageChanged', function() {
 });
 
 // PDF export override
-window.downloadBalancePdf = function() {
-    if (!currentPatientId) return showToast("Hasta seçin.");
+window.downloadBalancePdf = async function() {
+    const _trans = (window.translateText || (s => s));
+    if (!currentPatientId) return showToast(_trans("Lütfen bir hasta seçin."));
     const element = document.getElementById('balanceResultsSection');
+    if (!element || element.classList.contains('hidden')) {
+        return showToast(_trans("Lütfen önce bir denge testi gerçekleştirin."));
+    }
+    
+    // PDF üretilmeden önce tüm data-i18n ve metinleri aktif dile göre güncelle
+    if (window.applyTranslations) {
+        window.applyTranslations(element);
+    }
+    
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const filenamePrefixes = {
+        tr: 'klinik_denge_raporu',
+        en: 'clinical_balance_report',
+        de: 'klinischer_gleichgewichtsbericht',
+        fr: 'rapport_clinique_equilibre',
+        es: 'informe_clinico_equilibrio',
+        it: 'referto_clinico_equilibrio',
+        pt: 'relatorio_clinico_equilibrio',
+        ru: 'clinical_balance_report',
+        ar: 'clinical_balance_report'
+    };
+    const prefix = filenamePrefixes[lang] || 'klinik_denge_raporu';
+    const pdfFilename = `${prefix}_${currentPatientId || 'hasta'}.pdf`;
+    const transSubtitle = _trans("Klinik Denge ve Postürografi Raporu");
+    
+    // A4 Dikey genişliğine (700px) tam sığması için PDF modunu aktif et
+    element.classList.add('balance-pdf-mode');
+    
+    // Chart.js grafiklerini 700px PDF genişliğine göre hemen yeniden boyutlandır
+    if (typeof window.resizeBalanceCharts === 'function') {
+        window.resizeBalanceCharts();
+    }
+    
+    // PDF çıktısında fare imleci veya açık kalmış hover/tooltip kutucuklarını temizle
+    Object.values(window.balanceChartInstances || {}).forEach(c => {
+        try {
+            if (c) {
+                if (c.tooltip) {
+                    c.tooltip.setActiveElements([], { x: 0, y: 0 });
+                    c.tooltip.opacity = 0;
+                }
+                if (c.options && c.options.plugins && c.options.plugins.tooltip) {
+                    c.options.plugins.tooltip.enabled = false;
+                }
+                c.update('none');
+            }
+        } catch(e) {}
+    });
+    
+    // DOM reflow ve canvas çiziminin tamamlanması için kısa bir bekleme
+    await new Promise(r => setTimeout(r, 200));
     
     const opt = {
-        margin:       [0.75, 0.3, 0.5, 0.3],
-        filename:     `denge_testi_${currentPatientId}.pdf`,
+        margin:       [0.65, 0.35, 0.45, 0.35],
+        filename:     pdfFilename,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0, logging: false },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['css'] }
+    };
+    
+    const cleanup = () => {
+        element.classList.remove('balance-pdf-mode');
+        Object.values(window.balanceChartInstances || {}).forEach(c => {
+            try {
+                if (c) {
+                    if (c.options && c.options.plugins && c.options.plugins.tooltip) {
+                        c.options.plugins.tooltip.enabled = true;
+                    }
+                    c.update('none');
+                }
+            } catch(e) {}
+        });
+        if (typeof window.resizeBalanceCharts === 'function') {
+            window.resizeBalanceCharts();
+        }
     };
     
     const instance = html2pdf().set(opt).from(element);
     if(typeof runPdf === 'function') {
-        runPdf(instance, `denge_testi_${currentPatientId}.pdf`, "Klinik Denge ve Postürografi Raporu").then(() => {
-            showToast("Denge PDF raporu indirildi.");
+        runPdf(instance, pdfFilename, transSubtitle).then(() => {
+            cleanup();
+            if(typeof showToast === 'function') showToast(_trans("Denge testi PDF raporu indirildi."));
+        }).catch(err => {
+            cleanup();
+            console.error("Balance PDF generation error:", err);
+            if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
         });
     } else {
         instance.toPdf().get('pdf').then(function(pdf) {
             if (typeof applyCibodyPdfHeaderFooter === 'function') {
-                applyCibodyPdfHeaderFooter(pdf, "Klinik Denge ve Postürografi Raporu");
+                applyCibodyPdfHeaderFooter(pdf, transSubtitle);
             }
         }).save().then(() => {
-            showToast("Denge PDF raporu indirildi.");
+            cleanup();
+            if(typeof showToast === 'function') showToast(_trans("Denge testi PDF raporu indirildi."));
         }).catch(err => {
-            console.error(err);
-            showToast("PDF indirilirken hata oluştu.");
+            cleanup();
+            console.error("Balance PDF generation error:", err);
+            if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
         });
     }
 };

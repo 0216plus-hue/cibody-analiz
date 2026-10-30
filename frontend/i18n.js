@@ -7784,6 +7784,26 @@ const I18N_PHRASES = {
     "it": "Estatocinesigrama (trayectoria del COP)",
     "pt": "Estatocinesigrama (trayectoria do COP)"
   },
+  "Stabilogram X (ML)": {
+    "en": "Stabilogram X (ML)",
+    "ru": "Стабилограмма X (ML)",
+    "ar": "مخطط الاستقرار X (ML)",
+    "de": "Stabilogramm X (ML)",
+    "fr": "Stabilogramme X (ML)",
+    "es": "Estabilograma X (ML)",
+    "it": "Stabilogramma X (ML)",
+    "pt": "Estabilograma X (ML)"
+  },
+  "Stabilogram Y (AP)": {
+    "en": "Stabilogram Y (AP)",
+    "ru": "Стабилограмма Y (AP)",
+    "ar": "مخطط الاستقرار Y (AP)",
+    "de": "Stabilogramm Y (AP)",
+    "fr": "Stabilogramme Y (AP)",
+    "es": "Estabilograma Y (AP)",
+    "it": "Stabilogramma Y (AP)",
+    "pt": "Estabilograma Y (AP)"
+  },
   "Sensör bağlantısı kurulamadı!": {
     "en": "Sensor connection could not be established!",
     "ru": "Не удалось подключиться к датчику!",
