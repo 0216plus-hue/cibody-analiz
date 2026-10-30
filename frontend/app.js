@@ -2288,8 +2288,9 @@ function downloadSpinePdf() {
 }
 
 function downloadScoliometerPdf() {
+    const _trans = (window.translateText || (s => s));
     if (!currentPatientId) {
-        showToast("Lütfen bir hasta seçin.");
+        showToast(_trans("Lütfen bir hasta seçin."));
         return;
     }
 
@@ -2297,13 +2298,35 @@ function downloadScoliometerPdf() {
     const rows = tbody ? tbody.querySelectorAll('tr') : [];
     const hasData = rows.length > 0 && !tbody.innerText.includes('Henüz ölçüm bulunmuyor');
     
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const filenamePrefixes = {
+        tr: 'skolyometre_raporu',
+        en: 'scoliometer_atr_report',
+        de: 'skoliometer_atr_bericht',
+        fr: 'rapport_scoliometre_atr',
+        es: 'informe_escoliometro_atr',
+        it: 'referto_scoliometro_atr',
+        pt: 'relatorio_escoliometro_atr',
+        ru: 'scoliometer_atr_report',
+        ar: 'scoliometer_atr_report'
+    };
+    const prefix = filenamePrefixes[lang] || 'skolyometre_raporu';
+    const pdfFilename = `${prefix}_${currentPatientId || 'hasta'}.pdf`;
+    const transSubtitle = _trans("Dijital Skolyometre (ATR) Analiz Raporu");
+
     // Create an offscreen print-friendly container
     const printContainer = document.createElement('div');
+    printContainer.id = 'scoliometerPrintContainer';
     printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
-    printContainer.style.maxWidth = '800px';
-    printContainer.style.position = 'absolute';
-    printContainer.style.left = '-9999px';
+    printContainer.style.width = '700px';
+    printContainer.style.maxWidth = '700px';
+    printContainer.style.minWidth = '700px';
+    printContainer.style.boxSizing = 'border-box';
+    printContainer.style.position = 'fixed';
+    printContainer.style.left = '0';
     printContainer.style.top = '0';
+    printContainer.style.zIndex = '-9999';
+    printContainer.style.backgroundColor = '#ffffff';
 
     let latestThoracic = "—";
     let latestLumbar = "—";
@@ -2320,40 +2343,40 @@ function downloadScoliometerPdf() {
     printContainer.innerHTML = `
         <div class="mb-6 border-b border-slate-200 pb-4">
             <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
-                <i class="fa-solid fa-mobile-screen text-indigo-600"></i> Dijital Skolyometre (ATR) Ölçüm Raporu
+                <i class="fa-solid fa-mobile-screen text-indigo-600"></i> ${_trans('Dijital Skolyometre (ATR) Ölçüm Raporu')}
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi</p>
+            <p class="text-xs text-slate-500 mt-1">${_trans('Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi')}</p>
         </div>
 
         <!-- Özet Kartlar -->
-        <div class="grid grid-cols-2 gap-4 mb-6 avoid-break">
-            <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${(window.translateText||((s)=>s))('Son Torakal Açı (ATR)')}</span>
-                <span class="text-3xl font-black text-indigo-900 block">${latestThoracic}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">${(window.translateText||((s)=>s))('Sırt (Göğüs) Omurgası Eğimi')}</span>
+        <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 14px; width: 100%; box-sizing: border-box;" class="mb-6 avoid-break">
+            <div style="width: 48.5%;" class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 text-center">
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${_trans('Son Torakal Açı (ATR)')}</span>
+                <span class="text-3xl font-black text-indigo-900 block my-1">${latestThoracic}</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">${_trans('Sırt (Göğüs) Omurgası Eğimi')}</span>
             </div>
-            <div class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${(window.translateText||((s)=>s))('Son Lumbar Açı (ATR)')}</span>
-                <span class="text-3xl font-black text-emerald-800 block">${latestLumbar}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">${(window.translateText||((s)=>s))('Bel Omurgası Eğimi')}</span>
+            <div style="width: 48.5%;" class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-center">
+                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${_trans('Son Lumbar Açı (ATR)')}</span>
+                <span class="text-3xl font-black text-emerald-800 block my-1">${latestLumbar}</span>
+                <span class="text-[11px] text-slate-400 mt-1 block">${_trans('Bel Omurgası Eğimi')}</span>
             </div>
         </div>
 
         <!-- Klinik Rehber Kutusu -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 mb-6 avoid-break">
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 avoid-break">
             <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-indigo-500"></i> Klinik ATR Sınıflandırma Kriterleri
+                <i class="fa-solid fa-circle-info text-indigo-500"></i> ${_trans('Klinik ATR Sınıflandırma Kriterleri')}
             </h4>
-            <div class="grid grid-cols-3 gap-3 text-xs">
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
+            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 10px; width: 100%;" class="text-xs">
+                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
                     <span class="font-bold text-emerald-600 block mb-0.5">0° - 4° (Normal)</span>
                     <p class="text-slate-500 text-[11px]">Fizyolojik asimetri. Rutin klinik takip yeterlidir.</p>
                 </div>
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
+                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
                     <span class="font-bold text-amber-600 block mb-0.5">5° - 7° (Hafif Rotasyon)</span>
                     <p class="text-slate-500 text-[11px]">Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.</p>
                 </div>
-                <div class="bg-white p-3 rounded-xl border border-slate-100">
+                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
                     <span class="font-bold text-rose-600 block mb-0.5">≥ 7° - 10°+ (Belirgin)</span>
                     <p class="text-slate-500 text-[11px]">Skolyoz şüphesi. Ayakta tüm omurga röntgeni (Cobb) önerilir.</p>
                 </div>
@@ -2363,16 +2386,16 @@ function downloadScoliometerPdf() {
         <!-- Geçmiş Tablosu -->
         <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6 avoid-break">
             <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                <h4 class="text-xs font-black text-slate-700 uppercase">Ölçüm Geçmişi ve İzlem Kayıtları</h4>
+                <h4 class="text-xs font-black text-slate-700 uppercase">${_trans('Ölçüm Geçmişi ve İzlem Kayıtları')}</h4>
             </div>
             <div class="p-2">
                 <table class="w-full text-xs text-left">
                     <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
                         <tr>
-                            <th class="px-3 py-2.5">Ölçüm Tarihi</th>
-                            <th class="px-3 py-2.5 text-center">Torakal ATR</th>
-                            <th class="px-3 py-2.5 text-center">Lumbar ATR</th>
-                            <th class="px-3 py-2.5 text-center">Değerlendirme</th>
+                            <th class="px-3 py-2.5">${_trans('Ölçüm Tarihi')}</th>
+                            <th class="px-3 py-2.5 text-center">${_trans('Torakal ATR')}</th>
+                            <th class="px-3 py-2.5 text-center">${_trans('Lumbar ATR')}</th>
+                            <th class="px-3 py-2.5 text-center">${_trans('Değerlendirme')}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -2382,7 +2405,7 @@ function downloadScoliometerPdf() {
                             const tVal = parseFloat(tds[1].innerText) || 0;
                             const lVal = parseFloat(tds[2].innerText) || 0;
                             const maxVal = Math.max(tVal, lVal);
-                            const status = maxVal >= 7 ? '<span class="text-rose-600 font-bold">İleri İnceleme</span>' : (maxVal >= 5 ? '<span class="text-amber-600 font-bold">Takip & Egzersiz</span>' : '<span class="text-emerald-600 font-bold">Normal</span>');
+                            const status = maxVal >= 7 ? `<span class="text-rose-600 font-bold">${_trans('İleri İnceleme')}</span>` : (maxVal >= 5 ? `<span class="text-amber-600 font-bold">${_trans('Takip & Egzersiz')}</span>` : `<span class="text-emerald-600 font-bold">${_trans('Normal')}</span>`);
                             return `
                                 <tr>
                                     <td class="px-3 py-2 font-medium text-slate-700">${tds[0].innerText}</td>
@@ -2391,7 +2414,7 @@ function downloadScoliometerPdf() {
                                     <td class="px-3 py-2 text-center">${status}</td>
                                 </tr>
                             `;
-                        }).join('') : '<tr><td colspan="4" class="text-center py-6 text-slate-400">Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.</td></tr>'}
+                        }).join('') : `<tr><td colspan="4" class="text-center py-6 text-slate-400">${_trans('Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.')}</td></tr>`}
                     </tbody>
                 </table>
             </div>
@@ -2400,11 +2423,11 @@ function downloadScoliometerPdf() {
         <!-- Klinik Not & İmza -->
         <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break flex justify-between items-end">
             <div class="text-xs text-slate-500">
-                <p class="font-bold text-slate-700 mb-1">Uzman Klinik Takip Notu:</p>
+                <p class="font-bold text-slate-700 mb-1">${_trans('Uzman Klinik Takip Notu:')}</p>
                 <p>Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.</p>
             </div>
             <div class="text-right text-xs text-slate-400">
-                <p class="font-bold text-slate-700">Kaşe / İmza</p>
+                <p class="font-bold text-slate-700">${_trans('Kaşe / İmza')}</p>
                 <div class="w-32 h-10 border-b border-dashed border-slate-300"></div>
             </div>
         </div>
@@ -2413,23 +2436,29 @@ function downloadScoliometerPdf() {
     document.body.appendChild(printContainer);
 
     const opt = {
-      margin:       [0.65, 0.3, 0.5, 0.3],
+      margin:       [0.65, 0.35, 0.45, 0.35],
+      filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, logging: false },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+      pagebreak:    { mode: ['css'] }
     };
 
     const instance = html2pdf().set(opt).from(printContainer);
-    runPdf(instance, `skolyometre_raporu_${currentPatientId || 'hasta'}.pdf`, "Dijital Skolyometre (ATR) Analiz Raporu").then(() => {
+    runPdf(instance, pdfFilename, transSubtitle).then(() => {
         printContainer.remove();
-        showToast("Skolyometre PDF raporu indirildi.");
+        showToast(_trans("Skolyometre PDF raporu indirildi."));
+    }).catch(err => {
+        printContainer.remove();
+        console.error("Scoliometer PDF error:", err);
+        showToast("PDF indirilirken hata oluştu.");
     });
 }
 
-function downloadSimulationPdf() {
+async function downloadSimulationPdf() {
+    const _trans = (window.translateText || (s => s));
     if (!currentPatientId) {
-        showToast("Lütfen bir hasta seçin.");
+        showToast(_trans("Lütfen bir hasta seçin."));
         return;
     }
 
@@ -2462,82 +2491,104 @@ function downloadSimulationPdf() {
 
     const simTbody = document.getElementById('simHistoryList');
     const simRows = simTbody ? simTbody.querySelectorAll('tr') : [];
-    const hasHistory = simRows.length > 0 && !simTbody.innerText.includes('Henüz kayıt bulunmuyor');
+    const hasHistory = simRows.length > 0 && !simTbody.innerText.includes('Henüz kayıt bulunmuyor') && !simTbody.innerText.includes('No records yet');
+
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const filenamePrefixes = {
+        tr: '3d_omurga_simulasyon_raporu',
+        en: '3d_spine_simulation_report',
+        de: '3d_wirbelsaeulen_simulationsbericht',
+        fr: 'rapport_simulation_rachis_3d',
+        es: 'informe_simulacion_columna_3d',
+        it: 'referto_simulazione_colonna_3d',
+        pt: 'relatorio_simulacao_coluna_3d',
+        ru: '3d_spine_simulation_report',
+        ar: '3d_spine_simulation_report'
+    };
+    const prefix = filenamePrefixes[lang] || '3d_omurga_simulasyon_raporu';
+    const pdfFilename = `${prefix}_${currentPatientId || 'hasta'}.pdf`;
+    const transSubtitle = _trans("3D Omurga Simülasyon Raporu");
 
     const printContainer = document.createElement('div');
+    printContainer.id = 'simulationPrintContainer';
     printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
-    printContainer.style.maxWidth = '800px';
-    printContainer.style.position = 'absolute';
-    printContainer.style.left = '-9999px';
+    printContainer.style.width = '700px';
+    printContainer.style.maxWidth = '700px';
+    printContainer.style.minWidth = '700px';
+    printContainer.style.boxSizing = 'border-box';
+    printContainer.style.position = 'fixed';
+    printContainer.style.left = '0';
     printContainer.style.top = '0';
+    printContainer.style.zIndex = '-9999';
+    printContainer.style.backgroundColor = '#ffffff';
 
     printContainer.innerHTML = `
-        <div class="mb-6 border-b border-slate-200 pb-4">
+        <div class="mb-5 border-b border-slate-200 pb-3">
             <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
-                <i class="fa-solid fa-cube text-emerald-600"></i> 3D Omurga & Skolyoz Simülasyon Raporu
+                <i class="fa-solid fa-cube text-emerald-600"></i> ${_trans('3D Omurga & Skolyoz Simülasyon Raporu')}
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli</p>
+            <p class="text-xs text-slate-500 mt-1">${_trans('Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli')}</p>
         </div>
 
-        <!-- 3D Snapshot ve Parametreler (Yan Yana) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 avoid-break">
+        <!-- 3D Snapshot ve Parametreler (Yan Yana Flexbox) -->
+        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: stretch; gap: 14px; width: 100%; box-sizing: border-box;" class="mb-5 avoid-break">
             <!-- 3D Görsel -->
-            <div class="bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[340px]">
-                <span class="text-xs font-bold text-emerald-400 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-eye mr-1"></i> 3D Omurga Deformite Görünümü</span>
-                ${simImgData ? `<img src="${simImgData}" class="max-h-72 object-contain rounded-xl mx-auto shadow-md">` : '<div class="text-slate-500 text-sm py-12">Simülasyon modeli yüklenemedi</div>'}
-                <span class="text-[10px] text-slate-400 mt-2 block">${startVertebra} - ${endVertebra} Vertebra Segmenti</span>
+            <div style="width: 48.5%; flex: 0 0 48.5%; max-width: 48.5%; box-sizing: border-box;" class="bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[320px]">
+                <span class="text-xs font-bold text-emerald-400 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-eye mr-1"></i> ${_trans('3D Omurga Deformite Görünümü')}</span>
+                ${simImgData ? `<img src="${simImgData}" class="max-h-64 object-contain rounded-xl mx-auto shadow-md" style="max-height: 240px; width: auto;">` : `<div class="text-slate-500 text-sm py-12">${_trans('Simülasyon modeli yüklenemedi')}</div>`}
+                <span class="text-[11px] text-slate-400 mt-2 block font-medium">${startVertebra} - ${endVertebra} ${_trans('Vertebra Segmenti')}</span>
             </div>
 
             <!-- Parametreler Tablosu / Kartları -->
-            <div class="flex flex-col justify-between space-y-3">
+            <div style="width: 48.5%; flex: 0 0 48.5%; max-width: 48.5%; box-sizing: border-box;" class="flex flex-col justify-between gap-2.5">
                 <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-center">
-                    <span class="text-xs font-bold text-slate-500 block uppercase">Cobb Açısı</span>
-                    <span class="text-3xl font-black text-indigo-900">${cobb}°</span>
+                    <span class="text-xs font-bold text-slate-500 block uppercase tracking-wider">${_trans('Cobb Açısı')}</span>
+                    <span class="text-3xl font-black text-indigo-900 my-1 block">${cobb}°</span>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">Rotasyon Açısı</span>
-                        <span class="text-xl font-black text-slate-800">${rot}°</span>
+                <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px;">
+                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Rotasyon Açısı')}</span>
+                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${rot}°</span>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">Torsiyon Açısı</span>
-                        <span class="text-xl font-black text-slate-800">${torsion}°</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">Yana Kayma</span>
-                        <span class="text-xl font-black text-slate-800">${shift} mm</span>
-                    </div>
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">Eğrilik Segmenti</span>
-                        <span class="text-base font-black text-indigo-700">${startVertebra} - ${endVertebra}</span>
+                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Torsiyon Açısı')}</span>
+                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${torsion}°</span>
                     </div>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center">
-                    <span class="text-[11px] font-bold text-slate-500 block">Kullanılan Ölçüm Metodu</span>
-                    <span class="text-xs font-bold text-slate-700">${method}</span>
+                <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px;">
+                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Yana Kayma')}</span>
+                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${shift} mm</span>
+                    </div>
+                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Eğrilik Segmenti')}</span>
+                        <span class="text-sm font-black text-indigo-700 mt-1 block">${startVertebra} - ${endVertebra}</span>
+                    </div>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                    <span class="text-[11px] font-bold text-slate-500 block">${_trans('Kullanılan Ölçüm Metodu')}</span>
+                    <span class="text-xs font-bold text-slate-700 mt-0.5 block">${method}</span>
                 </div>
             </div>
         </div>
 
         <!-- Simülasyon Geçmişi (Varsa) -->
         ${hasHistory ? `
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6 avoid-break">
-            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                <h4 class="text-xs font-black text-slate-700 uppercase">Kayıtlı Simülasyon Geçmişi</h4>
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-5 avoid-break">
+            <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200">
+                <h4 class="text-xs font-black text-slate-700 uppercase">${_trans('Kayıtlı Simülasyon Geçmişi')}</h4>
             </div>
             <div class="p-2">
                 <table class="w-full text-xs text-left">
                     <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
                         <tr>
-                            <th class="px-3 py-2">Tarih</th>
-                            <th class="px-3 py-2">Bölge</th>
+                            <th class="px-3 py-2">${_trans('Tarih')}</th>
+                            <th class="px-3 py-2">${_trans('Bölge')}</th>
                             <th class="px-3 py-2 text-center">Cobb</th>
-                            <th class="px-3 py-2 text-center">Rotasyon</th>
-                            <th class="px-3 py-2 text-center">Torsiyon</th>
-                            <th class="px-3 py-2 text-center">Kayma</th>
-                            <th class="px-3 py-2">Yöntem</th>
+                            <th class="px-3 py-2 text-center">${_trans('Rotasyon')}</th>
+                            <th class="px-3 py-2 text-center">${_trans('Torsiyon')}</th>
+                            <th class="px-3 py-2 text-center">${_trans('Kayma')}</th>
+                            <th class="px-3 py-2">${_trans('Yöntem')}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -2546,13 +2597,13 @@ function downloadSimulationPdf() {
                             if (cells.length < 7) return '';
                             return `
                                 <tr>
-                                    <td class="px-3 py-2 font-medium text-slate-700">${cells[0].innerText}</td>
-                                    <td class="px-3 py-2 font-bold text-indigo-700">${cells[1].innerText}</td>
-                                    <td class="px-3 py-2 text-center font-bold">${cells[2].innerText}</td>
-                                    <td class="px-3 py-2 text-center">${cells[3].innerText}</td>
-                                    <td class="px-3 py-2 text-center">${cells[4].innerText}</td>
-                                    <td class="px-3 py-2 text-center">${cells[5].innerText}</td>
-                                    <td class="px-3 py-2 text-slate-500">${cells[6].innerText}</td>
+                                    <td class="px-3 py-1.5 font-medium text-slate-700">${cells[0].innerText}</td>
+                                    <td class="px-3 py-1.5 font-bold text-indigo-700">${cells[1].innerText}</td>
+                                    <td class="px-3 py-1.5 text-center font-bold">${cells[2].innerText}</td>
+                                    <td class="px-3 py-1.5 text-center">${cells[3].innerText}</td>
+                                    <td class="px-3 py-1.5 text-center">${cells[4].innerText}</td>
+                                    <td class="px-3 py-1.5 text-center">${cells[5].innerText}</td>
+                                    <td class="px-3 py-1.5 text-slate-500">${cells[6].innerText}</td>
                                 </tr>
                             `;
                         }).join('')}
@@ -2563,27 +2614,58 @@ function downloadSimulationPdf() {
         ` : ''}
 
         <!-- Klinik Açıklama Notu -->
-        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break text-xs text-slate-600 leading-relaxed">
-            <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-notes-medical text-indigo-500 mr-1"></i> Biyomekanik Simülasyon Bilgisi:</p>
-            <p>Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.</p>
+        <div class="border border-slate-200 rounded-2xl p-3.5 bg-slate-50/50 avoid-break text-xs text-slate-600 leading-relaxed">
+            <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-notes-medical text-indigo-500 mr-1"></i> ${_trans('Biyomekanik Simülasyon Bilgisi:')}</p>
+            <p>${_trans('Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.')}</p>
         </div>
     `;
 
     document.body.appendChild(printContainer);
 
+    // Image decode ve layout reflow beklemesi
+    if (simImgData) {
+        await new Promise((resolve) => {
+            const preImg = new Image();
+            preImg.onload = resolve;
+            preImg.onerror = resolve;
+            preImg.src = simImgData;
+        });
+    }
+    await new Promise(r => setTimeout(r, 200));
+
     const opt = {
-      margin:       [0.65, 0.3, 0.5, 0.3],
+      margin:       [0.65, 0.35, 0.45, 0.35],
+      filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+      html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, logging: false },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+      pagebreak:    { mode: ['css'] }
     };
 
     const instance = html2pdf().set(opt).from(printContainer);
-    runPdf(instance, `simulasyon_raporu_${currentPatientId || 'hasta'}.pdf`, "3D Omurga Simulasyon Raporu").then(() => {
-        printContainer.remove();
-        showToast("3D simülasyon PDF raporu indirildi.");
-    });
+    if(typeof runPdf === 'function') {
+        runPdf(instance, pdfFilename, transSubtitle).then(() => {
+            printContainer.remove();
+            showToast(_trans("3D simülasyon PDF raporu indirildi."));
+        }).catch(err => {
+            printContainer.remove();
+            console.error("Simulation PDF error:", err);
+            showToast("PDF indirilirken hata oluştu.");
+        });
+    } else {
+        instance.toPdf().get('pdf').then(function(pdf) {
+            if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                applyCibodyPdfHeaderFooter(pdf, transSubtitle);
+            }
+        }).save().then(() => {
+            printContainer.remove();
+            showToast(_trans("3D simülasyon PDF raporu indirildi."));
+        }).catch(err => {
+            printContainer.remove();
+            console.error("Simulation PDF error:", err);
+            showToast("PDF indirilirken hata oluştu.");
+        });
+    }
 }
 
 async function showPatientQr() {

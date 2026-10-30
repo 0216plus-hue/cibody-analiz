@@ -5354,6 +5354,26 @@ const I18N_PHRASES = {
     "it": "Informazione della simulazione biomecánica:",
     "pt": "Informação da simulação biomecánica:"
   },
+  "Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.": {
+    "en": "This simulation models the patient's spinal deformity in 3D space. In addition to the Cobb angle, transverse plane rotation and torsion of the vertebrae are calculated to provide a reference for treatment planning and brace/surgical simulation.",
+    "ru": "Эта симуляция моделирует деформацию позвоночника пациента в 3D-пространстве. Помимо угла Кобба, рассчитываются ротация и торсия позвонков в поперечной плоскости для планирования лечения и моделирования корсета/хирургии.",
+    "ar": "يقوم هذا النموذج بمحاكاة تشوه العمود الفقري للمريض في الفضاء ثلاثي الأبعاد. بالإضافة إلى زاوية كوب، يتم حساب دوران والتواء الفقرات في المستوى المستعرض لتوفير مرجع لتخطيط العلاج ومحاكاة الدعامة أو الجراحة.",
+    "de": "Diese Simulation modelliert die Wirbelsäulendeformität des Patienten im 3D-Raum. Neben dem Cobb-Winkel werden Rotation und Torsion der Wirbel in der Transversalebene berechnet, um eine Referenz für Behandlungsplanung und Korsett-/Chirurgiesimulation zu bieten.",
+    "fr": "Cette simulation modélise la déformation rachidienne du patient dans l'espace 3D. En plus de l'angle de Cobb, la rotation et la torsion des vertèbres dans le plan transversal sont calculées pour fournir une référence pour la planification du traitement et la simulation de corset/chirurgie.",
+    "es": "Esta simulación modela la deformidad de la columna del paciente en un espacio 3D. Además del ángulo de Cobb, se calculan la rotación y la torsión de las vértebras en el plano transversal para proporcionar una referencia para la planificación del tratamiento y la simulación ortopédica/quirúrgica.",
+    "it": "Questa simulazione modella la deformità della colonna vertebrale del paziente nello spazio 3D. Oltre all'angolo di Cobb, vengono calcolate la rotazione e la torsione delle vertebre nel piano trasversale per fornire un riferimento per la pianificazione del trattamento e la simulazione di busto/chirurgia.",
+    "pt": "Esta simulação modela a deformidade da coluna do paciente no espaço 3D. Além do ângulo de Cobb, a rotação e a torção das vértebras no plano transversal são calculadas para fornecer uma referência para o planejamento do tratamento e simulação de colete/cirurgia."
+  },
+  "Vertebra Segmenti": {
+    "en": "Vertebral Segment",
+    "ru": "Позвоночный сегмент",
+    "ar": "قطعة الفقرات",
+    "de": "Wirbelsegment",
+    "fr": "Segment vertébral",
+    "es": "Segmento vertebral",
+    "it": "Segmento vertebrale",
+    "pt": "Segmento vertebral"
+  },
   "Hasta Karekodu": {
     "en": "Patient QR Code",
     "ru": "QR-код пациента",
