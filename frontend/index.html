@@ -2137,22 +2137,32 @@
                 const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
                 if(res.ok) {
                     const data = await res.json();
-                    window.cachedStaticFootHistory = data.map(d => d.session_data);
+                    window.cachedStaticFootHistory = (Array.isArray(data) ? data : []).map(d => {
+                        try {
+                            return (typeof d.session_data === 'string') ? JSON.parse(d.session_data) : d.session_data;
+                        } catch(err) {
+                            return d.session_data;
+                        }
+                    }).filter(Boolean);
                 }
             } catch(e) { console.error(e); }
             
             const returnLiveText = window.translateText ? window.translateText('-- Canlı Akışa Dön --') : '-- Canlı Akışa Dön --';
             select.innerHTML = `<option value="">${returnLiveText}</option>`;
             
-            window.cachedStaticFootHistory.forEach(record => {
-                let d = (typeof formatAppDate === 'function')
-                    ? formatAppDate(record.date, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : new Date(record.date).toLocaleString();
-                let opt = document.createElement('option');
-                opt.value = record.id;
-                opt.text = d;
-                select.appendChild(opt);
-            });
+            if (Array.isArray(window.cachedStaticFootHistory)) {
+                window.cachedStaticFootHistory.forEach(record => {
+                    if (!record) return;
+                    let dateVal = record.date || record.timestamp;
+                    let d = (typeof formatAppDate === 'function')
+                        ? formatAppDate(dateVal, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : (dateVal ? new Date(dateVal).toLocaleString() : 'Analiz');
+                    let opt = document.createElement('option');
+                    opt.value = record.id || '';
+                    opt.text = d;
+                    select.appendChild(opt);
+                });
+            }
         };
 
         function loadStaticFootHistory(recordId) {

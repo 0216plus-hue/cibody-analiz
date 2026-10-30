@@ -232,11 +232,18 @@ function switchTab(tabId) {
 
         sessionStorage.setItem('cibody_active_tab', tabId);
 
+        if (tabId !== 'gaitTab' && typeof stopGaitAnalysis === 'function') {
+            stopGaitAnalysis();
+        }
+
         if (typeof applyTranslations === 'function' && activeTab) {
             applyTranslations(activeTab);
         }
 
         // Tab-specific loading
+        if(tabId === 'footTab' && currentPatientId) {
+            if(typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
+        }
         if(tabId === 'scoliometerTab' && currentPatientId) {
             if(typeof loadScoliometerHistory === 'function') loadScoliometerHistory(currentPatientId);
         }
@@ -252,7 +259,6 @@ function switchTab(tabId) {
         }
         if(tabId === 'insoleTab' && currentPatientId) {
             if(typeof loadInsoleDropdowns === 'function') loadInsoleDropdowns();
-
         }
     } catch(err) {
         console.error("switchTab error:", err);

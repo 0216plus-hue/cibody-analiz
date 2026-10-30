@@ -11611,10 +11611,19 @@ function translateDom(container = (typeof document !== 'undefined' ? document : 
                 if (translated) {
                     const icon = el.querySelector('i');
                     if (icon) {
-                        const iconHtml = icon.outerHTML;
-                        el.innerHTML = `${iconHtml} <span>${translated}</span>`;
+                        const span = el.querySelector('span');
+                        if (span) {
+                            if (span.textContent !== translated) {
+                                span.textContent = translated;
+                            }
+                        } else {
+                            const iconHtml = icon.outerHTML;
+                            el.innerHTML = `${iconHtml} <span>${translated}</span>`;
+                        }
                     } else {
-                        el.textContent = translated;
+                        if (el.textContent !== translated) {
+                            el.textContent = translated;
+                        }
                     }
                 }
             });
@@ -11749,23 +11758,54 @@ function applyTranslations(container = (typeof document !== 'undefined' ? docume
 }
 
 // 8. MutationObserver ile dinamik render edilen içerikleri otomatik yakalama
+let i18nObserver = null;
 let observerTimeout = null;
 function setupI18nObserver() {
     if (typeof MutationObserver === 'undefined' || typeof document === 'undefined' || !document.body) {
         return;
     }
+    if (i18nObserver) {
+        i18nObserver.disconnect();
+    }
 
-    const observer = new MutationObserver(mutations => {
+    i18nObserver = new MutationObserver(mutations => {
         if (currentLang === 'tr') return;
         if (isTranslatingDom) return;
 
+        // Yalnızca yeni eklenen gerçek HTML elementleri varsa çalıştır, sonsuz döngüyü engelle
+        let hasNewElements = false;
+        for (let i = 0; i < mutations.length; i++) {
+            const m = mutations[i];
+            if (m.type === 'childList' && m.addedNodes && m.addedNodes.length > 0) {
+                for (let j = 0; j < m.addedNodes.length; j++) {
+                    if (m.addedNodes[j].nodeType === 1) { // Node.ELEMENT_NODE
+                        hasNewElements = true;
+                        break;
+                    }
+                }
+            }
+            if (hasNewElements) break;
+        }
+        if (!hasNewElements) return;
+
         if (observerTimeout) clearTimeout(observerTimeout);
         observerTimeout = setTimeout(() => {
-            translateDom(document.body);
-        }, 60);
+            if (i18nObserver) i18nObserver.disconnect();
+            try {
+                translateDom(document.body);
+            } finally {
+                if (i18nObserver && document.body) {
+                    i18nObserver.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        characterData: false
+                    });
+                }
+            }
+        }, 250);
     });
 
-    observer.observe(document.body, {
+    i18nObserver.observe(document.body, {
         childList: true,
         subtree: true,
         characterData: false
