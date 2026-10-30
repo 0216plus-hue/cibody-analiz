@@ -456,6 +456,23 @@
             width: 100% !important;
         }
 
+        /* ─── Dijital Skolyometre PDF Export Stilleri ─── */
+        #scoliometerReportSection.scoliometer-pdf-mode {
+            width: 700px !important;
+            max-width: 700px !important;
+            min-width: 700px !important;
+            margin: 0 auto !important;
+            padding: 12px 16px !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        }
+
+        #scoliometerReportSection.scoliometer-pdf-mode .avoid-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
         /* ─── 3D Omurga Simülasyonu PDF Export Stilleri ─── */
         #simulationReportSection.simulation-pdf-mode {
             width: 700px !important;
@@ -1692,9 +1709,94 @@
                                 </tbody>
                             </table>
 
-                    </div>
                         </div>
                     </div>
+
+                    <!-- Dijital Skolyometre (ATR) PDF Rapor Şablonu -->
+                    <div id="scoliometerReportSection" class="hidden bg-white text-slate-800 font-sans p-6 rounded-2xl">
+                        <!-- Başlık -->
+                        <div class="mb-5 border-b border-slate-200 pb-3">
+                            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
+                                <i class="fa-solid fa-mobile-screen text-indigo-600"></i> <span data-i18n="Dijital Skolyometre (ATR) Ölçüm Raporu">Dijital Skolyometre (ATR) Ölçüm Raporu</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1" data-i18n="Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi">Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi</p>
+                        </div>
+
+                        <!-- Özet Kartlar (Sağlam Tablo Düzeni) -->
+                        <table class="w-full mb-5 avoid-break" style="width: 100%; border-collapse: separate; border-spacing: 12px 0;">
+                            <tr>
+                                <td style="width: 50%; background: #eef2ff; border: 1px solid #e0e7ff; border-radius: 14px; padding: 14px; text-align: center;">
+                                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1" data-i18n="Son Torakal Açı (ATR)">Son Torakal Açı (ATR)</span>
+                                    <span id="scoliometerPdfThoracic" class="text-3xl font-black text-indigo-900 block my-1">—</span>
+                                    <span class="text-[11px] text-slate-400 mt-1 block" data-i18n="Sırt (Göğüs) Omurgası Eğimi">Sırt (Göğüs) Omurgası Eğimi</span>
+                                </td>
+                                <td style="width: 50%; background: #ecfdf5; border: 1px solid #d1fae5; border-radius: 14px; padding: 14px; text-align: center;">
+                                    <span class="text-xs font-bold text-slate-500 uppercase block mb-1" data-i18n="Son Lumbar Açı (ATR)">Son Lumbar Açı (ATR)</span>
+                                    <span id="scoliometerPdfLumbar" class="text-3xl font-black text-emerald-800 block my-1">—</span>
+                                    <span class="text-[11px] text-slate-400 mt-1 block" data-i18n="Bel Omurgası Eğimi">Bel Omurgası Eğimi</span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Klinik Rehber Kutusu -->
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-5 avoid-break">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-info text-indigo-500"></i> <span data-i18n="Klinik ATR Sınıflandırma Kriterleri">Klinik ATR Sınıflandırma Kriterleri</span>
+                            </h4>
+                            <table class="w-full text-xs" style="width: 100%; border-collapse: separate; border-spacing: 8px 0;">
+                                <tr>
+                                    <td style="width: 33.33%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px;">
+                                        <span class="font-bold text-emerald-600 block mb-0.5" data-i18n="0° - 4° (Normal)">0° - 4° (Normal)</span>
+                                        <p class="text-slate-500 text-[11px]" data-i18n="Fizyolojik asimetri. Rutin klinik takip yeterlidir.">Fizyolojik asimetri. Rutin klinik takip yeterlidir.</p>
+                                    </td>
+                                    <td style="width: 33.33%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px;">
+                                        <span class="font-bold text-amber-600 block mb-0.5" data-i18n="5° - 7° (Hafif Rotasyon)">5° - 7° (Hafif Rotasyon)</span>
+                                        <p class="text-slate-500 text-[11px]" data-i18n="Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.">Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.</p>
+                                    </td>
+                                    <td style="width: 33.33%; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px;">
+                                        <span class="font-bold text-rose-600 block mb-0.5" data-i18n="≥ 7° - 10°+ (Belirgin)">≥ 7° - 10°+ (Belirgin)</span>
+                                        <p class="text-slate-500 text-[11px]" data-i18n="Skolyoz şüphesi. Ayakta tüm omurga röntgeni (Cobb) önerilir.">Skolyoz şüphesi. Ayakta tüm omurga röntgeni (Cobb) önerilir.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Ölçüm Geçmişi ve İzlem Kayıtları Tablosu -->
+                        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-5 avoid-break">
+                            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
+                                <h4 class="text-xs font-black text-slate-700 uppercase" data-i18n="Ölçüm Geçmişi ve İzlem Kayıtları">Ölçüm Geçmişi ve İzlem Kayıtları</h4>
+                            </div>
+                            <div class="p-2">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                                        <tr>
+                                            <th class="px-3 py-2.5" data-i18n="Ölçüm Tarihi">Ölçüm Tarihi</th>
+                                            <th class="px-3 py-2.5 text-center" data-i18n="Torakal Açı (ATR)">Torakal Açı (ATR)</th>
+                                            <th class="px-3 py-2.5 text-center" data-i18n="Lumbar Açı (ATR)">Lumbar Açı (ATR)</th>
+                                            <th class="px-3 py-2.5 text-center" data-i18n="Değerlendirme">Değerlendirme</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="scoliometerPdfHistoryBody" class="divide-y divide-slate-100">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Klinik Takip Notu & İmza -->
+                        <table class="w-full avoid-break" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; background: #f8fafc; padding: 12px; border-collapse: collapse;">
+                            <tr>
+                                <td style="vertical-align: bottom; font-size: 11px; color: #64748b; padding: 8px 12px;">
+                                    <p class="font-bold text-slate-700 mb-0.5" data-i18n="Uzman Klinik Takip Notu:">Uzman Klinik Takip Notu:</p>
+                                    <p data-i18n="Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.">Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.</p>
+                                </td>
+                                <td style="text-align: right; vertical-align: bottom; width: 140px; padding: 8px 12px;">
+                                    <p class="font-bold text-slate-700 text-xs mb-4" data-i18n="Kaşe / İmza">Kaşe / İmza</p>
+                                    <div style="width: 120px; border-bottom: 1px dashed #cbd5e1; margin-left: auto;"></div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
 <div id="simulationTab" class="hidden">
                     <div class="bg-slate-900 rounded-3xl shadow-xl border border-slate-800 overflow-hidden mb-8 text-white relative">

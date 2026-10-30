@@ -2294,165 +2294,118 @@ function downloadScoliometerPdf() {
         return;
     }
 
-    const tbody = document.getElementById('scoliometerHistoryList');
-    const rows = tbody ? tbody.querySelectorAll('tr') : [];
-    const hasData = rows.length > 0 && !tbody.innerText.includes('Henüz ölçüm bulunmuyor');
-    
-    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
-    const filenamePrefixes = {
-        tr: 'skolyometre_raporu',
-        en: 'scoliometer_atr_report',
-        de: 'skoliometer_atr_bericht',
-        fr: 'rapport_scoliometre_atr',
-        es: 'informe_escoliometro_atr',
-        it: 'referto_scoliometro_atr',
-        pt: 'relatorio_escoliometro_atr',
-        ru: 'scoliometer_atr_report',
-        ar: 'scoliometer_atr_report'
-    };
-    const prefix = filenamePrefixes[lang] || 'skolyometre_raporu';
-    const pdfFilename = `${prefix}_${currentPatientId || 'hasta'}.pdf`;
-    const transSubtitle = _trans("Dijital Skolyometre (ATR) Analiz Raporu");
+    const reportEl = document.getElementById("scoliometerReportSection");
+    if (!reportEl) return;
 
-    // Create an offscreen print-friendly container
-    const printContainer = document.createElement('div');
-    printContainer.id = 'scoliometerPrintContainer';
-    printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
-    printContainer.style.width = '700px';
-    printContainer.style.maxWidth = '700px';
-    printContainer.style.minWidth = '700px';
-    printContainer.style.boxSizing = 'border-box';
-    printContainer.style.position = 'fixed';
-    printContainer.style.left = '0';
-    printContainer.style.top = '0';
-    printContainer.style.zIndex = '-9999';
-    printContainer.style.backgroundColor = '#ffffff';
+    const tbody = document.getElementById("scoliometerHistoryList");
+    const rows = tbody ? tbody.querySelectorAll("tr") : [];
+    const hasData = rows.length > 0 && !tbody.innerText.includes("Henüz ölçüm bulunmuyor") && !tbody.innerText.includes("No records yet") && !tbody.innerText.includes("No scoliometer");
 
     let latestThoracic = "—";
     let latestLumbar = "—";
-    let latestDate = "—";
     if (hasData && rows[0]) {
-        const cells = rows[0].querySelectorAll('td');
+        const cells = rows[0].querySelectorAll("td");
         if (cells.length >= 3) {
-            latestDate = cells[0].innerText.trim();
             latestThoracic = cells[1].innerText.trim();
             latestLumbar = cells[2].innerText.trim();
         }
     }
 
-    printContainer.innerHTML = `
-        <div class="mb-6 border-b border-slate-200 pb-4">
-            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
-                <i class="fa-solid fa-mobile-screen text-indigo-600"></i> ${_trans('Dijital Skolyometre (ATR) Ölçüm Raporu')}
-            </h2>
-            <p class="text-xs text-slate-500 mt-1">${_trans('Gövde Rotasyon Açısı (Angle of Trunk Rotation - ATR) Değerlendirmesi')}</p>
-        </div>
+    const pdfThoracic = document.getElementById("scoliometerPdfThoracic");
+    if (pdfThoracic) pdfThoracic.innerText = latestThoracic;
+    const pdfLumbar = document.getElementById("scoliometerPdfLumbar");
+    if (pdfLumbar) pdfLumbar.innerText = latestLumbar;
 
-        <!-- Özet Kartlar -->
-        <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 14px; width: 100%; box-sizing: border-box;" class="mb-6 avoid-break">
-            <div style="width: 48.5%;" class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${_trans('Son Torakal Açı (ATR)')}</span>
-                <span class="text-3xl font-black text-indigo-900 block my-1">${latestThoracic}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">${_trans('Sırt (Göğüs) Omurgası Eğimi')}</span>
-            </div>
-            <div style="width: 48.5%;" class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-4 text-center">
-                <span class="text-xs font-bold text-slate-500 uppercase block mb-1">${_trans('Son Lumbar Açı (ATR)')}</span>
-                <span class="text-3xl font-black text-emerald-800 block my-1">${latestLumbar}</span>
-                <span class="text-[11px] text-slate-400 mt-1 block">${_trans('Bel Omurgası Eğimi')}</span>
-            </div>
-        </div>
+    const pdfHistoryBody = document.getElementById("scoliometerPdfHistoryBody");
+    if (pdfHistoryBody) {
+        if (hasData) {
+            pdfHistoryBody.innerHTML = Array.from(rows).map(r => {
+                const tds = r.querySelectorAll("td");
+                if (tds.length < 3) return "";
+                const tVal = parseFloat(tds[1].innerText) || 0;
+                const lVal = parseFloat(tds[2].innerText) || 0;
+                const maxVal = Math.max(tVal, lVal);
+                const status = maxVal >= 7 
+                    ? `<span class="text-rose-600 font-bold" data-i18n="İleri İnceleme">${_trans("İleri İnceleme")}</span>` 
+                    : (maxVal >= 5 
+                        ? `<span class="text-amber-600 font-bold" data-i18n="Takip & Egzersiz">${_trans("Takip & Egzersiz")}</span>` 
+                        : `<span class="text-emerald-600 font-bold" data-i18n="Normal">${_trans("Normal")}</span>`);
+                return `
+                    <tr>
+                        <td class="px-3 py-2 font-medium text-slate-700">${tds[0].innerText}</td>
+                        <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[1].innerHTML}</td>
+                        <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[2].innerHTML}</td>
+                        <td class="px-3 py-2 text-center">${status}</td>
+                    </tr>
+                `;
+            }).join("");
+        } else {
+            pdfHistoryBody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400" data-i18n="Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.">${_trans("Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.")}</td></tr>`;
+        }
+    }
 
-        <!-- Klinik Rehber Kutusu -->
-        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 avoid-break">
-            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info text-indigo-500"></i> ${_trans('Klinik ATR Sınıflandırma Kriterleri')}
-            </h4>
-            <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 10px; width: 100%;" class="text-xs">
-                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
-                    <span class="font-bold text-emerald-600 block mb-0.5">0° - 4° (Normal)</span>
-                    <p class="text-slate-500 text-[11px]">Fizyolojik asimetri. Rutin klinik takip yeterlidir.</p>
-                </div>
-                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
-                    <span class="font-bold text-amber-600 block mb-0.5">5° - 7° (Hafif Rotasyon)</span>
-                    <p class="text-slate-500 text-[11px]">Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.</p>
-                </div>
-                <div style="width: 32%;" class="bg-white p-3 rounded-xl border border-slate-100">
-                    <span class="font-bold text-rose-600 block mb-0.5">≥ 7° - 10°+ (Belirgin)</span>
-                    <p class="text-slate-500 text-[11px]">Skolyoz şüphesi. Ayakta tüm omurga röntgeni (Cobb) önerilir.</p>
-                </div>
-            </div>
-        </div>
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
+    const filenamePrefixes = {
+        tr: "skolyometre_raporu",
+        en: "scoliometer_atr_report",
+        de: "skoliometer_atr_bericht",
+        fr: "rapport_scoliometre_atr",
+        es: "informe_escoliometro_atr",
+        it: "referto_scoliometro_atr",
+        pt: "relatorio_escoliometro_atr",
+        ru: "scoliometer_atr_report",
+        ar: "scoliometer_atr_report"
+    };
+    const prefix = filenamePrefixes[lang] || "skolyometre_raporu";
+    const pdfFilename = `${prefix}_${currentPatientId || "hasta"}.pdf`;
+    const transSubtitle = _trans("Dijital Skolyometre (ATR) Analiz Raporu");
 
-        <!-- Geçmiş Tablosu -->
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-6 avoid-break">
-            <div class="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                <h4 class="text-xs font-black text-slate-700 uppercase">${_trans('Ölçüm Geçmişi ve İzlem Kayıtları')}</h4>
-            </div>
-            <div class="p-2">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
-                        <tr>
-                            <th class="px-3 py-2.5">${_trans('Ölçüm Tarihi')}</th>
-                            <th class="px-3 py-2.5 text-center">${_trans('Torakal ATR')}</th>
-                            <th class="px-3 py-2.5 text-center">${_trans('Lumbar ATR')}</th>
-                            <th class="px-3 py-2.5 text-center">${_trans('Değerlendirme')}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        ${hasData ? Array.from(rows).map(r => {
-                            const tds = r.querySelectorAll('td');
-                            if (tds.length < 3) return '';
-                            const tVal = parseFloat(tds[1].innerText) || 0;
-                            const lVal = parseFloat(tds[2].innerText) || 0;
-                            const maxVal = Math.max(tVal, lVal);
-                            const status = maxVal >= 7 ? `<span class="text-rose-600 font-bold">${_trans('İleri İnceleme')}</span>` : (maxVal >= 5 ? `<span class="text-amber-600 font-bold">${_trans('Takip & Egzersiz')}</span>` : `<span class="text-emerald-600 font-bold">${_trans('Normal')}</span>`);
-                            return `
-                                <tr>
-                                    <td class="px-3 py-2 font-medium text-slate-700">${tds[0].innerText}</td>
-                                    <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[1].innerHTML}</td>
-                                    <td class="px-3 py-2 text-center font-bold text-slate-800">${tds[2].innerHTML}</td>
-                                    <td class="px-3 py-2 text-center">${status}</td>
-                                </tr>
-                            `;
-                        }).join('') : `<tr><td colspan="4" class="text-center py-6 text-slate-400">${_trans('Henüz kaydedilmiş skolyometre ölçümü bulunmuyor.')}</td></tr>`}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    // Unhide and enable pdf mode
+    reportEl.classList.remove("hidden");
+    reportEl.classList.add("scoliometer-pdf-mode");
 
-        <!-- Klinik Not & İmza -->
-        <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break flex justify-between items-end">
-            <div class="text-xs text-slate-500">
-                <p class="font-bold text-slate-700 mb-1">${_trans('Uzman Klinik Takip Notu:')}</p>
-                <p>Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.</p>
-            </div>
-            <div class="text-right text-xs text-slate-400">
-                <p class="font-bold text-slate-700">${_trans('Kaşe / İmza')}</p>
-                <div class="w-32 h-10 border-b border-dashed border-slate-300"></div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(printContainer);
+    if (window.applyTranslations) {
+        window.applyTranslations(reportEl);
+    }
 
     const opt = {
-      margin:       [0.65, 0.35, 0.45, 0.35],
+      margin:       [0.45, 0.35, 0.4, 0.35],
       filename:     pdfFilename,
-      image:        { type: 'jpeg', quality: 0.98 },
+      image:        { type: "jpeg", quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, logging: false },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css'] }
+      jsPDF:        { unit: "in", format: "a4", orientation: "portrait" },
+      pagebreak:    { mode: ["css", "legacy"], avoid: [".avoid-break"] }
     };
 
-    const instance = html2pdf().set(opt).from(printContainer);
-    runPdf(instance, pdfFilename, transSubtitle).then(() => {
-        printContainer.remove();
-        showToast(_trans("Skolyometre PDF raporu indirildi."));
-    }).catch(err => {
-        printContainer.remove();
-        console.error("Scoliometer PDF error:", err);
-        showToast("PDF indirilirken hata oluştu.");
-    });
+    const cleanup = () => {
+        reportEl.classList.remove("scoliometer-pdf-mode");
+        reportEl.classList.add("hidden");
+    };
+
+    const instance = html2pdf().set(opt).from(reportEl);
+    if(typeof runPdf === "function") {
+        runPdf(instance, pdfFilename, transSubtitle).then(() => {
+            cleanup();
+            showToast(_trans("Skolyometre PDF raporu indirildi."));
+        }).catch(err => {
+            cleanup();
+            console.error("Scoliometer PDF error:", err);
+            showToast("PDF indirilirken hata oluştu.");
+        });
+    } else {
+        instance.toPdf().get("pdf").then(function(pdf) {
+            if (typeof applyCibodyPdfHeaderFooter === "function") {
+                applyCibodyPdfHeaderFooter(pdf, transSubtitle);
+            }
+        }).save().then(() => {
+            cleanup();
+            showToast(_trans("Skolyometre PDF raporu indirildi."));
+        }).catch(err => {
+            cleanup();
+            console.error("Scoliometer PDF error:", err);
+            showToast("PDF indirilirken hata oluştu.");
+        });
+    }
 }
 
 async function downloadSimulationPdf() {
