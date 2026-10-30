@@ -24,7 +24,7 @@
     </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="i18n.js?v=20.7"></script>
+<script src="i18n.js?v=20.8"></script>
 
 
     <style id="pdf-export-css">
@@ -1441,61 +1441,81 @@
 
     <div id="footContentSection" class="flex flex-col lg:flex-row justify-center gap-8 items-start w-full py-2">
         <!-- Canvas Alanı -->
-        <div id="footCanvasContainer" class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex items-center justify-center">
-            <canvas id="foot_analysis_canvas" width="480" height="480" class="block"></canvas>
+        <div id="footCanvasContainer" class="w-full max-w-[480px] aspect-square mx-auto bg-black rounded-2xl border-4 border-slate-800 shadow-xl relative overflow-hidden flex-shrink-0 flex flex-col items-center justify-center">
+            <div id="footCanvasPdfTitle" class="hidden text-xs font-bold text-white uppercase tracking-wider mb-2 text-center z-20">
+                <i class="fa-solid fa-shoe-prints text-indigo-400 mr-2"></i><span data-i18n="Plantar Basınç Haritası">Plantar Basınç Haritası</span>
+            </div>
+            <canvas id="foot_analysis_canvas" width="480" height="480" class="block w-full h-full object-contain"></canvas>
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
             </div>
         </div>
         
-        <!-- İstatistikler -->
+        <!-- İstatistikler / 2 Rapor Paneli -->
         <div class="flex flex-col gap-6 w-full max-w-md mx-auto lg:mx-0 h-[480px] overflow-y-auto pr-2" id="footAnalysisDataPanel">
             
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center relative z-10"><i class="fa-solid fa-scale-balanced mr-2"></i><span data-i18n="foot.lr_dist">Sol / Sağ Dağılımı</span></h4>
-                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50 z-10">
-                    <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
-                    <div id="barL" class="bar-left h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sol %50</div>
-                    <div id="barR" class="bar-right h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:50%">Sağ %50</div>
+            <!-- Sol Rapor: Yük Dağılım Analizi -->
+            <div id="footLoadReportPanel" class="flex flex-col gap-4 w-full">
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center relative z-10"><i class="fa-solid fa-scale-balanced mr-2"></i><span data-i18n="foot.lr_dist">Sol / Sağ Dağılımı</span></h4>
+                    <div class="h-9 bg-slate-100 rounded-xl overflow-hidden relative flex mb-1 shadow-inner border border-slate-200/50 z-10">
+                        <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
+                        <div id="barL" class="bar-left h-full flex items-center pl-4 font-bold text-white text-xs shadow-sm" style="width:50%">Sol %50</div>
+                        <div id="barR" class="bar-right h-full flex items-center justify-end pr-4 font-bold text-white text-xs shadow-sm" style="width:50%">Sağ %50</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full opacity-50 pointer-events-none"></div>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center relative z-10"><i class="fa-solid fa-arrows-up-down mr-2"></i><span data-i18n="foot.fr_dist">Ön / Arka Dağılımı</span></h4>
+                    <div class="h-9 bg-slate-100 rounded-xl overflow-hidden relative flex mb-1 shadow-inner border border-slate-200/50 z-10">
+                        <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
+                        <div id="barT" class="bar-top h-full flex items-center pl-4 font-bold text-white text-xs shadow-sm" style="width:30%">Ön %30</div>
+                        <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-4 font-bold text-white text-xs shadow-sm" style="width:70%">Arka %70</div>
+                    </div>
+                </div>
+
+                <div id="footLoadRefNote" class="hidden p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[10px] text-slate-500 leading-normal">
+                    <span class="font-bold text-slate-700" data-i18n="Normal Dağılım Referansı">Normal Dağılım Referansı</span>: <span data-i18n="Sol">Sol</span>/<span data-i18n="Sağ">Sağ</span>: %50-%50 | <span data-i18n="Ön">Ön</span>/<span data-i18n="Arka">Arka</span>: %40-%60 (±5%)
                 </div>
             </div>
 
-            <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-                <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full opacity-50 pointer-events-none"></div>
-                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 text-center relative z-10"><i class="fa-solid fa-arrows-up-down mr-2"></i><span data-i18n="foot.fr_dist">Ön / Arka Dağılımı</span></h4>
-                <div class="h-10 bg-slate-100 rounded-xl overflow-hidden relative flex mb-2 shadow-inner border border-slate-200/50 z-10">
-                    <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/50 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.1)]"></div>
-                    <div id="barT" class="bar-top h-full flex items-center pl-4 font-bold text-white text-sm shadow-sm" style="width:30%">Ön %30</div>
-                    <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-4 font-bold text-white text-sm shadow-sm" style="width:70%">Arka %70</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
+            <!-- Sağ Rapor: Biyomekanik Parametreler -->
+            <div id="footBiomechanicalReportPanel" class="flex flex-col gap-4 w-full">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                    <div class="absolute -left-4 -top-4 w-16 h-16 bg-slate-50 rounded-full opacity-50 pointer-events-none"></div>
-                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 text-center relative z-10" data-i18n="foot.left_foot">Sol Ayak</h4>
-                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-2 shadow-sm relative z-10">
-                        <span class="text-[10px] text-slate-500 font-bold" data-i18n="foot.clarke">CLARKE</span>
-                        <span id="val_left_clarke" class="text-base font-black text-indigo-900">-°</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm relative z-10">
-                        <span class="text-[10px] text-slate-500 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
-                        <span id="val_left_arch" class="text-base font-black text-emerald-600">-</span>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center relative z-10"><i class="fa-solid fa-ruler-combined mr-2 text-indigo-500"></i><span data-i18n="Biyomekanik Parametreler">Biyomekanik Parametreler</span></h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
+                            <span class="text-[11px] font-bold text-indigo-600 block mb-2 pb-1 border-b border-slate-200" data-i18n="foot.left_foot">Sol Ayak</span>
+                            <div class="flex justify-between items-center mb-1 text-xs">
+                                <span class="text-slate-500 font-bold" data-i18n="foot.clarke">CLARKE</span>
+                                <span id="val_left_clarke" class="font-black text-indigo-900">-°</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
+                                <span id="val_left_arch" class="font-black text-emerald-600">-</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center">
+                            <span class="text-[11px] font-bold text-cyan-600 block mb-2 pb-1 border-b border-slate-200" data-i18n="foot.right_foot">Sağ Ayak</span>
+                            <div class="flex justify-between items-center mb-1 text-xs">
+                                <span class="text-slate-500 font-bold" data-i18n="foot.clarke">CLARKE</span>
+                                <span id="val_right_clarke" class="font-black text-indigo-900">-°</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
+                                <span id="val_right_arch" class="font-black text-emerald-600">-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                    <div class="absolute -right-4 -top-4 w-16 h-16 bg-slate-50 rounded-full opacity-50 pointer-events-none"></div>
-                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 text-center relative z-10" data-i18n="foot.right_foot">Sağ Ayak</h4>
-                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-2 shadow-sm relative z-10">
-                        <span class="text-[10px] text-slate-500 font-bold" data-i18n="foot.clarke">CLARKE</span>
-                        <span id="val_right_clarke" class="text-base font-black text-indigo-900">-°</span>
-                    </div>
-                    <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl border border-slate-100 shadow-sm relative z-10">
-                        <span class="text-[10px] text-slate-500 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
-                        <span id="val_right_arch" class="text-base font-black text-emerald-600">-</span>
-                    </div>
+                <div id="footBioRefNote" class="hidden p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-[9px] text-slate-500 leading-relaxed">
+                    <span class="font-bold text-slate-700" data-i18n="Klinik Referans Değerleri">Klinik Referans Değerleri</span>:<br/>
+                    • <span data-i18n="Clarke Açısı">Clarke Açısı</span>: >42° <span data-i18n="Normal">Normal</span> | &lt;30° <span data-i18n="Düz Taban">Düz Taban</span> | >45° <span data-i18n="Çukur Ayak">Çukur Ayak</span><br/>
+                    • <span data-i18n="Ark İndeksi">Ark İndeksi</span>: 0.21 - 0.26 <span data-i18n="Normal">Normal</span> | >0.26 <span data-i18n="Düz Taban">Düz Taban</span> | &lt;0.21 <span data-i18n="Çukur Ayak">Çukur Ayak</span>
                 </div>
             </div>
 
@@ -1972,197 +1992,107 @@
             }
         }
 
-        async function downloadStaticFootPdf() {
+        function downloadStaticFootPdf() {
             if (!currentPatientId) {
                 alert(window.translateText ? window.translateText("Lütfen bir hasta seçin.") : "Lütfen bir hasta seçin.");
                 return;
             }
 
-            const _trans = (window.translateText || (s => s));
-
-            // Verileri al (lastFootData veya DOM)
-            let d = (typeof lastFootData !== 'undefined' && lastFootData && lastFootData.lPct !== undefined) ? lastFootData : null;
-            let lPct = d ? d.lPct : (document.getElementById('barL') ? (document.getElementById('barL').innerText.match(/\d+/) || [50])[0] : 50);
-            let rPct = d ? d.rPct : (document.getElementById('barR') ? (document.getElementById('barR').innerText.match(/\d+/) || [50])[0] : 50);
-            let tPct = d ? d.tPct : (document.getElementById('barT') ? (document.getElementById('barT').innerText.match(/\d+/) || [30])[0] : 30);
-            let bPct = d ? d.bPct : (document.getElementById('barB') ? (document.getElementById('barB').innerText.match(/\d+/) || [70])[0] : 70);
-
-            let leftClarke = (d && d.leftClarke !== undefined && d.leftClarke !== "-") ? (d.leftClarke + "°") : (document.getElementById('val_left_clarke') ? document.getElementById('val_left_clarke').innerText : "-°");
-            let leftArch = (d && d.leftArch !== undefined) ? d.leftArch : (document.getElementById('val_left_arch') ? document.getElementById('val_left_arch').innerText : "-");
-            let rightClarke = (d && d.rightClarke !== undefined && d.rightClarke !== "-") ? (d.rightClarke + "°") : (document.getElementById('val_right_clarke') ? document.getElementById('val_right_clarke').innerText : "-°");
-            let rightArch = (d && d.rightArch !== undefined) ? d.rightArch : (document.getElementById('val_right_arch') ? document.getElementById('val_right_arch').innerText : "-");
-
-            // Isı haritası görüntüsünü al
-            let footImgSrc = '';
-            if (d && d.image) {
-                footImgSrc = d.image;
-            } else {
-                const canvas = document.getElementById("foot_analysis_canvas");
-                if (canvas) {
-                    try {
-                        footImgSrc = canvas.toDataURL('image/png');
-                    } catch(e) {
-                        console.warn("Canvas toDataURL error:", e);
-                    }
-                }
+            const element = document.getElementById('footContentSection') || document.getElementById('footTab');
+            if (!element) {
+                console.error("Foot content section not found");
+                return;
             }
 
-            // PDF için özel, tek sayfalık A4 şablon container oluştur
-            const printContainer = document.createElement('div');
-            printContainer.id = 'staticFootPdfPrintWrapper';
-            printContainer.style.position = 'fixed';
-            printContainer.style.top = '0';
-            printContainer.style.left = '0';
-            printContainer.style.width = '750px';
-            printContainer.style.background = '#ffffff';
-            printContainer.style.zIndex = '999999';
-            printContainer.style.padding = '10px 18px';
-            printContainer.style.boxSizing = 'border-box';
-            printContainer.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-            printContainer.style.color = '#1e293b';
+            const canvasContainer = document.getElementById('footCanvasContainer');
+            const dataPanel = document.getElementById('footAnalysisDataPanel');
+            const liveBadge = document.getElementById('footLiveStatus');
+            const canvasPdfTitle = document.getElementById('footCanvasPdfTitle');
+            const loadPanel = document.getElementById('footLoadReportPanel');
+            const bioPanel = document.getElementById('footBiomechanicalReportPanel');
+            const loadRef = document.getElementById('footLoadRefNote');
+            const bioRef = document.getElementById('footBioRefNote');
 
-            const heatmapHtml = footImgSrc
-                ? `<img id="pdfFootHeatmapImg" src="${footImgSrc}" style="width: 320px; height: 320px; object-fit: contain; display: block;" />`
-                : `<div style="color: #94a3b8; font-size: 12px;">${_trans("Görüntü bulunamadı")}</div>`;
+            // Mevcut stilleri yedekle
+            const prevElementDisplay = element.style.display;
+            const prevElementFlexDir = element.style.flexDirection;
+            const prevElementAlign = element.style.alignItems;
+            const prevElementJustify = element.style.justifyContent;
+            const prevElementWidth = element.style.width;
+            const prevElementMaxW = element.style.maxWidth;
+            const prevElementMargin = element.style.margin;
+            const prevElementGap = element.style.gap;
 
-            const lBarText = lPct >= 15 ? `%${lPct}` : '';
-            const rBarText = rPct >= 15 ? `%${rPct}` : '';
-            const tBarText = tPct >= 15 ? `%${tPct}` : '';
-            const bBarText = bPct >= 15 ? `%${bPct}` : '';
+            const prevCanvasW = canvasContainer ? canvasContainer.style.width : '';
+            const prevCanvasH = canvasContainer ? canvasContainer.style.height : '';
+            const prevCanvasMaxW = canvasContainer ? canvasContainer.style.maxWidth : '';
+            const prevCanvasMaxH = canvasContainer ? canvasContainer.style.maxHeight : '';
+            const prevCanvasFlex = canvasContainer ? canvasContainer.style.flex : '';
+            const prevCanvasMargin = canvasContainer ? canvasContainer.style.margin : '';
 
-            printContainer.innerHTML = `
-                <div style="display: flex; flex-direction: column; width: 100%; box-sizing: border-box;">
-                    <!-- Üst Bölüm: Ortalanmış Ayak Analiz Isı Haritası Görüntüsü -->
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 12px; width: 100%;">
-                        <div style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-shoe-prints" style="color: #4f46e5;"></i>
-                            <span>${_trans("Plantar Basınç Haritası")}</span>
-                        </div>
-                        <div style="width: 320px; height: 320px; background: #000000; border-radius: 14px; border: 3px solid #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                            ${heatmapHtml}
-                        </div>
-                    </div>
+            const prevDataDisplay = dataPanel ? dataPanel.style.display : '';
+            const prevDataFlexDir = dataPanel ? dataPanel.style.flexDirection : '';
+            const prevDataWidth = dataPanel ? dataPanel.style.width : '';
+            const prevDataMaxW = dataPanel ? dataPanel.style.maxWidth : '';
+            const prevDataHeight = dataPanel ? dataPanel.style.height : '';
+            const prevDataOverflow = dataPanel ? dataPanel.style.overflow : '';
+            const prevDataGap = dataPanel ? dataPanel.style.gap : '';
 
-                    <!-- Alt Bölüm: 2 Farklı Rapor Yan Yana -->
-                    <div style="display: flex; flex-direction: row; gap: 14px; width: 100%; box-sizing: border-box;">
-                        
-                        <!-- Sol Rapor: Yük Dağılım Analizi -->
-                        <div style="flex: 1; min-width: 0; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="font-size: 11.5px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
-                                    <i class="fa-solid fa-scale-balanced" style="color: #2563eb;"></i>
-                                    <span>${_trans("Yük Dağılım Analizi")}</span>
-                                </div>
+            const prevBadgeDisp = liveBadge ? liveBadge.style.display : '';
 
-                                <!-- Sol / Sağ Dağılımı -->
-                                <div style="margin-bottom: 10px;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #64748b; margin-bottom: 3px;">
-                                        <span>${_trans("Sol")} %${lPct}</span>
-                                        <span style="font-size: 9.5px; color: #94a3b8; font-weight: 600;">${_trans("Sol / Sağ Dağılımı")}</span>
-                                        <span>${_trans("Sağ")} %${rPct}</span>
-                                    </div>
-                                    <div style="height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; display: flex; border: 1px solid #cbd5e1;">
-                                        <div style="width: ${lPct}%; background: #2563eb; color: #ffffff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap;">
-                                            ${lBarText}
-                                        </div>
-                                        <div style="width: ${rPct}%; background: #0891b2; color: #ffffff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap;">
-                                            ${rBarText}
-                                        </div>
-                                    </div>
-                                </div>
+            // PDF için tek A4 sayfasına sığacak dikey hiyerarşi:
+            // ÜSTTE: Ortalanmış Ayak Basınç Haritası (Canvas)
+            // ALTTA: 2 Farklı Rapor Yan Yana (Yük Dağılımı ve Biyomekanik Parametreler)
+            element.style.display = 'flex';
+            element.style.flexDirection = 'column';
+            element.style.alignItems = 'center';
+            element.style.justifyContent = 'flex-start';
+            element.style.width = '750px';
+            element.style.maxWidth = '750px';
+            element.style.margin = '0 auto';
+            element.style.gap = '12px';
 
-                                <!-- Ön / Arka Dağılımı -->
-                                <div style="margin-bottom: 8px;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: #64748b; margin-bottom: 3px;">
-                                        <span>${_trans("Ön")} %${tPct}</span>
-                                        <span style="font-size: 9.5px; color: #94a3b8; font-weight: 600;">${_trans("Ön / Arka Dağılımı")}</span>
-                                        <span>${_trans("Arka")} %${bPct}</span>
-                                    </div>
-                                    <div style="height: 22px; background: #f1f5f9; border-radius: 6px; overflow: hidden; display: flex; border: 1px solid #cbd5e1;">
-                                        <div style="width: ${tPct}%; background: #7c3aed; color: #ffffff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap;">
-                                            ${tBarText}
-                                        </div>
-                                        <div style="width: ${bPct}%; background: #db2777; color: #ffffff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap;">
-                                            ${bBarText}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+            if (canvasContainer) {
+                canvasContainer.style.width = '320px';
+                canvasContainer.style.height = '320px';
+                canvasContainer.style.maxWidth = '320px';
+                canvasContainer.style.maxHeight = '320px';
+                canvasContainer.style.flex = '0 0 320px';
+                canvasContainer.style.margin = '0 auto';
+            }
 
-                            <div style="margin-top: 6px; padding: 5px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 9px; color: #64748b; line-height: 1.3;">
-                                <span style="font-weight: 700; color: #475569;">${_trans("Normal Dağılım Referansı")}:</span> ${_trans("Sol")}/${_trans("Sağ")}: %50-%50 | ${_trans("Ön")}/${_trans("Arka")}: %40-%60 (±5%)
-                            </div>
-                        </div>
+            if (canvasPdfTitle) {
+                canvasPdfTitle.style.display = 'block';
+            }
 
-                        <!-- Sağ Rapor: Biyomekanik Parametreler -->
-                        <div style="flex: 1; min-width: 0; background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; flex-direction: column; justify-content: space-between;">
-                            <div>
-                                <div style="font-size: 11.5px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px;">
-                                    <i class="fa-solid fa-ruler-combined" style="color: #7c3aed;"></i>
-                                    <span>${_trans("Biyomekanik Parametreler")}</span>
-                                </div>
+            if (liveBadge) {
+                liveBadge.style.display = 'none';
+            }
 
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                                    <!-- Sol Ayak -->
-                                    <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 8px; text-align: center;">
-                                        <div style="font-size: 10.5px; font-weight: 700; color: #2563eb; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px;">
-                                            ${_trans("Sol Ayak")}
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; margin-bottom: 3px;">
-                                            <span style="color: #64748b; font-weight: 600;">${_trans("Clarke Açısı")}</span>
-                                            <span style="font-size: 11px; font-weight: 800; color: #1e1b4b;">${leftClarke}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px;">
-                                            <span style="color: #64748b; font-weight: 600;">${_trans("Ark İndeksi")}</span>
-                                            <span style="font-size: 11px; font-weight: 800; color: #059669;">${leftArch}</span>
-                                        </div>
-                                    </div>
+            if (dataPanel) {
+                dataPanel.style.display = 'flex';
+                dataPanel.style.flexDirection = 'row';
+                dataPanel.style.alignItems = 'stretch';
+                dataPanel.style.width = '100%';
+                dataPanel.style.maxWidth = '100%';
+                dataPanel.style.height = 'auto';
+                dataPanel.style.overflow = 'visible';
+                dataPanel.style.gap = '14px';
+            }
 
-                                    <!-- Sağ Ayak -->
-                                    <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 7px 8px; text-align: center;">
-                                        <div style="font-size: 10.5px; font-weight: 700; color: #0891b2; margin-bottom: 5px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 2px;">
-                                            ${_trans("Sağ Ayak")}
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px; margin-bottom: 3px;">
-                                            <span style="color: #64748b; font-weight: 600;">${_trans("Clarke Açısı")}</span>
-                                            <span style="font-size: 11px; font-weight: 800; color: #1e1b4b;">${rightClarke}</span>
-                                        </div>
-                                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 9.5px;">
-                                            <span style="color: #64748b; font-weight: 600;">${_trans("Ark İndeksi")}</span>
-                                            <span style="font-size: 11px; font-weight: 800; color: #059669;">${rightArch}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="margin-top: 6px; padding: 5px 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 8.5px; color: #64748b; line-height: 1.35;">
-                                <span style="font-weight: 700; color: #475569;">${_trans("Klinik Referans Değerleri")}:</span><br/>
-                                • ${_trans("Clarke Açısı")}: >42° ${_trans("Normal")} | &lt;30° ${_trans("Düz Taban")} | >45° ${_trans("Çukur Ayak")}<br/>
-                                • ${_trans("Ark İndeksi")}: 0.21 - 0.26 ${_trans("Normal")} | >0.26 ${_trans("Düz Taban")} | &lt;0.21 ${_trans("Çukur Ayak")}
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-            `;
-
-            document.body.appendChild(printContainer);
-
-            // Resim yüklenmesini bekle
-            const imgEl = printContainer.querySelector('#pdfFootHeatmapImg');
-            if (imgEl) {
-                if (!imgEl.complete) {
-                    await new Promise((resolve) => {
-                        imgEl.onload = resolve;
-                        imgEl.onerror = resolve;
-                        setTimeout(resolve, 600);
-                    });
-                }
-                if (imgEl.decode) {
-                    try {
-                        await imgEl.decode();
-                    } catch(e) {}
-                }
+            if (loadPanel) {
+                loadPanel.style.flex = '1';
+                loadPanel.style.minWidth = '0';
+            }
+            if (bioPanel) {
+                bioPanel.style.flex = '1';
+                bioPanel.style.minWidth = '0';
+            }
+            if (loadRef) {
+                loadRef.style.display = 'block';
+            }
+            if (bioRef) {
+                bioRef.style.display = 'block';
             }
 
             const opt = {
@@ -2174,12 +2104,60 @@
                 pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
             };
 
+            const _trans = (window.translateText || (s => s));
             const transSubtitle = _trans("Statik Ayak Analizi Raporu");
-            const instance = html2pdf().set(opt).from(printContainer);
+            const instance = html2pdf().set(opt).from(element);
 
             const cleanup = () => {
-                if (printContainer && printContainer.parentNode) {
-                    printContainer.remove();
+                element.style.display = prevElementDisplay;
+                element.style.flexDirection = prevElementFlexDir;
+                element.style.alignItems = prevElementAlign;
+                element.style.justifyContent = prevElementJustify;
+                element.style.width = prevElementWidth;
+                element.style.maxWidth = prevElementMaxW;
+                element.style.margin = prevElementMargin;
+                element.style.gap = prevElementGap;
+
+                if (canvasContainer) {
+                    canvasContainer.style.width = prevCanvasW;
+                    canvasContainer.style.height = prevCanvasH;
+                    canvasContainer.style.maxWidth = prevCanvasMaxW;
+                    canvasContainer.style.maxHeight = prevCanvasMaxH;
+                    canvasContainer.style.flex = prevCanvasFlex;
+                    canvasContainer.style.margin = prevCanvasMargin;
+                }
+
+                if (canvasPdfTitle) {
+                    canvasPdfTitle.style.display = '';
+                }
+
+                if (liveBadge) {
+                    liveBadge.style.display = prevBadgeDisp;
+                }
+
+                if (dataPanel) {
+                    dataPanel.style.display = prevDataDisplay;
+                    dataPanel.style.flexDirection = prevDataFlexDir;
+                    dataPanel.style.width = prevDataWidth;
+                    dataPanel.style.maxWidth = prevDataMaxW;
+                    dataPanel.style.height = prevDataHeight;
+                    dataPanel.style.overflow = prevDataOverflow;
+                    dataPanel.style.gap = prevDataGap;
+                }
+
+                if (loadPanel) {
+                    loadPanel.style.flex = '';
+                    loadPanel.style.minWidth = '';
+                }
+                if (bioPanel) {
+                    bioPanel.style.flex = '';
+                    bioPanel.style.minWidth = '';
+                }
+                if (loadRef) {
+                    loadRef.style.display = '';
+                }
+                if (bioRef) {
+                    bioRef.style.display = '';
                 }
             };
 
