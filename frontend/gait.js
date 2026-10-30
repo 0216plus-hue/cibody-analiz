@@ -504,6 +504,22 @@ window.downloadGaitPdf = async function() {
         window.resizeGaitCharts();
     }
 
+    // PDF çıktısında fare imleci veya açık kalmış hover/tooltip kutucuklarını temizle
+    Object.values(window.gaitChartInstances || {}).forEach(c => {
+        try {
+            if (c) {
+                if (c.tooltip) {
+                    c.tooltip.setActiveElements([], { x: 0, y: 0 });
+                    c.tooltip.opacity = 0;
+                }
+                if (c.options && c.options.plugins && c.options.plugins.tooltip) {
+                    c.options.plugins.tooltip.enabled = false;
+                }
+                c.update('none');
+            }
+        } catch(e) {}
+    });
+
     // DOM reflow ve canvas çiziminin tamamlanması için kısa bir bekleme
     await new Promise(r => setTimeout(r, 200));
 
@@ -513,11 +529,20 @@ window.downloadGaitPdf = async function() {
         image:        { type: 'jpeg', quality: 1.0 },
         html2canvas:  { scale: 2, useCORS: true, scrollY: 0, logging: false },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
+        pagebreak:    { mode: ['css'] }
     };
 
     const cleanup = () => {
         element.classList.remove('gait-pdf-mode');
+        Object.values(window.gaitChartInstances || {}).forEach(c => {
+            try {
+                if (c) {
+                    if (c.options && c.options.plugins && c.options.plugins.tooltip) {
+                        c.options.plugins.tooltip.enabled = true;
+                    }
+                }
+            } catch(e) {}
+        });
         if (typeof window.resizeGaitCharts === 'function') {
             window.resizeGaitCharts();
         }

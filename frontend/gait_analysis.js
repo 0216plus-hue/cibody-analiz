@@ -250,7 +250,7 @@ function renderGaitResults() {
             // PDF modunda her 2 adımda bir sayfa sonu at (son adım değilse)
             if ((stepIdx + 1) % 2 === 0 && (stepIdx + 1) < gaitResults.processedSteps.length) {
                 let breakDiv = document.createElement('div');
-                breakDiv.className = "gait-pdf-break html2pdf__page-break";
+                breakDiv.className = "gait-pdf-break";
                 detailsContainer.appendChild(breakDiv);
             }
             

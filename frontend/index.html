@@ -57,6 +57,12 @@
             border: none !important;
         }
 
+        /* Ana bölüm kartlarının html2pdf tarafından erken ötelenip boş sayfa yapmasını engelle */
+        #gaitResultsSection.gait-pdf-mode .avoid-break {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+        }
+
         #gaitResultsSection.gait-pdf-mode .gait-pdf-card {
             border-radius: 12px !important;
             padding: 12px 16px !important;
@@ -107,22 +113,19 @@
             box-sizing: border-box !important;
         }
 
-        #gaitResultsSection.gait-pdf-mode #chartGaitPhaseBar,
-        #gaitResultsSection.gait-pdf-mode #chartAvgRegionalPie {
-            height: 200px !important;
-            max-height: 200px !important;
+        #gaitResultsSection.gait-pdf-mode #gaitPhasesCard .gait-2col-row > div {
+            height: 220px !important;
+            max-height: 220px !important;
         }
 
-        #gaitResultsSection.gait-pdf-mode #chartGRFLeft,
-        #gaitResultsSection.gait-pdf-mode #chartGRFRight {
-            height: 200px !important;
-            max-height: 200px !important;
+        #gaitResultsSection.gait-pdf-mode #gaitGrfCard .gait-2col-row > div {
+            height: 160px !important;
+            max-height: 160px !important;
         }
 
-        #gaitResultsSection.gait-pdf-mode #gaitCopChart,
-        #gaitResultsSection.gait-pdf-mode #chartCopMetrics {
-            height: 210px !important;
-            max-height: 210px !important;
+        #gaitResultsSection.gait-pdf-mode #gaitCopCard .gait-2col-row > div {
+            height: 175px !important;
+            max-height: 175px !important;
         }
 
         /* Sayfa 2: 5 Bölge Yük Dağılımı 2-Sütun Grid */
@@ -137,7 +140,7 @@
             width: 48% !important;
             flex: 0 0 48% !important;
             max-width: 48% !important;
-            height: 180px !important;
+            height: 170px !important;
             margin-bottom: 8px !important;
             box-sizing: border-box !important;
         }
@@ -2572,7 +2575,7 @@
         </div>
 
         <!-- Sayfa 1 Sonu: Sayfa Sonu Ayracı -->
-        <div class="gait-pdf-break html2pdf__page-break"></div>
+        <div class="gait-pdf-break"></div>
 
         <!-- 5 Bölge Yük Dağılımı Analizi -->
         <div class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden avoid-break" id="fiveRegionSection">
@@ -2585,7 +2588,7 @@
         </div>
 
         <!-- Sayfa 2 Sonu: Sayfa Sonu Ayracı -->
-        <div class="gait-pdf-break html2pdf__page-break"></div>
+        <div class="gait-pdf-break"></div>
 
         <!-- Yer Tepki Kuvveti (GRF) Analizi -->
         <div id="gaitGrfCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
@@ -2610,7 +2613,7 @@
         </div>
 
         <!-- Sayfa 3 Sonu: Sayfa Sonu Ayracı -->
-        <div class="gait-pdf-break html2pdf__page-break"></div>
+        <div class="gait-pdf-break"></div>
 
         <!-- Sol - Sağ Ayak Karşılaştırması -->
         <div id="gaitCompCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
@@ -2689,7 +2692,7 @@
         </div>
 
         <!-- Sayfa 4 Sonu: Sayfa Sonu Ayracı -->
-        <div class="gait-pdf-break html2pdf__page-break"></div>
+        <div class="gait-pdf-break"></div>
 
         <!-- Adım Detayları (5 Faz & Bölgesel Dağılım) -->
         <h3 id="gaitStepsHeader" class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i><span data-i18n="Adım Detayları & Fazlar">Adım Detayları & Fazlar</span></h3>
