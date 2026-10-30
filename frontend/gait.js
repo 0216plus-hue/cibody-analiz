@@ -461,45 +461,89 @@ function removeStep(idx) {
     updateGaitUI();
 }
 
-window.downloadGaitPdf = function() {
+window.downloadGaitPdf = async function() {
     if (!currentPatientId) {
         if(typeof showToast === 'function') showToast("Lütfen bir hasta seçin.");
         return;
     }
     
-    const element = document.getElementById('gaitTab');
+    const element = document.getElementById('gaitResultsSection');
+    if (!element || element.classList.contains('hidden')) {
+        if(typeof showToast === 'function') showToast("Lütfen önce analizi tamamlayınız.");
+        return;
+    }
+
+    // PDF üretilmeden önce tüm data-i18n ve metinleri aktif dile göre güncelle
+    if (window.applyTranslations) {
+        window.applyTranslations(element);
+    }
+
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const filenamePrefixes = {
+        tr: 'dinamik_yurume_analizi',
+        en: 'dynamic_gait_analysis',
+        ru: 'dynamic_gait_analysis',
+        ar: 'dynamic_gait_analysis',
+        de: 'dynamische_ganganalyse',
+        fr: 'analyse_dynamique_marche',
+        es: 'analisis_dinamico_marcha',
+        it: 'analisi_dinamica_deambulazione',
+        pt: 'analise_dinamica_marcha'
+    };
+    const prefix = filenamePrefixes[lang] || 'dinamik_yurume_analizi';
+    const pdfFilename = `${prefix}_${currentPatientId}.pdf`;
+
+    const _trans = (window.translateText || (s => s));
+    const transSubtitle = _trans("Dinamik Yürüme Analizi Raporu");
+
+    // A4 Dikey genişliğine (700px) tam sığması için PDF modunu aktif et
+    element.classList.add('gait-pdf-mode');
+
+    // Chart.js grafiklerini 700px genişliğe göre hemen yeniden boyutlandır
+    if (typeof window.resizeGaitCharts === 'function') {
+        window.resizeGaitCharts();
+    }
+
+    // DOM reflow ve canvas çiziminin tamamlanması için kısa bir bekleme
+    await new Promise(r => setTimeout(r, 200));
+
     const opt = {
-        margin:       [0.75, 0.3, 0.5, 0.3],
-        filename:     `dinamik_yurume_analizi_${currentPatientId}.pdf`,
+        margin:       [0.75, 0.35, 0.5, 0.35],
+        filename:     pdfFilename,
         image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+        html2canvas:  { scale: 2, useCORS: true, scrollY: 0, logging: false },
         jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
         pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    // Force a fixed width so charts don't squash/overlap in PDF
-    
+    const cleanup = () => {
+        element.classList.remove('gait-pdf-mode');
+        if (typeof window.resizeGaitCharts === 'function') {
+            window.resizeGaitCharts();
+        }
+    };
 
-    const topBar = document.getElementById('gaitTopBar');
-    if(topBar) topBar.style.display = 'none';
-    
     const instance = html2pdf().set(opt).from(element);
     if(typeof runPdf === 'function') {
-        runPdf(instance, `dinamik_yurume_analizi_${currentPatientId}.pdf`, "Dinamik Yürüme Analizi Raporu").then(() => {
-            if(topBar) topBar.style.display = 'flex';
-            if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+        runPdf(instance, pdfFilename, transSubtitle).then(() => {
+            cleanup();
+            if(typeof showToast === 'function') showToast(_trans("Yürüme Analizi PDF raporu indirildi."));
+        }).catch(err => {
+            cleanup();
+            console.error("Gait PDF generation error:", err);
+            if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
         });
     } else {
         instance.toPdf().get('pdf').then(function(pdf) {
             if (typeof applyCibodyPdfHeaderFooter === 'function') {
-                applyCibodyPdfHeaderFooter(pdf, "Dinamik Yürüme Analizi Raporu");
+                applyCibodyPdfHeaderFooter(pdf, transSubtitle);
             }
         }).save().then(() => {
-            if(topBar) topBar.style.display = 'flex';
-            if(typeof showToast === 'function') showToast("Yürüme Analizi PDF raporu indirildi.");
+            cleanup();
+            if(typeof showToast === 'function') showToast(_trans("Yürüme Analizi PDF raporu indirildi."));
         }).catch(err => {
-            console.error(err);
-            if(topBar) topBar.style.display = 'flex';
+            cleanup();
+            console.error("Gait PDF fallback error:", err);
             if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
         });
     }

@@ -203,9 +203,9 @@ function renderGaitResults() {
     let detailsContainer = document.getElementById('gaitStepDetailsContainer');
     if(detailsContainer) {
         detailsContainer.innerHTML = '';
-        gaitResults.processedSteps.forEach(step => {
+        gaitResults.processedSteps.forEach((step, stepIdx) => {
             let div = document.createElement('div');
-            div.className = "bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break";
+            div.className = "gait-step-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break";
             
             let phaseHtml = '';
             for(let i=0; i<5; i++) {
@@ -223,30 +223,36 @@ function renderGaitResults() {
                 <h4 class="text-xl font-bold ${titleColor} mb-4 border-b border-slate-100 pb-2">${stepTrans} ${step.id} - ${typeTrans}</h4>
                 
                 <p class="text-sm font-bold text-slate-700 mb-3">${_t('5 Faz Görüntüleri')}</p>
-                <div class="flex gap-4 overflow-x-auto mb-8">
+                <div class="gait-step-phases-row flex gap-4 overflow-x-auto mb-8">
                     ${phaseHtml}
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="flex flex-col items-center justify-center">
+                <div class="gait-step-charts-row grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="gait-step-agg-col flex flex-col items-center justify-center">
                         <canvas id="agg_${step.id}" width="190" height="190" class="bg-black rounded-xl border-2 border-slate-800 shadow-inner"></canvas>
                     </div>
                     
-                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                    <div class="gait-step-chart-col w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
                         <canvas id="profileChart_${step.id}"></canvas>
                     </div>
                     
-                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                    <div class="gait-step-chart-col w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
                         <canvas id="regionalChart_${step.id}"></canvas>
                     </div>
                     
-                    <div class="w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
+                    <div class="gait-step-chart-col w-full h-48 relative border border-slate-200 rounded-lg p-2 bg-slate-50">
                         <canvas id="copPath_${step.id}"></canvas>
                     </div>
                 </div>
-            </div>
             `;
             detailsContainer.appendChild(div);
+
+            // PDF modunda her 2 adımda bir sayfa sonu at (son adım değilse)
+            if ((stepIdx + 1) % 2 === 0 && (stepIdx + 1) < gaitResults.processedSteps.length) {
+                let breakDiv = document.createElement('div');
+                breakDiv.className = "gait-pdf-break html2pdf__page-break";
+                detailsContainer.appendChild(breakDiv);
+            }
             
             for(let i=0; i<5; i++) {
                 renderMiniFrame(`phase_${step.id}_${i}`, step.phases[i], 100);
@@ -373,6 +379,16 @@ Chart.register({
 
 
 let chartInstances = {};
+window.gaitChartInstances = chartInstances;
+
+window.resizeGaitCharts = function() {
+    Object.values(chartInstances).forEach(c => {
+        try {
+            if (c && typeof c.resize === 'function') c.resize();
+            if (c && typeof c.update === 'function') c.update('none');
+        } catch(e) {}
+    });
+};
 
 function renderCharts() {
     // Destroy existing charts
@@ -812,7 +828,7 @@ function renderCharts() {
         
         gaitResults.processedSteps.forEach(step => {
             let container = document.createElement('div');
-            container.className = "w-full h-64 relative border border-slate-200 rounded-lg p-2 bg-slate-50";
+            container.className = "gait-5reg-card w-full h-64 relative border border-slate-200 rounded-lg p-2 bg-slate-50";
             container.innerHTML = `<canvas id="chart5reg_${step.id}"></canvas>`;
             fiveRegionGrid.appendChild(container);
             

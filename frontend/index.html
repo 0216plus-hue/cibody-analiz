@@ -29,6 +29,227 @@
 
     <style id="pdf-export-css">
         .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+        /* ─── Dinamik Yürüme Analizi PDF Export Stilleri ─── */
+        .gait-pdf-break {
+            display: none;
+        }
+
+        #gaitResultsSection.gait-pdf-mode {
+            width: 700px !important;
+            max-width: 700px !important;
+            min-width: 700px !important;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            padding-bottom: 0 !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-pdf-break {
+            display: block !important;
+            page-break-before: always !important;
+            break-before: page !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-pdf-card {
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            margin-bottom: 12px !important;
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-pdf-card h3 {
+            font-size: 15px !important;
+            margin-bottom: 8px !important;
+            padding-bottom: 4px !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-pdf-card h4 {
+            font-size: 13px !important;
+            margin-bottom: 6px !important;
+            padding-bottom: 2px !important;
+        }
+
+        /* Sayfa 1: Klinik Metrikler 2-Sütun Flex */
+        #gaitResultsSection.gait-pdf-mode .gait-metrics-grid {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 16px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-metrics-grid > div {
+            width: 48% !important;
+            flex: 0 0 48% !important;
+            max-width: 48% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 2-Sütunlu Grafikler (Faz Dağılımı, GRF, COP) */
+        #gaitResultsSection.gait-pdf-mode .gait-2col-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 14px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-2col-row > div {
+            width: 48% !important;
+            flex: 0 0 48% !important;
+            max-width: 48% !important;
+            box-sizing: border-box !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode #chartGaitPhaseBar,
+        #gaitResultsSection.gait-pdf-mode #chartAvgRegionalPie {
+            height: 200px !important;
+            max-height: 200px !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode #chartGRFLeft,
+        #gaitResultsSection.gait-pdf-mode #chartGRFRight {
+            height: 200px !important;
+            max-height: 200px !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode #gaitCopChart,
+        #gaitResultsSection.gait-pdf-mode #chartCopMetrics {
+            height: 210px !important;
+            max-height: 210px !important;
+        }
+
+        /* Sayfa 2: 5 Bölge Yük Dağılımı 2-Sütun Grid */
+        #gaitResultsSection.gait-pdf-mode #fiveRegionGrid {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-5reg-card {
+            width: 48% !important;
+            flex: 0 0 48% !important;
+            max-width: 48% !important;
+            height: 180px !important;
+            margin-bottom: 8px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Sayfa 4: Sol - Sağ Ayak Karşılaştırması */
+        #gaitResultsSection.gait-pdf-mode .gait-comp-heatmaps {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            gap: 28px !important;
+            margin-bottom: 12px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-comp-heatmaps canvas {
+            width: 140px !important;
+            height: 140px !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode table {
+            font-size: 11px !important;
+            margin-bottom: 8px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode table th,
+        #gaitResultsSection.gait-pdf-mode table td {
+            padding: 4px 6px !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-comp-tables {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 12px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-comp-tables > div {
+            width: 48% !important;
+            flex: 0 0 48% !important;
+            max-width: 48% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Sayfa 4: Simetri 3-Sütun Grafikleri */
+        #gaitResultsSection.gait-pdf-mode .gait-sym-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-sym-row > div {
+            width: 32% !important;
+            flex: 0 0 32% !important;
+            max-width: 32% !important;
+            height: 160px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Sayfa 5+: Adım Detayları Kartları (Sayfa başına 2 adım) */
+        #gaitResultsSection.gait-pdf-mode .gait-step-card {
+            border-radius: 12px !important;
+            padding: 10px 14px !important;
+            margin-bottom: 12px !important;
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-card h4 {
+            font-size: 14px !important;
+            margin-bottom: 6px !important;
+            padding-bottom: 4px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-phases-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            gap: 10px !important;
+            margin-bottom: 8px !important;
+            overflow: visible !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-phases-row canvas {
+            width: 65px !important;
+            height: 65px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-charts-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-agg-col {
+            width: 22% !important;
+            flex: 0 0 22% !important;
+            max-width: 22% !important;
+            height: 125px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-agg-col canvas {
+            width: 120px !important;
+            height: 120px !important;
+        }
+        #gaitResultsSection.gait-pdf-mode .gait-step-chart-col {
+            width: 25% !important;
+            flex: 0 0 25% !important;
+            max-width: 25% !important;
+            height: 125px !important;
+            padding: 4px !important;
+            box-sizing: border-box !important;
+        }
+
+        #gaitResultsSection.gait-pdf-mode .gait-hide-in-pdf {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans" onload="initApp()">
@@ -2219,6 +2440,10 @@
             if (ft && window.applyTranslations) {
                 window.applyTranslations(ft);
             }
+            const gt = document.getElementById('gaitTab');
+            if (gt && window.applyTranslations) {
+                window.applyTranslations(gt);
+            }
             if (typeof lastFootData !== 'undefined' && lastFootData && lastFootData.lPct !== undefined) {
                 const _trans = (window.translateText || (s => s));
                 const barL = document.getElementById('barL');
@@ -2310,46 +2535,48 @@
     <!-- Analiz Sonuçları Bölümü (Grafikler vb.) - Başlangıçta gizli -->
     <div id="gaitResultsSection" class="hidden pb-20">
         <!-- Özet Paneli -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i>Yürüme Analizi Özeti</h3>
+        <div id="gaitSummaryCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i><span data-i18n="Yürüme Analizi Özeti">Yürüme Analizi Özeti</span></h3>
             <div class="flex gap-8 items-center text-slate-700">
-                <p>Toplam Adım: <span id="gSummaryTotal" class="font-bold text-lg text-slate-900">0</span></p>
-                <p>Sol Ayak: <span id="gSummaryLeft" class="font-bold text-lg text-red-500">0</span></p>
-                <p>Sağ Ayak: <span id="gSummaryRight" class="font-bold text-lg text-blue-500">0</span></p>
+                <p><span data-i18n="Toplam Adım:">Toplam Adım:</span> <span id="gSummaryTotal" class="font-bold text-lg text-slate-900">0</span></p>
+                <p><span data-i18n="Sol Ayak:">Sol Ayak:</span> <span id="gSummaryLeft" class="font-bold text-lg text-red-500">0</span></p>
+                <p><span data-i18n="Sağ Ayak:">Sağ Ayak:</span> <span id="gSummaryRight" class="font-bold text-lg text-blue-500">0</span></p>
             </div>
         </div>
         
         <!-- Klinik Metrikler -->
-        <div class="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2"><i class="fa-solid fa-stethoscope text-emerald-500 mr-2"></i>Klinik Metrikler</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div id="gaitMetricsCard" class="gait-pdf-card bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2"><i class="fa-solid fa-stethoscope text-emerald-500 mr-2"></i><span data-i18n="Klinik Metrikler">Klinik Metrikler</span></h3>
+            <div class="gait-metrics-grid grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sol Duruş Süresi:</span><span id="gMetricLeftStance" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sağ Duruş Süresi:</span><span id="gMetricRightStance" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Duruş Süresi Asimetrisi:</span><span id="gMetricStanceAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sol Duruş Süresi:">Sol Duruş Süresi:</span><span id="gMetricLeftStance" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sağ Duruş Süresi:">Sağ Duruş Süresi:</span><span id="gMetricRightStance" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold" data-i18n="Duruş Süresi Asimetrisi:">Duruş Süresi Asimetrisi:</span><span id="gMetricStanceAsym" class="font-bold text-amber-600">-</span></div>
                 </div>
                 <div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sol Ayak Yükü:</span><span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600">Sağ Ayak Yükü:</span><span id="gMetricRightLoad" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold">Tepe Kuvvet Asimetrisi:</span><span id="gMetricPeakAsym" class="font-bold text-amber-600">-</span></div>
-                    <div class="flex justify-between mt-2"><span class="text-amber-600 font-bold">Genel Asimetri (RSI):</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sol Ayak Yükü:">Sol Ayak Yükü:</span><span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sağ Ayak Yükü:">Sağ Ayak Yükü:</span><span id="gMetricRightLoad" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold" data-i18n="Tepe Kuvvet Asimetrisi:">Tepe Kuvvet Asimetrisi:</span><span id="gMetricPeakAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mt-2"><span class="text-amber-600 font-bold" data-i18n="Genel Asimetri (RSI):">Genel Asimetri (RSI):</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
                 </div>
             </div>
         </div>
 
         <!-- Yürüme Fazları Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Yürüme Fazları Analizi</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="gaitPhasesCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i><span data-i18n="Yürüme Fazları Analizi">Yürüme Fazları Analizi</span></h3>
+            <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGaitPhaseBar"></canvas></div>
-                
                 <div class="h-64"><canvas id="chartAvgRegionalPie"></canvas></div>
             </div>
         </div>
 
+        <!-- Sayfa 1 Sonu: Sayfa Sonu Ayracı -->
+        <div class="gait-pdf-break html2pdf__page-break"></div>
+
         <!-- 5 Bölge Yük Dağılımı Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden avoid-break" id="fiveRegionSection">
-            <h3 class="text-lg font-black text-slate-800 mb-1"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i>5 Bölge Yük Dağılımı Analizi</h3>
+        <div class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden avoid-break" id="fiveRegionSection">
+            <h3 class="text-lg font-black text-slate-800 mb-1"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i><span data-i18n="5 Bölge Yük Dağılımı Analizi">5 Bölge Yük Dağılımı Analizi</span></h3>
             <p class="text-sm text-slate-500 mb-6 pb-2 border-b border-slate-100">Bölgeler: Başparmak, Parmaklar, Ön Ayak, Orta Ayak, Topuk (Cavanagh & Ulbrecht, 1994)</p>
             
             <div id="fiveRegionGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2357,10 +2584,13 @@
             </div>
         </div>
 
+        <!-- Sayfa 2 Sonu: Sayfa Sonu Ayracı -->
+        <div class="gait-pdf-break html2pdf__page-break"></div>
+
         <!-- Yer Tepki Kuvveti (GRF) Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i>Yer Tepki Kuvveti (GRF) Analizi</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="gaitGrfCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i><span data-i18n="Yer Tepki Kuvveti (GRF) Analizi">Yer Tepki Kuvveti (GRF) Analizi</span></h3>
+            <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGRFLeft"></canvas></div>
                 <div class="h-64"><canvas id="chartGRFRight"></canvas></div>
             </div>
@@ -2371,19 +2601,22 @@
         </div>
 
         <!-- COP Trajektorisi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i>COP Trajektorisi</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="gaitCopCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i><span data-i18n="COP Trajektorisi">COP Trajektorisi</span></h3>
+            <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-80"><canvas id="gaitCopChart"></canvas></div>
                 <div class="h-80"><canvas id="chartCopMetrics"></canvas></div>
             </div>
         </div>
 
+        <!-- Sayfa 3 Sonu: Sayfa Sonu Ayracı -->
+        <div class="gait-pdf-break html2pdf__page-break"></div>
+
         <!-- Sol - Sağ Ayak Karşılaştırması -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-code-compare text-indigo-500 mr-2"></i>Sol - Sağ Ayak Karşılaştırması</h3>
+        <div id="gaitCompCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-code-compare text-indigo-500 mr-2"></i><span data-i18n="Sol - Sağ Ayak Karşılaştırması">Sol - Sağ Ayak Karşılaştırması</span></h3>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="gait-comp-heatmaps grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div class="flex flex-col items-center">
                     <h4 class="font-bold text-slate-700 mb-2" id="compLeftTitle">Sol Ayak (n=0)</h4>
                     <canvas id="compLeftCanvas" width="240" height="240" class="bg-black rounded-2xl border-4 border-slate-800 shadow-lg"></canvas>
@@ -2394,16 +2627,16 @@
                 </div>
             </div>
 
-            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Eşleşen Adım Çiftleri Karşılaştırması</h4>
+            <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2" data-i18n="Eşleşen Adım Çiftleri Karşılaştırması">Eşleşen Adım Çiftleri Karşılaştırması</h4>
             <div class="overflow-x-auto mb-8">
                 <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
                     <thead class="text-xs text-slate-700 uppercase bg-slate-50">
                         <tr>
-                            <th class="px-4 py-3 border-b border-slate-200">Çift</th>
-                            <th class="px-4 py-3 border-b border-slate-200">Sol Adım</th>
-                            <th class="px-4 py-3 border-b border-slate-200">Sağ Adım</th>
-                            <th class="px-4 py-3 border-b border-slate-200">Dağılım (Sol/Sağ)</th>
-                            <th class="px-4 py-3 border-b border-slate-200">Simetri (RSI)</th>
+                            <th class="px-4 py-3 border-b border-slate-200" data-i18n="Çift">Çift</th>
+                            <th class="px-4 py-3 border-b border-slate-200" data-i18n="Sol Adım">Sol Adım</th>
+                            <th class="px-4 py-3 border-b border-slate-200" data-i18n="Sağ Adım">Sağ Adım</th>
+                            <th class="px-4 py-3 border-b border-slate-200" data-i18n="Dağılım (Sol/Sağ)">Dağılım (Sol/Sağ)</th>
+                            <th class="px-4 py-3 border-b border-slate-200" data-i18n="Simetri (RSI)">Simetri (RSI)</th>
                         </tr>
                     </thead>
                     <tbody id="compPairsTableBody">
@@ -2412,15 +2645,15 @@
                 </table>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="gait-comp-tables grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
-                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Ortalama Değerler (Çift Bazlı)</h4>
+                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2" data-i18n="Ortalama Değerler (Çift Bazlı)">Ortalama Değerler (Çift Bazlı)</h4>
                     <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
                         <thead class="text-xs text-slate-700 uppercase bg-slate-50">
                             <tr>
-                                <th class="px-4 py-3 border-b border-slate-200">Metrik</th>
-                                <th class="px-4 py-3 border-b border-slate-200">Sol Ayak</th>
-                                <th class="px-4 py-3 border-b border-slate-200">Sağ Ayak</th>
+                                <th class="px-4 py-3 border-b border-slate-200" data-i18n="Metrik">Metrik</th>
+                                <th class="px-4 py-3 border-b border-slate-200" data-i18n="Sol Ayak">Sol Ayak</th>
+                                <th class="px-4 py-3 border-b border-slate-200" data-i18n="Sağ Ayak">Sağ Ayak</th>
                             </tr>
                         </thead>
                         <tbody id="compAvgTableBody">
@@ -2429,12 +2662,12 @@
                     </table>
                 </div>
                 <div>
-                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2">Simetri Değerlendirmesi</h4>
+                    <h4 class="font-bold text-slate-700 mb-3 border-b border-slate-100 pb-2" data-i18n="Simetri Değerlendirmesi">Simetri Değerlendirmesi</h4>
                     <table class="w-full text-sm text-left text-slate-500 border border-slate-200 rounded-lg overflow-hidden">
                         <thead class="text-xs text-slate-700 uppercase bg-slate-50">
                             <tr>
-                                <th class="px-4 py-3 border-b border-slate-200">Parametre</th>
-                                <th class="px-4 py-3 border-b border-slate-200">Simetri İndeksi (%)</th>
+                                <th class="px-4 py-3 border-b border-slate-200" data-i18n="Parametre">Parametre</th>
+                                <th class="px-4 py-3 border-b border-slate-200" data-i18n="Simetri İndeksi (%)">Simetri İndeksi (%)</th>
                             </tr>
                         </thead>
                         <tbody id="compEvalTableBody">
@@ -2446,23 +2679,26 @@
         </div>
 
         <!-- Simetri Analizi -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i>Simetri Analizi</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="gaitSymmetryCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-scale-balanced text-indigo-500 mr-2"></i><span data-i18n="Simetri Analizi">Simetri Analizi</span></h3>
+            <div class="gait-sym-row grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="h-64"><canvas id="chartSymLoadPairs"></canvas></div>
                 <div class="h-64"><canvas id="chartSymIndices"></canvas></div>
                 <div class="h-64"><canvas id="chartSymAvgLoad"></canvas></div>
             </div>
         </div>
 
+        <!-- Sayfa 4 Sonu: Sayfa Sonu Ayracı -->
+        <div class="gait-pdf-break html2pdf__page-break"></div>
+
         <!-- Adım Detayları (5 Faz & Bölgesel Dağılım) -->
-        <h3 class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i>Adım Detayları & Fazlar</h3>
+        <h3 id="gaitStepsHeader" class="text-lg font-black text-slate-800 mb-4 mt-8"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i><span data-i18n="Adım Detayları & Fazlar">Adım Detayları & Fazlar</span></h3>
         <div id="gaitStepDetailsContainer">
             <!-- JS tarafından doldurulacak -->
         </div>
         
-        <div class="flex justify-between mt-6">
-            <button data-html2canvas-ignore="true" onclick="document.getElementById('gaitResultsSection').classList.add('hidden'); document.getElementById('gaitRecordingSection').classList.remove('hidden');" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
+        <div class="flex justify-between mt-6 gait-hide-in-pdf" data-html2canvas-ignore="true">
+            <button onclick="document.getElementById('gaitResultsSection').classList.add('hidden'); document.getElementById('gaitRecordingSection').classList.remove('hidden');" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Kayda Dön
             </button>
         </div>
