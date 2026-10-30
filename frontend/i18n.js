@@ -8550,6 +8550,116 @@ const I18N_PHRASES = {
     "it": "Escala de gradazione della escoliosis según Cobb:",
     "pt": "Escala de gradação da escoliosis según Cobb:"
   },
+  "Normal / Spinal Asimetri (Skolyoz kabul edilmez)": {
+    "en": "Normal / Spinal Asymmetry (Not considered scoliosis)",
+    "ru": "Норма / Асимметрия позвоночника (Не считается сколиозом)",
+    "ar": "طبيعي / عدم تناسق شوكي (لا يعتبر جنفاً)",
+    "de": "Normal / Spinale Asymmetrie (Keine Skoliose)",
+    "fr": "Normal / Asymétrie rachidienne (Non considéré comme scoliose)",
+    "es": "Normal / Asimetría espinal (No se considera escoliosis)",
+    "it": "Normale / Asimmetria spinale (Non considerata scoliosi)",
+    "pt": "Normal / Assimetria espinhal (Não considerada escoliose)"
+  },
+  "Hafif Skolyoz (Fizyoterapi & Schroth egzersizleri)": {
+    "en": "Mild Scoliosis (Physiotherapy & Schroth exercises)",
+    "ru": "Легкий сколиоз (Физиотерапия и упражнения Шрот)",
+    "ar": "جنف خفيف (العلاج الطبيعي وتمارين شروث)",
+    "de": "Leichte Skoliose (Physiotherapie & Schroth-Übungen)",
+    "fr": "Scoliose légère (Physiothérapie & exercices de Schroth)",
+    "es": "Escoliosis leve (Fisioterapia y ejercicios Schroth)",
+    "it": "Scoliosi lieve (Fisioterapia ed esercizi di Schroth)",
+    "pt": "Escoliose leve (Fisioterapia e exercícios de Schroth)"
+  },
+  "Hafif Skolyoz": {
+    "en": "Mild Scoliosis",
+    "ru": "Легкий сколиоз",
+    "ar": "جنف خفيف",
+    "de": "Leichte Skoliose",
+    "fr": "Scoliose légère",
+    "es": "Escoliosis leve",
+    "it": "Scoliosi lieve",
+    "pt": "Escoliose leve"
+  },
+  "Orta Şiddetli Skolyoz": {
+    "en": "Moderate Scoliosis",
+    "ru": "Умеренный сколиоз",
+    "ar": "جنف متوسط",
+    "de": "Mittelschwere Skoliose",
+    "fr": "Scoliose modérée",
+    "es": "Escoliosis moderada",
+    "it": "Scoliosi moderata",
+    "pt": "Escoliose moderada"
+  },
+  "İleri Derece Skolyoz (Cerrahi Risk)": {
+    "en": "Severe Scoliosis (Surgical Risk)",
+    "ru": "Тяжелый сколиоз (Хирургический риск)",
+    "ar": "جنف متقدم (مخاطر جراحية)",
+    "de": "Schwere Skoliose (Chirurgisches Risiko)",
+    "fr": "Scoliose sévère (Risque chirurgical)",
+    "es": "Escoliosis severa (Riesgo quirúrgico)",
+    "it": "Scoliosi grave (Rischio chirurgico)",
+    "pt": "Escoliose grave (Risco cirúrgico)"
+  },
+  "İleri Skolyoz": {
+    "en": "Severe Scoliosis",
+    "ru": "Тяжелый сколиоз",
+    "ar": "جنف شديد",
+    "de": "Schwere Skoliose",
+    "fr": "Scoliose sévère",
+    "es": "Escoliosis severa",
+    "it": "Scoliosi grave",
+    "pt": "Escoliose grave"
+  },
+  "Skolyoz Cobb PDF raporu indirildi.": {
+    "en": "Scoliosis Cobb PDF report downloaded.",
+    "ru": "PDF-отчет по сколиозу Кобба скачан.",
+    "ar": "تم تنزيل تقرير PDF لجنف كوب.",
+    "de": "Skoliose-Cobb-PDF-Bericht heruntergeladen.",
+    "fr": "Rapport PDF de scoliose Cobb téléchargé.",
+    "es": "Informe PDF de escoliosis Cobb descargado.",
+    "it": "Report PDF scoliosi Cobb scaricato.",
+    "pt": "Relatório PDF de escoliose Cobb descarregado."
+  },
+  "Lütfen bir skolyoz analizi seçin veya röntgen yükleyin.": {
+    "en": "Please select a scoliosis analysis or upload an X-ray.",
+    "ru": "Пожалуйста, выберите анализ сколиоза или загрузите рентген.",
+    "ar": "يُرجى اختيار تحليل للجنف أو رفع صورة أشعة.",
+    "de": "Bitte wählen Sie eine Skolioseanalyse aus oder laden Sie ein Röntgenbild hoch.",
+    "fr": "Veuillez sélectionner une analyse de la scoliose ou importer une radiographie.",
+    "es": "Seleccione un análisis de escoliosis o cargue una radiografía.",
+    "it": "Seleziona un'analisi della scoliosi o carica una radiografia.",
+    "pt": "Selecione uma análise de escoliose ou carregue uma radiografia."
+  },
+  "Lütfen önce bir skolyoz röntgeni yükleyin.": {
+    "en": "Please upload a scoliosis X-ray first.",
+    "ru": "Пожалуйста, сначала загрузите рентген сколиоза.",
+    "ar": "يُرجى رفع صورة أشعة الجنف أولاً.",
+    "de": "Bitte laden Sie zuerst ein Skoliose-Röntgenbild hoch.",
+    "fr": "Veuillez d'abord importer une radiographie de scoliose.",
+    "es": "Cargue primero una radiografía de escoliosis.",
+    "it": "Carica prima una radiografia per la scoliosi.",
+    "pt": "Carregue primeiro uma radiografia de escoliose."
+  },
+  "Lütfen önce bir postür analizi yapın.": {
+    "en": "Please perform a posture analysis first.",
+    "ru": "Пожалуйста, сначала выполните анализ осанки.",
+    "ar": "يُرجى إجراء تحليل القوام أولاً.",
+    "de": "Bitte führen Sie zuerst eine Haltungsanalyse durch.",
+    "fr": "Veuillez d'abord effectuer une analyse de posture.",
+    "es": "Realice primero un análisis de postura.",
+    "it": "Esegui prima un'analisi della postura.",
+    "pt": "Realize primeiro uma análise de postura."
+  },
+  "PDF indirilirken hata oluştu.": {
+    "en": "An error occurred while downloading the PDF.",
+    "ru": "Произошла ошибка при загрузке PDF.",
+    "ar": "حدث خطأ أثناء تنزيل ملف PDF.",
+    "de": "Beim Herunterladen des PDFs ist ein Fehler aufgetreten.",
+    "fr": "Une erreur s'est produite lors du téléchargement du PDF.",
+    "es": "Se produjo un error al descargar el PDF.",
+    "it": "Si è verificato un errore durante il download del PDF.",
+    "pt": "Ocorreu um erro ao transferir o PDF."
+  },
   "Orta Şiddetli Skolyoz (Korse & yoğun egzersiz)": {
     "en": "Moderate Scoliosis (Brace & intensive exercise)",
     "ru": "Сколиоз средней степени (корсет и интенсивные упражнения)",

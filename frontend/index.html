@@ -1441,12 +1441,12 @@
                         <!-- Başlık -->
                         <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                             <h3 class="text-2xl font-black text-slate-800">
-                                <i class="fa-solid fa-bone mr-2 text-indigo-600"></i>Klinik Omurga Analiz Raporu
+                                <i class="fa-solid fa-bone mr-2 text-indigo-600"></i><span data-i18n="Klinik Omurga Analiz Raporu">Klinik Omurga Analiz Raporu</span>
                             </h3>
                             <div class="flex items-center gap-3">
                                 <span id="spineAnalysisDate" class="text-sm text-slate-400 font-medium"></span>
                                 <button onclick="downloadSpinePdf()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm" data-html2canvas-ignore="true">
-                                    <i class="fa-solid fa-file-pdf"></i> PDF Raporu İndir
+                                    <i class="fa-solid fa-file-pdf"></i> <span data-i18n="PDF Raporu İndir">PDF Raporu İndir</span>
                                 </button>
                             </div>
                         </div>
@@ -1454,11 +1454,11 @@
                         <!-- Görseller (Varsa) -->
                         <div id="spineResultPhotosRow" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                             <div id="spineResultBackBox" class="hidden bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
-                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> Arka Profil (Koronal)</span>
+                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> <span data-i18n="Arka Profil (Koronal)">Arka Profil (Koronal)</span></span>
                                 <img id="spineResultBackImg" class="max-h-60 mx-auto rounded-lg object-contain border border-slate-100">
                             </div>
                             <div id="spineResultSideBox" class="hidden bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
-                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> Yan Profil (Sagital)</span>
+                                <span class="text-xs font-bold text-slate-600 block mb-2"><i class="fa-solid fa-camera mr-1 text-indigo-500"></i> <span data-i18n="Yan Profil (Sagital)">Yan Profil (Sagital)</span></span>
                                 <img id="spineResultSideImg" class="max-h-60 mx-auto rounded-lg object-contain border border-slate-100">
                             </div>
                         </div>
@@ -1466,22 +1466,22 @@
                         <!-- Metrik Kartlar -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Kifoz Açısı</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Kifoz Açısı">Kifoz Açısı</div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricKyphosis">—</div>
                                 <div id="metricKyphosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Lordoz Açısı</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Lordoz Açısı">Lordoz Açısı</div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricLordosis">—</div>
                                 <div id="metricLordosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Boyun Sapması</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Boyun Sapması">Boyun Sapması</div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricFHP">—</div>
                                 <div id="metricFHPStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1">Skolyoz Riski</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Skolyoz Riski">Skolyoz Riski</div>
                                 <div class="text-xl font-black" id="metricScoliosis">—</div>
                             </div>
                         </div>
@@ -1489,28 +1489,28 @@
                         <!-- Koronal Tablo -->
                         <div id="coronalSection" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-5">
                             <h4 class="font-black text-slate-800 mb-4 text-lg">
-                                <i class="fa-solid fa-arrows-left-right mr-2 text-blue-500"></i>Koronal Düzlem — Omurga Sapma Tablosu
+                                <i class="fa-solid fa-arrows-left-right mr-2 text-blue-500"></i><span data-i18n="Koronal Düzlem — Omurga Sapma Tablosu">Koronal Düzlem — Omurga Sapma Tablosu</span>
                             </h4>
-                            <p class="text-xs text-slate-400 mb-4">Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.</p>
+                            <p class="text-xs text-slate-400 mb-4" data-i18n="Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.">Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.</p>
                             <table class="w-full text-sm">
                                 <thead class="text-xs text-slate-400 uppercase font-bold border-b border-slate-100">
                                     <tr>
-                                        <th class="pb-2 text-left">Marker Noktası</th>
-                                        <th class="pb-2 text-center">Sapma (mm)</th>
-                                        <th class="pb-2 text-center">Yön</th>
-                                        <th class="pb-2 text-center">Durum</th>
-                                        <th class="pb-2 text-center">Görsel</th>
+                                        <th class="pb-2 text-left" data-i18n="Marker Noktası">Marker Noktası</th>
+                                        <th class="pb-2 text-center" data-i18n="Sapma (mm)">Sapma (mm)</th>
+                                        <th class="pb-2 text-center" data-i18n="Yön">Yön</th>
+                                        <th class="pb-2 text-center" data-i18n="Durum">Durum</th>
+                                        <th class="pb-2 text-center" data-i18n="Görsel">Görsel</th>
                                     </tr>
                                 </thead>
                                 <tbody id="coronalTableBody" class="divide-y divide-slate-100"></tbody>
                             </table>
                             <div class="mt-4 grid grid-cols-2 gap-4">
                                 <div class="bg-blue-50 rounded-xl p-3 text-sm">
-                                    <span class="font-bold text-blue-800">Omuz Seviye Farkı: </span>
+                                    <span class="font-bold text-blue-800" data-i18n="Omuz Seviye Farkı:">Omuz Seviye Farkı: </span>
                                     <span id="shoulderDiff" class="font-black text-blue-900">—</span>
                                 </div>
                                 <div class="bg-purple-50 rounded-xl p-3 text-sm">
-                                    <span class="font-bold text-purple-800">Pelvis Tilt: </span>
+                                    <span class="font-bold text-purple-800" data-i18n="Pelvis Tilt:">Pelvis Tilt: </span>
                                     <span id="pelvisTilt" class="font-black text-purple-900">—</span>
                                 </div>
                             </div>
@@ -1519,23 +1519,23 @@
                         <!-- Sagital Özet -->
                         <div id="sagittalSection" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-5">
                             <h4 class="font-black text-slate-800 mb-4 text-lg">
-                                <i class="fa-solid fa-arrows-up-down mr-2 text-orange-500"></i>Sagital Düzlem — Eğrilik Analizi
+                                <i class="fa-solid fa-arrows-up-down mr-2 text-orange-500"></i><span data-i18n="Sagital Düzlem — Eğrilik Analizi">Sagital Düzlem — Eğrilik Analizi</span>
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="bg-orange-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-orange-600 uppercase mb-1">Kifoz (Kamburluk)</div>
+                                    <div class="text-xs font-black text-orange-600 uppercase mb-1" data-i18n="Kifoz (Kamburluk)">Kifoz (Kamburluk)</div>
                                     <div class="text-2xl font-black text-orange-900" id="sagKyphosis">—</div>
-                                    <div class="text-xs text-orange-600 mt-1">Normal: 20-45°</div>
+                                    <div class="text-xs text-orange-600 mt-1" data-i18n="Normal: 20-45°">Normal: 20-45°</div>
                                 </div>
                                 <div class="bg-yellow-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-yellow-600 uppercase mb-1">Lordoz (Bel Çukuru)</div>
+                                    <div class="text-xs font-black text-yellow-600 uppercase mb-1" data-i18n="Lordoz (Bel Çukuru)">Lordoz (Bel Çukuru)</div>
                                     <div class="text-2xl font-black text-yellow-900" id="sagLordosis">—</div>
-                                    <div class="text-xs text-yellow-600 mt-1">Normal: 20-45°</div>
+                                    <div class="text-xs text-yellow-600 mt-1" data-i18n="Normal: 20-45°">Normal: 20-45°</div>
                                 </div>
                                 <div class="bg-red-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-red-600 uppercase mb-1">İleri Baş Postürü</div>
+                                    <div class="text-xs font-black text-red-600 uppercase mb-1" data-i18n="İleri Baş Postürü">İleri Baş Postürü</div>
                                     <div class="text-2xl font-black text-red-900" id="sagFHP">—</div>
-                                    <div class="text-xs text-red-600 mt-1">Normal: 0-15 mm</div>
+                                    <div class="text-xs text-red-600 mt-1" data-i18n="Normal: 0-15 mm">Normal: 0-15 mm</div>
                                 </div>
                             </div>
                             <p id="sagittalSummaryText" class="text-sm text-slate-600 mt-4 bg-slate-50 rounded-xl p-4 italic"></p>
@@ -1544,7 +1544,7 @@
                         <!-- AI Klinik Raporu -->
                         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                             <h4 class="font-black text-slate-800 mb-4 text-lg">
-                                <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i>CIBODY AI Klinik Değerlendirmesi
+                                <i class="fa-solid fa-file-medical mr-2 text-indigo-600"></i><span data-i18n="CIBODY AI Klinik Değerlendirmesi">CIBODY AI Klinik Değerlendirmesi</span>
                             </h4>
                             <div id="spineAiReport" class="prose prose-sm max-w-none text-slate-700 leading-relaxed"></div>
                         </div>
@@ -1560,17 +1560,17 @@
             <div class="w-full md:w-7/12 flex flex-col">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 h-full flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-x-ray text-indigo-600 mr-2"></i>Röntgen (X-Ray) Yükleme</h2>
+                        <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-x-ray text-indigo-600 mr-2"></i><span data-i18n="Röntgen (X-Ray) Yükleme">Röntgen (X-Ray) Yükleme</span></h2>
                         <input type="file" id="scoliosisImg" accept="image/*" class="hidden" onchange="previewScoliosis(event)">
                         <button onclick="document.getElementById('scoliosisImg').click()" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-medium py-2 px-4 rounded-xl transition-colors">
-                            <i class="fa-solid fa-upload mr-2"></i>Görüntü Seç
+                            <i class="fa-solid fa-upload mr-2"></i><span data-i18n="Görüntü Seç">Görüntü Seç</span>
                         </button>
                     </div>
                     
                     <div class="relative digital-skeleton-bg rounded-xl flex items-center justify-center min-h-[500px] border-2 border-dashed border-slate-300 overflow-hidden flex-1" id="scoliosisContainer">
                         <div id="scoliosisPlaceholder" class="text-slate-400 text-center pointer-events-none p-4">
                             <i class="fa-solid fa-image text-5xl mb-3 opacity-50"></i>
-                            <p>Röntgen görüntüsü yükleyin</p>
+                            <p data-i18n="Röntgen görüntüsü yükleyin">Röntgen görüntüsü yükleyin</p>
                         </div>
                         <canvas id="scoliosisCanvas" class="absolute top-0 left-0 w-full h-full object-contain cursor-crosshair hidden" style="z-index: 10;"></canvas>
                         <img id="scoliosisPreview" class="absolute top-0 left-0 w-full h-full object-contain hidden" />
@@ -1578,10 +1578,10 @@
                     
                     <div class="mt-6 flex flex-wrap gap-3 justify-center">
                         <button onclick="uploadScoliosisImage()" id="btnSaveScoliosis" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-all hidden shadow-md text-lg w-full sm:w-auto">
-                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Kaydet & Analizi Başlat
+                            <i class="fa-solid fa-cloud-arrow-up mr-2"></i><span data-i18n="Kaydet & Analizi Başlat">Kaydet & Analizi Başlat</span>
                         </button>
                         <button onclick="resetScoliosisCanvas()" id="btnResetScoliosis" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-3 px-8 rounded-xl transition-all hidden text-lg w-full sm:w-auto">
-                            <i class="fa-solid fa-rotate-left mr-2"></i>Çizimi Sıfırla
+                            <i class="fa-solid fa-rotate-left mr-2"></i><span data-i18n="Çizimi Sıfırla">Çizimi Sıfırla</span>
                         </button>
                     </div>
                 </div>
@@ -1591,7 +1591,7 @@
             <div class="w-full md:w-5/12 flex flex-col gap-6">
                 <!-- Uyarı Notu -->
                 <div class="p-5 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl shadow-sm">
-                    <p class="font-bold mb-2 text-base"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Önemli: Ölçüm Nasıl Yapılır?</p>
+                    <p class="font-bold mb-2 text-base" data-i18n="Önemli: Ölçüm Nasıl Yapılır?"><i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>Önemli: Ölçüm Nasıl Yapılır?</p>
                     <p class="mb-3 text-sm">Röntgeni yükledikten sonra sistemin açıyı hesaplayabilmesi için <strong>görüntü üzerine 4 adet nokta tıklamanız</strong> gerekmektedir:</p>
                     <ol class="list-decimal pl-5 space-y-1.5 font-medium text-sm mb-3">
                         <li>Eğriliğin en <strong>üstündeki</strong> omurun sınırına (başına ve sonuna) 2 nokta tıklayın.</li>
@@ -1605,22 +1605,22 @@
                 <!-- Hesaplanan Değer -->
                 <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl shadow-md p-6 text-white relative overflow-hidden flex flex-col justify-center">
                     <i class="fa-solid fa-angle-right absolute -right-4 -bottom-4 text-white/10 text-8xl"></i>
-                    <h3 class="text-indigo-100 font-bold uppercase tracking-wider text-sm mb-3">Hesaplanan Cobb Açısı</h3>
+                    <h3 class="text-indigo-100 font-bold uppercase tracking-wider text-sm mb-3" data-i18n="Hesaplanan Cobb Açısı">Hesaplanan Cobb Açısı</h3>
                     <div class="flex items-baseline gap-2 mb-4">
                         <span id="scoliosisCobbAngle" class="text-6xl font-black">0</span>
-                        <span class="text-3xl font-medium text-indigo-200">Derece</span>
+                        <span class="text-3xl font-medium text-indigo-200" data-i18n="Derece">Derece</span>
                     </div>
                     <div class="bg-white/20 px-4 py-2 rounded-xl inline-block backdrop-blur-sm self-start">
-                        <span id="scoliosisSeverity" class="font-bold text-lg">Bekleniyor...</span>
+                        <span id="scoliosisSeverity" class="font-bold text-lg" data-i18n="Bekleniyor...">Bekleniyor...</span>
                     </div>
                 </div>
 
                 <!-- Klinik Notlar -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-1 flex flex-col w-full">
-                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i>Klinik Notlar</h3>
+                <h3 class="font-bold text-slate-800 text-base mb-3"><i class="fa-solid fa-clipboard-user text-slate-400 mr-2"></i><span data-i18n="Klinik Notlar">Klinik Notlar</span></h3>
                 <textarea id="scoliosisNotes" class="w-full border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 flex-1 resize-none" placeholder="Tedavi planı ve notlarınızı buraya girebilirsiniz..."></textarea>
                 <div class="flex justify-end mt-3">
-                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors">
+                    <button onclick="saveScoliosisNotes()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition-colors" data-i18n="Notları Kaydet">
                         Notları Kaydet
                     </button>
                 </div>
@@ -1637,17 +1637,17 @@
             <!-- Geçmiş Analizler -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex-1 flex flex-col overflow-hidden">
                     <h2 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
-                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i>Geçmiş (Before/After)</span>
+                        <span><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-500"></i><span data-i18n="Geçmiş (Before/After)">Geçmiş (Before/After)</span></span>
                         
                     </h2>
                     <div id="scoliosisHistoryList" class="flex flex-wrap gap-4 pb-3">
-                        <div class="text-center text-slate-400 py-4 w-full">Kayıt bulunamadı.</div>
+                        <div class="text-center text-slate-400 py-4 w-full" data-i18n="Kayıt bulunamadı.">Kayıt bulunamadı.</div>
                     </div>
 
             <!-- Aksiyon Butonları -->
             <div class="flex flex-col sm:flex-row gap-4 w-full">
                 <button onclick="downloadScoliosisPdf()" class="flex-1 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm text-base">
-                    <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
+                    <i class="fa-solid fa-file-pdf text-red-500"></i> <span data-i18n="PDF İndir">PDF İndir</span>
                 </button>
             </div>
             

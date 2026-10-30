@@ -2226,7 +2226,10 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
 window.applyCibodyPdfHeaderFooter = applyCibodyPdfHeaderFooter;
 
 function downloadPdf() {
-    const element = document.getElementById('postureTab');
+    const _trans = (window.translateText || (s => s));
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
+    const element = document.getElementById('postureTab') || document.getElementById('postureResultsSection');
+    if (!element) return;
     
     // Handle clinical notes textarea → static div for PDF
     const notesEl = document.getElementById('clinicalNotesInput');
@@ -2237,16 +2240,37 @@ function downloadPdf() {
         notesEl.style.display = 'none'; 
         notesDiv = document.createElement('div');
         notesDiv.className = 'text-sm text-slate-700 whitespace-pre-wrap p-4 bg-slate-50 rounded-xl border border-slate-200 mt-2 avoid-break';
-        notesDiv.innerText = notesText || 'Klinik not girilmemiş.';
+        notesDiv.innerText = notesText || _trans('Klinik not girilmemiş.');
         notesEl.parentNode.insertBefore(notesDiv, notesEl.nextSibling);
     }
     
+    if (window.applyTranslations) {
+        window.applyTranslations(element);
+    }
+
     const buttonsToHide = element.querySelectorAll('button, [data-html2canvas-ignore]');
     const bStyles = [];
     buttonsToHide.forEach(el => { bStyles.push({ el, display: el.style.display }); el.style.display = 'none'; });
 
+    const filenamePrefixes = {
+        tr: "postur_analiz_raporu",
+        en: "posture_analysis_report",
+        de: "haltung_analyse_bericht",
+        fr: "rapport_analyse_posture",
+        es: "informe_analisis_postura",
+        it: "referto_analisi_postura",
+        pt: "relatorio_analise_postura",
+        ru: "posture_analysis_report",
+        ar: "posture_analysis_report"
+    };
+    const prefix = filenamePrefixes[lang] || "postur_analiz_raporu";
+    const patientSuffix = (typeof currentPatientId !== 'undefined' && currentPatientId) ? currentPatientId : (lang === 'tr' ? 'hasta' : 'patient');
+    const pdfFilename = `${prefix}_${patientSuffix}.pdf`;
+    const reportSubtitle = _trans("Klinik Biyomekanik Postur Analizi Raporu");
+
     const opt = {
       margin:       [0.60, 0.3, 0.5, 0.3],
+      filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 1.0 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -2254,19 +2278,47 @@ function downloadPdf() {
     };
 
     const instance = html2pdf().set(opt).from(element);
-    runPdf(instance, `postur_raporu_${currentPatientId || 'hasta'}.pdf`, "Klinik Biyomekanik Postur Analizi Raporu").then(() => {
+    runPdf(instance, pdfFilename, reportSubtitle).then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
         if(notesEl) { notesEl.style.display = ''; if(notesDiv) notesDiv.remove(); }
-        showToast("Postür analizi PDF raporu indirildi.");
+        showToast(_trans("Postür analizi PDF raporu indirildi."));
+    }).catch(err => {
+        bStyles.forEach(item => item.el.style.display = item.display);
+        if(notesEl) { notesEl.style.display = ''; if(notesDiv) notesDiv.remove(); }
+        console.error("Posture PDF error:", err);
     });
 }
+window.downloadPdf = downloadPdf;
+window.downloadPosturePdf = downloadPdf;
 
 function downloadSpinePdf() {
+    const _trans = (window.translateText || (s => s));
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
     const section = document.getElementById('spineResultsSection');
     if (!section || section.classList.contains('hidden')) {
-        showToast("Lütfen önce bir omurga analizi yapın veya geçmişten bir analiz seçin.");
+        showToast(_trans("Lütfen önce bir omurga analizi yapın veya geçmişten bir analiz seçin."));
         return;
     }
+
+    if (window.applyTranslations) {
+        window.applyTranslations(section);
+    }
+
+    const filenamePrefixes = {
+        tr: "klinik_omurga_raporu",
+        en: "clinical_spine_report",
+        de: "klinischer_wirbelsaeulenbericht",
+        fr: "rapport_rachis_clinique",
+        es: "informe_columna_clinica",
+        it: "referto_colonna_clinica",
+        pt: "relatorio_coluna_clinica",
+        ru: "clinical_spine_report",
+        ar: "clinical_spine_report"
+    };
+    const prefix = filenamePrefixes[lang] || "klinik_omurga_raporu";
+    const patientSuffix = (typeof currentPatientId !== 'undefined' && currentPatientId) ? currentPatientId : (lang === 'tr' ? 'hasta' : 'patient');
+    const pdfFilename = `${prefix}_${patientSuffix}.pdf`;
+    const reportSubtitle = _trans("Klinik Omurga & Skolyoz Analiz Raporu");
 
     const buttonsToHide = section.querySelectorAll('button, [data-html2canvas-ignore]');
     const bStyles = [];
@@ -2274,6 +2326,7 @@ function downloadSpinePdf() {
 
     const opt = {
       margin:       [0.65, 0.3, 0.5, 0.3],
+      filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -2281,11 +2334,15 @@ function downloadSpinePdf() {
     };
 
     const instance = html2pdf().set(opt).from(section);
-    runPdf(instance, `omurga_raporu_${currentPatientId || 'hasta'}.pdf`, "Klinik Omurga & Skolyoz Analiz Raporu").then(() => {
+    runPdf(instance, pdfFilename, reportSubtitle).then(() => {
         bStyles.forEach(item => item.el.style.display = item.display);
-        showToast("Omurga analizi PDF raporu indirildi.");
+        showToast(_trans("Omurga analizi PDF raporu indirildi."));
+    }).catch(err => {
+        bStyles.forEach(item => item.el.style.display = item.display);
+        console.error("Spine PDF error:", err);
     });
 }
+window.downloadSpinePdf = downloadSpinePdf;
 
 function downloadScoliometerPdf() {
     const _trans = (window.translateText || (s => s));

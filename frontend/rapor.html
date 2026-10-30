@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="/i18n.js"></script>
     <style>
         .page-break { page-break-before: always; }
         .avoid-break { page-break-inside: avoid; }
@@ -425,10 +426,29 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
         }
 
         function downloadPublicPosturePdf() {
+            const _trans = (window.translateText || (s => s));
+            const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
             const element = document.getElementById('content');
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const analysisId = urlParams.get('id') || 'rapor';
+            const filenamePrefixes = {
+                tr: "postur_analiz_raporu",
+                en: "posture_analysis_report",
+                de: "haltung_analyse_bericht",
+                fr: "rapport_analyse_posture",
+                es: "informe_analisis_postura",
+                it: "referto_analisi_postura",
+                pt: "relatorio_analise_postura",
+                ru: "posture_analysis_report",
+                ar: "posture_analysis_report"
+            };
+            const prefix = filenamePrefixes[lang] || "postur_analiz_raporu";
+            const pdfFilename = `${prefix}_${analysisId}.pdf`;
+
             html2pdf().set({
                 margin: [0.5, 0.4, 0.5, 0.4],
-                filename: 'postur-analiz-raporum.pdf',
+                filename: pdfFilename,
                 image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
                 jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
@@ -438,9 +458,22 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
                 const pageWidth = pdf.internal.pageSize.width;
                 const pageHeight = pdf.internal.pageSize.height;
                 
+                const labelsByLang = {
+                    tr: { age: 'Yas', weight: 'Kilo', specialist: 'Uzman', page: 'Sayfa', noPatient: 'Hasta Bilgisi Yok', title: 'Biyomekanik Postur Analizi' },
+                    en: { age: 'Age', weight: 'Weight', specialist: 'Specialist', page: 'Page', noPatient: 'No Patient Info', title: 'Biomechanical Posture Analysis' },
+                    de: { age: 'Alter', weight: 'Gewicht', specialist: 'Spezialist', page: 'Seite', noPatient: 'Keine Patienteninfo', title: 'Biomechanische Haltungsanalyse' },
+                    fr: { age: 'Age', weight: 'Poids', specialist: 'Specialiste', page: 'Page', noPatient: 'Aucune info patient', title: 'Analyse Posturale Biomecanique' },
+                    es: { age: 'Edad', weight: 'Peso', specialist: 'Especialista', page: 'Pag.', noPatient: 'Sin datos del paciente', title: 'Analisis Postural Biomecanico' },
+                    it: { age: 'Eta', weight: 'Peso', specialist: 'Specialista', page: 'Pag.', noPatient: 'Nessuna info paziente', title: 'Analisi Posturale Biomeccanica' },
+                    pt: { age: 'Idade', weight: 'Peso', specialist: 'Especialista', page: 'Pag.', noPatient: 'Sem dados do paciente', title: 'Analise Postural Biomecanica' },
+                    ru: { age: 'Age', weight: 'Weight', specialist: 'Specialist', page: 'Page', noPatient: 'Patient Info', title: 'Biomechanical Posture Analysis' },
+                    ar: { age: 'Age', weight: 'Weight', specialist: 'Specialist', page: 'Page', noPatient: 'Patient Info', title: 'Biomechanical Posture Analysis' }
+                };
+                const lbl = labelsByLang[lang] || labelsByLang.tr;
+
                 let docText = "";
                 if(doctorInfo) {
-                    docText = `Uzman: ${doctorInfo.name || '-'} | Mail: ${doctorInfo.email || '-'}`;
+                    docText = `${lbl.specialist}: ${doctorInfo.name || '-'} | Mail: ${doctorInfo.email || '-'}`;
                     if(doctorInfo.phone) docText += ` | Tel: ${doctorInfo.phone}`;
                 }
                 
@@ -458,14 +491,14 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
                     
                     pdf.setFontSize(10);
                     pdf.setFont('helvetica', 'normal');
-                    pdf.text("Biyomekanik Postür Analizi", 1.8, 0.35);
+                    pdf.text(lbl.title, 1.8, 0.35);
                     
                     // Patient Info in Header
                     pdf.setFontSize(9);
                     pdf.setFont('helvetica', 'bold');
-                    let pInfo = "Hasta Bilgisi Yok";
+                    let pInfo = lbl.noPatient;
                     if(data && data.patient) {
-                        pInfo = `Yaş: ${data.patient.age || '-'} | Kilo: ${data.patient.weight || '-'} | Cinsiyet: ${data.patient.gender || '-'}`;
+                        pInfo = `${lbl.age}: ${data.patient.age || '-'} | ${lbl.weight}: ${data.patient.weight || '-'} kg`;
                     }
                     pdf.text(pInfo, pageWidth - 0.3, 0.35, { align: 'right' });
                     
@@ -484,7 +517,7 @@ document.getElementById('mobileDownloadBar').classList.remove('hidden');
                     }
                     
                     // Right footer: Page numbers
-                    pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
+                    pdf.text(`${lbl.page} ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
                 }
             }).save();
         }

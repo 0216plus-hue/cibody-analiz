@@ -372,8 +372,15 @@ async function deleteScoliosis(id) {
 }
 
 function showScoliosisQr() {
-    if(!window.currentScoliosisId) { alert("Lütfen geçerli bir analiz seçin."); return; }
-    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId;
+    const _trans = (window.translateText || (s => s));
+    if(!window.currentScoliosisId) { 
+        if (typeof showToast === 'function') showToast(_trans("Lütfen geçerli bir analiz seçin."));
+        else alert(_trans("Lütfen geçerli bir analiz seçin.")); 
+        return; 
+    }
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const langParam = lang !== 'tr' ? `&lang=${encodeURIComponent(lang)}` : '';
+    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + langParam;
     
     let modal = document.getElementById('qrModal');
     if(!modal) {
@@ -384,9 +391,9 @@ function showScoliosisQr() {
     }
     
     modal.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm mx-4 transform transition-all scale-100 opacity-100">
+        <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm mx-4 transform transition-all scale-100 opacity-100" ${lang === 'ar' ? 'dir="rtl"' : ''}>
             <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800"><i class="fa-solid fa-qrcode text-indigo-600 mr-2"></i>Skolyoz Raporu Paylaş</h3>
+                <h3 class="font-bold text-slate-800" data-i18n="Skolyoz Raporu Paylaş"><i class="fa-solid fa-qrcode text-indigo-600 mr-2"></i>${_trans("Skolyoz Raporu Paylaş")}</h3>
                 <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -394,20 +401,23 @@ function showScoliosisQr() {
             
             <div class="flex justify-center mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm" id="qrcode_scoliosis"></div>
             
-            <p class="text-xs text-center text-slate-500 mb-4">Hastanız telefonunun kamerasıyla bu karekodu okutarak tüm raporu (resim, açı, yapay zeka yorumu) ve tavsiyeleri indirebilir.</p>
+            <p class="text-xs text-center text-slate-500 mb-4" data-i18n="Hastanız telefonunun kamerasıyla bu karekodu okutarak tüm raporu (resim, açı, yapay zeka yorumu) ve tavsiyeleri indirebilir.">${_trans("Hastanız telefonunun kamerasıyla bu karekodu okutarak tüm raporu (resim, açı, yapay zeka yorumu) ve tavsiyeleri indirebilir.")}</p>
             
             <div class="flex gap-2">
                 <button onclick="copyToClipboard('${publicUrl}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
-                    <i class="fa-solid fa-link mr-1"></i> Link Kopyala
+                    <i class="fa-solid fa-link mr-1"></i> <span data-i18n="Link Kopyala">${_trans("Link Kopyala")}</span>
                 </button>
                 <button onclick="window.open('${publicUrl}', '_blank')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 rounded-xl text-sm transition-colors border border-indigo-200">
-                    <i class="fa-solid fa-eye mr-1"></i> Raporu Aç
+                    <i class="fa-solid fa-eye mr-1"></i> <span data-i18n="Raporu Aç">${_trans("Raporu Aç")}</span>
                 </button>
             </div>
         </div>
     `;
     
     modal.classList.remove('hidden');
+    if (window.applyTranslations) {
+        window.applyTranslations(modal);
+    }
     
     // Generate QR
     setTimeout(() => {
@@ -424,15 +434,18 @@ function showScoliosisQr() {
 }
 
 function downloadScoliosisPdf() {
+    const _trans = (window.translateText || (s => s));
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
+
     const preview = document.getElementById('scoliosisPreview');
     const canvas = document.getElementById('scoliosisCanvas');
     const hasImage = preview && preview.src && !preview.classList.contains('hidden');
 
     if (!window.currentScoliosisId && !hasImage) {
         if (typeof showToast === 'function') {
-            showToast("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin.");
+            showToast(_trans("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin."));
         } else {
-            alert("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin.");
+            alert(_trans("Lütfen bir skolyoz analizi seçin veya röntgen yükleyin."));
         }
         return;
     }
@@ -460,8 +473,10 @@ function downloadScoliosisPdf() {
     }
 
     const cobb = document.getElementById('scoliosisCobbAngle')?.innerText || '0';
-    const severity = document.getElementById('scoliosisSeverity')?.innerText || 'Bekleniyor...';
-    const notes = document.getElementById('scoliosisNotes')?.value.trim() || 'Klinik not girilmemiş.';
+    const rawSeverity = document.getElementById('scoliosisSeverity')?.innerText || 'Bekleniyor...';
+    const severity = _trans(rawSeverity);
+    const rawNotes = document.getElementById('scoliosisNotes')?.value.trim();
+    const notes = rawNotes ? rawNotes : _trans('Klinik not girilmemiş.');
     
     const aiReportEl = document.getElementById('scoliosisAiReport');
     const exerciseReportEl = document.getElementById('scoliosisExerciseReport');
@@ -473,43 +488,50 @@ function downloadScoliosisPdf() {
         aiText += exerciseReportEl.innerText;
     }
 
+    if (aiText && window.translateSpineReportMarkdown && lang !== 'tr') {
+        aiText = window.translateSpineReportMarkdown(aiText, lang);
+    }
+
     const printContainer = document.createElement('div');
     printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
     printContainer.style.maxWidth = '800px';
+    if (lang === 'ar') {
+        printContainer.setAttribute('dir', 'rtl');
+    }
 
     printContainer.innerHTML = `
         <div class="mb-6 border-b border-slate-200 pb-4">
             <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
-                <i class="fa-solid fa-x-ray text-indigo-600"></i> Skolyoz Cobb Açısı Analiz Raporu
+                <i class="fa-solid fa-x-ray text-indigo-600"></i> <span data-i18n="Skolyoz Cobb Açısı Analiz Raporu">${_trans("Skolyoz Cobb Açısı Analiz Raporu")}</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Spinal Eğrilik & Radyolojik Cobb Açısı Ölçüm Değerlendirmesi</p>
+            <p class="text-xs text-slate-500 mt-1" data-i18n="Spinal Eğrilik & Radyolojik Cobb Açısı Ölçüm Değerlendirmesi">${_trans("Spinal Eğrilik & Radyolojik Cobb Açısı Ölçüm Değerlendirmesi")}</p>
         </div>
 
         <!-- Cobb Değerlendirme Kartı & Röntgen Görseli -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6 avoid-break">
             <!-- Röntgen ve Çizimler -->
             <div class="bg-black/95 rounded-2xl p-3 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[360px]">
-                <span class="text-xs font-bold text-slate-300 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-x-ray mr-1"></i> İşaretli Röntgen (X-Ray)</span>
-                ${compositeImgData ? `<img src="${compositeImgData}" class="max-h-80 object-contain rounded-xl mx-auto shadow-md">` : '<div class="text-slate-400 text-sm py-12">Röntgen görüntüsü yüklenemedi</div>'}
-                <span class="text-[10px] text-slate-400 mt-2 block">4 Noktalı Dijital Cobb Açı Çizimi</span>
+                <span class="text-xs font-bold text-slate-300 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-x-ray mr-1"></i> <span data-i18n="İşaretli Röntgen (X-Ray)">${_trans("İşaretli Röntgen (X-Ray)")}</span></span>
+                ${compositeImgData ? `<img src="${compositeImgData}" class="max-h-80 object-contain rounded-xl mx-auto shadow-md">` : `<div class="text-slate-400 text-sm py-12" data-i18n="Röntgen görüntüsü yüklenemedi">${_trans("Röntgen görüntüsü yüklenemedi")}</div>`}
+                <span class="text-[10px] text-slate-400 mt-2 block" data-i18n="4 Noktalı Dijital Cobb Açı Çizimi">${_trans("4 Noktalı Dijital Cobb Açı Çizimi")}</span>
             </div>
 
             <!-- Cobb Metrikleri & Klinik Sınıflandırma -->
             <div class="flex flex-col justify-between space-y-4">
                 <div class="bg-gradient-to-br from-indigo-900 to-indigo-700 text-white rounded-2xl p-6 text-center shadow-sm">
-                    <span class="text-xs font-bold text-indigo-200 uppercase tracking-wider block mb-1">Hesaplanan Cobb Açısı</span>
+                    <span class="text-xs font-bold text-indigo-200 uppercase tracking-wider block mb-1" data-i18n="Hesaplanan Cobb Açısı">${_trans("Hesaplanan Cobb Açısı")}</span>
                     <span class="text-5xl font-black block my-2">${cobb}°</span>
                     <span class="inline-block bg-white/20 text-white font-bold text-sm px-4 py-1.5 rounded-full backdrop-blur-sm mt-1">${severity}</span>
                 </div>
 
                 <!-- Klinik Standartlar -->
                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs">
-                    <span class="font-bold text-slate-700 block mb-2 uppercase tracking-wider"><i class="fa-solid fa-ruler mr-1 text-indigo-500"></i> Cobb Skolyoz Derecelendirme Skalası:</span>
+                    <span class="font-bold text-slate-700 block mb-2 uppercase tracking-wider"><i class="fa-solid fa-ruler mr-1 text-indigo-500"></i> <span data-i18n="Cobb Skolyoz Derecelendirme Skalası:">${_trans("Cobb Skolyoz Derecelendirme Skalası:")}</span></span>
                     <ul class="space-y-1.5 text-slate-600">
-                        <li><b class="text-emerald-700">0° - 10°:</b> Normal / Spinal Asimetri (Skolyoz kabul edilmez)</li>
-                        <li><b class="text-indigo-700">10° - 25°:</b> Hafif Skolyoz (Fizyoterapi & Schroth egzersizleri)</li>
-                        <li><b class="text-amber-700">25° - 40°:</b> Orta Şiddetli Skolyoz (Korse & yoğun egzersiz)</li>
-                        <li><b class="text-rose-700">≥ 40°+:</b> İleri Skolyoz (Ortopedik & cerrahi konsültasyon)</li>
+                        <li><b class="text-emerald-700">0° - 10°:</b> <span data-i18n="Normal / Spinal Asimetri (Skolyoz kabul edilmez)">${_trans("Normal / Spinal Asimetri (Skolyoz kabul edilmez)")}</span></li>
+                        <li><b class="text-indigo-700">10° - 25°:</b> <span data-i18n="Hafif Skolyoz (Fizyoterapi & Schroth egzersizleri)">${_trans("Hafif Skolyoz (Fizyoterapi & Schroth egzersizleri)")}</span></li>
+                        <li><b class="text-amber-700">25° - 40°:</b> <span data-i18n="Orta Şiddetli Skolyoz (Korse & yoğun egzersiz)">${_trans("Orta Şiddetli Skolyoz (Korse & yoğun egzersiz)")}</span></li>
+                        <li><b class="text-rose-700">≥ 40°+:</b> <span data-i18n="İleri Skolyoz (Ortopedik & cerrahi konsültasyon)">${_trans("İleri Skolyoz (Ortopedik & cerrahi konsültasyon)")}</span></li>
                     </ul>
                 </div>
             </div>
@@ -518,7 +540,7 @@ function downloadScoliosisPdf() {
         <!-- Uzman Klinik Notları -->
         <div class="bg-white border border-slate-200 rounded-2xl p-4 mb-6 avoid-break">
             <h4 class="text-xs font-black text-slate-700 uppercase mb-2 flex items-center gap-1.5">
-                <i class="fa-solid fa-clipboard-user text-indigo-600"></i> Uzman Klinik Notları ve Tedavi Planı
+                <i class="fa-solid fa-clipboard-user text-indigo-600"></i> <span data-i18n="Uzman Klinik Notları ve Tedavi Planı">${_trans("Uzman Klinik Notları ve Tedavi Planı")}</span>
             </h4>
             <p class="text-xs text-slate-600 whitespace-pre-wrap bg-slate-50 p-3 rounded-xl border border-slate-100">${notes}</p>
         </div>
@@ -527,7 +549,7 @@ function downloadScoliosisPdf() {
         ${aiText.trim() ? `
         <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-6 avoid-break">
             <h4 class="text-xs font-black text-slate-700 uppercase mb-3 flex items-center gap-1.5">
-                <i class="fa-solid fa-person-running text-emerald-600"></i> CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri
+                <i class="fa-solid fa-person-running text-emerald-600"></i> <span data-i18n="CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri">${_trans("CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri")}</span>
             </h4>
             <div class="text-xs text-slate-700 leading-relaxed space-y-2">
                 ${typeof marked !== 'undefined' ? marked.parse(aiText) : '<pre class="whitespace-pre-wrap">' + aiText + '</pre>'}
@@ -538,41 +560,67 @@ function downloadScoliosisPdf() {
         <!-- İmza Alanı -->
         <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 avoid-break flex justify-between items-end">
             <div class="text-xs text-slate-500">
-                <p class="font-bold text-slate-700 mb-1">Radyolojik Cobb Ölçüm Raporu</p>
-                <p>Standart Cobb açısı hesaplama algoritmasına göre dijital ortamda üretilmiştir.</p>
+                <p class="font-bold text-slate-700 mb-1" data-i18n="Radyolojik Cobb Ölçüm Raporu">${_trans("Radyolojik Cobb Ölçüm Raporu")}</p>
+                <p data-i18n="Standart Cobb açısı hesaplama algoritmasına göre dijital ortamda üretilmiştir.">${_trans("Standart Cobb açısı hesaplama algoritmasına göre dijital ortamda üretilmiştir.")}</p>
             </div>
             <div class="text-right text-xs text-slate-400">
-                <p class="font-bold text-slate-700">Uzman Kaşe / İmza</p>
+                <p class="font-bold text-slate-700" data-i18n="Uzman Kaşe / İmza">${_trans("Uzman Kaşe / İmza")}</p>
                 <div class="w-32 h-10 border-b border-dashed border-slate-300"></div>
             </div>
         </div>
     `;
 
     document.body.appendChild(printContainer);
+    if (window.applyTranslations) {
+        window.applyTranslations(printContainer);
+    }
 
-    const currentPid = (typeof currentPatientId !== 'undefined' && currentPatientId) ? currentPatientId : 'hasta';
+    const currentPid = (typeof currentPatientId !== 'undefined' && currentPatientId) ? currentPatientId : (lang === 'tr' ? 'hasta' : 'patient');
+    const filenamePrefixes = {
+        tr: "skolyoz_cobb_raporu",
+        en: "scoliosis_cobb_report",
+        de: "skoliose_cobb_bericht",
+        fr: "rapport_scoliose_cobb",
+        es: "informe_escoliosis_cobb",
+        it: "referto_scoliosi_cobb",
+        pt: "relatorio_escoliose_cobb",
+        ru: "scoliosis_cobb_report",
+        ar: "scoliosis_cobb_report"
+    };
+    const prefix = filenamePrefixes[lang] || "scoliosis_cobb_report";
+    const pdfFilename = `${prefix}_${currentPid}.pdf`;
+    const reportSubtitle = _trans("Skolyoz Cobb Açısı Analiz Raporu");
+
     const opt = {
       margin:       [0.65, 0.3, 0.5, 0.3],
-      filename:     `skolyoz_cobb_raporu_${currentPid}.pdf`,
+      filename:     pdfFilename,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
       jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' },
       pagebreak:    { mode: ['css', 'legacy'], avoid: ['.avoid-break', 'tr'] }
     };
 
-    html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
-        if (typeof applyCibodyPdfHeaderFooter === 'function') {
-            applyCibodyPdfHeaderFooter(pdf, "Skolyoz Cobb Açısı Analiz Raporu");
-        }
-    }).save().then(() => {
+    const instance = html2pdf().set(opt).from(printContainer);
+    const runFn = (typeof runPdf === 'function') ? runPdf : (inst, fname, sub) => {
+        return inst.toPdf().get('pdf').then(function(pdf) {
+            if (typeof applyCibodyPdfHeaderFooter === 'function') {
+                applyCibodyPdfHeaderFooter(pdf, sub);
+            }
+        }).save(fname);
+    };
+
+    runFn(instance, pdfFilename, reportSubtitle).then(() => {
         printContainer.remove();
-        if (typeof showToast === 'function') showToast("Skolyoz Cobb PDF raporu indirildi.");
+        if (typeof showToast === 'function') showToast(_trans("Skolyoz Cobb PDF raporu indirildi."));
     }).catch(err => {
         console.error(err);
         printContainer.remove();
-        if (typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
+        if (typeof showToast === 'function') showToast(_trans("PDF indirilirken hata oluştu."));
     });
 }
+
+window.downloadScoliosisPdf = downloadScoliosisPdf;
+window.downloadScoliosisPDF = downloadScoliosisPdf;
 
 
 async function generateScoliosisExerciseAi() {
