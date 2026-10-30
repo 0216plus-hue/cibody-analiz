@@ -11311,38 +11311,58 @@ function getCurrentLanguage() {
     return currentLang;
 }
 
-// 3. Yapılandırılmış Anahtar Çevirisi (örn: t('login.title'))
+// 3. Yapılandırılmış Anahtar Çevirisi (örn: t('login.title') veya doğrudan sözlük ifadesi t('Biyomekanik Parametreler'))
 function t(key, fallback = '') {
     if (!key) return fallback;
-    const parts = key.split('.');
-    
-    // Aktif dilde ara
-    let val = I18N_TRANSLATIONS[currentLang];
-    for (const p of parts) {
-        if (val && typeof val === 'object') {
-            val = val[p];
-        } else {
-            val = undefined;
-            break;
+
+    // 1. Yapılandırılmış dot anahtarında ara (örn: foot.lr_dist)
+    if (key.includes('.')) {
+        const parts = key.split('.');
+        let val = I18N_TRANSLATIONS[currentLang];
+        for (const p of parts) {
+            if (val && typeof val === 'object') {
+                val = val[p];
+            } else {
+                val = undefined;
+                break;
+            }
+        }
+        if (val !== undefined && typeof val === 'string') {
+            return val;
+        }
+
+        // Bulunamazsa Türkçe (varsayılan) diline bak
+        let trVal = I18N_TRANSLATIONS['tr'];
+        for (const p of parts) {
+            if (trVal && typeof trVal === 'object') {
+                trVal = trVal[p];
+            } else {
+                trVal = undefined;
+                break;
+            }
+        }
+        if (trVal !== undefined && typeof trVal === 'string') {
+            return trVal;
         }
     }
 
-    if (val !== undefined && typeof val === 'string') {
-        return val;
-    }
-
-    // Bulunamazsa Türkçe (varsayılan) diline bak
-    let trVal = I18N_TRANSLATIONS['tr'];
-    for (const p of parts) {
-        if (trVal && typeof trVal === 'object') {
-            trVal = trVal[p];
-        } else {
-            trVal = undefined;
-            break;
+    // 2. Doğrudan sözlük ifadesi mi? (I18N_PHRASES / translateText kontrolü)
+    if (currentLang !== 'tr') {
+        const phraseVal = translateText(key, currentLang);
+        if (phraseVal && phraseVal !== key) {
+            return phraseVal;
         }
     }
 
-    return (trVal !== undefined && typeof trVal === 'string') ? trVal : (fallback || key);
+    // 3. Düz tek kelimelik key I18N_TRANSLATIONS altında var mı?
+    if (I18N_TRANSLATIONS[currentLang] && I18N_TRANSLATIONS[currentLang][key] && typeof I18N_TRANSLATIONS[currentLang][key] === 'string') {
+        return I18N_TRANSLATIONS[currentLang][key];
+    }
+    if (I18N_TRANSLATIONS['tr'] && I18N_TRANSLATIONS['tr'][key] && typeof I18N_TRANSLATIONS['tr'][key] === 'string') {
+        return I18N_TRANSLATIONS['tr'][key];
+    }
+
+    return fallback || key;
 }
 
 // 4. Cümle / Metin Çevirisi (Doğrudan Türkçe metni hedef dile çevirir)
