@@ -89,6 +89,18 @@ class PrescribedExercise(Base):
     analysis = relationship("PostureAnalysis", back_populates="prescribed_exercises")
 
 
+class ExerciseTranslation(Base):
+    __tablename__ = "exercise_translations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    exercise_id = Column(Integer, ForeignKey("exercises.id"), index=True)
+    lang = Column(String(10), index=True)
+    name = Column(String(255))
+    category = Column(String(100), nullable=True)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 
 class FootAnalysis(Base):
     __tablename__ = "foot_analyses"

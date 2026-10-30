@@ -1,7 +1,16 @@
 
 function formatAppDate(dateInput, options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) {
     if (!dateInput) return '';
-    const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+    let d;
+    if (dateInput instanceof Date) {
+        d = dateInput;
+    } else {
+        let s = String(dateInput).trim();
+        if (s.includes(' ') && !s.includes('T')) s = s.replace(' ', 'T');
+        if (!s.endsWith('Z') && !s.includes('+') && !s.match(/-\d{2}:\d{2}$/)) s += 'Z';
+        d = new Date(s);
+        if (isNaN(d.getTime())) d = new Date(dateInput);
+    }
     if (isNaN(d.getTime())) return '';
     const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
     const localeMap = {
@@ -399,8 +408,7 @@ function updateAnalysisHistoryDropdown() {
     selectEl.innerHTML = '';
     const _t = window.translateText || (s=>s);
     currentPatientAnalyses.forEach((analysis, index) => {
-        const dateObj = new Date(analysis.created_at + (analysis.created_at && !analysis.created_at.endsWith('Z') ? 'Z' : ''));
-        const dateStr = formatAppDate(dateObj, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+        const dateStr = formatAppDate(analysis.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
         const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
         selectEl.innerHTML += `<option value="${index}">${label}</option>`;
     });
@@ -410,7 +418,7 @@ function updateAnalysisHistoryDropdown() {
 function updatePostureReportDate() {
     const reportDateEl = document.getElementById('reportDate');
     if (!reportDateEl) return;
-    const dateSource = window.currentPostureCreatedAt ? new Date(window.currentPostureCreatedAt + (window.currentPostureCreatedAt.endsWith('Z') ? '' : 'Z')) : new Date();
+    const dateSource = window.currentPostureCreatedAt || new Date();
     const dateStr = formatAppDate(dateSource, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
     const _t = window.translateText || (s=>s);
     reportDateEl.innerText = _t('Oluşturma Tarihi:') + " " + dateStr;
@@ -791,18 +799,20 @@ function refreshAllCanvases() {
     
     if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
         const res = drawCanvas('canvas_left', 'preview_left', globalPostureState.left, 'left');
+        const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+( (window.translateText||((s)=>s))('Nötr'))+')' : '(Anterior/Posterior Tilt)'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
         document.getElementById('table_left').innerHTML = html; resLeft = res; } }
     
     if(globalPostureState.right) { if(globalPostureState.right.error) { document.getElementById('table_right').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.right.error + '</div>'; } else {
         const res = drawCanvas('canvas_right', 'preview_right', globalPostureState.right, 'right');
+        const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '(Normal)' : '(Forward Head)'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}°</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+( (window.translateText||((s)=>s))('Nötr'))+')' : '(Anterior/Posterior Tilt)'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
         document.getElementById('table_right').innerHTML = html; resRight = res; } }
 
     // Skor ve Bulgu Hesaplamaları

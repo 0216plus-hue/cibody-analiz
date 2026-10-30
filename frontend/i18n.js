@@ -10479,6 +10479,106 @@ const I18N_PHRASES = {
       "es": "Colóquese un puntero láser en la cabeza, extienda ligeramente el cuello (20°) y fije un punto en la pared. Cierre los ojos, vuelva a la posición neutra y regrese. Abra los ojos para comprobar.",
       "it": "Fissa un puntatore laser sulla testa, porta il collo in leggera estensione (20°) e individua un punto sulla parete. Chiudi gli occhi, torna in posizione neutra e ritorna. Apri gli occhi per controllare.",
       "pt": "Fixe um ponteiro laser na cabeça, estenda ligeiramente o pescoço (20°) e marque um ponto na parede. Feche os olhos, regresse à posição neutra e volte. Abra os olhos para verificar."
+  },
+  "Torakal Kifoz Artışı": {
+      "en": "Increased Thoracic Kyphosis",
+      "ru": "Увеличение грудного кифоза",
+      "ar": "زيادة الحداب الصدري",
+      "de": "Zunahme der BWS-Kyphose",
+      "fr": "Augmentation de la cyphose thoracique",
+      "es": "Aumento de cifosis torácica",
+      "it": "Aumento della cifosi toracica",
+      "pt": "Aumento da cifose torácica"
+  },
+  "Geçmiş:": {
+      "en": "History:",
+      "ru": "История:",
+      "ar": "السجل:",
+      "de": "Historie:",
+      "fr": "Historique :",
+      "es": "Historial:",
+      "it": "Cronologia:",
+      "pt": "Histórico:"
+  },
+  "Forward Head": {
+      "en": "Forward Head",
+      "ru": "Протракция головы",
+      "ar": "انحناء الرأس للأمام",
+      "de": "Vorverlagerte Kopfhaltung",
+      "fr": "Tête en avant",
+      "es": "Cabeza adelantada",
+      "it": "Testa in avanti",
+      "pt": "Cabeça para a frente"
+  },
+  "Anterior/Posterior Tilt": {
+      "en": "Anterior/Posterior Tilt",
+      "ru": "Передний/задний наклон",
+      "ar": "إمالة أمامية/خلفية",
+      "de": "Anterior/Posterior Tilt",
+      "fr": "Bascule antérieure/postérieure",
+      "es": "Inclinación anterior/posterior",
+      "it": "Inclinazione anteriore/posteriore",
+      "pt": "Inclinação anterior/posterior"
+  },
+  "torakal eğiklik": {
+      "en": "thoracic tilt",
+      "ru": "грудной наклон",
+      "ar": "ميل صدري",
+      "de": "thorakale Neigung",
+      "fr": "inclinaison thoracique",
+      "es": "inclinación torácica",
+      "it": "inclinazione toracica",
+      "pt": "inclinação torácica"
+  },
+  "omuz asimetrisi": {
+      "en": "shoulder asymmetry",
+      "ru": "асимметрия плеч",
+      "ar": "عدم تناسق الكتفين",
+      "de": "Schulter-Asymmetrie",
+      "fr": "asymétrie des épaules",
+      "es": "asimetría de hombros",
+      "it": "asimmetria delle spalle",
+      "pt": "assimetria dos ombros"
+  },
+  "pelvik asimetri": {
+      "en": "pelvic asymmetry",
+      "ru": "асимметрия таза",
+      "ar": "عدم تناسق الحوض",
+      "de": "Becken-Asymmetrie",
+      "fr": "asymétrie pelvienne",
+      "es": "asimetría pélvica",
+      "it": "asimmetria pelvica",
+      "pt": "assimetria pélvica"
+  },
+  "diz asimetrisi": {
+      "en": "knee asymmetry",
+      "ru": "асимметрия коленей",
+      "ar": "عدم تناسق الركبتين",
+      "de": "Knie-Asymmetrie",
+      "fr": "asymétrie des genoux",
+      "es": "asimetría de rodillas",
+      "it": "asimmetria delle ginocchia",
+      "pt": "assimetria dos joelhos"
+  },
+  "baş öne eğikliği": {
+      "en": "forward head posture",
+      "ru": "протракция головы",
+      "ar": "وضعية الرأس للأمام",
+      "de": "vorverlagerte Kopfhaltung",
+      "fr": "antéprojection de la tête",
+      "es": "postura de cabeza adelantada",
+      "it": "postura della testa in avanti",
+      "pt": "postura de cabeça para a frente"
+  },
+  "pelvik eğim": {
+      "en": "pelvic tilt",
+      "ru": "наклон таза",
+      "ar": "ميل الحوض",
+      "de": "Beckenkippung",
+      "fr": "bascule du bassin",
+      "es": "inclinación pélvica",
+      "it": "inclinazione pelvica",
+      "pt": "inclinação pélvica"
   }
 };
 
@@ -10697,14 +10797,24 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, `${footTrans} (n=${footNMatch[2]})`);
     }
 
-// M. Süre / Saniye Kalıbı: "30 sn", "15 saniye", "60 sn."
+    // M. Süre / Saniye Kalıbı: "30 sn", "15 saniye", "60 sn."
     const secMatch = trimmed.match(/^(\d+)\s*(sn|saniye)\.?$/i);
     if (secMatch) {
         const secUnits = {
             en: 'sec', ru: 'сек', ar: 'ثانية', de: 'Sek', fr: 's', es: 's', it: 's', pt: 's'
         };
         const unit = secUnits[targetLang] || 'sec';
-        return text.replace(trimmed, );
+        return text.replace(trimmed, `${secMatch[1]} ${unit}`);
+    }
+
+    // N. Tekrar Kalıbı: "15 tekrar", "10 tekrar"
+    const repMatch = trimmed.match(/^(\d+)\s*tekrar$/i);
+    if (repMatch) {
+        const repUnits = {
+            en: 'reps', ru: 'повторений', ar: 'تكرار', de: 'Wdh', fr: 'répétitions', es: 'repeticiones', it: 'ripetizioni', pt: 'repetições'
+        };
+        const unit = repUnits[targetLang] || 'reps';
+        return text.replace(trimmed, `${repMatch[1]} ${unit}`);
     }
 
     // L. Durum Rozetleri

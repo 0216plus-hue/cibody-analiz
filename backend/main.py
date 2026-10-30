@@ -120,6 +120,75 @@ def startup_event():
         except Exception as e:
             pass
 
+        # Ensure exercise_translations table exists and seed default translations if empty
+        try:
+            from sqlalchemy import text
+            db.execute(text("""
+                CREATE TABLE IF NOT EXISTS exercise_translations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    exercise_id INTEGER NOT NULL,
+                    lang VARCHAR(10) NOT NULL,
+                    name VARCHAR(255) NOT NULL,
+                    category VARCHAR(100),
+                    description TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_exercise_lang UNIQUE (exercise_id, lang)
+                )
+            """))
+            db.commit()
+
+            count = db.execute(text("SELECT COUNT(*) FROM exercise_translations")).scalar()
+            if count == 0:
+                seed_rows = [
+                    (523, 'en', "Brugger's Wall Posture", 'Spine', 'Lean against the wall with heels, hips, shoulders, and head in contact. Place hands on the wall with palms facing forward. Pull shoulder blades down and toward the center, retract the chin. Breathe deeply. Strengthens chest and back muscles to improve posture and increase flexibility.'),
+                    (523, 'ru', 'Постуральное упражнение Брюггера у стены', 'Позвоночник', 'Прислонитесь к стене: пятки, ягодицы, плечи и голова касаются стены. Ладони направлены вперед на стену. Опустите и сведите лопатки, слегка втяните подбородок. Дышите глубоко. Укрепляет мышцы груди и спины, улучшая осанку.'),
+                    (523, 'ar', 'وضعية جدار بروجر', 'العمود الفقري', 'استند إلى الجدار بحيث تلامس الكعبين والأرداف والكتفين والرأس الجدار. ضع يديك على الجدار بحيث تكون راحتا اليد للأمام. اسحب لوحي الكتف للأسفل وإلى المنتصف، وتراجع بالذقن. خذ نفسًا عميقًا. يقوي عضلات الصدر والظهر لتحسين الوضعية.'),
+                    (523, 'de', 'Brügger-Haltung an der Wand', 'Wirbelsäule', 'Lehnen Sie sich an die Wand: Fersen, Hüfte, Schultern und Kopf berühren die Wand. Handflächen nach vorne an die Wand legen. Schulterblätter nach unten und zur Mitte ziehen, Kinn einziehen. Tief atmen. Stärkt Brust- und Rückenmuskeln zur Haltungsverbesserung.'),
+                    (523, 'fr', 'Posture murale de Brügger', 'Colonne vertébrale', "Appuyez-vous contre le mur : talons, hanches, épaules et tête en contact. Placez les mains sur le mur, paumes vers l'avant. Abaissez et resserrez les omoplates, rentrez le menton. Respirez profondément. Renforce les muscles du dos et de la poitrine."),
+                    (523, 'es', 'Postura de pared de Brügger', 'Columna', 'Apóyese contra la pared con talones, caderas, hombros y cabeza en contacto. Coloque las manos en la pared con las palmas hacia adelante. Lleve los omóplatos hacia abajo y al centro, retraiga la barbilla. Respire profundamente. Fortalece la musculatura dorsal y pectoral.'),
+                    (523, 'it', 'Postura a parete di Brügger', 'Colonna vertebrale', 'Appoggiati alla parete: talloni, glutei, spalle e testa a contatto. Poggia le mani alla parete con i palmi rivolti in avanti. Abbassa e avvicina le scapole, retrai il mento. Respira profondamente. Rinforza i muscoli pettorali e dorsali.'),
+                    (523, 'pt', 'Postura de parede de Brügger', 'Coluna vertebral', 'Encoste-se à parede com calcanhares, glúteos, ombros e cabeça em contacto. Coloque as mãos na parede com as palmas para a frente. Puxe as omoplatas para baixo e para o centro, retraia o queixo. Respire profundamente. Fortalece a postura e a musculatura.'),
+                    (16, 'en', 'Isometric Wrist Flexion', 'Wrist', 'Resist bending your wrist. Your wrist should not move. This is a strengthening exercise for the wrist and elbow.'),
+                    (16, 'ru', 'Изометрическое сгибание запястья', 'Запястье', 'Оказывайте сопротивление сгибанию запястья. Запястье не должно двигаться. Это укрепляющее упражнение для запястья и локтя.'),
+                    (16, 'ar', 'ثني المعصم متساوي القياس', 'المعصم', 'قاوم ثني معصمك. يجب ألا يتحرك معصمك. هذا تمرين تقوية للمعصم والمرفق.'),
+                    (16, 'de', 'Isometrische Handgelenkbeugung', 'Handgelenk', 'Widerstehen Sie der Beugung Ihres Handgelenks. Das Handgelenk sollte sich nicht bewegen. Dies ist eine Kräftigungsübung für Handgelenk und Ellbogen.'),
+                    (16, 'fr', 'Flexion isométrique du poignet', 'Poignet', "Résistez à la flexion de votre poignet. Le poignet ne doit pas bouger. Il s'agit d'un exercice de renforcement du poignet et du coude."),
+                    (16, 'es', 'Flexión isométrica de muñeca', 'Muñeca', 'Resista doblar la muñeca. La muñeca no debe moverse. Este es un ejercicio de fortalecimiento para muñeca y codo.'),
+                    (16, 'it', 'Flessione isometrica del polso', 'Polso', 'Resisti alla flessione del polso. Il polso non deve muoversi. È un esercizio di rinforzo per polso e gomito.'),
+                    (16, 'pt', 'Flexão isométrica do punho', 'Pulso', 'Resista à flexão do punho. O punho não se deve mover. Este é um exercício de fortalecimento para punho e cotovelo.'),
+                    (437, 'en', 'Bilateral Lower Chest Stretch', 'Posture', 'Place your arms with palms leaning against the walls facing a corner. Keeping hands in position, gently push your body toward the corner. You will feel a stretch across your upper arms, front shoulders, and chest.'),
+                    (437, 'ru', 'Двусторонняя растяжка нижней части груди', 'Осанка', 'Расположите руки ладонями к стене в углу комнаты лицом к углу. Удерживая руки на месте, плавно подайте тело вперед в угол. Вы почувствуете растяжение в плечах и грудных мышцах.'),
+                    (437, 'ar', 'إطالة الصدر السفلي المزدوجة', 'وضعية الجسم', 'ضع ذراعيك وراحتي يديك على الجدار في مواجهة زاوية الغرفة. مع الحفاظ على وضعية اليدين، ادفع جسمك برفق نحو الزاوية. ستشعر بتمدد في أعلى الذراعين وأمام الكتفين والصدر.'),
+                    (437, 'de', 'Beidseitige untere Brustdehnung', 'Haltung', 'Stellen Sie sich in eine Ecke, Handflächen an die Wände gelehnt. Schieben Sie Ihren Körper sanft in die Ecke. Sie spüren eine Dehnung in den Oberarmen, vorderen Schultern und der Brust.'),
+                    (437, 'fr', 'Étirement bilatéral du bas de la poitrine', 'Posture', 'Placez vos bras paumes appuyées contre les murs face à un coin. En maintenant les mains en place, poussez doucement le corps vers le coin. Vous ressentirez un étirement dans le haut des bras et la poitrine.'),
+                    (437, 'es', 'Estiramiento bilateral de pecho inferior', 'Postura', 'Coloque los brazos con las palmas apoyadas contra las paredes frente a una esquina. Empuje suavemente el cuerpo hacia la esquina. Sentirá un estiramiento en la parte superior de los brazos y el pecho.'),
+                    (437, 'it', 'Allungamento bilaterale del petto inferiore', 'Postura', "Posiziona le braccia con i palmi appoggiati alle pareti di fronte a un angolo. Spingi delicatamente il corpo verso l'angolo. Sentirai un allungamento sulle braccia, spalle anteriori e petto."),
+                    (437, 'pt', 'Alongamento bilateral do peito inferior', 'Postura', 'Coloque os braços com as palmas apoiadas nas paredes virado para um canto. Empurre suavemente o corpo em direção ao canto. Sentirá um practical alongamento nos braços e peito.'),
+                    (897, 'en', 'Bilateral Lower Chest Stretch', 'Shoulder', 'Place your arms with palms leaning against the walls facing a corner. Keeping hands in position, gently push your body toward the corner. You will feel a stretch across your upper arms, front shoulders, and chest.'),
+                    (897, 'ru', 'Двусторонняя растяжка нижней части груди', 'Плечо', 'Расположите руки ладонями к стене в углу комнаты лицом к углу. Удерживая руки на месте, плавно подайте тело вперед в угол. Вы почувствуете растяжение в плечах и грудных мышцах.'),
+                    (897, 'ar', 'إطالة الصدر السفلي المزدوجة', 'الكتف', 'ضع ذراعيك وراحتي يديك على الجدار في مواجهة زاوية الغرفة. مع الحفاظ على وضعية اليدين، ادفع جسمك برفق نحو الزاوية. ستشعر بتمدد في أعلى الذراعين وأمام الكتفين والصدر.'),
+                    (897, 'de', 'Beidseitige untere Brustdehnung', 'Schulter', 'Stellen Sie sich in eine Ecke, Handflächen an die Wände gelehnt. Schieben Sie Ihren Körper sanft in die Ecke. Sie spüren eine Dehnung in den Oberarmen, vorderen Schultern und der Brust.'),
+                    (897, 'fr', 'Étirement bilatéral du bas de la poitrine', 'Épaule', 'Placez vos bras paumes appuyées contre les murs face à un coin. En maintenant les mains en place, poussez doucement le corps vers le coin. Vous ressentirez un étirement dans le haut des bras et la poitrine.'),
+                    (897, 'es', 'Estiramiento bilateral de pecho inferior', 'Hombro', 'Coloque los brazos con las palmas apoyadas contra las paredes frente a una esquina. Empuje suavemente el cuerpo hacia la esquina. Sentirá un estiramiento en la parte superior de los brazos y el pecho.'),
+                    (897, 'it', 'Allungamento bilaterale del petto inferiore', 'Spalla', "Posiziona le braccia con i palmi appoggiati alle pareti di fronte a un angolo. Spingi delicatamente il corpo verso l'angolo. Sentirai un allungamento sulle braccia, spalle anteriori e petto."),
+                    (897, 'pt', 'Alongamento bilateral do peito inferior', 'Ombro', 'Coloque os braços com as palmas apoiadas nas paredes virado para um canto. Empurre suavemente o corpo em direção ao canto. Sentirá um alongamento nos braços e peito.'),
+                    (207, 'en', 'Cervical Proprioception Laser Target Extension (Eyes Closed) 2', 'Neck', 'Attach a laser pointer to your head, bring your neck into slight extension (20°) and identify a target point on the wall. Close your eyes, slowly return neck to neutral and back. Open eyes to check accuracy. This exercise improves neck muscle control and coordination.'),
+                    (207, 'ru', 'Шейная проприоцепция с лазером: разгибание с закрытыми глазами 2', 'Шея', 'Закрепите лазерную указку на голове, слегка разогните шею (20°) и зафиксируйте точку на стене. Закройте глаза, медленно верните шею в нейтральное положение и обратно. Откройте глаза и проверьте точность.'),
+                    (207, 'ar', 'استقبال الحس العميق لعنق الرحم بنقاط الليزر مع إغلاق العينين 2', 'الرقبة', 'قم بتركيب مؤشر ليزر على رأسك، وأمل رقبتك قليلاً (20 درجة) وحدد نقطة على الجدار. أغمض عينيك، ثم أعد رقبتك ببطء إلى الوضع المحايد ثم عُد. افتح عينيك للتحقق من النقطة.'),
+                    (207, 'de', 'Zervikale Propriozeption Laser Ziel Extension (Augen geschlossen) 2', 'Nacken', 'Befestigen Sie einen Laserpointer am Kopf, bringen Sie den Nacken in leichte Streckung (20°) und fixieren Sie einen Punkt. Schließen Sie die Augen, bewegen Sie den Kopf zurück und wieder hin. Augen öffnen zur Kontrolle.'),
+                    (207, 'fr', 'Proprioception cervicale laser extension cibles (yeux fermés) 2', 'Cou', 'Fixez un pointeur laser sur la tête, mettez le cou en légère extension (20°) et visez un point au mur. Fermez les yeux, revenez lentement en position neutre puis repartez. Ouvrez les yeux pour vérifier.'),
+                    (207, 'es', 'Propiocepción cervical con láser extensión (ojos cerrados) 2', 'Cuello', 'Colóquese un puntero láser en la cabeza, extienda ligeramente el cuello (20°) y fije un punto en la pared. Cierre los ojos, vuelva a la posición neutra y regrese. Abra los ojos para comprobar.'),
+                    (207, 'it', 'Propriocezione cervicale laser estensione (occhi chiusi) 2', 'Collo', 'Fissa un puntatore laser sulla testa, porta il collo in leggera estensione (20°) e individua un punto sulla parete. Chiudi gli occhi, torna in posizione neutra e ritorna. Apri gli occhi per controllare.'),
+                    (207, 'pt', 'Propriocepção cervical laser extensão (olhos fechados) 2', 'Pescoço', 'Fixe um ponteiro laser na cabeça, estenda ligeiramente o pescoço (20°) e marque um ponto na parede. Feche os olhos, regresse à posição neutra e volte. Abra os olhos para verificar.')
+                ]
+                for r in seed_rows:
+                    db.execute(text("INSERT OR REPLACE INTO exercise_translations (exercise_id, lang, name, category, description) VALUES (:ex_id, :lang, :name, :category, :description)"),
+                               {"ex_id": r[0], "lang": r[1], "name": r[2], "category": r[3], "description": r[4]})
+                db.commit()
+                print(f"Başarıyla {len(seed_rows)} egzersiz çevirisi eklendi.")
+        except Exception as e:
+            print("exercise_translations startup init error:", e)
+
 
         if db.query(models.Exercise).count() == 0:
             import pandas as pd
