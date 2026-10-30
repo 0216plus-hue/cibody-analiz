@@ -2114,28 +2114,63 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
     const pageWidth = pdf.internal.pageSize.width;
     const pageHeight = pdf.internal.pageSize.height;
     
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    
+    // ASCII/Latin-safe labels for jsPDF helvetica
+    const labelsByLang = {
+        tr: { age: 'Yas', weight: 'Kilo', date: 'Tarih', specialist: 'Uzman', page: 'Sayfa', defaultUser: 'Uzman', defaultPatient: 'Hasta' },
+        en: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        ru: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        ar: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        de: { age: 'Alter', weight: 'Gewicht', date: 'Datum', specialist: 'Spezialist', page: 'Seite', defaultUser: 'Spezialist', defaultPatient: 'Patient' },
+        fr: { age: 'Age', weight: 'Poids', date: 'Date', specialist: 'Specialiste', page: 'Page', defaultUser: 'Specialiste', defaultPatient: 'Patient' },
+        es: { age: 'Edad', weight: 'Peso', date: 'Fecha', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' },
+        it: { age: 'Eta', weight: 'Peso', date: 'Data', specialist: 'Specialista', page: 'Pag.', defaultUser: 'Specialista', defaultPatient: 'Paziente' },
+        pt: { age: 'Idade', weight: 'Peso', date: 'Data', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' }
+    };
+    const lbl = labelsByLang[lang] || labelsByLang.tr;
+
     let pName = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.name) 
         ? globalPatientInfo.name 
-        : (document.getElementById('navPatientName') ? document.getElementById('navPatientName').innerText : 'Hasta');
+        : (document.getElementById('navPatientName') ? document.getElementById('navPatientName').innerText : lbl.defaultPatient);
     const trMap = {'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'};
     if (pName) pName = pName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
     const patientAge = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-';
     const patientWeight = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-';
-    const dateStr = new Date().toLocaleDateString('tr-TR');
     
-    let currentUserName = "Uzman";
+    // Numeric formatted date (ASCII safe)
+    const now = new Date();
+    const dStr = String(now.getDate()).padStart(2, '0');
+    const mStr = String(now.getMonth() + 1).padStart(2, '0');
+    const yStr = now.getFullYear();
+    const dateStr = (lang === 'en' || lang === 'ru' || lang === 'ar') ? `${yStr}-${mStr}-${dStr}` : `${dStr}.${mStr}.${yStr}`;
+    
+    let currentUserName = lbl.defaultUser;
     let currentUserEmail = "";
     let currentUserPhone = "";
     try {
         const storedUser = localStorage.getItem('cibody_user');
         if(storedUser) {
             const parsed = JSON.parse(storedUser);
-            currentUserName = parsed.name || "Uzman";
+            if(parsed.name && parsed.name.trim() && parsed.name.trim() !== "Uzman") {
+                currentUserName = parsed.name.trim();
+            }
             currentUserEmail = parsed.email || "";
             currentUserPhone = parsed.phone || "";
             if(currentUserName) currentUserName = currentUserName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
         }
     } catch(e) {}
+
+    // Translate reportSubtitle if needed
+    let cleanSubtitle = reportSubtitle;
+    if (window.translateText && lang !== 'tr') {
+        const transTarget = (lang === 'ru' || lang === 'ar') ? 'en' : lang;
+        const translated = window.translateText(reportSubtitle, transTarget);
+        if (translated) cleanSubtitle = translated;
+    }
+    if (cleanSubtitle) {
+        cleanSubtitle = cleanSubtitle.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
+    }
 
     for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
@@ -2152,7 +2187,7 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(199, 210, 254); // indigo-200
-        pdf.text(reportSubtitle, 0.3, 0.42);
+        pdf.text(cleanSubtitle, 0.3, 0.42);
         
         // Right Side Header (Patient)
         pdf.setTextColor(255, 255, 255);
@@ -2163,7 +2198,7 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(199, 210, 254); // indigo-200
-        pdf.text(`Yas: ${patientAge}  |  Kilo: ${patientWeight} kg  |  Tarih: ${dateStr}`, pageWidth - 0.3, 0.42, { align: 'right' });
+        pdf.text(`${lbl.age}: ${patientAge}  |  ${lbl.weight}: ${patientWeight} kg  |  ${lbl.date}: ${dateStr}`, pageWidth - 0.3, 0.42, { align: 'right' });
         
         // --- FOOTER ---
         pdf.setFillColor(248, 250, 252); // slate-50
@@ -2176,10 +2211,10 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
         pdf.setTextColor(100, 116, 139); // slate-500
         pdf.setFontSize(9);
         pdf.setFont('helvetica', 'bold');
-        pdf.text(`Uzman: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
+        pdf.text(`${lbl.specialist}: ${currentUserName}` + (currentUserEmail ? ` | Mail: ${currentUserEmail}` : '') + (currentUserPhone ? ` | Tel: ${currentUserPhone}` : ''), 0.3, pageHeight - 0.18);
         
         pdf.setFont('helvetica', 'normal');
-        pdf.text(`Sayfa ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
+        pdf.text(`${lbl.page} ${i} / ${totalPages}`, pageWidth - 0.3, pageHeight - 0.18, { align: 'right' });
     }
 }
 window.applyCibodyPdfHeaderFooter = applyCibodyPdfHeaderFooter;

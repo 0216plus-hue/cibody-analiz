@@ -107,7 +107,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Hastayı platformun ortasına alınız ve sabit durmasını söyleyiniz.",
             start_btn: "Analizi Başlat",
             reset_btn: "Sıfırla",
-            history_title: "Geçmiş Kayıtlar"
+            history_title: "Geçmiş Kayıtlar",
+            lr_dist: "Sol / Sağ Dağılımı",
+            fr_dist: "Ön / Arka Dağılımı",
+            left_foot: "Sol Ayak",
+            right_foot: "Sağ Ayak",
+            clarke: "CLARKE",
+            arch_idx: "ARK İND."
         },
         common: {
             save: "Kaydet",
@@ -217,7 +223,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Place the patient in the center of the platform and ask them to stand still.",
             start_btn: "Start Analysis",
             reset_btn: "Reset",
-            history_title: "Historical Records"
+            history_title: "Historical Records",
+            lr_dist: "Left / Right Distribution",
+            fr_dist: "Front / Rear Distribution",
+            left_foot: "Left Foot",
+            right_foot: "Right Foot",
+            clarke: "CLARKE",
+            arch_idx: "ARCH IND."
         },
         common: {
             save: "Save",
@@ -327,7 +339,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Поместите пациента в центр платформы и попросите стоять неподвижно.",
             start_btn: "Начать анализ",
             reset_btn: "Сброс",
-            history_title: "История записей"
+            history_title: "История записей",
+            lr_dist: "Распределение Левая / Правая",
+            fr_dist: "Распределение Перед / Зад",
+            left_foot: "Левая стопа",
+            right_foot: "Правая стопа",
+            clarke: "КЛАРК",
+            arch_idx: "ИНД. СВОДА"
         },
         common: {
             save: "Сохранить",
@@ -437,7 +455,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "ضع المريض في منتصف المنصة واطلب منه الوقوف بثبات.",
             start_btn: "بدء التحليل",
             reset_btn: "إعادة ضبط",
-            history_title: "السجلات السابقة"
+            history_title: "السجلات السابقة",
+            lr_dist: "توزيع يسار / يمين",
+            fr_dist: "توزيع أمامي / خلفي",
+            left_foot: "القدم اليسرى",
+            right_foot: "القدم اليمنى",
+            clarke: "كلارك",
+            arch_idx: "مؤشر القوس"
         },
         common: {
             save: "حفظ",
@@ -547,7 +571,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Stellen Sie den Patienten in die Mitte der Plattform und bitten Sie ihn, still zu stehen.",
             start_btn: "Analyse starten",
             reset_btn: "Zurücksetzen",
-            history_title: "Verlauf der Aufzeichnungen"
+            history_title: "Verlauf der Aufzeichnungen",
+            lr_dist: "Links / Rechts Verteilung",
+            fr_dist: "Vorne / Hinten Verteilung",
+            left_foot: "Linker Fuß",
+            right_foot: "Rechter Fuß",
+            clarke: "CLARKE",
+            arch_idx: "BOGEN-IND."
         },
         common: {
             save: "Speichern",
@@ -657,7 +687,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Placez le patient au centre de la plateforme et demandez-lui de rester immobile.",
             start_btn: "Démarrer l'analyse",
             reset_btn: "Réinitialiser",
-            history_title: "Historique"
+            history_title: "Historique",
+            lr_dist: "Distribution Gauche / Droite",
+            fr_dist: "Distribution Avant / Arrière",
+            left_foot: "Pied gauche",
+            right_foot: "Pied droit",
+            clarke: "CLARKE",
+            arch_idx: "IND. VOÛTE"
         },
         common: {
             save: "Enregistrer",
@@ -767,7 +803,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Coloque al paciente en el centro de la plataforma y pídale que permanezca quieto.",
             start_btn: "Iniciar análisis",
             reset_btn: "Restablecer",
-            history_title: "Historial de registros"
+            history_title: "Historial de registros",
+            lr_dist: "Distribución Izquierda / Derecha",
+            fr_dist: "Distribución Anterior / Posterior",
+            left_foot: "Pie izquierdo",
+            right_foot: "Pie derecho",
+            clarke: "CLARKE",
+            arch_idx: "ÍND. ARCO"
         },
         common: {
             save: "Guardar",
@@ -877,7 +919,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Posizionare il paziente al centro della pedana e chiedergli di rimanere fermo.",
             start_btn: "Avvia analisi",
             reset_btn: "Reimposta",
-            history_title: "Storico registrazioni"
+            history_title: "Storico registrazioni",
+            lr_dist: "Distribuzione Sinistra / Destra",
+            fr_dist: "Distribuzione Anteriore / Posteriore",
+            left_foot: "Piede Sinistro",
+            right_foot: "Piede Destro",
+            clarke: "CLARKE",
+            arch_idx: "IND. ARCO"
         },
         common: {
             save: "Salva",
@@ -987,7 +1035,13 @@ const I18N_TRANSLATIONS = {
             subtitle: "Coloque o paciente no centro da plataforma e peça-lhe para ficar quieto.",
             start_btn: "Iniciar análise",
             reset_btn: "Repor",
-            history_title: "Histórico de registos"
+            history_title: "Histórico de registos",
+            lr_dist: "Distribuição Esquerda / Direita",
+            fr_dist: "Distribuição Anterior / Posterior",
+            left_foot: "Pé esquerdo",
+            right_foot: "Pé direito",
+            clarke: "CLARKE",
+            arch_idx: "ÍND. ARCO"
         },
         common: {
             save: "Guardar",
@@ -10989,6 +11043,126 @@ const I18N_PHRASES = {
     "es": "Análisis de marcha",
     "it": "Analisi del cammino",
     "pt": "Análise da marcha"
+  },
+  "Statik Ayak Analizi Raporu": {
+    "en": "Static Foot Analysis Report",
+    "ru": "Отчет о статическом анализе стопы",
+    "ar": "تقرير التحليل الثابت للقدم",
+    "de": "Statische Fußanalyse-Bericht",
+    "fr": "Rapport d'analyse statique du pied",
+    "es": "Informe de Análisis Estático del Pie",
+    "it": "Rapporto di Analisi Statica del Piede",
+    "pt": "Relatório de Análise Estática do Pé"
+  },
+  "Ark İndeksi": {
+    "en": "Arch Index",
+    "ru": "Индекс свода",
+    "ar": "مؤشر القوس",
+    "de": "Bogenindex",
+    "fr": "Indice de voûte",
+    "es": "Índice del arco",
+    "it": "Indice dell'arco",
+    "pt": "Índice do arco"
+  },
+  "Ark İnd.": {
+    "en": "Arch Ind.",
+    "ru": "Инд. свода",
+    "ar": "مؤشر القوس",
+    "de": "Bogenind.",
+    "fr": "Ind. voûte",
+    "es": "Índ. arco",
+    "it": "Ind. arco",
+    "pt": "Índ. arco"
+  },
+  "Clarke Açısı": {
+    "en": "Clarke's Angle",
+    "ru": "Угол Кларка",
+    "ar": "زاوية كلارك",
+    "de": "Clarke-Winkel",
+    "fr": "Angle de Clarke",
+    "es": "Ángulo de Clarke",
+    "it": "Angolo di Clarke",
+    "pt": "Ângulo de Clarke"
+  },
+  "Kilo": {
+    "en": "Weight",
+    "ru": "Вес",
+    "ar": "الوزن",
+    "de": "Gewicht",
+    "fr": "Poids",
+    "es": "Peso",
+    "it": "Peso",
+    "pt": "Peso"
+  },
+  "Uzman": {
+    "en": "Specialist",
+    "ru": "Специалист",
+    "ar": "الأخصائي",
+    "de": "Spezialist",
+    "fr": "Spécialiste",
+    "es": "Especialista",
+    "it": "Specialista",
+    "pt": "Especialista"
+  },
+  "Sayfa": {
+    "en": "Page",
+    "ru": "Стр.",
+    "ar": "صفحة",
+    "de": "Seite",
+    "fr": "Page",
+    "es": "Pág.",
+    "it": "Pag.",
+    "pt": "Pág."
+  },
+  "Canlı Akışa Dön": {
+    "en": "Return to Live Stream",
+    "ru": "Вернуться к трансляции",
+    "ar": "العودة إلى البث المباشر",
+    "de": "Zurück zum Live-Stream",
+    "fr": "Retour au direct",
+    "es": "Volver a transmisión en vivo",
+    "it": "Torna alla trasmissione in diretta",
+    "pt": "Voltar à transmissão em direto"
+  },
+  "-- Canlı Akışa Dön --": {
+    "en": "-- Return to Live Stream --",
+    "ru": "-- Вернуться к трансляции --",
+    "ar": "-- العودة إلى البث المباشر --",
+    "de": "-- Zurück zum Live-Stream --",
+    "fr": "-- Retour au direct --",
+    "es": "-- Volver a transmisión en vivo --",
+    "it": "-- Torna alla trasmissione in diretta --",
+    "pt": "-- Voltar à transmissão em direto --"
+  },
+  "Ayak Analizi PDF raporu indirildi.": {
+    "en": "Foot analysis PDF report downloaded.",
+    "ru": "PDF-отчет анализа стопы скачан.",
+    "ar": "تم تنزيل تقرير تحليل القدم بصيغة PDF.",
+    "de": "PDF-Bericht der Fußanalyse heruntergeladen.",
+    "fr": "Rapport PDF d'analyse du pied téléchargé.",
+    "es": "Informe PDF de análisis del pie descargado.",
+    "it": "Rapporto PDF dell'analisi del piede scaricato.",
+    "pt": "Relatório PDF da análise do pé transferido."
+  },
+  "3D Omurga Simülasyon Raporu": {
+    "en": "3D Spine Simulation Report",
+    "ru": "3D-отчет симуляции позвоночника",
+    "ar": "تقرير محاكاة العمود الفقري ثلاثي الأبعاد",
+    "de": "3D-Wirbelsäulensimulationsbericht",
+    "fr": "Rapport de simulation de colonne 3D",
+    "es": "Informe de Simulación de Columna 3D",
+    "it": "Rapporto di Simulazione Spinale 3D",
+    "pt": "Relatório de Simulação de Coluna 3D"
+  },
+  "Klinik Ayak Basınç & Biyomekanik Raporu": {
+    "en": "Clinical Foot Pressure & Biomechanics Report",
+    "ru": "Клинический отчет о давлении стопы и биомеханике",
+    "ar": "تقرير سريري لضغط القدم والميكانيكا الحيوية",
+    "de": "Klinischer Fußdruck- & Biomechanikbericht",
+    "fr": "Rapport clinique de pression du pied et biomécanique",
+    "es": "Informe Clínico de Presión del Pie y Biomecánica",
+    "it": "Rapporto Clinico di Pressione del Piede e Biomeccanica",
+    "pt": "Relatório Clínico de Pressão do Pé e Biomecânica"
   }
 };
 
