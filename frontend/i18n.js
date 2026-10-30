@@ -11054,6 +11054,56 @@ const I18N_PHRASES = {
     "it": "Rapporto di Analisi Statica del Piede",
     "pt": "Relatório de Análise Estática do Pé"
   },
+  "Plantar Basınç Haritası": {
+    "en": "Plantar Pressure Map",
+    "ru": "Карта плантарного давления",
+    "ar": "خريطة الضغط الأخمصي",
+    "de": "Plantare Druckkarte",
+    "fr": "Carte de pression plantaire",
+    "es": "Mapa de presión plantar",
+    "it": "Mappa di pressione plantare",
+    "pt": "Mapa de pressão plantar"
+  },
+  "Klinik Referans Değerleri": {
+    "en": "Clinical Reference Values",
+    "ru": "Клинические референтные значения",
+    "ar": "القيم المرجعية السريرية",
+    "de": "Klinische Referenzwerte",
+    "fr": "Valeurs de référence cliniques",
+    "es": "Valores de referencia clínicos",
+    "it": "Valori di riferimento clinici",
+    "pt": "Valores de referência clínicos"
+  },
+  "Düz Taban": {
+    "en": "Flat Foot",
+    "ru": "Плоскостопие",
+    "ar": "قدم مسطحة",
+    "de": "Plattfuß",
+    "fr": "Pied plat",
+    "es": "Pie plano",
+    "it": "Piede piatto",
+    "pt": "Pé plano"
+  },
+  "Çukur Ayak": {
+    "en": "High Arch",
+    "ru": "Полая стопа",
+    "ar": "قدم مجوفة",
+    "de": "Hohlfuß",
+    "fr": "Pied creux",
+    "es": "Pie cavo",
+    "it": "Piede cavo",
+    "pt": "Pé cavo"
+  },
+  "Statik Basınç Dağılımı ve Biyomekanik Parametreler": {
+    "en": "Static Pressure Distribution & Biomechanical Parameters",
+    "ru": "Статическое распределение давления и биомеханические параметры",
+    "ar": "توزيع الضغط الثابت والمعايير الميكانيكية الحيوية",
+    "de": "Statische Druckverteilung & biomechanische Parameter",
+    "fr": "Distribution de pression statique et paramètres biomécaniques",
+    "es": "Distribución de presión estática y parámetros biomecánicos",
+    "it": "Distribuzione della pressione statica e parametri biomeccanici",
+    "pt": "Distribuição da pressão estática e parâmetros biomecânicos"
+  },
   "Ark İndeksi": {
     "en": "Arch Index",
     "ru": "Индекс свода",
