@@ -3296,6 +3296,7 @@ async function generateAiFootReport() {
     }
     
     try {
+        const currentLang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
         const resp = await authFetch('/api/ai/foot-report', {
             method: 'POST',
             headers: {
@@ -3304,7 +3305,8 @@ async function generateAiFootReport() {
             body: JSON.stringify({
                 static_data: staticData,
                 gait_data: gaitData,
-                balance_data: balData
+                balance_data: balData,
+                lang: currentLang
             })
         });
         
@@ -3422,17 +3424,20 @@ async function fetchTherapistOrders() {
         const data = await res.json();
         const tbody = document.getElementById('therapistOrdersTableBody');
         tbody.innerHTML = '';
+        const _t = (window.translateText || (s => s));
         if(data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Henüz siparişiniz bulunmamaktadır.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-500">${_t('Henüz siparişiniz bulunmamaktadır.')}</td></tr>`;
             return;
         }
         data.forEach(o => {
             const tr = document.createElement('tr');
+            const dateStr = formatAppDate(o.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const statusTrans = _t(o.status);
             tr.innerHTML = `
                 <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
                 <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
-                <td class="py-3 px-4 text-sm text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${o.status}</span></td>
+                <td class="py-3 px-4 text-sm text-slate-500">${dateStr}</td>
+                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${statusTrans}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -3448,8 +3453,9 @@ async function fetchAdminOrders() {
         const tbody = document.getElementById('adminOrdersTableBody');
         tbody.innerHTML = '';
         window._adminOrdersData = {};
+        const _t = (window.translateText || (s => s));
         if(data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-500">Sipariş bulunamadı.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">${_t('Sipariş bulunamadı.')}</td></tr>`;
             return;
         }
         data.forEach(o => {
@@ -3460,25 +3466,26 @@ async function fetchAdminOrders() {
                 balance_data: o.balance_data
             };
             const tr = document.createElement('tr');
+            const dateStr = formatAppDate(o.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             tr.innerHTML = `
                 <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
                 <td class="py-3 px-4 text-sm text-slate-600">${o.therapist_name}</td>
                 <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
-                <td class="py-3 px-4 text-sm text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
+                <td class="py-3 px-4 text-sm text-slate-500">${dateStr}</td>
                 <td class="py-3 px-4">
                     <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-bold border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                        <option value="Bekliyor" ${o.status==='Bekliyor'?'selected':''}>Bekliyor</option>
-                        <option value="Tabanlık Baskısı Yapıldı" ${o.status==='Tabanlık Baskısı Yapıldı'?'selected':''}>Baskı Yapıldı</option>
-                        <option value="Kargolandı" ${o.status==='Kargolandı'?'selected':''}>Kargolandı</option>
-                        <option value="Tamamlandı" ${o.status==='Tamamlandı'?'selected':''}>Tamamlandı</option>
-                        <option value="İptal" ${o.status==='İptal'?'selected':''}>İptal</option>
+                        <option value="Bekliyor" ${o.status==='Bekliyor'?'selected':''}>${_t('Bekliyor')}</option>
+                        <option value="Tabanlık Baskısı Yapıldı" ${o.status==='Tabanlık Baskısı Yapıldı'?'selected':''}>${_t('Baskı Yapıldı')}</option>
+                        <option value="Kargolandı" ${o.status==='Kargolandı'?'selected':''}>${_t('Kargolandı')}</option>
+                        <option value="Tamamlandı" ${o.status==='Tamamlandı'?'selected':''}>${_t('Tamamlandı')}</option>
+                        <option value="İptal" ${o.status==='İptal'?'selected':''}>${_t('İptal')}</option>
                     </select>
                 </td>
                 <td class="py-3 px-4 text-center">
                     <div class="flex flex-col gap-1 items-center">
-                        ${o.static_data  ? `<button onclick="openOrderReport(${o.id},'static')"  class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-bold transition w-full">📊 Statik Analiz</button>` : ''}
-                        ${o.gait_data    ? `<button onclick="openOrderReport(${o.id},'gait')"    class="text-xs bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold transition w-full">🚶 Yürüme Analizi</button>` : ''}
-                        ${o.balance_data ? `<button onclick="openOrderReport(${o.id},'balance')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition w-full">⚖️ Denge Testi</button>` : ''}
+                        ${o.static_data  ? `<button onclick="openOrderReport(${o.id},'static')"  class="text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-bold transition w-full">📊 ${_t('Statik Analiz')}</button>` : ''}
+                        ${o.gait_data    ? `<button onclick="openOrderReport(${o.id},'gait')"    class="text-xs bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-1.5 rounded-lg font-bold transition w-full">🚶 ${_t('Yürüme Analizi')}</button>` : ''}
+                        ${o.balance_data ? `<button onclick="openOrderReport(${o.id},'balance')" class="text-xs bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-3 py-1.5 rounded-lg font-bold transition w-full">⚖️ ${_t('Denge Testi')}</button>` : ''}
                     </div>
                 </td>
             `;
@@ -3703,16 +3710,19 @@ async function fetchPatientInsoleOrders() {
         const data = await res.json();
         const tbody = document.getElementById('patientOrdersTableBody');
         tbody.innerHTML = '';
+        const _t = (window.translateText || (s => s));
         if(data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-slate-500">Bu hastaya ait sipariş bulunmamaktadır.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-slate-500">${_t('Bu hastaya ait sipariş bulunmamaktadır.')}</td></tr>`;
             return;
         }
         data.forEach(o => {
             const tr = document.createElement('tr');
+            const dateStr = formatAppDate(o.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const statusTrans = _t(o.status);
             tr.innerHTML = `
                 <td class="py-3 px-4 font-medium text-slate-700">#${o.id}</td>
-                <td class="py-3 px-4 text-slate-500">${new Date(o.created_at).toLocaleString('tr-TR')}</td>
-                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${o.status}</span></td>
+                <td class="py-3 px-4 text-slate-500">${dateStr}</td>
+                <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${statusTrans}</span></td>
             `;
             tbody.appendChild(tr);
         });
@@ -3833,5 +3843,8 @@ window.addEventListener('cibody:languageChanged', function(e) {
     if (typeof renderSpineResults === 'function' && currentSpineAnalysisId && Array.isArray(currentSpineHistory)) {
         const item = currentSpineHistory.find(x => x.id === currentSpineAnalysisId);
         if (item) renderSpineResults(item, currentSpineAnalysisId);
+    }
+    if (typeof fetchPatientInsoleOrders === 'function' && currentPatientId) {
+        fetchPatientInsoleOrders();
     }
 });

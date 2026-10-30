@@ -1,4 +1,8 @@
 
+function _t(s) {
+    return (window.translateText ? window.translateText(s) : s);
+}
+
 let balanceWs = null;
 let isBalanceRecording = false;
 let balanceTimerInterval = null;
@@ -341,7 +345,7 @@ function renderMasterTable() {
         
         tbody.innerHTML += `
             <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 font-bold text-slate-800">${t.l}</td>
+                <td class="px-4 py-3 font-bold text-slate-800">${_t(t.l)}</td>
                 <td class="px-4 py-3">${m.duration.toFixed(1)}</td>
                 <td class="px-4 py-3 font-mono ${pathS}">${m.pathCm.toFixed(2)}</td>
                 <td class="px-4 py-3 font-mono ${areaS}">${m.areaCm.toFixed(2)}</td>
@@ -384,7 +388,7 @@ function renderAllTestDetails() {
         // Header
         let header = document.createElement('h2');
         header.className = "text-xl font-black text-indigo-700 border-b-2 border-indigo-200 pb-2 mb-2";
-        header.innerHTML = `<i class="fa-solid fa-shoe-prints mr-2"></i>${t.l} - Detaylı Analiz`;
+        header.innerHTML = `<i class="fa-solid fa-shoe-prints mr-2"></i>${_t(t.l)} - ${_t('Detaylı Analiz')}`;
         section.appendChild(header);
         
         // Reference Table
@@ -398,9 +402,9 @@ function renderAllTestDetails() {
             let velMed = isSingle ? 8.0 : 2.0;
             
             const getStatus = (val, good, med) => {
-                if(val < good) return { text: "İyi", color: "bg-emerald-100 text-emerald-800" };
-                if(val <= med) return { text: "Orta", color: "bg-amber-100 text-amber-800" };
-                return { text: "Yüksek", color: "bg-rose-100 text-rose-800" };
+                if(val < good) return { text: _t("İyi"), color: "bg-emerald-100 text-emerald-800" };
+                if(val <= med) return { text: _t("Orta"), color: "bg-amber-100 text-amber-800" };
+                return { text: _t("Yüksek"), color: "bg-rose-100 text-rose-800" };
             };
             
             let pathS = getStatus(m.pathCm, pathGood, pathMed);
@@ -409,35 +413,35 @@ function renderAllTestDetails() {
             
             let refHTML = `
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>Referans Aralıkları ile Karşılaştırma</h3>
+                <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>${_t('Referans Aralıkları ile Karşılaştırma')}</h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-bold border-b">
                             <tr>
-                                <th class="px-4 py-2">Metrik</th>
-                                <th class="px-4 py-2 text-emerald-600">İyi</th>
-                                <th class="px-4 py-2 text-amber-500">Orta</th>
-                                <th class="px-4 py-2 text-rose-500">Yüksek (Risk)</th>
-                                <th class="px-4 py-2 bg-indigo-50 text-indigo-900 border-l">Sizin Değeriniz</th>
+                                <th class="px-4 py-2">${_t('Metrik')}</th>
+                                <th class="px-4 py-2 text-emerald-600">${_t('İyi')}</th>
+                                <th class="px-4 py-2 text-amber-500">${_t('Orta')}</th>
+                                <th class="px-4 py-2 text-rose-500">${_t('Yüksek (Risk)')}</th>
+                                <th class="px-4 py-2 bg-indigo-50 text-indigo-900 border-l">${_t('Sizin Değeriniz')}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">Yol Uzunluğu (cm)</td>
+                                <td class="px-4 py-2 font-medium">${_t('Yol Uzunluğu (cm)')}</td>
                                 <td class="px-4 py-2"><${pathGood}</td>
                                 <td class="px-4 py-2">${pathGood}-${pathMed}</td>
                                 <td class="px-4 py-2">>${pathMed}</td>
                                 <td class="px-4 py-2 border-l font-bold ${pathS.color}">${m.pathCm.toFixed(2)} (${pathS.text})</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">Sallantı Alanı (cm²)</td>
+                                <td class="px-4 py-2 font-medium">${_t('Sallantı Alanı (cm²)')}</td>
                                 <td class="px-4 py-2"><${areaGood}</td>
                                 <td class="px-4 py-2">${areaGood}-${areaMed}</td>
                                 <td class="px-4 py-2">>${areaMed}</td>
                                 <td class="px-4 py-2 border-l font-bold ${areaS.color}">${m.areaCm.toFixed(2)} (${areaS.text})</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">COP Hızı (cm/s)</td>
+                                <td class="px-4 py-2 font-medium">${_t('COP Hızı (cm/s)')}</td>
                                 <td class="px-4 py-2"><${velGood.toFixed(1)}</td>
                                 <td class="px-4 py-2">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
                                 <td class="px-4 py-2">>${velMed.toFixed(1)}</td>
@@ -452,7 +456,7 @@ function renderAllTestDetails() {
             // For cift kapali, we don't have hard references, just a note.
             section.innerHTML += `
             <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
-                <i class="fa-solid fa-circle-info mr-2"></i> Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.
+                <i class="fa-solid fa-circle-info mr-2"></i> ${_t('Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.')}
             </div>`;
         }
         
@@ -460,20 +464,20 @@ function renderAllTestDetails() {
         let chartHTML = `
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-2">
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full">
-                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">Statokinezigram (COP Yörüngesi)</h3>
+                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">${_t('Statokinezigram (COP Yörüngesi)')}</h3>
                 <div style="position: relative; height:300px;">
                     <canvas id="scatter_${t.k}"></canvas>
                 </div>
             </div>
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full flex flex-col gap-4">
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram X (ML)</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram X (ML)')}</h3>
                     <div style="position: relative; height:120px;">
                         <canvas id="xline_${t.k}"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">Stabilogram Y (AP)</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram Y (AP)')}</h3>
                     <div style="position: relative; height:120px;">
                         <canvas id="yline_${t.k}"></canvas>
                     </div>
@@ -577,7 +581,8 @@ async function saveBalanceSession() {
     
     let record = {
         id: Date.now().toString(),
-        date: new Date().toLocaleString('tr-TR'),
+        created_at: new Date().toISOString(),
+        date: new Date().toISOString(),
         session: currentBalanceSession
     };
     
@@ -665,13 +670,34 @@ function loadBalanceSessionHistory(recordId) {
         renderAllTestDetails();
     }
 }
+function renderBalanceHistorySelect() {
+    const historySelect = document.getElementById('balanceHistorySelect');
+    if(!historySelect) return;
+    
+    historySelect.innerHTML = `<option value="">${_t('-- Yeni Test Oturumu --')}</option>`;
+    
+    if(!window.cachedBalanceHistory || !Array.isArray(window.cachedBalanceHistory)) return;
+
+    window.cachedBalanceHistory.forEach(record => {
+        let opt = document.createElement('option');
+        opt.value = record.id;
+        let dateFormatted = record.date;
+        if(typeof formatAppDate === 'function') {
+            const parsed = formatAppDate(record.created_at || record.date, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            if(parsed) dateFormatted = parsed;
+        }
+        opt.innerText = _t(`${dateFormatted} Oturumu`);
+        historySelect.appendChild(opt);
+    });
+}
+
 window.refreshBalanceSessionDropdown = async function() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
     if(!currentPatientId) return;
     
     // Yükleniyor placeholder
-    historySelect.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
+    historySelect.innerHTML = `<option value="">${_t('⏳ Yükleniyor...')}</option>`;
     
     try {
         const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
@@ -681,15 +707,20 @@ window.refreshBalanceSessionDropdown = async function() {
         }
     } catch(e) { console.error(e); }
     
-    historySelect.innerHTML = '<option value="">-- Yeni Test Oturumu --</option>';
-    
-    window.cachedBalanceHistory.forEach(record => {
-        let opt = document.createElement('option');
-        opt.value = record.id;
-        opt.innerText = `${record.date} Oturumu`;
-        historySelect.appendChild(opt);
-    });
+    renderBalanceHistorySelect();
 }
+
+window.addEventListener('cibody:languageChanged', function() {
+    if(typeof renderBalanceHistorySelect === 'function' && window.cachedBalanceHistory && window.cachedBalanceHistory.length > 0) {
+        renderBalanceHistorySelect();
+    }
+    if(typeof renderAllTestDetails === 'function' && currentBalanceSession && (currentBalanceSession.cift_acik || currentBalanceSession.cift_kapali || currentBalanceSession.tek_sol_acik || currentBalanceSession.tek_sag_acik)) {
+        renderAllTestDetails();
+    }
+    if(typeof renderMasterResultsTable === 'function' && currentBalanceSession && (currentBalanceSession.cift_acik || currentBalanceSession.cift_kapali || currentBalanceSession.tek_sol_acik || currentBalanceSession.tek_sag_acik)) {
+        renderMasterResultsTable();
+    }
+});
 
 // PDF export override
 window.downloadBalancePdf = function() {

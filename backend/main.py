@@ -1821,6 +1821,7 @@ class AIFootReportRequest(BaseModel):
     static_data: Optional[dict] = None
     gait_data: Optional[dict] = None
     balance_data: Optional[dict] = None
+    lang: Optional[str] = "tr"
 
 @app.post("/api/ai/foot-report")
 async def generate_ai_foot_report(req: AIFootReportRequest, current_user: models.User = Depends(get_current_user)):
@@ -1828,17 +1829,38 @@ async def generate_ai_foot_report(req: AIFootReportRequest, current_user: models
     if not API_KEY:
         raise HTTPException(status_code=500, detail="Gemini API Anahtarı eksik.")
 
-    prompt = f"""Sen uzman bir ORTEZ-PROTEZ UZMANISIN.
+    lang_names = {
+        "tr": "Türkçe",
+        "en": "English",
+        "ru": "Russian",
+        "ar": "Arabic",
+        "de": "German",
+        "fr": "French",
+        "es": "Spanish",
+        "it": "Italian",
+        "pt": "Portuguese"
+    }
+    target_lang_code = (req.lang or "tr").lower()
+    target_lang_name = lang_names.get(target_lang_code, "English" if target_lang_code == "en" else "Türkçe")
+
+    if target_lang_code == "tr":
+        lang_instruction = "LÜTFEN TÜM RAPORU VE BAŞLIKLARI EKSİKSİZ BİR ŞEKİLDE TÜRKÇE OLARAK YAZ."
+    else:
+        lang_instruction = f"CRITICAL REQUIREMENT: YOU MUST WRITE THE ENTIRE REPORT, ALL HEADINGS, BULLET POINTS AND RECOMMENDATIONS COMPLETELY IN {target_lang_name.upper()} LANGUAGE. DO NOT USE TURKISH."
+
+    prompt = f"""Sen uzman bir ORTEZ-PROTEZ UZMANISIN ve KLİNİK BİYOMEKANİK ANALİSTİSİN.
 Aşağıda hastanın cihaz üzerinden alınmış statik ayak bası, dinamik yürüme ve postürografi (denge) analiz verileri (hangileri seçilmişse) verilmiştir.
-Senin görevin bu verileri kapsamlı bir şekilde inceleyerek görsel olarak düzenli ve şık bir rapor oluşturmaktır.
+Senin görevin bu verileri kapsamlı bir şekilde inceleyerek görsel olarak düzenli ve şık bir klinik rapor oluşturmaktır.
 
-# LÜTFEN RAPORU AŞAĞIDAKİ ŞABLONA VE KURALLARA GÖRE OLUŞTUR:
+{lang_instruction}
 
-# Kapsamlı Tabanlık AI Destekli Analiz Raporu
+# LÜTFEN RAPORU AŞAĞIDAKİ ŞABLONA VE KURALLARA GÖRE OLUŞTUR (Hedef Dil: {target_lang_name.upper()}):
+
+# Comprehensive AI-Powered Insole Analysis Report / Kapsamlı Tabanlık AI Destekli Analiz Raporu
 
 ---
 
-### 📋 1. KLİNİK BULGULAR
+### 📋 1. KLİNİK BULGULAR / CLINICAL FINDINGS
 (Bu bölümde hastanın problemini madde madde, klinik ve biyomekanik terimlerle - valgus, varus, pronasyon, supinasyon, asimetri, salınım alanı vs. - açıkla. Verileri kalın harflerle (bold) vurgulayarak daha okunaklı yap. Her maddenin altına bir boş satır bırak.)
 
 &nbsp;
@@ -1847,16 +1869,17 @@ Senin görevin bu verileri kapsamlı bir şekilde inceleyerek görsel olarak dü
 
 &nbsp;
 
-### 🎯 2. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ
+### 🎯 2. TABANLIK İHTİYACI VE ORTEZ ÖNERİSİ / INSOLE PRESCRIPTION AND ORTHOTIC RECOMMENDATION
 (Özellikle statik ayak bası dağılımına - ön/arka, sağ/sol dengesizliklerine - ve diğer analizlere bakarak, hastanın KİŞİYE ÖZEL TABANLIK kullanmasına gerek olup olmadığına kesin bir karar ver. Gerekliyse nasıl bir tasarım - medial ark desteği, metatarsal ped, topuk kaması vb. - gerektiğini yaz.)
 
 **ÖNEMLİ KURALLAR:**
+- {lang_instruction}
 - Raporu Markdown (.md) formatında, ferah bir okuma için paragraflar arasına ekstra boşluk bırakarak yaz.
 - "Hasta Bilgilendirmesi" adında bir bölüm kesinlikle OLMAYACAK. Sadece profesyonel klinik rapor oluştur.
 - Tabanlık önerisinde kesinlikle "Malzeme Tercihi" (örneğin EVA, karbon vs.) YAPMA. Sadece biyomekanik tasarım özelliklerini yaz.
 - Sadece benden istediğim 2 ana başlığı (Klinik Bulgular ve Ortez Önerisi) kullan. Aralarına `---` ile ayırıcı çizgi koy.
 
-# Veriler:
+# Veriler / Clinical Data:
 Statik Analiz Verisi: {req.static_data}
 Dinamik Yürüme Analizi Verisi: {req.gait_data}
 Denge Testi Verisi: {req.balance_data}

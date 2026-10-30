@@ -1,5 +1,9 @@
 // AŞAMA 2 & 3: BİYOMEKANİK HESAPLAMALAR VE GRAFİKLER
 
+function _t(s) {
+    return (window.translateText ? window.translateText(s) : s);
+}
+
 let gaitResults = {};
 
 function analyzeGaitData(steps) {

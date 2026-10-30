@@ -4224,7 +4224,7 @@ const I18N_PHRASES = {
     "en": "Metric",
     "ru": "Метрика",
     "ar": "المقياس",
-    "de": "Metrik",
+    "de": "Messwert",
     "fr": "Métrique",
     "es": "Métrica",
     "it": "Metrica",
@@ -10949,6 +10949,46 @@ const I18N_PHRASES = {
     "es": "Área",
     "it": "Area",
     "pt": "Área"
+  },
+  "Bekliyor": {
+    "en": "Pending",
+    "ru": "В ожидании",
+    "ar": "قيد الانتظار",
+    "de": "Ausstehend",
+    "fr": "En attente",
+    "es": "Pendiente",
+    "it": "In attesa",
+    "pt": "Pendente"
+  },
+  "Oturumu": {
+    "en": "Session",
+    "ru": "Сессия",
+    "ar": "جلسة",
+    "de": "Sitzung",
+    "fr": "Session",
+    "es": "Sesión",
+    "it": "Sessione",
+    "pt": "Sessão"
+  },
+  "Statik Analiz": {
+    "en": "Static Analysis",
+    "ru": "Статический анализ",
+    "ar": "التحليل الثابت",
+    "de": "Statische Analyse",
+    "fr": "Analyse statique",
+    "es": "Análisis estático",
+    "it": "Analisi statica",
+    "pt": "Análise estática"
+  },
+  "Yürüme Analizi": {
+    "en": "Gait Analysis",
+    "ru": "Анализ походки",
+    "ar": "تحليل المشي",
+    "de": "Ganganalyse",
+    "fr": "Analyse de la marche",
+    "es": "Análisis de marcha",
+    "it": "Analisi del cammino",
+    "pt": "Análise da marcha"
   }
 };
 
@@ -11200,6 +11240,23 @@ function translateText(text, targetLang = currentLang) {
     if (latestDateMatch) {
         const word = I18N_DYNAMIC_WORDS.guncel[targetLang] || 'Most Recent';
         return text.replace(trimmed, `${word} (${latestDateMatch[1]})`);
+    }
+
+    // J2. Dinamik Tarih + Oturumu Kalıbı: "30.09.2026 12:08:42 Oturumu", "30.09.2026 Oturumu"
+    const sessionMatch = trimmed.match(/^(.*)\s+Oturumu$/i);
+    if (sessionMatch) {
+        const dStr = sessionMatch[1].trim();
+        const sessionUnits = {
+            en: `${dStr} Session`,
+            ru: `Сессия ${dStr}`,
+            ar: `جلسة ${dStr}`,
+            de: `Sitzung ${dStr}`,
+            fr: `Session ${dStr}`,
+            es: `Sesión ${dStr}`,
+            it: `Sessione ${dStr}`,
+            pt: `Sessão ${dStr}`
+        };
+        return text.replace(trimmed, sessionUnits[targetLang] || `${dStr} Session`);
     }
 
 
