@@ -11104,6 +11104,36 @@ const I18N_PHRASES = {
     "it": "Distribuzione della pressione statica e parametri biomeccanici",
     "pt": "Distribuição da pressão estática e parâmetros biomecânicos"
   },
+  "Yük Dağılım Analizi": {
+    "en": "Load Distribution Analysis",
+    "ru": "Анализ распределения нагрузки",
+    "ar": "تحليل توزيع الحمل",
+    "de": "Lastverteilungsanalyse",
+    "fr": "Analyse de répartition de charge",
+    "es": "Análisis de distribución de carga",
+    "it": "Analisi della distribuzione del carico",
+    "pt": "Análise da distribuição de carga"
+  },
+  "Biyomekanik Parametreler": {
+    "en": "Biomechanical Parameters",
+    "ru": "Биомеханические параметры",
+    "ar": "المعايير الميكانيكية الحيوية",
+    "de": "Biomechanische Parameter",
+    "fr": "Paramètres biomécaniques",
+    "es": "Parámetros biomecánicos",
+    "it": "Parametri biomeccanici",
+    "pt": "Parâmetros biomecânicos"
+  },
+  "Normal Dağılım Referansı": {
+    "en": "Normal Distribution Reference",
+    "ru": "Референтные значения нормального распределения",
+    "ar": "مرجع التوزيع الطبيعي",
+    "de": "Normale Verteilungsreferenz",
+    "fr": "Référence de distribution normale",
+    "es": "Referencia de distribución normal",
+    "it": "Riferimento di distribuzione normale",
+    "pt": "Referência de distribuição normal"
+  },
   "Ark İndeksi": {
     "en": "Arch Index",
     "ru": "Индекс свода",
