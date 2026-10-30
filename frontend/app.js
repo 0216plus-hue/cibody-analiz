@@ -1,4 +1,21 @@
 
+function formatAppDate(dateInput, options = { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) {
+    if (!dateInput) return '';
+    const d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+    const localeMap = {
+        tr: 'tr-TR', en: 'en-US', ru: 'ru-RU', ar: 'ar-SA',
+        de: 'de-DE', fr: 'fr-FR', es: 'es-ES', it: 'it-IT', pt: 'pt-PT'
+    };
+    const locale = localeMap[lang] || 'tr-TR';
+    try {
+        return d.toLocaleDateString(locale, options);
+    } catch(e) {
+        return d.toLocaleDateString('tr-TR', options);
+    }
+}
+
 window.onerror = function(msg, url, lineNo, columnNo, error) {
     const string = msg.toLowerCase();
     const substring = "script error";
@@ -375,6 +392,30 @@ async function createPatient(e) {
     } catch(err) { showToast("Kayıt hatası!"); }
 }
 
+function updateAnalysisHistoryDropdown() {
+    const selectEl = document.getElementById('analysisHistorySelect');
+    if (!selectEl || !currentPatientAnalyses || currentPatientAnalyses.length === 0) return;
+    const currentVal = selectEl.value;
+    selectEl.innerHTML = '';
+    const _t = window.translateText || (s=>s);
+    currentPatientAnalyses.forEach((analysis, index) => {
+        const dateObj = new Date(analysis.created_at + (analysis.created_at && !analysis.created_at.endsWith('Z') ? 'Z' : ''));
+        const dateStr = formatAppDate(dateObj, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+        const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
+        selectEl.innerHTML += `<option value="${index}">${label}</option>`;
+    });
+    selectEl.value = currentVal || "0";
+}
+
+function updatePostureReportDate() {
+    const reportDateEl = document.getElementById('reportDate');
+    if (!reportDateEl) return;
+    const dateSource = window.currentPostureCreatedAt ? new Date(window.currentPostureCreatedAt + (window.currentPostureCreatedAt.endsWith('Z') ? '' : 'Z')) : new Date();
+    const dateStr = formatAppDate(dateSource, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+    const _t = window.translateText || (s=>s);
+    reportDateEl.innerText = _t('Oluşturma Tarihi:') + " " + dateStr;
+}
+
 async function loadPatientData(id) {
     // Reset Views
     const postureResults = document.getElementById('postureResultsSection');
@@ -418,18 +459,7 @@ async function loadPatientData(id) {
             currentPatientAnalyses = data.posture_analyses.sort((a,b) => b.id - a.id);
             
             // Tarih Dropdown'unu doldur
-            const selectEl = document.getElementById('analysisHistorySelect');
-            if(selectEl) {
-                selectEl.innerHTML = '';
-                currentPatientAnalyses.forEach((analysis, index) => {
-                    const dateObj = new Date(analysis.created_at + 'Z');
-                    const dateStr = dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                    const _t = window.translateText || (s=>s);
-                    const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
-                    selectEl.innerHTML += `<option value="${index}">${label}</option>`;
-                });
-                selectEl.value = "0"; // En günceli seç
-            }
+            updateAnalysisHistoryDropdown();
             
             // İlk (en güncel) analizi ekrana bas
             renderHistoricalAnalysis(0);
@@ -443,9 +473,10 @@ async function loadPatientData(id) {
             
             // Rapor Tarihini Güncelle
             const footDateObj = new Date(latestFoot.created_at + 'Z');
-            const footDateStr = footDateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+            const footDateStr = formatAppDate(footDateObj, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
             const footReportDateEl = document.getElementById('footReportDate');
-            if(footReportDateEl) footReportDateEl.innerText = "Oluşturma Tarihi: " + footDateStr;
+            const _t = window.translateText || (s=>s);
+            if(footReportDateEl) footReportDateEl.innerText = _t('Oluşturma Tarihi:') + " " + footDateStr;
 
             // Markdown render
             let aiText = latestFoot.ai_report_text;
@@ -565,10 +596,8 @@ function renderHistoricalAnalysis(index) {
     if(pUpload) pUpload.classList.add('hidden');
     
     // Rapor Tarihini Güncelle
-    const dateObj = new Date(targetAnalysis.created_at + 'Z');
-    const dateStr = dateObj.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-    const reportDateEl = document.getElementById('reportDate');
-    if(reportDateEl) reportDateEl.innerText = "Oluşturma Tarihi: " + dateStr;
+    window.currentPostureCreatedAt = targetAnalysis.created_at;
+    updatePostureReportDate();
     
     setupDragEvents('canvas_front', 'front');
     setupDragEvents('canvas_back', 'back');
@@ -744,18 +773,20 @@ function refreshAllCanvases() {
     let resFront=null, resBack=null, resLeft=null, resRight=null;
     if(globalPostureState.front) { if(globalPostureState.front.error) { document.getElementById('table_front').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.front.error + '</div>'; } else {
         const res = drawCanvas('canvas_front', 'preview_front', globalPostureState.front, 'front');
+        const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
         document.getElementById('table_front').innerHTML = html; resFront = res; } }
     
     if(globalPostureState.back) { if(globalPostureState.back.error) { document.getElementById('table_back').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.back.error + '</div>'; } else {
         const res = drawCanvas('canvas_back', 'preview_back', globalPostureState.back, 'back');
+        const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+( (window.translateText||((s)=>s))('Skolyoz Riski'))+' - '+res.shoulderSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+( (window.translateText||((s)=>s))('Pelvik Asimetri'))+' - '+res.hipSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${(window.translateText||((s)=>s))('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+( (window.translateText||((s)=>s))('Normal'))+' - '+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')' : '('+res.kneeSym.higher+' '+( (window.translateText||((s)=>s))('Yüksek'))+')'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Skolyoz Riski')+' - '+_t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Pelvik Asimetri')+' - '+_t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
         document.getElementById('table_back').innerHTML = html; resBack = res; } }
     
     if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
@@ -779,18 +810,19 @@ function refreshAllCanvases() {
     let totalDev = 0;
     
     // Front and Back
+    const _t = window.translateText || (s=>s);
     [resFront, resBack].forEach(res => {
         if(res) {
             if(res.shoulderSym && Math.abs(res.shoulderSym.val) > 2.0) { 
-                findings.set("Omuz Asimetrisi", res.shoulderSym.val + "° (" + res.shoulderSym.higher + " Yüksek)"); 
+                findings.set("Omuz Asimetrisi", res.shoulderSym.val + "° (" + _t(res.shoulderSym.higher) + " " + _t("Yüksek") + ")"); 
                 totalDev += Math.abs(res.shoulderSym.val); 
             }
             if(res.hipSym && Math.abs(res.hipSym.val) > 2.0) { 
-                findings.set("Pelvik Asimetri", res.hipSym.val + "° (" + res.hipSym.higher + " Yüksek)"); 
+                findings.set("Pelvik Asimetri", res.hipSym.val + "° (" + _t(res.hipSym.higher) + " " + _t("Yüksek") + ")"); 
                 totalDev += Math.abs(res.hipSym.val); 
             }
             if(res.kneeSym && Math.abs(res.kneeSym.val) > 2.0) { 
-                findings.set("Diz Asimetrisi", res.kneeSym.val + "° (" + res.kneeSym.higher + " Yüksek)"); 
+                findings.set("Diz Asimetrisi", res.kneeSym.val + "° (" + _t(res.kneeSym.higher) + " " + _t("Yüksek") + ")"); 
                 totalDev += Math.abs(res.kneeSym.val); 
             }
         }
@@ -800,15 +832,15 @@ function refreshAllCanvases() {
     [resLeft, resRight].forEach(res => {
         if(res) {
             if(res.cervical && Math.abs(res.cervical) > 5.0) { 
-                findings.set("Baş Öne Eğikliği", res.cervical + "° (Forward Head)"); 
+                findings.set("Baş Öne Eğikliği", res.cervical + "° (" + _t("Forward Head") + ")"); 
                 totalDev += Math.abs(res.cervical); 
             }
             if(res.thoracic && Math.abs(res.thoracic) > 5.0) { 
-                findings.set("Torakal Eğiklik", res.thoracic + "° (Torakal Kifoz Artışı)"); 
+                findings.set("Torakal Eğiklik", res.thoracic + "° (" + _t("Torakal Kifoz Artışı") + ")"); 
                 totalDev += Math.abs(res.thoracic); 
             }
             if(res.pelvic && Math.abs(res.pelvic) > 5.0) { 
-                findings.set("Pelvik Eğim", res.pelvic + "° (Anterior/Posterior Tilt)"); 
+                findings.set("Pelvik Eğim", res.pelvic + "° (" + _t("Anterior/Posterior Tilt") + ")"); 
                 totalDev += Math.abs(res.pelvic); 
             }
         }
@@ -821,9 +853,7 @@ function refreshAllCanvases() {
     let stability = Math.max(0, Math.round(100 - (findings.size * 6)));
 
     // Ekrana Yazdır
-    const dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-    const reportDateEl = document.getElementById('reportDate');
-    if(reportDateEl) reportDateEl.innerText = "Oluşturma Tarihi: " + dateStr;
+    updatePostureReportDate();
 
     const elScore = document.getElementById('stat_generalScore');
     const elFind = document.getElementById('stat_findingsCount');
@@ -942,7 +972,7 @@ function refreshAllCanvases() {
                                 </div>
                             </div>
                             <div class="md:w-3/4 lg:w-4/5 p-5 md:p-6">
-                                <h4 class="text-lg font-bold text-slate-800 mb-1">${data.title}</h4>
+                                <h4 class="text-lg font-bold text-slate-800 mb-1">${(window.translateText||((s)=>s))(data.title)}</h4>
                                 <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">${(window.translateText||((s)=>s))('Zamanla Oluşabilecek Olası Riskler')}</p>
                                 <ul class="list-disc pl-5 text-sm">
                                     ${liHtml}
@@ -979,8 +1009,8 @@ function refreshAllCanvases() {
                             <!-- Header -->
                             <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-4">
                                 <div>
-                                    <h3 class="text-xl font-bold text-slate-800">${f} ${(window.translateText||((s)=>s))('Sapması')}</h3>
-                                    <p class="text-sm text-slate-500 mt-1">${(window.translateText||((s)=>s))('Postür analizinde')} <strong>${f.toLowerCase()}</strong> ${(window.translateText||((s)=>s))('yönünde biyomekanik sapma gözlenmiştir.')} ${(window.translateText||((s)=>s))('Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir.')} ${(window.translateText||((s)=>s))('Bu bulgu bir hastalık tanısı değildir.')}</p>
+                                    <h3 class="text-xl font-bold text-slate-800">${(window.translateText||((s)=>s))(f + ' Sapması')}</h3>
+                                    <p class="text-sm text-slate-500 mt-1">${(window.translateText||((s)=>s))('Postür analizinde')} <strong>${(window.translateText||((s)=>s))(f)}</strong> ${(window.translateText||((s)=>s))('yönünde biyomekanik sapma gözlenmiştir.')} ${(window.translateText||((s)=>s))('Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir.')} ${(window.translateText||((s)=>s))('Bu bulgu bir hastalık tanısı değildir.')}</p>
                                 </div>
                                 <span class="${riskColor} border px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-sm flex items-center gap-2">
                                     <i class="fa-solid fa-circle text-[8px] ${riskDot}"></i> ${(window.translateText||((s)=>s))('Risk: ' + cData.risk)}
@@ -997,7 +1027,7 @@ function refreshAllCanvases() {
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
                                 <div>
                                     <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('KLİNİK ANLAMI')}</h4>
-                                    <p class="text-sm text-slate-700 mb-6">${cData.klinik_anlam}</p>
+                                    <p class="text-sm text-slate-700 mb-6">${(window.translateText||((s)=>s))(cData.klinik_anlam)}</p>
                                     
                                     <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('MUHTEMEL BİYOMEKANİK ETKİLER')}</h4>
                                     <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
@@ -1007,8 +1037,8 @@ function refreshAllCanvases() {
                                 <div>
                                     <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('MUHTEMEL KISA / ZAYIF KASLAR')} <span class="lowercase normal-case">${(window.translateText||((s)=>s))('(Janda yaklaşımı - kesin tanı değildir)')}</span></h4>
                                     <div class="text-sm text-slate-700 mb-6 space-y-2">
-                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Kısa/gergin olabilir:')}</strong> ${cData.kaslar.kisa}</p>
-                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Zayıf/inhabe olabilir:')}</strong> ${cData.kaslar.zayif}</p>
+                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Kısa/gergin olabilir:')}</strong> ${(window.translateText||((s)=>s))(cData.kaslar.kisa)}</p>
+                                        <p><strong class="text-slate-800">${(window.translateText||((s)=>s))('Zayıf/inhabe olabilir:')}</strong> ${(window.translateText||((s)=>s))(cData.kaslar.zayif)}</p>
                                     </div>
                                     
                                     <h4 class="text-xs font-bold text-slate-400 tracking-wider uppercase mb-2">${(window.translateText||((s)=>s))('DÜZELTİCİ ÖNERİLER')}</h4>
@@ -1023,7 +1053,7 @@ function refreshAllCanvases() {
                                 <i class="fa-regular fa-comments text-emerald-600 text-2xl mt-1"></i>
                                 <div>
                                     <h4 class="text-sm font-bold text-emerald-800 mb-1">${(window.translateText||((s)=>s))('Halk diliyle ne demek?')}</h4>
-                                    <p class="text-sm text-emerald-700">${cData.halk_dili}</p>
+                                    <p class="text-sm text-emerald-700">${(window.translateText||((s)=>s))(cData.halk_dili)}</p>
                                 </div>
                             </div>
                             
@@ -1469,12 +1499,13 @@ function renderSpineResults(data, selectedId = null) {
     let dateStr = 'Yeni Analiz';
     if (data.created_at) {
         const d = new Date(data.created_at + (data.created_at.endsWith('Z') ? '' : 'Z'));
-        dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        dateStr = formatAppDate(d, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     } else {
-        dateStr = new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        dateStr = formatAppDate(new Date(), { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     }
     const dateEl = document.getElementById('spineAnalysisDate');
-    if (dateEl) dateEl.textContent = 'Analiz Tarihi: ' + dateStr;
+    const _t = window.translateText || (s=>s);
+    if (dateEl) dateEl.textContent = _t('Analiz Tarihi:') + ' ' + dateStr;
 
     // Görseller
     const photosRow = document.getElementById('spineResultPhotosRow');
@@ -1653,7 +1684,7 @@ async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
 
         listEl.innerHTML = currentSpineHistory.map((item, index) => {
             const d = new Date(item.created_at + (item.created_at && !item.created_at.endsWith('Z') ? 'Z' : ''));
-            const dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const dateStr = formatAppDate(d, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             const isLatest = index === 0;
             const badge = isLatest 
                 ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-100 text-indigo-700">${(window.translateText||((s)=>s))('En Güncel')}</span>` 
@@ -1747,9 +1778,11 @@ async function loadLibrary() {
 async function loadPrescribedExercises() {
     if (!currentAnalysisId) return;
     try {
-        const res = await authFetch(`/api/posture/${currentAnalysisId}/exercises`);
+        const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr';
+        const res = await authFetch(`/api/posture/${currentAnalysisId}/exercises?lang=${lang}`);
         if(res.ok) {
             const data = await res.json();
+            window.currentPrescribedData = data;
             renderPrescribedTable(data);
         }
     } catch (e) {
@@ -1759,8 +1792,9 @@ async function loadPrescribedExercises() {
 
 function renderPrescribedTable(data) {
     const tbody = document.getElementById('exerciseTableBody');
-    if (data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">${(window.translateText||((s)=>s))('Henüz egzersiz reçetesi oluşturulmadı.')}</td></tr>`;
+    const _t = window.translateText || (s=>s);
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">${_t('Henüz egzersiz reçetesi oluşturulmadı.')}</td></tr>`;
         return;
     }
     
@@ -1770,15 +1804,15 @@ function renderPrescribedTable(data) {
                 <img src="/${item.image_path}" class="w-16 h-16 object-contain bg-white p-1 rounded-lg border border-slate-200 shadow-sm mx-auto cursor-pointer hover:scale-150 transition-transform origin-left z-10 relative" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'">
             </td>
             <td class="p-3">
-                <div class="font-bold text-slate-700 text-sm">${item.name}</div>
-                <div class="text-xs text-slate-400 mt-0.5"><span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">${item.category}</span></div>
-                <div class="text-xs text-slate-500 mt-1" title="${item.description.replace(/"/g, '&quot;')}">${item.description}</div>
+                <div class="font-bold text-slate-700 text-sm">${_t(item.name)}</div>
+                <div class="text-xs text-slate-400 mt-0.5"><span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">${_t(item.category)}</span></div>
+                <div class="text-xs text-slate-500 mt-1" title="${_t(item.description).replace(/"/g, '&quot;')}">${_t(item.description)}</div>
             </td>
             <td class="p-3 text-center">
                 <input type="text" value="${item.sets}" onchange="updatePrescribed(${item.id}, this.value, this.parentElement.nextElementSibling.querySelector('input').value)" class="w-16 p-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 bg-white">
             </td>
             <td class="p-3 text-center">
-                <input type="text" value="${item.reps}" onchange="updatePrescribed(${item.id}, this.parentElement.previousElementSibling.querySelector('input').value, this.value)" class="w-20 p-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 bg-white">
+                <input type="text" value="${_t(item.reps)}" onchange="updatePrescribed(${item.id}, this.parentElement.previousElementSibling.querySelector('input').value, this.value)" class="w-20 p-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 bg-white">
             </td>
             <td class="p-3 text-center">
                 ${item.video_url ? `
@@ -1786,8 +1820,8 @@ function renderPrescribedTable(data) {
                     <div class="w-16 h-16 bg-white p-1 border border-slate-200 rounded-lg shrink-0">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.video_url)}" alt="QR" class="w-full h-full object-contain">
                     </div>
-                    <a href="${item.video_url}" target="_blank" class="text-[10px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap"><i class="fa-brands fa-youtube"></i> ${(window.translateText||((s)=>s))('Video İzle')}</a>
-                </div>` : `<span class="text-xs text-slate-400">${(window.translateText||((s)=>s))('Video Yok')}</span>`}
+                    <a href="${item.video_url}" target="_blank" class="text-[10px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap"><i class="fa-brands fa-youtube"></i> ${_t('Video İzle')}</a>
+                </div>` : `<span class="text-xs text-slate-400">${_t('Video Yok')}</span>`}
             </td>
             <td class="p-3 text-center" data-html2canvas-ignore="true">
                 <button onclick="deletePrescribed(${item.id})" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
@@ -3713,5 +3747,19 @@ window.addEventListener('cibody:languageChanged', function(e) {
     const dInfo = document.getElementById('detailInfo');
     if (dInfo && dInfo._tr_orig) {
         dInfo.innerText = window.translateText ? window.translateText(dInfo._tr_orig) : dInfo._tr_orig;
+    }
+    if (typeof updateAnalysisHistoryDropdown === 'function') {
+        updateAnalysisHistoryDropdown();
+    }
+    if (typeof updatePostureReportDate === 'function') {
+        updatePostureReportDate();
+    }
+    if (typeof refreshAllCanvases === 'function' && globalPostureState && (globalPostureState.front || globalPostureState.back || globalPostureState.left || globalPostureState.right)) {
+        refreshAllCanvases();
+    }
+    if (typeof loadPrescribedExercises === 'function' && currentAnalysisId) {
+        loadPrescribedExercises();
+    } else if (typeof renderPrescribedTable === 'function' && Array.isArray(window.currentPrescribedData)) {
+        renderPrescribedTable(window.currentPrescribedData);
     }
 });

@@ -9939,6 +9939,546 @@ const I18N_PHRASES = {
     "es": "Riesgo: Moderado",
     "it": "Rischio: Moderato",
     "pt": "Risco: Moderado"
+  },
+  "Dizilim Asimetrisi": {
+      "en": "Alignment Asymmetry",
+      "ru": "Асимметрия выравнивания",
+      "ar": "عدم تناسق المحاذاة",
+      "de": "Ausrichtungsasymmetrie",
+      "fr": "Asymétrie d'alignement",
+      "es": "Asimetría de alineación",
+      "it": "Asimmetria di allineamento",
+      "pt": "Assimetria de alinhamento"
+  },
+  "Omuz Asimetrisi": {
+      "en": "Shoulder Asymmetry",
+      "ru": "Асимметрия плеч",
+      "ar": "عدم تناسق الكتفين",
+      "de": "Schulter-Asymmetrie",
+      "fr": "Asymétrie des épaules",
+      "es": "Asimetría de hombros",
+      "it": "Asimmetria delle spalle",
+      "pt": "Assimetria dos ombros"
+  },
+  "Diz Asimetrisi": {
+      "en": "Knee Asymmetry",
+      "ru": "Асимметрия коленей",
+      "ar": "عدم تناسق الركبتين",
+      "de": "Knie-Asymmetrie",
+      "fr": "Asymétrie des genoux",
+      "es": "Asimetría de rodillas",
+      "it": "Asimmetria delle ginocchia",
+      "pt": "Assimetria dos joelhos"
+  },
+  "Omuz Asimetrisi Sapması": {
+      "en": "Shoulder Asymmetry Deviation",
+      "ru": "Отклонение симметрии плеч",
+      "ar": "انحراف تماثل الكتفين",
+      "de": "Schulter-Asymmetrie-Abweichung",
+      "fr": "Déviation d'asymétrie des épaules",
+      "es": "Desviación de asimetría de hombros",
+      "it": "Deviazione di asimmetria delle spalle",
+      "pt": "Desvio de assimetria dos ombros"
+  },
+  "Pelvik Asimetri Sapması": {
+      "en": "Pelvic Asymmetry Deviation",
+      "ru": "Отклонение тазовой симметрии",
+      "ar": "انحراف عدم تناسق الحوض",
+      "de": "Becken-Asymmetrie-Abweichung",
+      "fr": "Déviation d'asymétrie pelvienne",
+      "es": "Desviación de asimetría pélvica",
+      "it": "Deviazione di asimmetria pelvica",
+      "pt": "Desvio de assimetria pélvica"
+  },
+  "Diz Asimetrisi Sapması": {
+      "en": "Knee Asymmetry Deviation",
+      "ru": "Отклонение симметрии коленей",
+      "ar": "انحراف تماثل الركبتين",
+      "de": "Knie-Asymmetrie-Abweichung",
+      "fr": "Déviation d'asymétrie des genoux",
+      "es": "Desviación de asimetría de rodillas",
+      "it": "Deviazione di asimmetria delle ginocchia",
+      "pt": "Desvio de assimetria dos joelhos"
+  },
+  "Baş Öne Eğikliği Sapması": {
+      "en": "Forward Head Deviation",
+      "ru": "Отклонение наклона головы вперед",
+      "ar": "انحراف وضعية الرأس للأمام",
+      "de": "Vorneigung Kopfhaltung Abweichung",
+      "fr": "Déviation de la tête vers l'avant",
+      "es": "Desviación de cabeza adelantada",
+      "it": "Deviazione testa in avanti",
+      "pt": "Desvio de cabeça para a frente"
+  },
+  "Torakal Eğiklik Sapması": {
+      "en": "Thoracic Kyphosis Deviation",
+      "ru": "Грудное кифотическое отклонение",
+      "ar": "انحراف الحداب الصدري",
+      "de": "Thorakale Kyphose-Abweichung",
+      "fr": "Déviation de cyphose thoracique",
+      "es": "Desviación de cifosis torácica",
+      "it": "Deviazione di cifosi toracica",
+      "pt": "Desvio de cifose torácica"
+  },
+  "Pelvik Eğim Sapması": {
+      "en": "Pelvic Tilt Deviation",
+      "ru": "Отклонение наклона таза",
+      "ar": "انحراف ميل الحوض",
+      "de": "Beckenkippungs-Abweichung",
+      "fr": "Déviation de bascule du bassin",
+      "es": "Desviación de inclinación pélvica",
+      "it": "Deviazione inclinazione pelvica",
+      "pt": "Desvio de inclinação pélvica"
+  },
+  "Wall angel": {
+      "en": "Wall angel",
+      "ru": "Упражнение 'Ангел у стены' (Wall angel)",
+      "ar": "تمرين ملاك الحائط (Wall angel)",
+      "de": "Wall Angel Übung",
+      "fr": "Exercice de l'ange au mur (Wall angel)",
+      "es": "Ángel de pared (Wall angel)",
+      "it": "Esercizio Wall Angel",
+      "pt": "Exercício Wall Angel"
+  },
+  "QL germe egzersizleri": {
+      "en": "QL (Quadratus Lumborum) stretching exercises",
+      "ru": "Упражнения на растяжку квадратной мышцы поясницы (QL)",
+      "ar": "تمارين إطالة العضلة المربعة القطنية (QL)",
+      "de": "QL-Dehnungsübungen (Quadratus lumborum)",
+      "fr": "Exercices d'étirement du carré des lombes (QL)",
+      "es": "Ejercicios de estiramiento del cuadrado lumbar (QL)",
+      "it": "Esercizi di allungamento del quadrato dei lombi (QL)",
+      "pt": "Exercícios de alongamento do quadrado lombar (QL)"
+  },
+  "Alt trapez, Serratus anterior": {
+      "en": "Lower trapezius, Serratus anterior",
+      "ru": "Нижняя трапеция, передняя зубчатая мышца",
+      "ar": "عضلة شبه المنحرف السفلية، العضلة المنشارية الأمامية",
+      "de": "Unterer Trapezius, Serratus anterior",
+      "fr": "Trapèze inférieur, Grand dentelé (Serratus anterior)",
+      "es": "Trapecio inferior, Serrato anterior",
+      "it": "Trapezio inferiore, Dentato anteriore",
+      "pt": "Trapézio inferior, Serrátil anterior"
+  },
+  "Faset eklem kompresyonu": {
+      "en": "Facet joint compression",
+      "ru": "Компрессия фасеточных суставов",
+      "ar": "ضغط المفاصل الوجيهية",
+      "de": "Facettengelenkskompression",
+      "fr": "Compression des facettes articulaires",
+      "es": "Compresión de articulaciones facetarias",
+      "it": "Compressione delle articolazioni faccettali",
+      "pt": "Compressão das articulações facetárias"
+  },
+  "Gluteus medius/maximus, VMO": {
+      "en": "Gluteus medius/maximus, VMO",
+      "ru": "Средняя/большая ягодичная мышца, VMO",
+      "ar": "العضلة الألوية المتوسطة/الكبرى، VMO",
+      "de": "Gluteus medius/maximus, VMO",
+      "fr": "Moyen/grand fessier, VMO",
+      "es": "Glúteo medio/mayor, VMO",
+      "it": "Gluteo medio/massimo, VMO",
+      "pt": "Glúteo médio/máximo, VMO"
+  },
+  "Alt bel disklerinde kronik kompresyon": {
+      "en": "Chronic compression on lower lumbar discs",
+      "ru": "Хроническая компрессия нижних поясничных дисков",
+      "ar": "ضغط مزمن على الأقراص القطنية السفلية",
+      "de": "Chronische Kompression der unteren Lendenwirbelbandscheiben",
+      "fr": "Compression chronique des disques lombaires inférieurs",
+      "es": "Compresión crónica en los discos lumbares inferiores",
+      "it": "Compressione cronica sui dischi lombari inferiori",
+      "pt": "Compressão crónica nos discos lombares inferiores"
+  },
+  "Skapular retraksiyon (band pull-apart)": {
+      "en": "Scapular retraction (band pull-apart)",
+      "ru": "Ретракция лопаток (разведение эластичной ленты)",
+      "ar": "سحب لوحي الكتف (شد الشريط المطاطي)",
+      "de": "Skapuläre Retraktion (Band Pull-Apart)",
+      "fr": "Rétraction scapulaire (écarté avec élastique)",
+      "es": "Retracción escapular (separación con banda)",
+      "it": "Retrazione scapolare (band pull-apart)",
+      "pt": "Retração escapular (separação com elástico)"
+  },
+  "Prone Cobra egzersizi": {
+      "en": "Prone Cobra exercise",
+      "ru": "Упражнение 'Кобра лежа на животе' (Prone Cobra)",
+      "ar": "تمرين الكوبرا على البطن (Prone Cobra)",
+      "de": "Prone Cobra Übung",
+      "fr": "Exercice du cobra à plat ventre",
+      "es": "Ejercicio de cobra en decúbito prono",
+      "it": "Esercizio Prone Cobra",
+      "pt": "Exercício Prone Cobra"
+  },
+  "Pelvik tilt egzersizleri": {
+      "en": "Pelvic tilt exercises",
+      "ru": "Упражнения на наклон таза (Pelvic tilt)",
+      "ar": "تمارين إمالة الحوض",
+      "de": "Beckenkipp-Übungen",
+      "fr": "Exercices de rétroversion/antéversion du bassin",
+      "es": "Ejercicios de báscula pélvica",
+      "it": "Esercizi di basculamento pelvico",
+      "pt": "Exercícios de báscula pélvica"
+  },
+  "Suboksipital kaslar, SCM, Pektoralis": {
+      "en": "Suboccipital muscles, SCM, Pectoralis",
+      "ru": "Подоколоушные мышцы, ГКСМ, грудные мышцы",
+      "ar": "العضلات تحت القذالية، القصية الترقوية الحلمية، الصدرية",
+      "de": "Subokzipitale Muskeln, SCM, Pectoralis",
+      "fr": "Muscles sous-occipitaux, SCM, Pectoraux",
+      "es": "Músculos suboccipitales, ECM, Pectorales",
+      "it": "Muscoli suboccipitali, SCM, Pettorali",
+      "pt": "Músculos suboccipitais, ECM, Peitorais"
+  },
+  "Scapular squeeze": {
+      "en": "Scapular squeeze",
+      "ru": "Сведение лопаток (Scapular squeeze)",
+      "ar": "ضم لوحي الكتف (Scapular squeeze)",
+      "de": "Schulterblatt-Zusammenziehen (Scapular squeeze)",
+      "fr": "Rapprochement des omoplates (Scapular squeeze)",
+      "es": "Apretón escapular (Scapular squeeze)",
+      "it": "Scapular squeeze (avvicinamento scapole)",
+      "pt": "Aperto escapular (Scapular squeeze)"
+  },
+  "Skapulotorasik ritimde asimetri": {
+      "en": "Asymmetry in scapulothoracic rhythm",
+      "ru": "Асимметрия лопаточно-грудного ритма",
+      "ar": "عدم تناسق في الإيقاع الكتفي الصدري",
+      "de": "Asymmetrie im skapulothorakalen Rhythmus",
+      "fr": "Asymétrie du rythme scapulo-thoracique",
+      "es": "Asimetría en el ritmo escapulotorácico",
+      "it": "Asimmetria nel ritmo scapolo-toracico",
+      "pt": "Assimetria no ritmo escapulotorácico"
+  },
+  "Abdominal kaslar, Gluteus maximus, Hamstringler": {
+      "en": "Abdominal muscles, Gluteus maximus, Hamstrings",
+      "ru": "Мышцы живота, большая ягодичная мышца, подколенные сухожилия",
+      "ar": "عضلات البطن، العضلة الألوية الكبرى، أوتار الركبة",
+      "de": "Bauchmuskeln, Gluteus maximus, Ischiocrurale Muskulatur",
+      "fr": "Muscles abdominaux, Grand fessier, Ischio-jambiers",
+      "es": "Músculos abdominales, Glúteo mayor, Isquiotibiales",
+      "it": "Muscoli addominali, Grande gluteo, Ischiocrurali",
+      "pt": "Músculos abdominais, Glúteo máximo, Isquiotibiais"
+  },
+  "OMURGA": {
+      "en": "Spine",
+      "ru": "Позвоночник",
+      "ar": "العمود الفقري",
+      "de": "Wirbelsäule",
+      "fr": "Colonne vertébrale",
+      "es": "Columna",
+      "it": "Colonna vertebrale",
+      "pt": "Coluna vertebral"
+  },
+  "BİLEK": {
+      "en": "Wrist",
+      "ru": "Запястье",
+      "ar": "المعصم",
+      "de": "Handgelenk",
+      "fr": "Poignet",
+      "es": "Muñeca",
+      "it": "Polso",
+      "pt": "Pulso"
+  },
+  "OMUZ": {
+      "en": "Shoulder",
+      "ru": "Плечо",
+      "ar": "الكتف",
+      "de": "Schulter",
+      "fr": "Épaule",
+      "es": "Hombro",
+      "it": "Spalla",
+      "pt": "Ombro"
+  },
+  "BOYUN": {
+      "en": "Neck",
+      "ru": "Шея",
+      "ar": "الرقبة",
+      "de": "Nacken",
+      "fr": "Cou",
+      "es": "Cuello",
+      "it": "Collo",
+      "pt": "Pescoço"
+  },
+  "DURUŞ": {
+      "en": "Posture",
+      "ru": "Осанка",
+      "ar": "وضعية الجسم",
+      "de": "Haltung",
+      "fr": "Posture",
+      "es": "Postura",
+      "it": "Postura",
+      "pt": "Postura"
+  },
+  "DİRSEK": {
+      "en": "Elbow",
+      "ru": "Локоть",
+      "ar": "المرفق",
+      "de": "Ellbogen",
+      "fr": "Coude",
+      "es": "Codo",
+      "it": "Gomito",
+      "pt": "Cotovelo"
+  },
+  "DİZ": {
+      "en": "Knee",
+      "ru": "Колено",
+      "ar": "الركبة",
+      "de": "Knie",
+      "fr": "Genou",
+      "es": "Rodilla",
+      "it": "Ginocchio",
+      "pt": "Joelho"
+  },
+  "NEFES": {
+      "en": "Breathing",
+      "ru": "Дыхание",
+      "ar": "التنفس",
+      "de": "Atmung",
+      "fr": "Respiration",
+      "es": "Respiración",
+      "it": "Respirazione",
+      "pt": "Respiração"
+  },
+  "PELVİK": {
+      "en": "Pelvic",
+      "ru": "Тазовый",
+      "ar": "الحوض",
+      "de": "Becken",
+      "fr": "Pelvien",
+      "es": "Pélvico",
+      "it": "Pelvico",
+      "pt": "Pélvico"
+  },
+  "SKOLYOZ": {
+      "en": "Scoliosis",
+      "ru": "Сколиоз",
+      "ar": "الجنف",
+      "de": "Skoliose",
+      "fr": "Scoliose",
+      "es": "Escoliosis",
+      "it": "Scoliosi",
+      "pt": "Escoliose"
+  },
+  "Omurga": {
+      "en": "Spine",
+      "ru": "Позвоночник",
+      "ar": "العمود الفقري",
+      "de": "Wirbelsäule",
+      "fr": "Colonne vertébrale",
+      "es": "Columna",
+      "it": "Colonna vertebrale",
+      "pt": "Coluna vertebral"
+  },
+  "Bilek": {
+      "en": "Wrist",
+      "ru": "Запястье",
+      "ar": "المعصم",
+      "de": "Handgelenk",
+      "fr": "Poignet",
+      "es": "Muñeca",
+      "it": "Polso",
+      "pt": "Pulso"
+  },
+  "Omuz": {
+      "en": "Shoulder",
+      "ru": "Плечо",
+      "ar": "الكتف",
+      "de": "Schulter",
+      "fr": "Épaule",
+      "es": "Hombro",
+      "it": "Spalla",
+      "pt": "Ombro"
+  },
+  "Boyun": {
+      "en": "Neck",
+      "ru": "Шея",
+      "ar": "الرقبة",
+      "de": "Nacken",
+      "fr": "Cou",
+      "es": "Cuello",
+      "it": "Collo",
+      "pt": "Pescoço"
+  },
+  "Duruş": {
+      "en": "Posture",
+      "ru": "Осанка",
+      "ar": "وضعية الجسم",
+      "de": "Haltung",
+      "fr": "Posture",
+      "es": "Postura",
+      "it": "Postura",
+      "pt": "Postura"
+  },
+  "Dirsek": {
+      "en": "Elbow",
+      "ru": "Локоть",
+      "ar": "المرفق",
+      "de": "Ellbogen",
+      "fr": "Coude",
+      "es": "Codo",
+      "it": "Gomito",
+      "pt": "Cotovelo"
+  },
+  "Diz": {
+      "en": "Knee",
+      "ru": "Колено",
+      "ar": "الركبة",
+      "de": "Knie",
+      "fr": "Genou",
+      "es": "Rodilla",
+      "it": "Ginocchio",
+      "pt": "Joelho"
+  },
+  "Nefes": {
+      "en": "Breathing",
+      "ru": "Дыхание",
+      "ar": "التنفس",
+      "de": "Atmung",
+      "fr": "Respiration",
+      "es": "Respiración",
+      "it": "Respirazione",
+      "pt": "Respiração"
+  },
+  "Pelvik": {
+      "en": "Pelvic",
+      "ru": "Тазовый",
+      "ar": "الحوض",
+      "de": "Becken",
+      "fr": "Pelvien",
+      "es": "Pélvico",
+      "it": "Pelvico",
+      "pt": "Pélvico"
+  },
+  "Skolyoz": {
+      "en": "Scoliosis",
+      "ru": "Сколиоз",
+      "ar": "الجنف",
+      "de": "Skoliose",
+      "fr": "Scoliose",
+      "es": "Escoliosis",
+      "it": "Scoliosi",
+      "pt": "Escoliose"
+  },
+  "Bruegger'in Duruş Duvarı": {
+      "en": "Brugger's Wall Posture",
+      "ru": "Постуральное упражнение Брюггера у стены",
+      "ar": "وضعية جدار بروجر",
+      "de": "Brügger-Haltung an der Wand",
+      "fr": "Posture murale de Brügger",
+      "es": "Postura de pared de Brügger",
+      "it": "Postura a parete di Brügger",
+      "pt": "Postura de parede de Brügger"
+  },
+  "Bruegger'in Duruş Duvarı": {
+      "en": "Brugger's Wall Posture",
+      "ru": "Постуральное упражнение Брюггера у стены",
+      "ar": "وضعية جدار بروجر",
+      "de": "Brügger-Haltung an der Wand",
+      "fr": "Posture murale de Brügger",
+      "es": "Postura de pared de Brügger",
+      "it": "Postura a parete di Brügger",
+      "pt": "Postura de parede de Brügger"
+  },
+  "Duvara yaslanın; topuk, kalça, omuz ve baş temas etsin. Avuçlar öne bakacak şekilde elleri duvara koyun. Kürek kemiklerini aşağı ve merkeze çekin, çeneyi geriye alın. Derin nefes alın. Göğüs ve sırt kaslarını çalıştırarak duruşu güçlendirir, esnekliği artırır.": {
+      "en": "Lean against the wall with heels, hips, shoulders, and head in contact. Place hands on the wall with palms facing forward. Pull shoulder blades down and toward the center, retract the chin. Breathe deeply. Strengthens chest and back muscles to improve posture and increase flexibility.",
+      "ru": "Прислонитесь к стене: пятки, ягодицы, плечи и голова касаются стены. Ладони направлены вперед на стену. Опустите и сведите лопатки, слегка втяните подбородок. Дышите глубоко. Укрепляет мышцы груди и спины, улучшая осанку.",
+      "ar": "استند إلى الجدار بحيث تلامس الكعبين والأرداف والكتفين والرأس الجدار. ضع يديك على الجدار بحيث تكون راحتا اليد للأمام. اسحب لوحي الكتف للأسفل وإلى المنتصف، وتراجع بالذقن. خذ نفسًا عميقًا. يقوي عضلات الصدر والظهر لتحسين الوضعية.",
+      "de": "Lehnen Sie sich an die Wand: Fersen, Hüfte, Schultern und Kopf berühren die Wand. Handflächen nach vorne an die Wand legen. Schulterblätter nach unten und zur Mitte ziehen, Kinn einziehen. Tief atmen. Stärkt Brust- und Rückenmuskeln zur Haltungsverbesserung.",
+      "fr": "Appuyez-vous contre le mur : talons, hanches, épaules et tête en contact. Placez les mains sur le mur, paumes vers l'avant. Abaissez et resserrez les omoplates, rentrez le menton. Respirez profondément. Renforce les muscles du dos et de la poitrine.",
+      "es": "Apóyese contra la pared con talones, caderas, hombros y cabeza en contacto. Coloque las manos en la pared con las palmas hacia adelante. Lleve los omóplatos hacia abajo y al centro, retraiga la barbilla. Respire profundamente. Fortalece la musculatura dorsal y pectoral.",
+      "it": "Appoggiati alla parete: talloni, glutei, spalle e testa a contatto. Poggia le mani alla parete con i palmi rivolti in avanti. Abbassa e avvicina le scapole, retrai il mento. Respira profondamente. Rinforza i muscoli pettorali e dorsali.",
+      "pt": "Encoste-se à parede com calcanhares, glúteos, ombros e cabeça em contacto. Coloque as mãos na parede com as palmas para a frente. Puxe as omoplatas para baixo e para o centro, retraia o queixo. Respire profundamente. Fortalece a postura e a musculatura."
+  },
+  "Bilek Flexion İzometrik": {
+      "en": "Isometric Wrist Flexion",
+      "ru": "Изометрическое сгибание запястья",
+      "ar": "ثني المعصم متساوي القياس",
+      "de": "Isometrische Handgelenkbeugung",
+      "fr": "Flexion isométrique du poignet",
+      "es": "Flexión isométrica de muñeca",
+      "it": "Flessione isometrica del polso",
+      "pt": "Flexão isométrica do punho"
+  },
+  "Bilek Flexion İzometrik": {
+      "en": "Isometric Wrist Flexion",
+      "ru": "Изометрическое сгибание запястья",
+      "ar": "ثني المعصم متساوي القياس",
+      "de": "Isometrische Handgelenkbeugung",
+      "fr": "Flexion isométrique du poignet",
+      "es": "Flexión isométrica de muñeca",
+      "it": "Flessione isometrica del polso",
+      "pt": "Flexão isométrica do punho"
+  },
+  "Bileğinizi bükmeye karşı koyun. Bileğiniz hareket etmemelidir. Bu, bilek ve dirsek için güçlendirici bir egzersizdir.": {
+      "en": "Resist bending your wrist. Your wrist should not move. This is a strengthening exercise for the wrist and elbow.",
+      "ru": "Оказывайте сопротивление сгибанию запястья. Запястье не должно двигаться. Это укрепляющее упражнение для запястья и локтя.",
+      "ar": "قاوم ثني معصمك. يجب ألا يتحرك معصمك. هذا تمرين تقوية للمعصم والمرفق.",
+      "de": "Widerstehen Sie der Beugung Ihres Handgelenks. Das Handgelenk sollte sich nicht bewegen. Dies ist eine Kräftigungsübung für Handgelenk und Ellbogen.",
+      "fr": "Résistez à la flexion de votre poignet. Le poignet ne doit pas bouger. Il s'agit d'un exercice de renforcement du poignet et du coude.",
+      "es": "Resista doblar la muñeca. La muñeca no debe moverse. Este es un ejercicio de fortalecimiento para muñeca y codo.",
+      "it": "Resisti alla flessione del polso. Il polso non deve muoversi. È un esercizio di rinforzo per polso e gomito.",
+      "pt": "Resista à flexão do punho. O punho não se deve mover. Este é um exercício de fortalecimento para punho e cotovelo."
+  },
+  "İkili Alt Göğüs Esnetme": {
+      "en": "Bilateral Lower Chest Stretch",
+      "ru": "Двусторонняя растяжка нижней части груди",
+      "ar": "إطالة الصدر السفلي المزدوجة",
+      "de": "Beidseitige untere Brustdehnung",
+      "fr": "Étirement bilatéral du bas de la poitrine",
+      "es": "Estiramiento bilateral de pecho inferior",
+      "it": "Allungamento bilaterale del petto inferiore",
+      "pt": "Alongamento bilateral do peito inferior"
+  },
+  "İkili Alt Göğüs Esnetme": {
+      "en": "Bilateral Lower Chest Stretch",
+      "ru": "Двусторонняя растяжка нижней части груди",
+      "ar": "إطالة الصدر السفلي المزدوجة",
+      "de": "Beidseitige untere Brustdehnung",
+      "fr": "Étirement bilatéral du bas de la poitrine",
+      "es": "Estiramiento bilateral de pecho inferior",
+      "it": "Allungamento bilateral del petto inferiore",
+      "pt": "Alongamento bilateral do peito inferior"
+  },
+  "Kollarınızı altınıza, avuçlarınız duvara yaslanacak şekilde ve yüzünüz bir köşeye bakacak şekilde yerleştirin. Ellerinizi aynı pozisyonda tutarak vücudunuzu köşeye doğru itin. Üst kollarınızda, ön omuzlarınızda ve göğsünüzde bir gerginlik hissedeceksiniz.": {
+      "en": "Place your arms with palms leaning against the walls facing a corner. Keeping hands in position, gently push your body toward the corner. You will feel a stretch across your upper arms, front shoulders, and chest.",
+      "ru": "Расположите руки ладонями к стене в углу комнаты лицом к углу. Удерживая руки на месте, плавно подайте тело вперед в угол. Вы почувствуете растяжение в плечах и грудных мышцах.",
+      "ar": "ضع ذراعيك وراحتي يديك على الجدار في مواجهة زاوية الغرفة. مع الحفاظ على وضعية اليدين، ادفع جسمك برفق نحو الزاوية. ستشعر بتمدد في أعلى الذراعين وأمام الكتفين والصدر.",
+      "de": "Stellen Sie sich in eine Ecke, Handflächen an die Wände gelehnt. Schieben Sie Ihren Körper sanft in die Ecke. Sie spüren eine Dehnung in den Oberarmen, vorderen Schultern und der Brust.",
+      "fr": "Placez vos bras paumes appuyées contre les murs face à un coin. En maintenant les mains en place, poussez doucement le corps vers le coin. Vous ressentirez un étirement dans le haut des bras et la poitrine.",
+      "es": "Coloque los brazos con las palmas apoyadas contra las paredes frente a una esquina. Empuje suavemente el cuerpo hacia la esquina. Sentirá un estiramiento en la parte superior de los brazos y el pecho.",
+      "it": "Posiziona le braccia con i palmi appoggiati alle pareti di fronte a un angolo. Spingi delicatamente il corpo verso l'angolo. Sentirai un allungamento sulle braccia, spalle anteriori e petto.",
+      "pt": "Coloque os braços com as palmas apoiadas nas paredes virado para um canto. Empurre suavemente o corpo em direção ao canto. Sentirá um alongamento nos braços e peito."
+  },
+  "Servikal Propriyosepsiyon LAZER Menzildeki Noktalar Uzatma Gözler Kapalı 2": {
+      "en": "Cervical Proprioception Laser Target Extension (Eyes Closed) 2",
+      "ru": "Шейная проприоцепция с лазером: разгибание с закрытыми глазами 2",
+      "ar": "استقبال الحس العميق لعنق الرحم بنقاط الليزر مع إغلاق العينين 2",
+      "de": "Zervikale Propriozeption Laser Ziel Extension (Augen geschlossen) 2",
+      "fr": "Proprioception cervicale laser extension cibles (yeux fermés) 2",
+      "es": "Propiocepción cervical con láser extensión (ojos cerrados) 2",
+      "it": "Propriocezione cervicale laser estensione (occhi chiusi) 2",
+      "pt": "Propriocepção cervical laser extensão (olhos fechados) 2"
+  },
+  "Servikal Propriyosepsiyon LAZER Menzildeki Noktalar Uzatma Gözler Kapalı 2": {
+      "en": "Cervical Proprioception Laser Target Extension (Eyes Closed) 2",
+      "ru": "Шейная проприоцепция с лазером: разгибание с закрытыми глазами 2",
+      "ar": "استقبال الحس العميق لعنق الرحم بنقاط الليزر مع إغلاق العينين 2",
+      "de": "Zervikale Propriozeption Laser Ziel Extension (Augen geschlossen) 2",
+      "fr": "Proprioception cervicale laser extension cibles (yeux fermés) 2",
+      "es": "Propiocepción cervical con láser extensión (ojos cerrados) 2",
+      "it": "Propriocezione cervicale laser estensione (occhi chiusi) 2",
+      "pt": "Propriocepção cervical laser extensão (olhos fechados) 2"
+  },
+  "Başına lazer kalem tak, boynunu 20° hafif ekstansiyona getir ve duvarda bir nokta belirle. Gözlerini kapat, boynunu yavaşça nötr konuma getirip geri dön. Gözleri açarak noktayı kontrol et. Bu egzersiz boyun kas kontrolü ve koordinasyonunu geliştirir.": {
+      "en": "Attach a laser pointer to your head, bring your neck into slight extension (20°) and identify a target point on the wall. Close your eyes, slowly return neck to neutral and back. Open eyes to check accuracy. This exercise improves neck muscle control and coordination.",
+      "ru": "Закрепите лазерную указку на голове, слегка разогните шею (20°) и зафиксируйте точку на стене. Закройте глаза, медленно верните шею в нейтральное положение и обратно. Откройте глаза и проверьте точность.",
+      "ar": "قم بتركيب مؤشر ليزر على رأسك، وأمل رقبتك قليلاً (20 درجة) وحدد نقطة على الجدار. أغمض عينيك، ثم أعد رقبتك ببطء إلى الوضع المحايد ثم عُد. افتح عينيك للتحقق من النقطة.",
+      "de": "Befestigen Sie einen Laserpointer am Kopf, bringen Sie den Nacken in leichte Streckung (20°) und fixieren Sie einen Punkt. Schließen Sie die Augen, bewegen Sie den Kopf zurück und wieder hin. Augen öffnen zur Kontrolle.",
+      "fr": "Fixez un pointeur laser sur la tête, mettez le cou en légère extension (20°) et visez un point au mur. Fermez les yeux, revenez lentement en position neutre puis repartez. Ouvrez les yeux pour vérifier.",
+      "es": "Colóquese un puntero láser en la cabeza, extienda ligeramente el cuello (20°) y fije un punto en la pared. Cierre los ojos, vuelva a la posición neutra y regrese. Abra los ojos para comprobar.",
+      "it": "Fissa un puntatore laser sulla testa, porta il collo in leggera estensione (20°) e individua un punto sulla parete. Chiudi gli occhi, torna in posizione neutra e ritorna. Apri gli occhi per controllare.",
+      "pt": "Fixe um ponteiro laser na cabeça, estenda ligeiramente o pescoço (20°) e marque um ponto na parede. Feche os olhos, regresse à posição neutra e volte. Abra os olhos para verificar."
   }
 };
 
@@ -10155,6 +10695,16 @@ function translateText(text, targetLang = currentLang) {
         const footKey = footNMatch[1] === 'Sol' ? 'SOL AYAK' : 'SAĞ AYAK';
         const footTrans = (I18N_PHRASES[footKey] && I18N_PHRASES[footKey][targetLang]) || (footNMatch[1] + ' Foot');
         return text.replace(trimmed, `${footTrans} (n=${footNMatch[2]})`);
+    }
+
+// M. Süre / Saniye Kalıbı: "30 sn", "15 saniye", "60 sn."
+    const secMatch = trimmed.match(/^(\d+)\s*(sn|saniye)\.?$/i);
+    if (secMatch) {
+        const secUnits = {
+            en: 'sec', ru: 'сек', ar: 'ثانية', de: 'Sek', fr: 's', es: 's', it: 's', pt: 's'
+        };
+        const unit = secUnits[targetLang] || 'sec';
+        return text.replace(trimmed, );
     }
 
     // L. Durum Rozetleri

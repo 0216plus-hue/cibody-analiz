@@ -969,7 +969,7 @@ def get_all_exercises(db: Session = Depends(get_db)):
     return db.query(models.Exercise).all()
 
 @app.get("/api/posture/{analysis_id}/exercises")
-def get_prescribed_exercises(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
     if not analysis: raise HTTPException(status_code=404)
     # Validate patient belongs to user
@@ -978,15 +978,33 @@ def get_prescribed_exercises(analysis_id: int, db: Session = Depends(get_db), cu
     
     assigned = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).all()
     results = []
+
+    translations_map = {}
+    if lang and lang != "tr":
+        try:
+            ex_ids = [a.exercise_id for a in assigned]
+            if ex_ids:
+                from sqlalchemy import text
+                placeholders = ",".join(str(int(i)) for i in ex_ids)
+                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": lang}).fetchall()
+                for r in rows:
+                    translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
+        except Exception as e:
+            print("Translation lookup error:", e)
+
     for a in assigned:
         ex = db.query(models.Exercise).filter(models.Exercise.id == a.exercise_id).first()
         if ex:
+            trans = translations_map.get(ex.id)
+            name = trans["name"] if trans else ex.name
+            category = trans["category"] if trans else ex.category
+            description = trans["description"] if trans else ex.description
             results.append({
                 "id": a.id,
                 "exercise_id": ex.id,
-                "name": ex.name,
-                "category": ex.category,
-                "description": ex.description,
+                "name": name,
+                "category": category,
+                "description": description,
                 "video_url": ex.video_url,
                 "image_path": ex.image_path,
                 "sets": a.sets,
