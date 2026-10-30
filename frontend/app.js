@@ -3182,11 +3182,17 @@ async function generateScoliometerQR() {
         if(res.ok) {
             const data = await res.json();
             
-            // Generate QR Code
+            // Generate QR Code with synchronized language
+            let targetUrl = data.url;
+            const currentAppLang = (typeof getCurrentLanguage === 'function') ? getCurrentLanguage() : (localStorage.getItem('cibody_lang') || 'tr');
+            if (targetUrl && currentAppLang) {
+                targetUrl += (targetUrl.includes('?') ? '&' : '?') + `lang=${encodeURIComponent(currentAppLang)}`;
+            }
+
             const qrContainer = document.getElementById('scoliometerQR');
             qrContainer.innerHTML = '';
             new QRCode(qrContainer, {
-                text: data.url,
+                text: targetUrl,
                 width: 192,
                 height: 192,
                 colorDark : "#4f46e5", // Indigo-600

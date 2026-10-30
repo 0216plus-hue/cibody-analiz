@@ -8,10 +8,20 @@ let thoracicSaved = null;
 let lumbarSaved = null;
 let patientId = null;
 
+// i18n Translation Helper
+function _t(key, fallback = '') {
+    if (typeof window.t === 'function') {
+        const val = window.t(key);
+        if (val && val !== key) return val;
+    }
+    return fallback;
+}
+
 async function checkAuth() {
+    const authStatus = document.getElementById('authStatus');
     if(!token) {
-        document.getElementById('authStatus').innerText = "Geçersiz bağlantı. QR kodu tekrar okutun.";
-        document.getElementById('authStatus').className = "text-red-400 text-sm mb-5";
+        authStatus.innerText = _t('scoliometer.invalid_link', "Geçersiz bağlantı. QR kodu tekrar okutun.");
+        authStatus.className = "text-red-400 text-sm mb-5";
         return;
     }
     
@@ -22,16 +32,16 @@ async function checkAuth() {
             patientId = data.patient_id;
             document.getElementById('patientName').innerText = data.patient_name;
             
-            document.getElementById('authStatus').innerText = "Bağlantı başarılı! Sensörü başlatmak için butona basınız.";
-            document.getElementById('authStatus').className = "text-emerald-400 text-sm mb-5 font-medium";
+            authStatus.innerText = _t('scoliometer.auth_success', "Bağlantı başarılı! Sensörü başlatmak için butona basınız.");
+            authStatus.className = "text-emerald-400 text-sm mb-5 font-medium";
             document.getElementById('btnStart').classList.remove('hidden');
         } else {
             const err = await res.json().catch(() => ({}));
-            document.getElementById('authStatus').innerText = err.detail || "Bağlantı süresi dolmuş.";
-            document.getElementById('authStatus').className = "text-red-400 text-sm mb-5";
+            authStatus.innerText = err.detail || _t('scoliometer.link_expired', "Bağlantı süresi dolmuş.");
+            authStatus.className = "text-red-400 text-sm mb-5";
         }
     } catch(e) {
-        document.getElementById('authStatus').innerText = "Sunucuya ulaşılamıyor.";
+        authStatus.innerText = _t('scoliometer.server_unreachable', "Sunucuya ulaşılamıyor.");
     }
 }
 
@@ -50,11 +60,11 @@ document.getElementById('btnStart').addEventListener('click', async () => {
             if (permissionState === 'granted') {
                 startSensors();
             } else {
-                alert("Sensör izni reddedildi.");
+                alert(_t('scoliometer.sensor_permission_denied', "Sensör izni reddedildi."));
             }
         } catch (error) {
             console.error(error);
-            alert("Sensör izni alınamadı.");
+            alert(_t('scoliometer.sensor_permission_error', "Sensör izni alınamadı."));
         }
     } else {
         startSensors();
@@ -98,13 +108,13 @@ function handleOrientation(event) {
     const absAngle = Math.abs(currentAngle);
     const badge = document.getElementById('riskBadge');
     if (absAngle < 5) {
-        badge.innerText = "Normal (< 5°)";
+        badge.innerText = _t('scoliometer.risk_normal', "Normal (< 5°)");
         badge.className = "text-[11px] font-bold text-emerald-400 mb-3";
     } else if (absAngle <= 7) {
-        badge.innerText = "Sınırda / Takip (5° - 7°)";
+        badge.innerText = _t('scoliometer.risk_borderline', "Sınırda / Takip (5° - 7°)");
         badge.className = "text-[11px] font-bold text-amber-400 mb-3";
     } else {
-        badge.innerText = "Belirgin Rotasyon / Pozitif (> 7°)";
+        badge.innerText = _t('scoliometer.risk_positive', "Belirgin Rotasyon / Pozitif (> 7°)");
         badge.className = "text-[11px] font-bold text-red-400 mb-3 animate-pulse";
     }
     
@@ -123,7 +133,7 @@ function zeroCalibration() {
     angleOffset = rawAngle;
     if (navigator.vibrate) navigator.vibrate(50);
     const badge = document.getElementById('riskBadge');
-    badge.innerText = "Sıfırlandı (0° Referansı Alındı)";
+    badge.innerText = _t('scoliometer.tared_badge', "Sıfırlandı (0° Referansı Alındı)");
     badge.className = "text-[11px] font-bold text-indigo-400 mb-3";
 }
 
@@ -131,17 +141,22 @@ function saveAngle(region) {
     if (navigator.vibrate) navigator.vibrate(60);
     const sign = currentAngle > 0 ? '+' : '';
     const angleText = `${sign}${currentAngle}°`;
+    const lockedPrefix = _t('scoliometer.locked_prefix', "Kilitlendi: ");
     
     if(region === 'thoracic') {
         thoracicSaved = currentAngle;
-        document.getElementById('thoracicValue').innerText = `Kilitlendi: ${angleText}`;
-        document.getElementById('thoracicValue').className = "text-[11px] text-white font-bold";
+        const el = document.getElementById('thoracicValue');
+        el.innerText = `${lockedPrefix}${angleText}`;
+        el.removeAttribute('data-i18n');
+        el.className = "text-[11px] text-white font-bold";
         document.getElementById('btnTorakal').classList.remove('bg-slate-800', 'border-slate-700');
         document.getElementById('btnTorakal').classList.add('bg-orange-600', 'border-orange-500');
     } else {
         lumbarSaved = currentAngle;
-        document.getElementById('lumbarValue').innerText = `Kilitlendi: ${angleText}`;
-        document.getElementById('lumbarValue').className = "text-[11px] text-white font-bold";
+        const el = document.getElementById('lumbarValue');
+        el.innerText = `${lockedPrefix}${angleText}`;
+        el.removeAttribute('data-i18n');
+        el.className = "text-[11px] text-white font-bold";
         document.getElementById('btnLumbar').classList.remove('bg-slate-800', 'border-slate-700');
         document.getElementById('btnLumbar').classList.add('bg-emerald-600', 'border-emerald-500');
     }
@@ -161,7 +176,7 @@ function checkSubmitReady() {
 async function submitMeasurement() {
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Gönderiliyor...';
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> ${_t('scoliometer.submitting', "Gönderiliyor...")}`;
     
     try {
         const res = await fetch(`/api/scoliometer/save/${token}`, {
@@ -176,30 +191,30 @@ async function submitMeasurement() {
         if(res.ok) {
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
             btn.classList.replace('bg-indigo-600', 'bg-emerald-500');
-            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Başarıyla Gönderildi!';
+            btn.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ${_t('scoliometer.submitted_success', "Başarıyla Gönderildi!")}`;
             window.removeEventListener('deviceorientation', handleOrientation);
             setTimeout(() => {
                 document.getElementById('measureScreen').innerHTML = `
                     <div class="text-center my-auto p-6">
                         <i class="fa-solid fa-circle-check text-emerald-400 fa-4x mb-4 animate-bounce"></i>
-                        <h2 class="text-xl font-bold text-white mb-2">Ölçüm Tamamlandı!</h2>
+                        <h2 class="text-xl font-bold text-white mb-2">${_t('scoliometer.completed_title', "Ölçüm Tamamlandı!")}</h2>
                         <p class="text-slate-400 text-sm max-w-xs mx-auto mb-4">
-                            Veriler masaüstü sisteminize aktarıldı ve hasta kartına işlendi.
+                            ${_t('scoliometer.completed_desc', "Veriler masaüstü sisteminize aktarıldı ve hasta kartına işlendi.")}
                         </p>
                         <span class="inline-block bg-slate-800 border border-slate-700 text-slate-300 text-xs px-4 py-2 rounded-xl">
-                            Bu pencereyi kapatabilirsiniz.
+                            ${_t('scoliometer.completed_close_tip', "Bu pencereyi kapatabilirsiniz.")}
                         </span>
                     </div>
                 `;
             }, 1200);
         } else {
-            alert("Gönderim başarısız oldu.");
-            btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> Masaüstüne Gönder';
+            alert(_t('scoliometer.submit_failed', "Gönderim başarısız oldu."));
+            btn.innerHTML = `<i class="fa-solid fa-paper-plane mr-2"></i> ${_t('scoliometer.btn_submit', "Masaüstüne Gönder")}`;
             btn.disabled = false;
         }
     } catch(e) {
-        alert("Bağlantı hatası.");
-        btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i> Masaüstüne Gönder';
+        alert(_t('scoliometer.connection_error', "Bağlantı hatası."));
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane mr-2"></i> ${_t('scoliometer.btn_submit', "Masaüstüne Gönder")}`;
         btn.disabled = false;
     }
 }
@@ -212,6 +227,19 @@ function toggleGuideModal(show) {
         modal.classList.add('hidden');
     }
 }
+
+// React to language switches dynamically
+window.addEventListener('cibody:languageChanged', () => {
+    const lockedPrefix = _t('scoliometer.locked_prefix', "Kilitlendi: ");
+    if (thoracicSaved !== null) {
+        const sign = thoracicSaved > 0 ? '+' : '';
+        document.getElementById('thoracicValue').innerText = `${lockedPrefix}${sign}${thoracicSaved}°`;
+    }
+    if (lumbarSaved !== null) {
+        const sign = lumbarSaved > 0 ? '+' : '';
+        document.getElementById('lumbarValue').innerText = `${lockedPrefix}${sign}${lumbarSaved}°`;
+    }
+});
 
 // Init
 checkAuth();

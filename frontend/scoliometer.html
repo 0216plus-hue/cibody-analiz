@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CIBODY - Dijital Skolyometre (ATR)</title>
+    <title data-i18n="scoliometer.page_title">CIBODY - Dijital Skolyometre (ATR)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -49,23 +49,41 @@
 <body class="bg-slate-950 text-white min-h-screen flex flex-col justify-center items-center p-3 select-none">
 
     <!-- 1. AUTH SCREEN (Açılış ve İzin Ekranı) -->
-    <div id="authScreen" class="w-full max-w-md px-6 text-center my-auto">
+    <div id="authScreen" class="w-full max-w-md px-6 text-center my-auto flex flex-col items-center">
+        <!-- Dil Seçici (Top Pill) -->
+        <div class="w-full flex justify-end items-center mb-4">
+            <div class="inline-flex items-center gap-1.5 bg-slate-900 border border-slate-700/80 rounded-xl px-2.5 py-1 shadow-sm">
+                <i class="fa-solid fa-globe text-xs text-indigo-400"></i>
+                <select class="cibody-lang-select bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer" onchange="setLanguage(this.value)">
+                    <option value="tr">🇹🇷 TR</option>
+                    <option value="en">🇬🇧 EN</option>
+                    <option value="ru">🇷🇺 RU</option>
+                    <option value="ar">🇸🇦 AR</option>
+                    <option value="de">🇩🇪 DE</option>
+                    <option value="fr">🇫🇷 FR</option>
+                    <option value="es">🇪🇸 ES</option>
+                    <option value="it">🇮🇹 IT</option>
+                    <option value="pt">🇵🇹 PT</option>
+                </select>
+            </div>
+        </div>
+
         <div class="inline-block p-4 bg-indigo-500/10 rounded-3xl border border-indigo-500/20 mb-3">
             <i class="fa-solid fa-mobile-screen rotate-90 text-4xl text-indigo-400 animate-pulse"></i>
         </div>
-        <h1 class="text-2xl font-black text-white mb-1 tracking-tight">Dijital Skolyometre</h1>
-        <p class="text-xs text-indigo-300 font-semibold mb-3 uppercase tracking-wider">Angle of Trunk Rotation (ATR)</p>
-        <p class="text-slate-400 text-sm mb-5" id="authStatus">Bağlantı doğrulanıyor...</p>
+        <h1 class="text-2xl font-black text-white mb-1 tracking-tight" data-i18n="scoliometer.title">Dijital Skolyometre</h1>
+        <p class="text-xs text-indigo-300 font-semibold mb-3 uppercase tracking-wider" data-i18n="scoliometer.subtitle">Angle of Trunk Rotation (ATR)</p>
+        <p class="text-slate-400 text-sm mb-5" id="authStatus" data-i18n="scoliometer.connecting">Bağlantı doğrulanıyor...</p>
         
         <button id="btnStart" class="hidden w-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all text-base flex items-center justify-center gap-2 mb-3">
-            <i class="fa-solid fa-play"></i> Sensörü Başlat (Yatay Ölçüm)
+            <i class="fa-solid fa-play"></i> <span data-i18n="scoliometer.btn_start">Sensörü Başlat (Yatay Ölçüm)</span>
         </button>
 
         <button onclick="toggleGuideModal(true)" class="w-full bg-slate-800/80 hover:bg-slate-800 text-slate-300 text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-700/80 transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-circle-question text-indigo-400"></i> Nasıl Uygulanır? (Kılavuz)
+            <i class="fa-solid fa-circle-question text-indigo-400"></i> <span data-i18n="scoliometer.btn_guide">Nasıl Uygulanır? (Kılavuz)</span>
         </button>
 
-        <p class="text-[11px] text-slate-500 mt-4 leading-relaxed">
+        <p class="text-[11px] text-slate-500 mt-4 leading-relaxed" data-i18n-html="scoliometer.auth_tip">
             <i class="fa-solid fa-info-circle mr-1 text-slate-400"></i> Telefonunuzu hastanın sırtına <strong>yatay</strong> koyarak omurga üzerinde yukarıdan aşağıya kaydırınız.
         </p>
     </div>
@@ -73,24 +91,38 @@
     <!-- 2. MEASURE SCREEN (Yatay / Landscape Ölçüm Arayüzü) -->
     <div id="measureScreen" class="hidden w-full h-full max-w-4xl flex-col justify-between items-center my-auto p-2">
         
-        <!-- ÜST BİLGİ ÇUBUĞU (Kalibrasyon & Rehber Butonları) -->
-        <div class="w-full flex justify-between items-center px-1 mb-2">
+        <!-- ÜST BİLGİ ÇUBUĞU (Kalibrasyon & Rehber & Dil Butonları) -->
+        <div class="w-full flex justify-between items-center px-1 mb-2 gap-2 flex-wrap">
             <!-- Sol: Canlı Sensör + 0° Sıfırla (Tare) -->
             <div class="flex items-center gap-2">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider mr-1">Canlı</span>
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider mr-1" data-i18n="scoliometer.live">Canlı</span>
                 <button onclick="zeroCalibration()" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1 rounded-lg transition active:scale-95 flex items-center gap-1">
-                    <i class="fa-solid fa-compass-drafting text-emerald-400"></i> 0° Sıfırla
+                    <i class="fa-solid fa-compass-drafting text-emerald-400"></i> <span data-i18n="scoliometer.tare">0° Sıfırla</span>
                 </button>
             </div>
             
-            <!-- Sağ: Hasta Adı + (i) Nasıl Yapılır? -->
+            <!-- Sağ: Hasta Adı + Dil Seçici + (i) Nasıl Yapılır? -->
             <div class="flex items-center gap-2">
                 <div class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30">
                     <span id="patientName">...</span>
                 </div>
+                <div class="inline-flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg px-2 py-0.5">
+                    <i class="fa-solid fa-globe text-[11px] text-indigo-400"></i>
+                    <select class="cibody-lang-select bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer" onchange="setLanguage(this.value)">
+                        <option value="tr">🇹🇷 TR</option>
+                        <option value="en">🇬🇧 EN</option>
+                        <option value="ru">🇷🇺 RU</option>
+                        <option value="ar">🇸🇦 AR</option>
+                        <option value="de">🇩🇪 DE</option>
+                        <option value="fr">🇫🇷 FR</option>
+                        <option value="es">🇪🇸 ES</option>
+                        <option value="it">🇮🇹 IT</option>
+                        <option value="pt">🇵🇹 PT</option>
+                    </select>
+                </div>
                 <button onclick="toggleGuideModal(true)" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition active:scale-95">
-                    <i class="fa-solid fa-circle-info text-indigo-400"></i> (i) Kılavuz
+                    <i class="fa-solid fa-circle-info text-indigo-400"></i> <span data-i18n="scoliometer.guide_short">(i) Kılavuz</span>
                 </button>
             </div>
         </div>
@@ -105,55 +137,55 @@
                 <div class="flex items-baseline justify-center gap-1 mb-1">
                     <span class="text-6xl font-black text-white tracking-tighter" id="angleDisplay">0°</span>
                 </div>
-                <div class="text-[11px] font-semibold text-slate-400 mb-3" id="riskBadge">Normal (&lt; 5°)</div>
+                <div class="text-[11px] font-semibold text-slate-400 mb-3" id="riskBadge" data-i18n="scoliometer.risk_normal">Normal (&lt; 5°)</div>
 
                 <!-- Su Terazisi (Bubble Level) -->
                 <div class="bubble-track mb-3">
                     <div class="center-notch"></div>
                     <div class="bubble" id="bubble"></div>
                     <div class="absolute inset-x-4 top-1 flex justify-between text-[9px] font-bold text-slate-500 pointer-events-none">
-                        <span>-30° (SOL)</span>
+                        <span data-i18n="scoliometer.left_track">-30° (SOL)</span>
                         <span>0°</span>
-                        <span>+30° (SAĞ)</span>
+                        <span data-i18n="scoliometer.right_track">+30° (SAĞ)</span>
                     </div>
                 </div>
 
                 <!-- Omurga Orta Çizgi Hizalama Kılavuzu -->
-                <div class="flex items-center gap-1.5 text-red-400 text-xs font-bold mt-1">
+                <div class="flex items-center gap-1.5 text-red-400 text-xs font-bold mt-1 text-center">
                     <i class="fa-solid fa-caret-down text-red-500 text-sm"></i>
-                    <span>Omurga Çıkıntısı (Diken / Spinöz) Hizası</span>
+                    <span data-i18n="scoliometer.spine_notch_label">Omurga Çıkıntısı (Diken / Spinöz) Hizası</span>
                     <i class="fa-solid fa-caret-down text-red-500 text-sm"></i>
                 </div>
-                <p class="text-[10px] text-slate-500 text-center mt-1">Telefonun tam ortasını omur kemiğinin üstüne denk getiriniz.</p>
+                <p class="text-[10px] text-slate-500 text-center mt-1" data-i18n="scoliometer.spine_notch_sub">Telefonun tam ortasını omur kemiğinin üstüne denk getiriniz.</p>
             </div>
 
             <!-- SAĞ PANEL: Ölçüm Kayıt Butonları (Torakal & Lumbar) -->
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col justify-between gap-3 shadow-xl">
                 
                 <div class="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-2">
-                    <span class="font-semibold text-slate-300">Ölçüm Adımları</span>
-                    <span class="text-[10px] text-indigo-400">Tekrar basıp güncelleyebilirsiniz</span>
+                    <span class="font-semibold text-slate-300" data-i18n="scoliometer.steps_header">Ölçüm Adımları</span>
+                    <span class="text-[10px] text-indigo-400" data-i18n="scoliometer.steps_sub">Tekrar basıp güncelleyebilirsiniz</span>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
                     <!-- Torakal Butonu -->
                     <button onclick="saveAngle('thoracic')" id="btnTorakal" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 active:scale-95 text-white py-3 px-3 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
                         <i class="fa-solid fa-arrows-up-to-line text-orange-400 text-lg mb-0.5"></i>
-                        <span class="text-xs font-bold">1. Torakal (Sırt)</span>
-                        <span id="thoracicValue" class="text-[11px] text-slate-400 font-medium">Bekleniyor</span>
+                        <span class="text-xs font-bold" data-i18n="scoliometer.btn_thoracic">1. Torakal (Sırt)</span>
+                        <span id="thoracicValue" class="text-[11px] text-slate-400 font-medium" data-i18n="scoliometer.status_waiting">Bekleniyor</span>
                     </button>
 
                     <!-- Lumbar Butonu -->
                     <button onclick="saveAngle('lumbar')" id="btnLumbar" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 active:scale-95 text-white py-3 px-3 rounded-2xl transition flex flex-col items-center justify-center gap-0.5">
                         <i class="fa-solid fa-arrows-down-to-line text-emerald-400 text-lg mb-0.5"></i>
-                        <span class="text-xs font-bold">2. Lumbar (Bel)</span>
-                        <span id="lumbarValue" class="text-[11px] text-slate-400 font-medium">Bekleniyor</span>
+                        <span class="text-xs font-bold" data-i18n="scoliometer.btn_lumbar">2. Lumbar (Bel)</span>
+                        <span id="lumbarValue" class="text-[11px] text-slate-400 font-medium" data-i18n="scoliometer.status_waiting">Bekleniyor</span>
                     </button>
                 </div>
 
                 <!-- Masaüstüne Gönder Butonu -->
                 <button onclick="submitMeasurement()" id="btnSubmit" class="w-full bg-indigo-600 opacity-40 cursor-not-allowed text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all text-sm flex items-center justify-center gap-2" disabled>
-                    <i class="fa-solid fa-paper-plane"></i> Masaüstüne Gönder
+                    <i class="fa-solid fa-paper-plane"></i> <span data-i18n="scoliometer.btn_submit">Masaüstüne Gönder</span>
                 </button>
             </div>
 
@@ -173,8 +205,8 @@
                     <i class="fa-solid fa-book-medical text-xl"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg font-black text-white">Nasıl Uygulanır?</h3>
-                    <p class="text-xs text-slate-400">Adams Öne Eğilme & ATR Test Kılavuzu</p>
+                    <h3 class="text-lg font-black text-white" data-i18n="scoliometer.guide_title">Nasıl Uygulanır?</h3>
+                    <p class="text-xs text-slate-400" data-i18n="scoliometer.guide_subtitle">Adams Öne Eğilme & ATR Test Kılavuzu</p>
                 </div>
             </div>
 
@@ -183,8 +215,8 @@
                 <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">1</div>
                     <div>
-                        <strong class="text-white block mb-0.5">Adams Pozisyonu:</strong>
-                        Hasta dizlerini bükmeden, ayaklar omuz hizasında 90 derece öne eğilir ve kollarını serbestçe aşağı sarkıtır.
+                        <strong class="text-white block mb-0.5" data-i18n="scoliometer.step1_title">Adams Pozisyonu:</strong>
+                        <span data-i18n="scoliometer.step1_desc">Hasta dizlerini bükmeden, ayaklar omuz hizasında 90 derece öne eğilir ve kollarını serbestçe aşağı sarkıtır.</span>
                     </div>
                 </div>
 
@@ -192,8 +224,8 @@
                 <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">2</div>
                     <div>
-                        <strong class="text-white block mb-0.5">Yatay Yerleşim & Hizalama:</strong>
-                        Telefonu hastanın sırtına <strong>yatay</strong> koyun. Ekrandaki kırmızı orta çentiği omurganın dikensi kemiğine hizalayın. (İhtiyaç olursa üstteki <em>"0° Sıfırla"</em> ile kalibre edebilirsiniz).
+                        <strong class="text-white block mb-0.5" data-i18n="scoliometer.step2_title">Yatay Yerleşim & Hizalama:</strong>
+                        <span data-i18n-html="scoliometer.step2_desc">Telefonu hastanın sırtına <strong>yatay</strong> koyun. Ekrandaki kırmızı orta çentiği omurganın dikensi kemiğine hizalayın. (İhtiyaç olursa üstteki <em>"0° Sıfırla"</em> ile kalibre edebilirsiniz).</span>
                     </div>
                 </div>
 
@@ -201,8 +233,8 @@
                 <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="w-6 h-6 rounded-full bg-orange-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">3</div>
                     <div>
-                        <strong class="text-white block mb-0.5">Sırt (Torakal) Taraması:</strong>
-                        Telefonu boyundan kürek kemiklerine doğru yavaşça aşağı kaydırın. Tümseğin en tepe yaptığı noktada durup <strong>"1. Torakal (Sırt)"</strong> butonuna basın. Açı kilitlenir.
+                        <strong class="text-white block mb-0.5" data-i18n="scoliometer.step3_title">Sırt (Torakal) Taraması:</strong>
+                        <span data-i18n-html="scoliometer.step3_desc">Telefonu boyundan kürek kemiklerine doğru yavaşça aşağı kaydırın. Tümseğin en tepe yaptığı noktada durup <strong>"1. Torakal (Sırt)"</strong> butonuna basın. Açı kilitlenir.</span>
                     </div>
                 </div>
 
@@ -210,8 +242,8 @@
                 <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">4</div>
                     <div>
-                        <strong class="text-white block mb-0.5">Bel (Lumbar) Taraması:</strong>
-                        Telefonu bel çukuruna ve kalça üstüne doğru kaydırmaya devam edin. Beldeki en yüksek rotasyon noktasında <strong>"2. Lumbar (Bel)"</strong> butonuna basın.
+                        <strong class="text-white block mb-0.5" data-i18n="scoliometer.step4_title">Bel (Lumbar) Taraması:</strong>
+                        <span data-i18n-html="scoliometer.step4_desc">Telefonu bel çukuruna ve kalça üstüne doğru kaydırmaya devam edin. Beldeki en yüksek rotasyon noktasında <strong>"2. Lumbar (Bel)"</strong> butonuna basın.</span>
                     </div>
                 </div>
 
@@ -219,18 +251,20 @@
                 <div class="flex gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="w-6 h-6 rounded-full bg-indigo-500 text-white font-bold flex items-center justify-center flex-shrink-0 text-[11px]">5</div>
                     <div>
-                        <strong class="text-white block mb-0.5">Masaüstüne Aktarma:</strong>
-                        <strong>"Masaüstüne Gönder"</strong> butonuna basın. Bilgisayar ekranındaki hastanın Skolyometre Geçmişi tablosuna canlı aktarılacaktır.
+                        <strong class="text-white block mb-0.5" data-i18n="scoliometer.step5_title">Masaüstüne Aktarma:</strong>
+                        <span data-i18n-html="scoliometer.step5_desc"><strong>"Masaüstüne Gönder"</strong> butonuna basın. Bilgisayar ekranındaki hastanın Skolyometre Geçmişi tablosuna canlı aktarılacaktır.</span>
                     </div>
                 </div>
             </div>
 
             <button onclick="toggleGuideModal(false)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl mt-5 transition text-xs">
-                Anladım, Kılavuzu Kapat
+                <span data-i18n="scoliometer.guide_close">Anladım, Kılavuzu Kapat</span>
             </button>
         </div>
     </div>
 
-    <script src="scoliometer.js?v=2.1"></script>
+    <!-- Core i18n Engine & Scoliometer Sensor Logic -->
+    <script src="i18n.js?v=23.0"></script>
+    <script src="scoliometer.js?v=2.2"></script>
 </body>
 </html>
