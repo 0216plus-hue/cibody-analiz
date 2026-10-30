@@ -447,6 +447,68 @@
             max-height: 80px !important;
             width: 100% !important;
         }
+
+        /* ─── 3D Omurga Simülasyonu PDF Export Stilleri ─── */
+        #simulationReportSection.simulation-pdf-mode {
+            width: 700px !important;
+            max-width: 700px !important;
+            min-width: 700px !important;
+            margin: 0 auto !important;
+            padding: 14px 18px !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+            display: block !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .avoid-break {
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .sim-pdf-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: stretch !important;
+            gap: 14px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .sim-pdf-img-col {
+            width: 48.5% !important;
+            flex: 0 0 48.5% !important;
+            max-width: 48.5% !important;
+            box-sizing: border-box !important;
+            min-height: 310px !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .sim-pdf-params-col {
+            width: 48.5% !important;
+            flex: 0 0 48.5% !important;
+            max-width: 48.5% !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .sim-pdf-mini-row {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            width: 100% !important;
+        }
+
+        #simulationReportSection.simulation-pdf-mode .sim-pdf-mini-card {
+            width: 48.5% !important;
+            flex: 0 0 48.5% !important;
+            max-width: 48.5% !important;
+            box-sizing: border-box !important;
+            padding: 6px !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 font-sans" onload="initApp()">
@@ -1818,6 +1880,91 @@
                             </table>
                         </div>
                     </div>
+
+                    <!-- 3D Omurga Simülasyonu PDF Rapor Şablonu -->
+                    <div id="simulationReportSection" class="hidden bg-white text-slate-800 font-sans p-6 rounded-2xl">
+                        <div class="mb-5 border-b border-slate-200 pb-3">
+                            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
+                                <i class="fa-solid fa-cube text-emerald-600"></i> <span data-i18n="3D Omurga & Skolyoz Simülasyon Raporu">3D Omurga & Skolyoz Simülasyon Raporu</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1" data-i18n="Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli">Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli</p>
+                        </div>
+
+                        <!-- 3D Snapshot ve Parametreler (Yan Yana Flexbox) -->
+                        <div class="sim-pdf-row mb-5 avoid-break">
+                            <!-- 3D Görsel -->
+                            <div class="sim-pdf-img-col bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[320px]">
+                                <span class="text-xs font-bold text-emerald-400 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-eye mr-1"></i> <span data-i18n="3D Omurga Deformite Görünümü">3D Omurga Deformite Görünümü</span></span>
+                                <div id="simPdfImgContainer" class="w-full flex items-center justify-center min-h-[220px]">
+                                    <img id="simPdfImg" src="" alt="3D Model" class="max-h-64 object-contain rounded-xl mx-auto shadow-md" style="max-height: 240px; width: auto;">
+                                    <div id="simPdfImgFallback" class="hidden text-slate-500 text-sm py-12" data-i18n="Simülasyon modeli yüklenemedi">Simülasyon modeli yüklenemedi</div>
+                                </div>
+                                <span class="text-[11px] text-slate-400 mt-2 block font-medium"><span id="simPdfSegmentText">C6 - T9</span> <span data-i18n="Vertebra Segmenti">Vertebra Segmenti</span></span>
+                            </div>
+
+                            <!-- Parametreler Kartları -->
+                            <div class="sim-pdf-params-col flex flex-col justify-between gap-2.5">
+                                <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-center">
+                                    <span class="text-xs font-bold text-slate-500 block uppercase tracking-wider" data-i18n="Cobb Açısı">Cobb Açısı</span>
+                                    <span id="simPdfCobb" class="text-3xl font-black text-indigo-900 my-1 block">0°</span>
+                                </div>
+                                <div class="sim-pdf-mini-row">
+                                    <div class="sim-pdf-mini-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                                        <span class="text-[11px] font-bold text-slate-500 block" data-i18n="Rotasyon Açısı">Rotasyon Açısı</span>
+                                        <span id="simPdfRot" class="text-lg font-black text-slate-800 mt-0.5 block">0°</span>
+                                    </div>
+                                    <div class="sim-pdf-mini-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                                        <span class="text-[11px] font-bold text-slate-500 block" data-i18n="Torsiyon Açısı">Torsiyon Açısı</span>
+                                        <span id="simPdfTorsion" class="text-lg font-black text-slate-800 mt-0.5 block">0°</span>
+                                    </div>
+                                </div>
+                                <div class="sim-pdf-mini-row">
+                                    <div class="sim-pdf-mini-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                                        <span class="text-[11px] font-bold text-slate-500 block" data-i18n="Yana Kayma">Yana Kayma</span>
+                                        <span id="simPdfShift" class="text-lg font-black text-slate-800 mt-0.5 block">0 mm</span>
+                                    </div>
+                                    <div class="sim-pdf-mini-card bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                                        <span class="text-[11px] font-bold text-slate-500 block" data-i18n="Eğrilik Segmenti">Eğrilik Segmenti</span>
+                                        <span id="simPdfCurveSegment" class="text-sm font-black text-indigo-700 mt-1 block">C6 - T9</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
+                                    <span class="text-[11px] font-bold text-slate-500 block" data-i18n="Kullanılan Ölçüm Metodu">Kullanılan Ölçüm Metodu</span>
+                                    <span id="simPdfMethod" class="text-xs font-bold text-slate-700 mt-0.5 block">Nash-Moe Sınıflandırması</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Simülasyon Geçmişi (Varsa) -->
+                        <div id="simPdfHistoryCard" class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-5 avoid-break">
+                            <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200">
+                                <h4 class="text-xs font-black text-slate-700 uppercase" data-i18n="Kayıtlı Simülasyon Geçmişi">Kayıtlı Simülasyon Geçmişi</h4>
+                            </div>
+                            <div class="p-2">
+                                <table class="w-full text-xs text-left">
+                                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                                        <tr>
+                                            <th class="px-3 py-2" data-i18n="Tarih">Tarih</th>
+                                            <th class="px-3 py-2" data-i18n="Bölge">Bölge</th>
+                                            <th class="px-3 py-2 text-center">Cobb</th>
+                                            <th class="px-3 py-2 text-center" data-i18n="Rotasyon">Rotasyon</th>
+                                            <th class="px-3 py-2 text-center" data-i18n="Torsiyon">Torsiyon</th>
+                                            <th class="px-3 py-2 text-center" data-i18n="Kayma">Kayma</th>
+                                            <th class="px-3 py-2" data-i18n="Yöntem">Yöntem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="simPdfHistoryBody" class="divide-y divide-slate-100">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Klinik Açıklama Notu -->
+                        <div class="border border-slate-200 rounded-2xl p-3.5 bg-slate-50/50 avoid-break text-xs text-slate-600 leading-relaxed">
+                            <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-notes-medical text-indigo-500 mr-1"></i> <span data-i18n="Biyomekanik Simülasyon Bilgisi:">Biyomekanik Simülasyon Bilgisi:</span></p>
+                            <p data-i18n="Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.">Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.</p>
+                        </div>
+                    </div>
                 </div>
 
 <div id="footTab" class="hidden">
@@ -2931,7 +3078,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=22.0"></script>
+    <script src="app.js?v=23.0"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->

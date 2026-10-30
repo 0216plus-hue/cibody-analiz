@@ -2462,6 +2462,9 @@ async function downloadSimulationPdf() {
         return;
     }
 
+    const reportEl = document.getElementById('simulationReportSection');
+    if (!reportEl) return;
+
     // Capture Three.js WebGL canvas snapshot
     let simImgData = null;
     const simCanvas = document.getElementById('simCanvas');
@@ -2489,9 +2492,62 @@ async function downloadSimulationPdf() {
     const methodSel = document.getElementById('sim_method');
     const method = methodSel ? methodSel.value : 'Nash-Moe Sınıflandırması';
 
+    // Populate data
+    const imgEl = document.getElementById('simPdfImg');
+    const fallbackEl = document.getElementById('simPdfImgFallback');
+    if (simImgData && simImgData.length > 100) {
+        if (imgEl) {
+            imgEl.src = simImgData;
+            imgEl.classList.remove('hidden');
+        }
+        if (fallbackEl) fallbackEl.classList.add('hidden');
+    } else {
+        if (imgEl) imgEl.classList.add('hidden');
+        if (fallbackEl) fallbackEl.classList.remove('hidden');
+    }
+
+    const segEl = document.getElementById('simPdfSegmentText');
+    if (segEl) segEl.innerText = `${startVertebra} - ${endVertebra}`;
+    const cobbEl = document.getElementById('simPdfCobb');
+    if (cobbEl) cobbEl.innerText = `${cobb}°`;
+    const rotEl = document.getElementById('simPdfRot');
+    if (rotEl) rotEl.innerText = `${rot}°`;
+    const torsionEl = document.getElementById('simPdfTorsion');
+    if (torsionEl) torsionEl.innerText = `${torsion}°`;
+    const shiftEl = document.getElementById('simPdfShift');
+    if (shiftEl) shiftEl.innerText = `${shift} mm`;
+    const curveSegEl = document.getElementById('simPdfCurveSegment');
+    if (curveSegEl) curveSegEl.innerText = `${startVertebra} - ${endVertebra}`;
+    const methodEl = document.getElementById('simPdfMethod');
+    if (methodEl) methodEl.innerText = method;
+
+    // History table
     const simTbody = document.getElementById('simHistoryList');
     const simRows = simTbody ? simTbody.querySelectorAll('tr') : [];
     const hasHistory = simRows.length > 0 && !simTbody.innerText.includes('Henüz kayıt bulunmuyor') && !simTbody.innerText.includes('No records yet');
+    const historyCard = document.getElementById('simPdfHistoryCard');
+    const pdfHistoryBody = document.getElementById('simPdfHistoryBody');
+
+    if (hasHistory && pdfHistoryBody) {
+        if (historyCard) historyCard.classList.remove('hidden');
+        pdfHistoryBody.innerHTML = Array.from(simRows).slice(0, 5).map(r => {
+            const cells = r.querySelectorAll('td');
+            if (cells.length < 7) return '';
+            return `
+                <tr>
+                    <td class="px-3 py-1.5 font-medium text-slate-700">${cells[0].innerText}</td>
+                    <td class="px-3 py-1.5 font-bold text-indigo-700">${cells[1].innerText}</td>
+                    <td class="px-3 py-1.5 text-center font-bold">${cells[2].innerText}</td>
+                    <td class="px-3 py-1.5 text-center">${cells[3].innerText}</td>
+                    <td class="px-3 py-1.5 text-center">${cells[4].innerText}</td>
+                    <td class="px-3 py-1.5 text-center">${cells[5].innerText}</td>
+                    <td class="px-3 py-1.5 text-slate-500">${cells[6].innerText}</td>
+                </tr>
+            `;
+        }).join('');
+    } else if (historyCard) {
+        historyCard.classList.add('hidden');
+    }
 
     const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
     const filenamePrefixes = {
@@ -2509,121 +2565,15 @@ async function downloadSimulationPdf() {
     const pdfFilename = `${prefix}_${currentPatientId || 'hasta'}.pdf`;
     const transSubtitle = _trans("3D Omurga Simülasyon Raporu");
 
-    const printContainer = document.createElement('div');
-    printContainer.id = 'simulationPrintContainer';
-    printContainer.className = 'p-6 bg-white rounded-2xl text-slate-800 font-sans';
-    printContainer.style.width = '700px';
-    printContainer.style.maxWidth = '700px';
-    printContainer.style.minWidth = '700px';
-    printContainer.style.boxSizing = 'border-box';
-    printContainer.style.position = 'fixed';
-    printContainer.style.left = '0';
-    printContainer.style.top = '0';
-    printContainer.style.zIndex = '-9999';
-    printContainer.style.backgroundColor = '#ffffff';
+    // Unhide and set mode
+    reportEl.classList.remove('hidden');
+    reportEl.classList.add('simulation-pdf-mode');
 
-    printContainer.innerHTML = `
-        <div class="mb-5 border-b border-slate-200 pb-3">
-            <h2 class="text-xl font-black text-indigo-950 flex items-center gap-2">
-                <i class="fa-solid fa-cube text-emerald-600"></i> ${_trans('3D Omurga & Skolyoz Simülasyon Raporu')}
-            </h2>
-            <p class="text-xs text-slate-500 mt-1">${_trans('Cobb Açısı, Aksiyel Rotasyon ve Torsiyon 3 Boyutlu Biyomekanik Modeli')}</p>
-        </div>
+    if (window.applyTranslations) {
+        window.applyTranslations(reportEl);
+    }
 
-        <!-- 3D Snapshot ve Parametreler (Yan Yana Flexbox) -->
-        <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: stretch; gap: 14px; width: 100%; box-sizing: border-box;" class="mb-5 avoid-break">
-            <!-- 3D Görsel -->
-            <div style="width: 48.5%; flex: 0 0 48.5%; max-width: 48.5%; box-sizing: border-box;" class="bg-slate-900 rounded-2xl p-4 flex flex-col items-center justify-center border border-slate-800 text-center min-h-[320px]">
-                <span class="text-xs font-bold text-emerald-400 mb-2 block uppercase tracking-wider"><i class="fa-solid fa-eye mr-1"></i> ${_trans('3D Omurga Deformite Görünümü')}</span>
-                ${simImgData ? `<img src="${simImgData}" class="max-h-64 object-contain rounded-xl mx-auto shadow-md" style="max-height: 240px; width: auto;">` : `<div class="text-slate-500 text-sm py-12">${_trans('Simülasyon modeli yüklenemedi')}</div>`}
-                <span class="text-[11px] text-slate-400 mt-2 block font-medium">${startVertebra} - ${endVertebra} ${_trans('Vertebra Segmenti')}</span>
-            </div>
-
-            <!-- Parametreler Tablosu / Kartları -->
-            <div style="width: 48.5%; flex: 0 0 48.5%; max-width: 48.5%; box-sizing: border-box;" class="flex flex-col justify-between gap-2.5">
-                <div class="bg-indigo-50/70 border border-indigo-100 rounded-xl p-3 text-center">
-                    <span class="text-xs font-bold text-slate-500 block uppercase tracking-wider">${_trans('Cobb Açısı')}</span>
-                    <span class="text-3xl font-black text-indigo-900 my-1 block">${cobb}°</span>
-                </div>
-                <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px;">
-                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Rotasyon Açısı')}</span>
-                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${rot}°</span>
-                    </div>
-                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Torsiyon Açısı')}</span>
-                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${torsion}°</span>
-                    </div>
-                </div>
-                <div style="display: flex; flex-direction: row; justify-content: space-between; gap: 8px;">
-                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Yana Kayma')}</span>
-                        <span class="text-lg font-black text-slate-800 mt-0.5 block">${shift} mm</span>
-                    </div>
-                    <div style="width: 48.5%;" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-                        <span class="text-[11px] font-bold text-slate-500 block">${_trans('Eğrilik Segmenti')}</span>
-                        <span class="text-sm font-black text-indigo-700 mt-1 block">${startVertebra} - ${endVertebra}</span>
-                    </div>
-                </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center">
-                    <span class="text-[11px] font-bold text-slate-500 block">${_trans('Kullanılan Ölçüm Metodu')}</span>
-                    <span class="text-xs font-bold text-slate-700 mt-0.5 block">${method}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Simülasyon Geçmişi (Varsa) -->
-        ${hasHistory ? `
-        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden mb-5 avoid-break">
-            <div class="bg-slate-50 px-4 py-2.5 border-b border-slate-200">
-                <h4 class="text-xs font-black text-slate-700 uppercase">${_trans('Kayıtlı Simülasyon Geçmişi')}</h4>
-            </div>
-            <div class="p-2">
-                <table class="w-full text-xs text-left">
-                    <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
-                        <tr>
-                            <th class="px-3 py-2">${_trans('Tarih')}</th>
-                            <th class="px-3 py-2">${_trans('Bölge')}</th>
-                            <th class="px-3 py-2 text-center">Cobb</th>
-                            <th class="px-3 py-2 text-center">${_trans('Rotasyon')}</th>
-                            <th class="px-3 py-2 text-center">${_trans('Torsiyon')}</th>
-                            <th class="px-3 py-2 text-center">${_trans('Kayma')}</th>
-                            <th class="px-3 py-2">${_trans('Yöntem')}</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        ${Array.from(simRows).slice(0, 5).map(r => {
-                            const cells = r.querySelectorAll('td');
-                            if (cells.length < 7) return '';
-                            return `
-                                <tr>
-                                    <td class="px-3 py-1.5 font-medium text-slate-700">${cells[0].innerText}</td>
-                                    <td class="px-3 py-1.5 font-bold text-indigo-700">${cells[1].innerText}</td>
-                                    <td class="px-3 py-1.5 text-center font-bold">${cells[2].innerText}</td>
-                                    <td class="px-3 py-1.5 text-center">${cells[3].innerText}</td>
-                                    <td class="px-3 py-1.5 text-center">${cells[4].innerText}</td>
-                                    <td class="px-3 py-1.5 text-center">${cells[5].innerText}</td>
-                                    <td class="px-3 py-1.5 text-slate-500">${cells[6].innerText}</td>
-                                </tr>
-                            `;
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        ` : ''}
-
-        <!-- Klinik Açıklama Notu -->
-        <div class="border border-slate-200 rounded-2xl p-3.5 bg-slate-50/50 avoid-break text-xs text-slate-600 leading-relaxed">
-            <p class="font-bold text-slate-800 mb-1"><i class="fa-solid fa-notes-medical text-indigo-500 mr-1"></i> ${_trans('Biyomekanik Simülasyon Bilgisi:')}</p>
-            <p>${_trans('Bu simülasyon hastanın omurga deformitesini 3 boyutlu uzayda modellemektedir. Cobb açısının yanı sıra omurların transvers plandaki rotasyonu ve torsiyonu hesaplanarak tedavi planlaması ve korse/cerrahi simülasyonu için referans sunar.')}</p>
-        </div>
-    `;
-
-    document.body.appendChild(printContainer);
-
-    // Image decode ve layout reflow beklemesi
-    if (simImgData) {
+    if (simImgData && simImgData.length > 100) {
         await new Promise((resolve) => {
             const preImg = new Image();
             preImg.onload = resolve;
@@ -2642,13 +2592,18 @@ async function downloadSimulationPdf() {
       pagebreak:    { mode: ['css'] }
     };
 
-    const instance = html2pdf().set(opt).from(printContainer);
+    const cleanup = () => {
+        reportEl.classList.remove('simulation-pdf-mode');
+        reportEl.classList.add('hidden');
+    };
+
+    const instance = html2pdf().set(opt).from(reportEl);
     if(typeof runPdf === 'function') {
         runPdf(instance, pdfFilename, transSubtitle).then(() => {
-            printContainer.remove();
+            cleanup();
             showToast(_trans("3D simülasyon PDF raporu indirildi."));
         }).catch(err => {
-            printContainer.remove();
+            cleanup();
             console.error("Simulation PDF error:", err);
             showToast("PDF indirilirken hata oluştu.");
         });
@@ -2658,10 +2613,10 @@ async function downloadSimulationPdf() {
                 applyCibodyPdfHeaderFooter(pdf, transSubtitle);
             }
         }).save().then(() => {
-            printContainer.remove();
+            cleanup();
             showToast(_trans("3D simülasyon PDF raporu indirildi."));
         }).catch(err => {
-            printContainer.remove();
+            cleanup();
             console.error("Simulation PDF error:", err);
             showToast("PDF indirilirken hata oluştu.");
         });
