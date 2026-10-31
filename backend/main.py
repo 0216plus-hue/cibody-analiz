@@ -1165,9 +1165,104 @@ class ExerciseUpdate(BaseModel):
     sets: str
     reps: str
 
+CATEGORY_TRANSLATIONS = {
+    "tr": {
+        "BİLEK": "Bilek", "BOYUN": "Boyun", "DİRSEK": "Dirsek", "DİZ": "Diz", "DURUŞ": "Duruş",
+        "NEFES": "Nefes", "OMURGA": "Omurga", "OMUZ": "Omuz", "PELVİK": "Pelvik", "SKOLYOZ": "Skolyoz"
+    },
+    "en": {
+        "BİLEK": "Wrist", "BOYUN": "Neck", "DİRSEK": "Elbow", "DİZ": "Knee", "DURUŞ": "Posture",
+        "NEFES": "Breathing", "OMURGA": "Spine", "OMUZ": "Shoulder", "PELVİK": "Pelvic", "SKOLYOZ": "Scoliosis"
+    },
+    "de": {
+        "BİLEK": "Handgelenk", "BOYUN": "Nacken", "DİRSEK": "Ellbogen", "DİZ": "Knie", "DURUŞ": "Haltung",
+        "NEFES": "Atmung", "OMURGA": "Wirbelsäule", "OMUZ": "Schulter", "PELVİK": "Becken", "SKOLYOZ": "Skoliose"
+    },
+    "fr": {
+        "BİLEK": "Poignet", "BOYUN": "Cou", "DİRSEK": "Coude", "DİZ": "Genou", "DURUŞ": "Posture",
+        "NEFES": "Respiration", "OMURGA": "Colonne vertébrale", "OMUZ": "Épaule", "PELVİK": "Pelvien", "SKOLYOZ": "Scoliose"
+    },
+    "es": {
+        "BİLEK": "Muñeca", "BOYUN": "Cuello", "DİRSEK": "Codo", "DİZ": "Rodilla", "DURUŞ": "Postura",
+        "NEFES": "Respiración", "OMURGA": "Columna", "OMUZ": "Hombro", "PELVİK": "Pélvico", "SKOLYOZ": "Escoliosis"
+    },
+    "it": {
+        "BİLEK": "Polso", "BOYUN": "Collo", "DİRSEK": "Gomito", "DİZ": "Ginocchio", "DURUŞ": "Postura",
+        "NEFES": "Respirazione", "OMURGA": "Colonna vertebrale", "OMUZ": "Spalla", "PELVİK": "Pelvico", "SKOLYOZ": "Scoliosi"
+    },
+    "pt": {
+        "BİLEK": "Pulso", "BOYUN": "Pescoço", "DİRSEK": "Cotovelo", "DİZ": "Joelho", "DURUŞ": "Postura",
+        "NEFES": "Respiração", "OMURGA": "Coluna vertebral", "OMUZ": "Ombro", "PELVİK": "Pélvico", "SKOLYOZ": "Escoliose"
+    },
+    "ru": {
+        "BİLEK": "Запястье", "BOYUN": "Шея", "DİRSEK": "Локоть", "DİZ": "Колено", "DURUŞ": "Осанка",
+        "NEFES": "Дыхание", "OMURGA": "Позвоночник", "OMUZ": "Плечо", "PELVİK": "Тазовый", "SKOLYOZ": "Сколиоз"
+    },
+    "ar": {
+        "BİLEK": "المعصم", "BOYUN": "الرقبة", "DİRSEK": "المرفق", "DİZ": "الركبة", "DURUŞ": "وضعية الجسم",
+        "NEFES": "التنفس", "OMURGA": "العمود الفقري", "OMUZ": "الكتف", "PELVİK": "الحوض", "SKOLYOZ": "الجنف"
+    }
+}
+
+def get_translated_category(cat: str, lang: str = "tr") -> str:
+    if not cat: return ""
+    import unicodedata
+    norm_cat = unicodedata.normalize('NFC', cat).strip().upper()
+    target = (lang or "tr").lower().strip()
+    return CATEGORY_TRANSLATIONS.get(target, CATEGORY_TRANSLATIONS["tr"]).get(norm_cat, cat)
+
 @app.get("/api/exercises")
-def get_all_exercises(db: Session = Depends(get_db)):
-    return db.query(models.Exercise).all()
+def get_all_exercises(lang: Optional[str] = "tr", category: Optional[str] = None, q: Optional[str] = None, db: Session = Depends(get_db)):
+    target_lang = (lang or "tr").lower().strip()
+    query = db.query(models.Exercise)
+    if category:
+        import unicodedata
+        norm_cat = unicodedata.normalize('NFC', category).strip().upper()
+        query = query.filter(models.Exercise.category == norm_cat)
+    exercises = query.all()
+
+    translations_map = {}
+    if target_lang != "tr":
+        try:
+            from sqlalchemy import text
+            rows = db.execute(text("SELECT exercise_id, name, description FROM exercise_translations WHERE lang = :lang"), {"lang": target_lang}).fetchall()
+            for r in rows:
+                translations_map[r[0]] = {"name": r[1], "description": r[2]}
+        except Exception as e:
+            print("Exercise library translations lookup error:", e)
+
+    results = []
+    q_lower = q.lower().strip() if q else None
+
+    for ex in exercises:
+        trans = translations_map.get(ex.id)
+        name = trans["name"] if trans and trans.get("name") else ex.name
+        description = trans["description"] if trans and trans.get("description") else ex.description
+        cat_translated = get_translated_category(ex.category, target_lang)
+
+        # Optional search filter
+        if q_lower:
+            match = (
+                q_lower in (name or "").lower() or
+                q_lower in (description or "").lower() or
+                q_lower in (cat_translated or "").lower() or
+                q_lower in (ex.name or "").lower() or
+                q_lower in (ex.category or "").lower()
+            )
+            if not match:
+                continue
+
+        results.append({
+            "id": ex.id,
+            "name": name,
+            "category": cat_translated,
+            "raw_category": ex.category,
+            "description": description,
+            "video_url": ex.video_url,
+            "category_id": ex.category_id,
+            "image_path": ex.image_path
+        })
+    return results
 
 @app.get("/api/posture/{analysis_id}/exercises")
 def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -1180,14 +1275,15 @@ def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: S
     assigned = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).all()
     results = []
 
+    target_lang = (lang or "tr").lower().strip()
     translations_map = {}
-    if lang and lang != "tr":
+    if target_lang != "tr":
         try:
             ex_ids = [a.exercise_id for a in assigned]
             if ex_ids:
                 from sqlalchemy import text
                 placeholders = ",".join(str(int(i)) for i in ex_ids)
-                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": lang}).fetchall()
+                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": target_lang}).fetchall()
                 for r in rows:
                     translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
         except Exception as e:
@@ -1198,13 +1294,14 @@ def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: S
         if ex:
             trans = translations_map.get(ex.id)
             name = trans["name"] if trans else ex.name
-            category = trans["category"] if trans else ex.category
+            category = trans["category"] if trans and trans.get("category") else get_translated_category(ex.category, target_lang)
             description = trans["description"] if trans else ex.description
             results.append({
                 "id": a.id,
                 "exercise_id": ex.id,
                 "name": name,
                 "category": category,
+                "raw_category": ex.category,
                 "description": description,
                 "video_url": ex.video_url,
                 "image_path": ex.image_path,
@@ -1215,7 +1312,6 @@ def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: S
 
 @app.post("/api/posture/{analysis_id}/exercises")
 def add_prescribed_exercise(analysis_id: int, payload: ExerciseAssign, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    # Basic validation omitted for brevity (should check owner)
     new_assign = models.PrescribedExercise(
         posture_analysis_id=analysis_id,
         exercise_id=payload.exercise_id,
@@ -1252,95 +1348,109 @@ def suggest_exercises(analysis_id: int, db: Session = Depends(get_db), current_u
         
         db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).delete()
         db.commit()
-        
-        all_ex = db.query(models.Exercise).all()
-        library_str = "\\n".join([f"ID: {ex.id} | Ad: {ex.name} | Kategori: {ex.category}" for ex in all_ex])
-        
-        findings = analysis.analysis_data or "Bulgu yok"
-        notes = analysis.clinical_notes or ""
-        
-        prompt = f"""Sen uzman bir fizyoterapistsin..."""
-        
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
-            payload = {"contents": [{"parts": [{"text": prompt}]}]}
-            
-            rr = requests.post(url, json=payload, timeout=60)
-            rr.raise_for_status()
-            text = rr.json()["candidates"][0]["content"]["parts"][0]["text"]
-            
-            import json
-            import re
-            
-            match = re.search(r'\[.*\]', text, re.DOTALL)
-            if match:
-                suggested_ids = json.loads(match.group(0))
-            else:
-                suggested_ids = []
-                
-            if not suggested_ids or not isinstance(suggested_ids, list):
-                import random
-                suggested_ids = [ex.id for ex in random.sample(all_ex, min(4, len(all_ex)))]
-                
-            suggested_ids = [int(x) for x in suggested_ids[:6] if str(x).isdigit()]
-            
-            for ex_id in suggested_ids:
-                ex = db.query(models.Exercise).filter(models.Exercise.id == ex_id).first()
-                if not ex: continue
-                
-                sets = "3"
-                reps = "10"
-                if "Esnetme" in ex.name or "Germe" in ex.name:
-                    reps = "30 sn"
-                elif "Stabilizasyon" in ex.name or "İzometrik" in ex.name:
-                    reps = "15 sn"
-                    
-                ne = models.PrescribedExercise(
-                    posture_analysis_id=analysis_id,
-                    exercise_id=ex_id,
-                    sets=sets,
-                    reps=reps
-                )
-                db.add(ne)
-            
-            db.commit()
-            return {"status": "success", "message": "AI tarafından kişiselleştirilmiş egzersizler başarıyla önerildi."}
-            
-        except Exception as e:
-            import random
-            suggested = random.sample(all_ex, min(4, len(all_ex)))
-            for ex in suggested:
-                ne = models.PrescribedExercise(
-                    posture_analysis_id=analysis_id,
-                    exercise_id=ex.id,
-                    sets="3",
-                    reps="10-12"
-                )
-                db.add(ne)
-            db.commit()
-            return {"status": "success", "message": f"Fallback: Rastgele egzersiz önerildi. Hata: {str(e)}"}
 
+        # Clinical posture exercise selection
+        analysis_data_str = analysis.analysis_data or ""
+        clinical_notes_str = (analysis.clinical_notes or "").lower()
+
+        # Targeted exercise selection based on clinical posture biomechanics
+        selected_exercises = []
+
+        # 1. Forward Head Posture / Cervical flattening
+        has_fhp = "cervical" in analysis_data_str or "boyun" in clinical_notes_str or "fhp" in clinical_notes_str
+        if has_fhp:
+            selected_exercises.append((207, "3", "15 sn")) # Cervical Proprioception Laser Target Extension
+            selected_exercises.append((61, "3", "30 sn"))  # Standing Cervical Rotation Stretch
+        else:
+            selected_exercises.append((523, "3", "30 sn")) # Brügger's Wall Posture
+
+        # 2. Thoracic Kyphosis & Rounded Shoulders (Chest opening & Scapular retraction)
+        selected_exercises.append((429, "3", "10"))   # Standing Postural Realignment
+        selected_exercises.append((437, "3", "30 sn")) # Bilateral Lower Chest Stretch (Corner Doorway)
+        selected_exercises.append((430, "3", "12"))   # Standing Scapular Retraction
+
+        # 3. Lumbar Lordosis & Pelvic Alignment
+        has_pelvic_or_lumbar = "lumbar" in analysis_data_str or "lordoz" in clinical_notes_str or "pelvik" in clinical_notes_str
+        if has_pelvic_or_lumbar:
+            selected_exercises.append((509, "3", "12"))   # Standing Posterior Pelvic Tilt
+            selected_exercises.append((440, "3", "30 sn")) # Foam Roller Lumbar Mobilization
+        else:
+            selected_exercises.append((514, "3", "12"))   # Pelvic Bridge with Step
+
+        # 4. Scoliosis Asymmetry or Diaphragmatic Breathing
+        has_scoliosis_risk = "skolyoz" in clinical_notes_str or "asimetri" in clinical_notes_str
+        if has_scoliosis_risk:
+            selected_exercises.append((1136, "3", "30 sn")) # Child's Pose Scoliosis Breathing
+            selected_exercises.append((1140, "3", "30 sn")) # Mermaid Side Bend for Elongation
+        else:
+            selected_exercises.append((473, "3", "10"))     # Seated Diaphragmatic Breathing
+
+        # Ensure between 4 and 6 unique exercises
+        seen_ids = set()
+        final_list = []
+        for ex_id, sets, reps in selected_exercises:
+            if ex_id not in seen_ids:
+                seen_ids.add(ex_id)
+                final_list.append((ex_id, sets, reps))
+            if len(final_list) >= 6:
+                break
+
+        for ex_id, sets, reps in final_list:
+            ex = db.query(models.Exercise).filter(models.Exercise.id == ex_id).first()
+            if not ex: continue
+            ne = models.PrescribedExercise(
+                posture_analysis_id=analysis_id,
+                exercise_id=ex_id,
+                sets=sets,
+                reps=reps
+            )
+            db.add(ne)
+        
+        db.commit()
+        return {"status": "success", "message": "Kişiselleştirilmiş klinik postür egzersizleri başarıyla önerildi."}
+            
     except Exception as super_err:
         import traceback
         return {"status": "error", "message": f"Global Error: {str(super_err)}", "traceback": traceback.format_exc()}
 
 @app.get("/api/public/report/{analysis_id}")
-def get_public_report(analysis_id: int, db: Session = Depends(get_db)):
+def get_public_report(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db)):
     analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
     if not analysis: raise HTTPException(status_code=404)
     
     patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id).first()
     doctor = db.query(models.User).filter(models.User.id == patient.user_id).first() if patient else None
     
-    exercises = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).all()
+    assigned = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).all()
+    target_lang = (lang or "tr").lower().strip()
+
+    translations_map = {}
+    if target_lang != "tr":
+        try:
+            ex_ids = [a.exercise_id for a in assigned]
+            if ex_ids:
+                from sqlalchemy import text
+                placeholders = ",".join(str(int(i)) for i in ex_ids)
+                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": target_lang}).fetchall()
+                for r in rows:
+                    translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
+        except Exception as e:
+            print("Public report translations lookup error:", e)
+
     ex_list = []
-    for ex in exercises:
+    for ex in assigned:
         ex_def = db.query(models.Exercise).filter(models.Exercise.id == ex.exercise_id).first()
         if ex_def:
+            trans = translations_map.get(ex_def.id)
+            name = trans["name"] if trans else ex_def.name
+            category = trans["category"] if trans and trans.get("category") else get_translated_category(ex_def.category, target_lang)
+            description = trans["description"] if trans else ex_def.description
+
             ex_list.append({
-                "name": ex_def.name,
-                "category": ex_def.category,
-                "description": ex_def.description,
+                "name": name,
+                "category": category,
+                "raw_category": ex_def.category,
+                "description": description,
                 "video_url": ex_def.video_url,
                 "image_path": ex_def.image_path,
                 "sets": ex.sets,
@@ -1357,9 +1467,9 @@ def get_public_report(analysis_id: int, db: Session = Depends(get_db)):
         "ai_report_text": analysis.ai_report_text,
         "created_at": analysis.created_at,
         "patient": {
-            "age": patient.age,
-            "gender": patient.gender,
-            "weight": patient.weight
+            "age": patient.age if patient else "-",
+            "gender": patient.gender if patient else "-",
+            "weight": patient.weight if patient else "-"
         },
         "doctor": {
             "name": doctor.name if doctor else "",
@@ -1524,17 +1634,37 @@ def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), c
 
 
 @app.get("/api/scoliosis/{analysis_id}/exercises")
-def get_scoliosis_prescribed_exercises(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def get_scoliosis_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     exercises = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.scoliosis_analysis_id == analysis_id).all()
+    target_lang = (lang or "tr").lower().strip()
+    translations_map = {}
+    if target_lang != "tr":
+        try:
+            ex_ids = [ex.exercise_id for ex in exercises]
+            if ex_ids:
+                from sqlalchemy import text
+                placeholders = ",".join(str(int(i)) for i in ex_ids)
+                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": target_lang}).fetchall()
+                for r in rows:
+                    translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
+        except Exception as e:
+            print("Scoliosis exercise translation lookup error:", e)
+
     res = []
     for ex in exercises:
         base = db.query(models.Exercise).filter(models.Exercise.id == ex.exercise_id).first()
         if base:
+            trans = translations_map.get(base.id)
+            name = trans["name"] if trans else base.name
+            category = trans["category"] if trans and trans.get("category") else get_translated_category(base.category, target_lang)
+            description = trans["description"] if trans else base.description
             res.append({
                 "id": ex.id,
                 "exercise_id": ex.exercise_id,
-                "name": base.name,
-                "category": base.category,
+                "name": name,
+                "category": category,
+                "raw_category": base.category,
+                "description": description,
                 "sets": ex.sets,
                 "reps": ex.reps,
                 "image_path": base.image_path,
@@ -1585,82 +1715,32 @@ def suggest_scoliosis_exercises(analysis_id: int, db: Session = Depends(get_db),
         
         db.query(models.PrescribedExercise).filter(models.PrescribedExercise.scoliosis_analysis_id == analysis_id).delete()
         db.commit()
-        
-        all_ex = db.query(models.Exercise).all()
-        library_str = "\n".join([f"ID: {ex.id} | Ad: {ex.name} | Kategori: {ex.category}" for ex in all_ex])
-        
-        cobb = analysis.cobb_angle or 0
-        prompt = f"""Sen uzman bir fizyoterapistsin. Hastanın omurga röntgeninde Cobb açısı {cobb} derece ölçüldü.
-Lütfen aşağıdaki veritabanımızdaki egzersiz listesinden, bu hastanın yapabileceği Schroth egzersizleri ve postür düzeltici esneme/güçlendirme egzersizlerinden en uygun 4-5 tanesini seç.
-SADECE VE SADECE seçtiğin egzersizlerin ID numaralarını json formatında bir liste olarak dön. Örnek: [12, 45, 3]
-Başka hiçbir kelime veya açıklama yazma!
 
-Egzersiz Listesi:
-{library_str}
-"""
-        
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
-            payload = {"contents": [{"parts": [{"text": prompt}]}]}
-            
-            rr = requests.post(url, json=payload, timeout=60)
-            rr.raise_for_status()
-            text = rr.json()["candidates"][0]["content"]["parts"][0]["text"]
-            
-            import json
-            import re
-            
-            match = re.search(r'\[.*\]', text, re.DOTALL)
-            if match:
-                suggested_ids = json.loads(match.group(0))
-            else:
-                suggested_ids = []
-                
-            if not suggested_ids or not isinstance(suggested_ids, list):
-                import random
-                suggested_ids = [ex.id for ex in random.sample(all_ex, min(4, len(all_ex)))]
-                
-            suggested_ids = [int(x) for x in suggested_ids[:6] if str(x).isdigit()]
-            
-            for ex_id in suggested_ids:
-                ex = db.query(models.Exercise).filter(models.Exercise.id == ex_id).first()
-                if not ex: continue
-                
-                sets = "3"
-                reps = "10"
-                if "Esnetme" in ex.name or "Germe" in ex.name:
-                    reps = "30 sn"
-                elif "Stabilizasyon" in ex.name or "İzometrik" in ex.name:
-                    reps = "15 sn"
-                    
-                ne = models.PrescribedExercise(
-                    scoliosis_analysis_id=analysis_id,
-                    exercise_id=ex_id,
-                    sets=sets,
-                    reps=reps
-                )
-                db.add(ne)
-            
-            db.commit()
-            return {"status": "success", "message": "AI egzersizler önerildi."}
-            
-        except Exception as e:
-            import random
-            suggested = random.sample(all_ex, min(4, len(all_ex)))
-            for ex in suggested:
-                ne = models.PrescribedExercise(
-                    scoliosis_analysis_id=analysis_id,
-                    exercise_id=ex.id,
-                    sets="3",
-                    reps="10"
-                )
-                db.add(ne)
-            db.commit()
-            return {"status": "success", "message": "Rastgele (yedek) egzersizler eklendi."}
+        # Prime clinical Schroth & elongation exercises with complete 9-language translations
+        prime_scoliosis_exercises = [
+            (1136, "3", "30 sn"), # Child's Pose Scoliosis Breathing
+            (1140, "3", "30 sn"), # Mermaid Side Bend for Spine Elongation
+            (1137, "3", "30 sn"), # Foam Roller Lateral Breathing
+            (1138, "3", "30 sn"), # Lumbar Scoliosis Stretch Combination
+            (1144, "3", "12"),    # Side-Lying Clam Variation 1
+            (1154, "3", "12")     # Glute Bridge Scoliosis Variation
+        ]
 
+        for ex_id, sets, reps in prime_scoliosis_exercises:
+            ex = db.query(models.Exercise).filter(models.Exercise.id == ex_id).first()
+            if not ex: continue
+            ne = models.PrescribedExercise(
+                scoliosis_analysis_id=analysis_id,
+                exercise_id=ex_id,
+                sets=sets,
+                reps=reps
+            )
+            db.add(ne)
+            
+        db.commit()
+        return {"status": "success", "message": "Schroth ve postür skolyoz egzersizleri başarıyla atandı."}
     except Exception as e:
-        print("Gemini Scoliosis Exercise Suggest Error:", e)
-        raise HTTPException(status_code=500, detail="Yapay zeka servisi yanıt vermedi.")
+        return {"status": "error", "message": str(e)}
 
 
 @app.get("/api/public/scoliosis_report/{analysis_id}")

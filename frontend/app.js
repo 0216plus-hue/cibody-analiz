@@ -1836,11 +1836,28 @@ async function deleteSpineAnalysis(analysisId, event) {
 
 let exerciseLibrary = [];
 
-async function loadLibrary() {
-    if (exerciseLibrary.length > 0) return;
+const EXERCISE_CATEGORY_META = {
+    'BOYUN': { icon: 'fa-head-side-couch', color: 'indigo', subtitle: 'Servikal bölge ve boyun hareketliliği' },
+    'OMURGA': { icon: 'fa-arrows-up-down', color: 'blue', subtitle: 'Omurga hizalama ve dekompresyon' },
+    'SKOLYOZ': { icon: 'fa-wave-square', color: 'purple', subtitle: 'Asimetri ve 3D omurga düzeltme' },
+    'DURUŞ': { icon: 'fa-person-walking', color: 'teal', subtitle: 'Kifoz, lordoz ve genel postür güçlendirme' },
+    'PELVİK': { icon: 'fa-ring', color: 'emerald', subtitle: 'Pelvik tilt ve merkez bölge stabilizasyonu' },
+    'OMUZ': { icon: 'fa-dumbbell', color: 'amber', subtitle: 'Skapular retraksiyon ve omuz kuşağı' },
+    'NEFES': { icon: 'fa-lungs', color: 'cyan', subtitle: 'Solunum kontrolü ve göğüs kafesi ekspansiyonu' },
+    'DİRSEK': { icon: 'fa-hand-back-fist', color: 'rose', subtitle: 'Üst ekstremite ve dirsek mobilizasyonu' },
+    'DİZ': { icon: 'fa-bone', color: 'orange', subtitle: 'Alt ekstremite hizalama ve diz stabilizasyonu' },
+    'BİLEK': { icon: 'fa-hand', color: 'slate', subtitle: 'Karpal ve el bileği kuvvetlendirme' }
+};
+
+async function loadLibrary(force = false) {
+    const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr';
+    if (!force && exerciseLibrary.length > 0 && exerciseLibrary._lang === lang) return;
     try {
-        const res = await authFetch('/api/exercises');
-        exerciseLibrary = await res.json();
+        const res = await authFetch(`/api/exercises?lang=${lang}`);
+        if (res.ok) {
+            exerciseLibrary = await res.json();
+            exerciseLibrary._lang = lang;
+        }
     } catch (e) {
         console.error("Library load error", e);
     }
@@ -1865,42 +1882,65 @@ function renderPrescribedTable(data) {
     const tbody = document.getElementById('exerciseTableBody');
     const _t = window.translateText || (s=>s);
     if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">${_t('Henüz egzersiz reçetesi oluşturulmadı.')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-medium">${_t('Henüz egzersiz reçetesi oluşturulmadı.')}</td></tr>`;
         return;
     }
     
     tbody.innerHTML = data.map(item => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-            <td class="p-3 text-center">
-                <img src="/${item.image_path}" class="w-16 h-16 object-contain bg-white p-1 rounded-lg border border-slate-200 shadow-sm mx-auto cursor-pointer hover:scale-150 transition-transform origin-left z-10 relative" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'">
+        <tr class="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
+            <td class="p-3 text-center align-middle">
+                <div class="w-16 h-16 bg-white p-1 rounded-xl border border-slate-200 shadow-sm mx-auto flex items-center justify-center overflow-hidden">
+                    <img src="/${item.image_path}" class="w-full h-full object-contain cursor-pointer hover:scale-125 transition-transform" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'">
+                </div>
             </td>
-            <td class="p-3">
-                <div class="font-bold text-slate-700 text-sm">${_t(item.name)}</div>
-                <div class="text-xs text-slate-400 mt-0.5"><span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded">${_t(item.category)}</span></div>
-                <div class="text-xs text-slate-500 mt-1" title="${_t(item.description).replace(/"/g, '&quot;')}">${_t(item.description)}</div>
+            <td class="p-3 align-middle">
+                <div class="font-black text-slate-800 text-sm mb-1">${_t(item.name)}</div>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="inline-block bg-indigo-100 text-indigo-700 text-xs px-2.5 py-0.5 rounded-full font-bold">${_t(item.category)}</span>
+                </div>
+                <div class="text-xs text-slate-500 leading-relaxed max-w-xl" title="${_t(item.description).replace(/"/g, '&quot;')}">${_t(item.description)}</div>
             </td>
-            <td class="p-3 text-center">
-                <input type="text" value="${item.sets}" onchange="updatePrescribed(${item.id}, this.value, this.parentElement.nextElementSibling.querySelector('input').value)" class="w-16 p-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 bg-white">
+            <td class="p-3 text-center align-middle">
+                <div class="inline-flex items-center justify-center border border-slate-200 rounded-xl bg-white shadow-sm overflow-hidden">
+                    <button type="button" onclick="stepSets(${item.id}, -1)" class="px-2 py-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-colors text-xs font-black">-</button>
+                    <input type="text" id="sets_input_${item.id}" value="${item.sets}" onchange="updatePrescribed(${item.id}, this.value, document.getElementById('reps_input_${item.id}').value)" class="w-10 py-1.5 text-center text-sm font-bold text-slate-700 focus:outline-none">
+                    <button type="button" onclick="stepSets(${item.id}, 1)" class="px-2 py-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-colors text-xs font-black">+</button>
+                </div>
             </td>
-            <td class="p-3 text-center">
-                <input type="text" value="${_t(item.reps)}" onchange="updatePrescribed(${item.id}, this.parentElement.previousElementSibling.querySelector('input').value, this.value)" class="w-20 p-2 border border-slate-200 rounded-lg text-center text-sm focus:outline-none focus:ring-2 focus:ring-indigo-900 bg-white">
+            <td class="p-3 text-center align-middle">
+                <div class="inline-flex items-center justify-center">
+                    <input type="text" id="reps_input_${item.id}" value="${_t(item.reps)}" onchange="updatePrescribed(${item.id}, document.getElementById('sets_input_${item.id}').value, this.value)" class="w-24 p-2 border border-slate-200 rounded-xl text-center text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm">
+                </div>
             </td>
-            <td class="p-3 text-center">
+            <td class="p-3 text-center align-middle">
                 ${item.video_url ? `
-                <div class="flex flex-col items-center justify-center gap-1">
-                    <div class="w-16 h-16 bg-white p-1 border border-slate-200 rounded-lg shrink-0">
+                <div class="flex flex-col items-center justify-center gap-1.5">
+                    <div class="w-14 h-14 bg-white p-1 border border-slate-200 rounded-xl shadow-sm shrink-0">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.video_url)}" alt="QR" class="w-full h-full object-contain">
                     </div>
-                    <a href="${item.video_url}" target="_blank" class="text-[10px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap"><i class="fa-brands fa-youtube"></i> ${_t('Video İzle')}</a>
-                </div>` : `<span class="text-xs text-slate-400">${_t('Video Yok')}</span>`}
+                    <a href="${item.video_url}" target="_blank" class="text-[11px] text-rose-600 hover:text-rose-700 font-bold inline-flex items-center gap-1 whitespace-nowrap bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded transition-colors">
+                        <i class="fa-brands fa-youtube"></i> ${_t('Video İzle')}
+                    </a>
+                </div>` : `<span class="text-xs text-slate-400 italic">${_t('Video Yok')}</span>`}
             </td>
-            <td class="p-3 text-center" data-html2canvas-ignore="true">
-                <button onclick="deletePrescribed(${item.id})" class="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors">
-                    <i class="fa-solid fa-trash"></i>
+            <td class="p-3 text-center align-middle" data-html2canvas-ignore="true">
+                <button onclick="deletePrescribed(${item.id})" class="text-slate-300 hover:text-rose-600 hover:bg-rose-50 p-2.5 rounded-xl transition-all">
+                    <i class="fa-solid fa-trash-can"></i>
                 </button>
             </td>
         </tr>
     `).join('');
+}
+
+function stepSets(assignId, delta) {
+    const input = document.getElementById(`sets_input_${assignId}`);
+    if (!input) return;
+    let current = parseInt(input.value) || 1;
+    current = Math.max(1, Math.min(10, current + delta));
+    input.value = current;
+    const repsInput = document.getElementById(`reps_input_${assignId}`);
+    const repsVal = repsInput ? repsInput.value : "10";
+    updatePrescribed(assignId, current, repsVal);
 }
 
 async function updatePrescribed(assignId, sets, reps) {
@@ -1916,7 +1956,8 @@ async function updatePrescribed(assignId, sets, reps) {
 }
 
 async function deletePrescribed(assignId) {
-    if(!confirm((window.translateText||((s)=>s))('Bu egzersizi silmek istediğinize emin misiniz?'))) return;
+    const _t = window.translateText || (s=>s);
+    if(!confirm(_t('Bu egzersizi silmek istediğinize emin misiniz?'))) return;
     try {
         await authFetch(`/api/posture/${currentAnalysisId}/exercises/${assignId}`, {
             method: 'DELETE'
@@ -1928,25 +1969,29 @@ async function deletePrescribed(assignId) {
 }
 
 async function suggestExercises() {
+    const _t = window.translateText || (s=>s);
     if(!currentAnalysisId) {
-        alert("Lütfen önce bir analiz seçin veya yeni hasta analizi yapın.");
+        alert(_t("Lütfen önce bir analiz seçin veya yeni hasta analizi yapın."));
         return;
     }
     const btn = document.getElementById('btnSuggest');
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${(window.translateText||((s)=>s))('Öneriliyor...')}`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${_t('Öneriliyor...')}`;
     btn.classList.add('opacity-50', 'pointer-events-none');
     
     try {
         const res = await authFetch(`/api/posture/${currentAnalysisId}/exercises/suggest`, { method: 'POST' });
         if(res.ok) {
             await loadPrescribedExercises();
+            if (typeof showToast === 'function') {
+                showToast(_t("Kişiselleştirilmiş klinik postür egzersizleri başarıyla önerildi."));
+            }
         } else {
             const err = await res.text(); alert('Hata oluştu: ' + res.status + ' - ' + err);
         }
     } catch(e) {
         console.error(e);
     } finally {
-        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> ${(window.translateText||((s)=>s))('AI ile Egzersiz Öner')}`;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="AI ile Egzersiz Öner">${_t('AI ile Egzersiz Öner')}</span>`;
         btn.classList.remove('opacity-50', 'pointer-events-none');
     }
 }
@@ -1954,12 +1999,13 @@ async function suggestExercises() {
 let activeCategory = null;
 
 async function openExerciseModal(context = 'posture') {
+    const _t = window.translateText || (s=>s);
     currentExerciseContext = context;
     if(context === 'posture' && !currentAnalysisId) {
-        alert("Önce bir analiz seçmelisiniz."); return;
+        alert(_t("Önce bir analiz seçmelisiniz.")); return;
     }
     if(context === 'scoliosis' && typeof window.currentScoliosisId !== 'undefined' && !window.currentScoliosisId) {
-        alert("Önce resmi kaydetmelisiniz."); return;
+        alert(_t("Önce resmi kaydetmelisiniz.")); return;
     }
     document.getElementById('exerciseModal').classList.remove('hidden');
     await loadLibrary();
@@ -1977,60 +2023,112 @@ function closeExerciseModal() {
 function renderCategories() {
     activeCategory = null;
     const container = document.getElementById('libraryList');
-    const categories = [...new Set(exerciseLibrary.map(e => e.category).filter(Boolean))].sort();
+    const _t = window.translateText || (s=>s);
     
-    container.innerHTML = categories.map(cat => `
-        <div onclick="selectCategory('${cat}')" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-indigo-500 hover:shadow-md cursor-pointer transition-all group">
-            <div class="font-bold text-slate-700 group-hover:text-indigo-700 text-lg flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-lg flex items-center justify-center">
-                    <i class="fa-solid fa-folder-open"></i>
+    // Group exercises by raw category
+    const catCounts = {};
+    exerciseLibrary.forEach(e => {
+        const key = (e.raw_category || e.category || '').toUpperCase();
+        if (key) {
+            catCounts[key] = (catCounts[key] || 0) + 1;
+        }
+    });
+
+    const knownOrder = ['BOYUN', 'OMURGA', 'SKOLYOZ', 'DURUŞ', 'PELVİK', 'OMUZ', 'NEFES', 'DİRSEK', 'DİZ', 'BİLEK'];
+    const categories = Object.keys(catCounts).sort((a, b) => {
+        const ia = knownOrder.indexOf(a);
+        const ib = knownOrder.indexOf(b);
+        if (ia !== -1 && ib !== -1) return ia - ib;
+        if (ia !== -1) return -1;
+        if (ib !== -1) return 1;
+        return a.localeCompare(b);
+    });
+    
+    container.innerHTML = categories.map(cat => {
+        const meta = EXERCISE_CATEGORY_META[cat] || { icon: 'fa-folder-open', color: 'indigo', subtitle: 'Klinik egzersizler' };
+        const count = catCounts[cat] || 0;
+        const localizedCat = _t(cat);
+        const localizedSub = _t(meta.subtitle);
+
+        return `
+            <div onclick="selectCategory('${cat}')" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between hover:border-indigo-500 hover:shadow-md cursor-pointer transition-all group">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform shadow-inner">
+                        <i class="fa-solid ${meta.icon}"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="font-black text-slate-800 group-hover:text-indigo-600 text-base transition-colors truncate">
+                            ${localizedCat}
+                        </div>
+                        <div class="text-xs text-slate-400 truncate mt-0.5">
+                            ${localizedSub}
+                        </div>
+                    </div>
                 </div>
-                ${cat}
+                <div class="flex items-center gap-3 shrink-0 ml-2">
+                    <span class="text-xs font-bold bg-slate-100 text-slate-600 group-hover:bg-indigo-100 group-hover:text-indigo-700 px-2.5 py-1 rounded-full transition-colors">
+                        ${count} ${_t('Egzersiz')}
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-indigo-600 transition-colors text-sm"></i>
+                </div>
             </div>
-            <div class="text-slate-400 group-hover:text-indigo-600 transition-colors">
-                <i class="fa-solid fa-chevron-right"></i>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function selectCategory(cat) {
     activeCategory = cat;
     document.getElementById('exerciseSearch').value = '';
-    const filtered = exerciseLibrary.filter(x => x.category === cat);
-    renderExerciseList(filtered, true);
+    const filtered = exerciseLibrary.filter(x => (x.raw_category || x.category || '').toUpperCase() === cat.toUpperCase());
+    renderExerciseList(filtered, true, cat);
 }
 
-function renderExerciseList(list, showBack = false) {
+function renderExerciseList(list, showBack = false, categoryKey = null) {
     const container = document.getElementById('libraryList');
+    const _t = window.translateText || (s=>s);
     
     let html = '';
     if (showBack) {
+        const catName = categoryKey ? _t(categoryKey) : '';
         html += `
-        <div class="col-span-full mb-2">
-            <button onclick="renderCategories()" class="text-sm font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-2 transition-colors px-2 py-1 bg-white border border-slate-200 rounded-lg inline-flex shadow-sm">
-                <i class="fa-solid fa-arrow-left"></i> ${(window.translateText||((s)=>s))('Kategorilere Dön')}
+        <div class="col-span-full mb-3 flex items-center justify-between">
+            <button onclick="renderCategories()" class="text-sm font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-2 transition-colors px-3 py-1.5 bg-white border border-slate-200 rounded-xl inline-flex shadow-sm hover:border-indigo-300">
+                <i class="fa-solid fa-arrow-left"></i> ${_t('Kategorilere Dön')}
             </button>
+            ${categoryKey ? `<span class="text-xs font-black uppercase text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100">${catName} (${list.length})</span>` : ''}
         </div>
         `;
     }
 
     if (list.length === 0) {
-        html += `<div class="col-span-full text-center text-slate-500 py-10">${(window.translateText||((s)=>s))('Sonuç bulunamadı.')}</div>`;
+        html += `<div class="col-span-full text-center text-slate-500 py-12 font-medium">${_t('Sonuç bulunamadı.')}</div>`;
     } else {
         html += list.map(item => `
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-indigo-300 transition-colors">
-                <div class="w-20 h-20 shrink-0 bg-white border border-slate-200 rounded-lg p-1 flex items-center justify-center">
-                    <img src="/${item.image_path}" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-indigo-300 hover:shadow-md transition-all">
+                <div class="flex items-start gap-4">
+                    <div class="w-20 h-20 shrink-0 bg-white border border-slate-200 rounded-xl p-1 flex items-center justify-center overflow-hidden">
+                        <img src="/${item.image_path}" class="w-full h-full object-contain" onerror="this.src='https://via.placeholder.com/150?text=Gorsel+Yok'">
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-black text-slate-800 text-sm leading-snug line-clamp-2 mb-1" title="${_t(item.name)}">${_t(item.name)}</h4>
+                        <div class="text-xs text-indigo-600 font-bold mb-1.5">
+                            <span class="bg-indigo-50 px-2 py-0.5 rounded">${_t(item.category)}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 line-clamp-3 leading-relaxed" title="${_t(item.description).replace(/"/g, '&quot;')}">${_t(item.description)}</div>
+                    </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-slate-800 text-sm truncate" title="${item.name}">${item.name}</h4>
-                    <div class="text-xs text-indigo-600 font-bold mb-1">${item.category}</div>
-                    <div class="text-xs text-slate-400 line-clamp-1" title="${item.description.replace(/"/g, '&quot;')}">${item.description}</div>
+                <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        ${item.video_url ? `
+                            <a href="${item.video_url}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg font-bold transition-colors">
+                                <i class="fa-brands fa-youtube text-sm"></i> ${_t('Video İzle')}
+                            </a>
+                        ` : `<span class="text-[11px] text-slate-400 italic">${_t('Video Yok')}</span>`}
+                    </div>
+                    <button onclick="addPrescribed(${item.id})" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm">
+                        <i class="fa-solid fa-plus"></i> ${_t('Kütüphaneden Manuel Ekle').split(' ')[0] || 'Ekle'}
+                    </button>
                 </div>
-                <button onclick="addPrescribed(${item.id})" class="bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center transition-colors shrink-0 shadow-sm">
-                    <i class="fa-solid fa-plus"></i>
-                </button>
             </div>
         `).join('');
     }
@@ -2038,7 +2136,8 @@ function renderExerciseList(list, showBack = false) {
 }
 
 function filterExercises() {
-    const q = document.getElementById('exerciseSearch').value.toLowerCase();
+    const q = document.getElementById('exerciseSearch').value.toLowerCase().trim();
+    const _t = window.translateText || (s=>s);
     
     // Eğer arama kutusu boşaldıysa kategorilere veya seçili kategoriye dön
     if (q.length < 2) {
@@ -2050,16 +2149,29 @@ function filterExercises() {
         return;
     }
     
-    // Arama yapılıyorsa global ara ve listele
-    const filtered = exerciseLibrary.filter(x => 
-        (x.name && x.name.toLowerCase().includes(q)) || 
-        (x.category && x.category.toLowerCase().includes(q))
-    ).slice(0, 50);
+    // Arama yapılıyorsa hem aktif dilde hem Türkçe başlık/açıklama/kategoride ara
+    const filtered = exerciseLibrary.filter(x => {
+        const transName = _t(x.name).toLowerCase();
+        const transDesc = _t(x.description).toLowerCase();
+        const transCat = _t(x.category).toLowerCase();
+        const origName = (x.name || '').toLowerCase();
+        const origDesc = (x.description || '').toLowerCase();
+        const origCat = (x.category || '').toLowerCase();
+        return (
+            transName.includes(q) ||
+            transDesc.includes(q) ||
+            transCat.includes(q) ||
+            origName.includes(q) ||
+            origDesc.includes(q) ||
+            origCat.includes(q)
+        );
+    }).slice(0, 50);
     
     renderExerciseList(filtered, false);
 }
 
 async function addPrescribed(exerciseId) {
+    const _t = window.translateText || (s=>s);
     try {
         let url = "";
         if (currentExerciseContext === 'posture') {
@@ -2079,12 +2191,27 @@ async function addPrescribed(exerciseId) {
             } else if (currentExerciseContext === 'scoliosis') {
                 if (typeof window.loadScoliosisAssignedExercises === 'function') window.loadScoliosisAssignedExercises();
             }
-            showToast("Egzersiz başarıyla eklendi.");
+            if (typeof showToast === 'function') {
+                showToast(_t("Egzersiz başarıyla eklendi."));
+            }
             closeExerciseModal();
         }
     } catch(e) {
         console.error("Add error", e);
     }
+}
+
+// Dil Değişikliğinde Egzersiz Verilerini Yenileme Dinleyicisi
+if (typeof window !== 'undefined') {
+    window.addEventListener('cibody:languageChanged', function(e) {
+        loadLibrary(true);
+        if (typeof currentAnalysisId !== 'undefined' && currentAnalysisId) {
+            loadPrescribedExercises();
+        }
+        if (typeof window.currentScoliosisId !== 'undefined' && window.currentScoliosisId && typeof window.loadScoliosisAssignedExercises === 'function') {
+            window.loadScoliosisAssignedExercises();
+        }
+    });
 }
 
 // PDF & QR FUNCTIONS

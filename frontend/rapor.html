@@ -26,11 +26,15 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const reportId = urlParams.get('id');
+        const reportLang = urlParams.get('lang') || (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
+        if (window.setLanguage && reportLang) {
+            window.setLanguage(reportLang, false);
+        }
 
         if(!reportId) {
             document.getElementById('content').innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded-xl">Geçersiz veya eksik rapor linki.</div>';
         } else {
-            fetch('/api/public/report/' + reportId)
+            fetch(`/api/public/report/${reportId}?lang=${encodeURIComponent(reportLang)}`)
             .then(res => res.json())
             .then(data => {
                 if(data.detail) {
@@ -267,34 +271,44 @@
                 </div>
                 
                 <div class="avoid-break page-break mt-8" id="exercisesSectionQr">
-                    <h2 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-dumbbell text-indigo-600 mr-2"></i>Kişiselleştirilmiş Egzersizleriniz</h2>
+                    <h2 class="text-xl font-bold text-slate-800 mb-4"><i class="fa-solid fa-dumbbell text-indigo-600 mr-2"></i>${_trans("Kişiselleştirilmiş Egzersizleriniz")}</h2>
                     <div class="grid grid-cols-1 gap-4">
             `;
 
             if(data.exercises && data.exercises.length > 0) {
                 data.exercises.forEach(ex => {
+                    const exName = _trans(ex.name);
+                    const exCat = _trans(ex.category);
+                    const exDesc = _trans(ex.description);
+                    const setRepText = _trans(`Set: ${ex.sets} | Tekrar: ${ex.reps}`);
+
                     html += `
-                        <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex flex-col sm:flex-row gap-4 avoid-break">
-                            <div class="w-full sm:w-1/3 flex-shrink-0 flex items-center justify-center bg-slate-50 rounded-xl p-2">
+                        <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 flex flex-col sm:flex-row gap-4 avoid-break hover:border-indigo-200 transition-colors">
+                            <div class="w-full sm:w-1/3 flex-shrink-0 flex items-center justify-center bg-slate-50 rounded-xl p-2 border border-slate-100">
                                 <img src="/${ex.image_path}" onerror="this.src='https://via.placeholder.com/150'" class="max-h-32 object-contain mix-blend-multiply">
                             </div>
                             <div class="flex-1 flex flex-col justify-between">
                                 <div>
-                                    <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded mb-2">${ex.category}</span>
-                                    <h3 class="font-bold text-lg text-slate-800 leading-tight mb-1">${ex.name}</h3>
-                                    <p class="text-sm text-slate-500 mb-3">${ex.description}</p>
+                                    <span class="inline-block bg-indigo-50 text-indigo-700 text-xs px-2.5 py-1 rounded-full font-bold mb-2 border border-indigo-100">${exCat}</span>
+                                    <h3 class="font-black text-lg text-slate-800 leading-tight mb-1.5">${exName}</h3>
+                                    <p class="text-sm text-slate-500 leading-relaxed mb-3">${exDesc}</p>
                                 </div>
                                 <div class="flex flex-wrap gap-2 items-center justify-between border-t border-slate-100 pt-3">
-                                    <div class="text-sm font-semibold text-slate-700">
-                                        <i class="fa-solid fa-rotate-right text-indigo-400 mr-1"></i> Set: ${ex.sets} | Tekrar: ${ex.reps}
+                                    <div class="text-sm font-bold text-slate-700">
+                                        <i class="fa-solid fa-rotate-right text-indigo-500 mr-1.5"></i> ${setRepText}
                                     </div>
+                                    ${ex.video_url ? `
+                                        <a href="${ex.video_url}" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg font-bold transition-colors">
+                                            <i class="fa-brands fa-youtube text-sm"></i> ${_trans('Videoyu İzle')}
+                                        </a>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
                     `;
                 });
             } else {
-                html += `<div class="p-4 bg-slate-100 text-slate-500 rounded-xl text-center">Bu analiz için henüz egzersiz atanmamış.</div>`;
+                html += `<div class="p-6 bg-slate-100 text-slate-500 rounded-2xl text-center font-medium">${_trans("Henüz egzersiz atanmamış.")}</div>`;
             }
             
             html += `</div></div>`;

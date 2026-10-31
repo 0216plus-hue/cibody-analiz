@@ -11989,6 +11989,226 @@ const I18N_PHRASES = {
     "es": "Informe Clínico de Presión del Pie y Biomecánica",
     "it": "Rapporto Clinico di Pressione del Piede e Biomeccanica",
     "pt": "Relatório Clínico de Pressão do Pé e Biomecânica"
+  },
+  "Video / QR": {
+    "en": "Video / QR",
+    "ru": "Видео / QR",
+    "ar": "فيديو / QR",
+    "de": "Video / QR",
+    "fr": "Vidéo / QR",
+    "es": "Video / QR",
+    "it": "Video / QR",
+    "pt": "Vídeo / QR"
+  },
+  "Video İzle": {
+    "en": "Watch Video",
+    "ru": "Смотреть видео",
+    "ar": "مشاهدة الفيديو",
+    "de": "Video ansehen",
+    "fr": "Voir la vidéo",
+    "es": "Ver video",
+    "it": "Guarda Video",
+    "pt": "Ver Vídeo"
+  },
+  "Videoyu İzle": {
+    "en": "Watch Video",
+    "ru": "Смотреть видео",
+    "ar": "مشاهدة الفيديو",
+    "de": "Video ansehen",
+    "fr": "Voir la vidéo",
+    "es": "Ver video",
+    "it": "Guarda Video",
+    "pt": "Ver Vídeo"
+  },
+  "Video Yok": {
+    "en": "No Video",
+    "ru": "Нет видео",
+    "ar": "لا يوجد فيديو",
+    "de": "Kein Video",
+    "fr": "Aucune vidéo",
+    "es": "Sin video",
+    "it": "Nessun Video",
+    "pt": "Sem Vídeo"
+  },
+  "Kategorilere Dön": {
+    "en": "Back to Categories",
+    "ru": "Назад к категориям",
+    "ar": "العودة إلى الفئات",
+    "de": "Zurück zu Kategorien",
+    "fr": "Retour aux catégories",
+    "es": "Volver a categorías",
+    "it": "Torna alle Categorie",
+    "pt": "Voltar às Categorias"
+  },
+  "Öneriliyor...": {
+    "en": "Recommending...",
+    "ru": "Подбор...",
+    "ar": "جارٍ الاقتراح...",
+    "de": "Wird vorgeschlagen...",
+    "fr": "Recommandation en cours...",
+    "es": "Recomendando...",
+    "it": "Consiglio in corso...",
+    "pt": "A recomendar..."
+  },
+  "Egzersiz": {
+    "en": "Exercise",
+    "ru": "Упражнение",
+    "ar": "تمرين",
+    "de": "Übung",
+    "fr": "Exercice",
+    "es": "Ejercicio",
+    "it": "Esercizio",
+    "pt": "Exercício"
+  },
+  "Egzersizler": {
+    "en": "Exercises",
+    "ru": "Упражнения",
+    "ar": "التمارين",
+    "de": "Übungen",
+    "fr": "Exercices",
+    "es": "Ejercicios",
+    "it": "Esercizi",
+    "pt": "Exercícios"
+  },
+  "Kişiselleştirilmiş Egzersizleriniz": {
+    "en": "Your Personalized Exercises",
+    "ru": "Ваши персонализированные упражнения",
+    "ar": "تمارينك المخصصة",
+    "de": "Ihre personalisierten Übungen",
+    "fr": "Vos exercices personnalisés",
+    "es": "Sus ejercicios personalizados",
+    "it": "I Tuoi Esercizi Personalizzati",
+    "pt": "Os Seus Exercícios Personalizados"
+  },
+  "Servikal bölge ve boyun hareketliliği": {
+    "en": "Cervical spine & neck mobility",
+    "ru": "Шейный отдел и подвижность шеи",
+    "ar": "الفقرات العنقية وحركية الرقبة",
+    "de": "Halswirbelsäule & Nackenmobilität",
+    "fr": "Rachis cervical et mobilité du cou",
+    "es": "Columna cervical y movilidad del cuello",
+    "it": "Rachide cervicale e mobilità del collo",
+    "pt": "Coluna cervical e mobilidade do pescoço"
+  },
+  "Omurga hizalama ve dekompresyon": {
+    "en": "Spine alignment & decompression",
+    "ru": "Выравнивание позвоночника и декомпрессия",
+    "ar": "محاذاة العمود الفقري وتخفيف الضغط",
+    "de": "Wirbelsäulenausrichtung & Dekompression",
+    "fr": "Alignement et décompression vertébrale",
+    "es": "Alineación espinal y descompresión",
+    "it": "Allineamento e decompressione spinale",
+    "pt": "Alinhamento e descompressão da coluna"
+  },
+  "Asimetri ve 3D omurga düzeltme": {
+    "en": "Asymmetry & 3D spine correction",
+    "ru": "Асимметрия и 3D коррекция позвоночника",
+    "ar": "اللاتناظر وتصحيح العمود الفقري ثلاثي الأبعاد",
+    "de": "Asymmetrie & 3D-Wirbelsäulenkorrektur",
+    "fr": "Asymétrie et correction 3D de la colonne",
+    "es": "Asimetría y corrección espinal 3D",
+    "it": "Asimmetria e correzione 3D della colonna",
+    "pt": "Assimetria e correção tridimensional da coluna"
+  },
+  "Kifoz, lordoz ve genel postür güçlendirme": {
+    "en": "Kyphosis, lordosis & posture strengthening",
+    "ru": "Кифоз, лордоз и общее укрепление осанки",
+    "ar": "الحداب والقعس وتقوية القوام العام",
+    "de": "Kyphose, Lordose & Haltungskräftigung",
+    "fr": "Cyphose, lordose et renforcement postural",
+    "es": "Cifosis, lordosis y fortalecimiento postural",
+    "it": "Cifosi, lordosi e rinforzo posturale",
+    "pt": "Cifose, lordose e fortalecimento postural"
+  },
+  "Pelvik tilt ve merkez bölge stabilizasyonu": {
+    "en": "Pelvic tilt & core stabilization",
+    "ru": "Тазовый наклон и стабилизация кора",
+    "ar": "إمالة الحوض واستقرار المركز",
+    "de": "Beckenkippung & Rumpfstabilisation",
+    "fr": "Bascule pelvienne et gainage du tronc",
+    "es": "Inclinación pélvica y estabilidad del core",
+    "it": "Inclinazione pelvica e stabilità del core",
+    "pt": "Báscula pélvica e estabilização do core"
+  },
+  "Skapular retraksiyon ve omuz kuşağı": {
+    "en": "Scapular retraction & shoulder girdle",
+    "ru": "Ретракция лопаток и плечевой пояс",
+    "ar": "ضم لوحي الكتف والحزام الكتفي",
+    "de": "Skapuläre Retraktion & Schultergürtel",
+    "fr": "Rétraction scapulaire et ceinture scapulaire",
+    "es": "Retracción escapular y cintura escapular",
+    "it": "Retrazione scapolare e cingolo scapolare",
+    "pt": "Retração escapular e cintura escapular"
+  },
+  "Solunum kontrolü ve göğüs kafesi ekspansiyonu": {
+    "en": "Breathing control & thoracic expansion",
+    "ru": "Контроль дыхания и расширение грудной клетки",
+    "ar": "التحكم بالتنفس وتمدد القفص الصدري",
+    "de": "Atemkontrolle & Brustkorbexpansion",
+    "fr": "Contrôle respiratoire et expansion thoracique",
+    "es": "Control respiratorio y expansión torácica",
+    "it": "Controllo del respiro ed espansione toracica",
+    "pt": "Controlo respiratório e expansão torácica"
+  },
+  "Üst ekstremite ve dirsek mobilizasyonu": {
+    "en": "Upper limb & elbow mobilization",
+    "ru": "Верхняя конечность и мобилизация локтя",
+    "ar": "الأطراف العلوية وحركية المرفق",
+    "de": "Obere Extremität & Ellbogenmobilisation",
+    "fr": "Membre supérieur et mobilisation du coude",
+    "es": "Extremidad superior y movilización del codo",
+    "it": "Arto superiore e mobilitazione del gomito",
+    "pt": "Membro superior e mobilização do cotovelo"
+  },
+  "Alt ekstremite hizalama ve diz stabilizasyonu": {
+    "en": "Lower limb alignment & knee stabilization",
+    "ru": "Выравнивание нижней конечности и стабилизация колена",
+    "ar": "محاذاة الأطراف السفلية واستقرار الركبة",
+    "de": "Beinachsen-Ausrichtung & Kniestabilisation",
+    "fr": "Alignement du membre inférieur et stabilité du genou",
+    "es": "Alineación de miembros inferiores y estabilidad de rodilla",
+    "it": "Allineamento arti inferiori e stabilità del ginocchio",
+    "pt": "Alinhamento dos membros inferiores e estabilidade do joelho"
+  },
+  "Karpal ve el bileği kuvvetlendirme": {
+    "en": "Carpal & wrist strengthening",
+    "ru": "Укрепление запястья и кисти",
+    "ar": "تقوية مفصل وعظام المعصم",
+    "de": "Karpal- & Handgelenkskräftigung",
+    "fr": "Renforcement carpien et du poignet",
+    "es": "Fortalecimiento carpiano y de muñeca",
+    "it": "Rinforzo carpale e del polso",
+    "pt": "Fortalecimento do carpo e do pulso"
+  },
+  "Dirsek": {
+    "en": "Elbow",
+    "ru": "Локоть",
+    "ar": "المرفق",
+    "de": "Ellbogen",
+    "fr": "Coude",
+    "es": "Codo",
+    "it": "Gomito",
+    "pt": "Cotovelo"
+  },
+  "Diz": {
+    "en": "Knee",
+    "ru": "Колено",
+    "ar": "الركبة",
+    "de": "Knie",
+    "fr": "Genou",
+    "es": "Rodilla",
+    "it": "Ginocchio",
+    "pt": "Joelho"
+  },
+  "Pelvik": {
+    "en": "Pelvic",
+    "ru": "Тазовый",
+    "ar": "الحوض",
+    "de": "Becken",
+    "fr": "Pelvien",
+    "es": "Pélvico",
+    "it": "Pelvico",
+    "pt": "Pélvico"
   }
 };
 
@@ -12128,7 +12348,7 @@ function translateText(text, targetLang = currentLang) {
     if (!text || typeof text !== 'string') return text;
     if (targetLang === 'tr') return text;
 
-    const trimmed = text.trim();
+    const trimmed = text.normalize('NFC').trim();
     if (!trimmed) return text;
 
     // A. Birebir eşleşme
@@ -12137,7 +12357,15 @@ function translateText(text, targetLang = currentLang) {
         return text.replace(trimmed, translated);
     }
 
-    // B. Bileşik Boru (' | ') Ayrımı (Hasta detay çubuğu vb.)
+    // A2. Türkçe büyük harf eşleşme (örn: "Duruş" -> "DURUŞ", "Bilek" -> "BİLEK")
+    try {
+        const trUpper = trimmed.toLocaleUpperCase('tr-TR');
+        if (I18N_PHRASES[trUpper] && I18N_PHRASES[trUpper][targetLang]) {
+            return text.replace(trimmed, I18N_PHRASES[trUpper][targetLang]);
+        }
+    } catch (e) {}
+
+    // B. Bileşik Boru (' | ') Ayrımı (Hasta detay çubuğu, Set | Tekrar vb.)
     if (trimmed.includes(' | ')) {
         const parts = trimmed.split(' | ');
         const translatedParts = parts.map(p => translateText(p, targetLang));
@@ -12299,6 +12527,36 @@ function translateText(text, targetLang = currentLang) {
         const footKey = footNMatch[1] === 'Sol' ? 'SOL AYAK' : 'SAĞ AYAK';
         const footTrans = (I18N_PHRASES[footKey] && I18N_PHRASES[footKey][targetLang]) || (footNMatch[1] + ' Foot');
         return text.replace(trimmed, `${footTrans} (n=${footNMatch[2]})`);
+    }
+
+    // Set ve Tekrar etiketleri (Set: 3, Tekrar: 10, vb.)
+    const setLabelMatch = trimmed.match(/^Set:\s*(\d+)$/i);
+    if (setLabelMatch) {
+        const setLabels = {
+            en: 'Sets', ru: 'Подходы', ar: 'المجموعات', de: 'Sätze', fr: 'Séries', es: 'Series', it: 'Serie', pt: 'Séries'
+        };
+        const lbl = setLabels[targetLang] || 'Sets';
+        return `${lbl}: ${setLabelMatch[1]}`;
+    }
+
+    const repsLabelMatch = trimmed.match(/^Tekrar:\s*(.+)$/i);
+    if (repsLabelMatch) {
+        const repLabels = {
+            en: 'Reps', ru: 'Повторы', ar: 'التكرارات', de: 'Wiederholungen', fr: 'Répétitions', es: 'Repeticiones', it: 'Ripetizioni', pt: 'Repetições'
+        };
+        const lbl = repLabels[targetLang] || 'Reps';
+        const inner = translateText(repsLabelMatch[1].trim(), targetLang);
+        return `${lbl}: ${inner}`;
+    }
+
+    // Egzersiz sayısı (örn: "180 Egzersiz", "34 egzersiz")
+    const exCountMatch = trimmed.match(/^(\d+)\s*egzersiz$/i);
+    if (exCountMatch) {
+        const exUnits = {
+            en: 'Exercises', ru: 'Упражнений', ar: 'تمريناً', de: 'Übungen', fr: 'Exercices', es: 'Ejercicios', it: 'Esercizi', pt: 'Exercícios'
+        };
+        const unit = exUnits[targetLang] || 'Exercises';
+        return `${exCountMatch[1]} ${unit}`;
     }
 
     // M. Süre / Saniye Kalıbı: "30 sn", "15 saniye", "60 sn."

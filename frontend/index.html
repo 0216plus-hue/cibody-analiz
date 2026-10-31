@@ -1274,11 +1274,11 @@
                     <div id="exercisePlanSection" class="mt-12 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
                             <div>
-                                <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-person-running text-indigo-600 mr-2"></i>Egzersiz Reçetesi <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-1 rounded ml-2">Kişiselleştirilmiş</span></h2>
-                                <p class="text-sm text-slate-500 mt-2">Bu analize özel egzersizleri planlayın. QR kod ile hasta kolayca izleyebilecektir.</p>
+                                <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-person-running text-indigo-600 mr-2"></i><span data-i18n="Egzersiz Reçetesi">Egzersiz Reçetesi</span> <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-1 rounded ml-2" data-i18n="Kişiselleştirilmiş">Kişiselleştirilmiş</span></h2>
+                                <p class="text-sm text-slate-500 mt-2" data-i18n="Bu analize özel egzersizleri planlayın. QR kod ile hasta kolayca izleyebilecektir.">Bu analize özel egzersizleri planlayın. QR kod ile hasta kolayca izleyebilecektir.</p>
                             </div>
                             <button onclick="suggestExercises()" id="btnSuggest" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm flex items-center gap-2 shadow-md transition-all">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> AI ile Egzersiz Öner
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> <span data-i18n="AI ile Egzersiz Öner">AI ile Egzersiz Öner</span>
                             </button>
                         </div>
                         
@@ -1287,11 +1287,12 @@
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase font-bold">
                                     <tr>
-                                        <th class="p-3 w-16 text-center">Görsel</th>
-                                        <th class="p-3">Egzersiz Adı & Kategori</th>
-                                        <th class="p-3 w-24 text-center">Set</th>
-                                        <th class="p-3 w-24 text-center">Tekrar</th>
-                                        <th class="p-3 w-16 text-center">İşlem</th>
+                                        <th class="p-3 w-16 text-center" data-i18n="Görsel">Görsel</th>
+                                        <th class="p-3" data-i18n="Egzersiz Adı & Kategori">Egzersiz Adı & Kategori</th>
+                                        <th class="p-3 w-24 text-center" data-i18n="Set">Set</th>
+                                        <th class="p-3 w-28 text-center" data-i18n="Tekrar">Tekrar</th>
+                                        <th class="p-3 w-28 text-center" data-i18n="Video / QR">Video / QR</th>
+                                        <th class="p-3 w-16 text-center" data-i18n="İşlem">İşlem</th>
                                     </tr>
                                 </thead>
                                 <tbody id="exerciseTableBody">
@@ -1303,10 +1304,10 @@
                         <!-- İşlem Butonları -->
                         <div class="flex justify-between items-center" data-html2canvas-ignore="true">
                             <button onclick="openExerciseModal()" class="text-indigo-600 hover:text-indigo-800 font-bold text-sm flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-lg transition-colors">
-                                <i class="fa-solid fa-plus"></i> Kütüphaneden Manuel Ekle
+                                <i class="fa-solid fa-plus"></i> <span data-i18n="Kütüphaneden Manuel Ekle">Kütüphaneden Manuel Ekle</span>
                             </button>
                             <button onclick="downloadPdf()" class="bg-indigo-900 text-white hover:bg-indigo-800 px-4 py-2 rounded-lg font-bold transition-colors shadow-sm flex items-center gap-2 text-sm whitespace-nowrap">
-                                <i class="fa-solid fa-file-pdf"></i> PDF İndir
+                                <i class="fa-solid fa-file-pdf"></i> <span data-i18n="PDF İndir">PDF İndir</span>
                             </button>
                         </div>
                     </div>
@@ -1317,8 +1318,8 @@
                             <!-- Header -->
                             <div class="flex items-center justify-between p-6 border-b border-slate-100">
                                 <div>
-                                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-book-medical text-indigo-600 mr-2"></i>Egzersiz Kütüphanesi</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Sisteme kayıtlı 1155 egzersiz arasından arama yapın.</p>
+                                    <h3 class="text-lg font-black text-slate-800"><i class="fa-solid fa-book-medical text-indigo-600 mr-2"></i><span data-i18n="Egzersiz Kütüphanesi">Egzersiz Kütüphanesi</span></h3>
+                                    <p class="text-sm text-slate-500 mt-1" data-i18n="Sisteme kayıtlı 1155 egzersiz arasından arama yapın.">Sisteme kayıtlı 1155 egzersiz arasından arama yapın.</p>
                                 </div>
                                 <button onclick="closeExerciseModal()" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center transition-colors">
                                     <i class="fa-solid fa-xmark"></i>
@@ -1331,7 +1332,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <i class="fa-solid fa-search text-slate-400"></i>
                                     </div>
-                                    <input type="text" id="exerciseSearch" onkeyup="filterExercises()" placeholder="Egzersiz adı veya kategori ara (Örn: Boyun, Skolyoz)..." class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm">
+                                    <input type="text" id="exerciseSearch" onkeyup="filterExercises()" data-i18n-placeholder="Egzersiz adı veya kategori ara (Örn: Boyun, Skolyoz)..." placeholder="Egzersiz adı veya kategori ara (Örn: Boyun, Skolyoz)..." class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm">
                                 </div>
                             </div>
                             
@@ -1340,7 +1341,7 @@
                                 <div id="libraryList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Egzersizler buraya gelecek -->
                                     <div class="text-center py-10 col-span-full text-slate-500">
-                                        <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>Kütüphane yükleniyor...
+                                        <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br><span data-i18n="Kütüphane yükleniyor...">Kütüphane yükleniyor...</span>
                                     </div>
                                 </div>
                             </div>
