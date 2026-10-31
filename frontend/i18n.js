@@ -12726,6 +12726,7 @@ function translateDom(container = (typeof document !== 'undefined' ? document : 
                     // F. Select Option Öğeleri
                     const options = container.querySelectorAll('option');
                     options.forEach(opt => {
+                        if (opt.closest && opt.closest('select.cibody-lang-select, #langSelect, #headerLangSelect')) return;
                         if (opt._tr_orig === undefined) {
                             opt._tr_orig = opt.text;
                         }
@@ -12766,6 +12767,7 @@ function translateDom(container = (typeof document !== 'undefined' ? document : 
 
                     const options = container.querySelectorAll('option');
                     options.forEach(opt => {
+                        if (opt.closest && opt.closest('select.cibody-lang-select, #langSelect, #headerLangSelect')) return;
                         if (opt._tr_orig !== undefined) {
                             opt.text = opt._tr_orig;
                         }
