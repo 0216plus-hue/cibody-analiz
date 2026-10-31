@@ -5667,8 +5667,88 @@ const I18N_PHRASES = {
     "de": "Klinische ATR-Klassifikationskriterien",
     "fr": "Critères cliniques de classification ATR",
     "es": "Criterios clínicos de clasificación del ATR",
-    "it": "Criterios clínicos de clasificazione del ATR",
-    "pt": "Criterios clínicos de clasificação do ATR"
+    "it": "Criteri clinici di classificazione dell'ATR",
+    "pt": "Critérios clínicos de classificação do ATR"
+  },
+  "0° - 4° (Normal)": {
+    "en": "0° - 4° (Normal)",
+    "ru": "0° - 4° (Норма)",
+    "ar": "0° - 4° (طبيعي)",
+    "de": "0° - 4° (Normal)",
+    "fr": "0° - 4° (Normal)",
+    "es": "0° - 4° (Normal)",
+    "it": "0° - 4° (Normale)",
+    "pt": "0° - 4° (Normal)"
+  },
+  "Fizyolojik asimetri. Rutin klinik takip yeterlidir.": {
+    "en": "Physiological asymmetry. Routine clinical follow-up is sufficient.",
+    "ru": "Физиологическая асимметрия. Достаточно рутинного клинического наблюдения.",
+    "ar": "عدم تناسق فسيولوجي. المتابعة السريرية الروتينية كافية.",
+    "de": "Physiologische Asymmetrie. Routinemäßige klinische Nachbeobachtung ist ausreichend.",
+    "fr": "Asymétrie physiologique. Un suivi clinique de routine est suffisant.",
+    "es": "Asimetría fisiológica. El seguimiento clínico de rutina es suficiente.",
+    "it": "Asimmetria fisiologica. Il follow-up clinico di routine è sufficiente.",
+    "pt": "Assimetria fisiológica. O acompanhamento clínico de rotina é suficiente."
+  },
+  "Fizyolojik asimetri. Rutin yıllık takip yeterlidir.": {
+    "en": "Physiological asymmetry. Routine annual follow-up is sufficient.",
+    "ru": "Физиологическая асимметрия. Достаточно рутинного ежегодного наблюдения.",
+    "ar": "عدم تناسق فسيولوجي. المتابعة السنوية الروتينية كافية.",
+    "de": "Physiologische Asymmetrie. Routinemäßige jährliche Nachbeobachtung ist ausreichend.",
+    "fr": "Asymétrie physiologique. Un suivi annuel de routine est suffisant.",
+    "es": "Asimetría fisiológica. El seguimiento anual de rutina es suficiente.",
+    "it": "Asimmetria fisiologica. Il follow-up annuale di routine è sufficiente.",
+    "pt": "Assimetria fisiológica. O acompanhamento anual de rotina é suficiente."
+  },
+  "5° - 7° (Hafif Rotasyon)": {
+    "en": "5° - 7° (Mild Rotation)",
+    "ru": "5° - 7° (Легкая ротация)",
+    "ar": "5° - 7° (دوران خفيف)",
+    "de": "5° - 7° (Leichte Rotation)",
+    "fr": "5° - 7° (Rotation légère)",
+    "es": "5° - 7° (Rotación leve)",
+    "it": "5° - 7° (Rotazione lieve)",
+    "pt": "5° - 7° (Rotação leve)"
+  },
+  "Hafif Rotasyon": {
+    "en": "Mild Rotation",
+    "ru": "Легкая ротация",
+    "ar": "دوران خفيف",
+    "de": "Leichte Rotation",
+    "fr": "Rotation légère",
+    "es": "Rotación leve",
+    "it": "Rotazione lieve",
+    "pt": "Rotação leve"
+  },
+  "≥ 7° - 10°+ (Belirgin)": {
+    "en": "≥ 7° - 10°+ (Significant)",
+    "ru": "≥ 7° - 10°+ (Выраженная)",
+    "ar": "≥ 7° - 10°+ (ملحوظ)",
+    "de": "≥ 7° - 10°+ (Auffällig)",
+    "fr": "≥ 7° - 10°+ (Significatif)",
+    "es": "≥ 7° - 10°+ (Significativo)",
+    "it": "≥ 7° - 10°+ (Significativo)",
+    "pt": "≥ 7° - 10°+ (Significativo)"
+  },
+  "≥ 7° - 10°+ (Belirgin Rotasyon)": {
+    "en": "≥ 7° - 10°+ (Significant Rotation)",
+    "ru": "≥ 7° - 10°+ (Выраженная ротация)",
+    "ar": "≥ 7° - 10°+ (دوران ملحوظ)",
+    "de": "≥ 7° - 10°+ (Auffällige Rotation)",
+    "fr": "≥ 7° - 10°+ (Rotation significative)",
+    "es": "≥ 7° - 10°+ (Rotación significativa)",
+    "it": "≥ 7° - 10°+ (Rotazione significativa)",
+    "pt": "≥ 7° - 10°+ (Rotação significativa)"
+  },
+  "Belirgin Rotasyon": {
+    "en": "Significant Rotation",
+    "ru": "Выраженная ротация",
+    "ar": "دوران ملحوظ",
+    "de": "Auffällige Rotation",
+    "fr": "Rotation significative",
+    "es": "Rotación significativa",
+    "it": "Rotazione significativa",
+    "pt": "Rotação significativa"
   },
   "Dönüş başlangıcı. Egzersiz ve 3-6 ayda bir izlem önerilir.": {
     "en": "Onset of rotation. Exercise and follow-up every 3-6 months recommended.",
@@ -5739,6 +5819,36 @@ const I18N_PHRASES = {
     "es": "Aún no hay mediciones de escoliómetro registradas.",
     "it": "Nessuna misurazione dello scoliometro ancora registrata.",
     "pt": "Nenhuma medição de escoliómetro registada ainda."
+  },
+  "Uzman Klinik Takip Notu:": {
+    "en": "Specialist Clinical Follow-up Note:",
+    "ru": "Клиническая заметка специалиста по наблюдению:",
+    "ar": "ملاحظة المتابعة السريرية للأخصائي:",
+    "de": "Klinische Verlaufsnotiz des Experten:",
+    "fr": "Note de suivi clinique de l'expert :",
+    "es": "Nota de seguimiento clínico del especialista:",
+    "it": "Nota di follow-up clinico dello specialista:",
+    "pt": "Nota de acompanhamento clínico do especialista:"
+  },
+  "Uzman Klinik Takip Notu": {
+    "en": "Specialist Clinical Follow-up Note",
+    "ru": "Клиническая заметка специалиста по наблюдению",
+    "ar": "ملاحظة المتابعة السريرية للأخصائي",
+    "de": "Klinische Verlaufsnotiz des Experten",
+    "fr": "Note de suivi clinique de l'expert",
+    "es": "Nota de seguimiento clínico del especialista",
+    "it": "Nota di follow-up clinico dello specialista",
+    "pt": "Nota de acompanhamento clínico do especialista"
+  },
+  "Takip & Egzersiz": {
+    "en": "Follow-up & Exercise",
+    "ru": "Наблюдение и упражнения",
+    "ar": "متابعة وتمارين",
+    "de": "Verlaufskontrolle & Übungen",
+    "fr": "Suivi & Exercices",
+    "es": "Seguimiento y Ejercicio",
+    "it": "Follow-up ed Esercizi",
+    "pt": "Acompanhamento e Exercício"
   },
   "Adam's İleri Eğilme Testi (Forward Bend Test) ve dijital sensör ölçümlerine dayanmaktadır.": {
     "en": "Based on Adam's Forward Bend Test and digital sensor measurements.",

@@ -2420,6 +2420,9 @@ function downloadScoliometerPdf() {
     // Unhide and enable pdf mode
     reportEl.classList.remove("hidden");
     reportEl.classList.add("scoliometer-pdf-mode");
+    if (lang === 'ar') {
+        reportEl.setAttribute('dir', 'rtl');
+    }
 
     if (window.applyTranslations) {
         window.applyTranslations(reportEl);
@@ -2437,6 +2440,7 @@ function downloadScoliometerPdf() {
     const cleanup = () => {
         reportEl.classList.remove("scoliometer-pdf-mode");
         reportEl.classList.add("hidden");
+        if (lang === 'ar') reportEl.removeAttribute('dir');
     };
 
     const instance = html2pdf().set(opt).from(reportEl);
@@ -2447,7 +2451,7 @@ function downloadScoliometerPdf() {
         }).catch(err => {
             cleanup();
             console.error("Scoliometer PDF error:", err);
-            showToast("PDF indirilirken hata oluştu.");
+            showToast(_trans("PDF indirilirken hata oluştu."));
         });
     } else {
         instance.toPdf().get("pdf").then(function(pdf) {
@@ -2460,7 +2464,7 @@ function downloadScoliometerPdf() {
         }).catch(err => {
             cleanup();
             console.error("Scoliometer PDF error:", err);
-            showToast("PDF indirilirken hata oluştu.");
+            showToast(_trans("PDF indirilirken hata oluştu."));
         });
     }
 }
