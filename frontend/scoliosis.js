@@ -681,14 +681,16 @@ function renderAiReports(fullText) {
 async function loadScoliosisAssignedExercises() {
     if(!window.currentScoliosisId) return;
     const tbody = document.getElementById('scoliosisAssignedExercisesList');
+    const _t = window.translateText || (s=>s);
     tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i></td></tr>';
     
     try {
-        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises`);
+        const lang = window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr';
+        const res = await authFetch(`/api/scoliosis/${window.currentScoliosisId}/exercises?lang=${lang}`);
         const data = await res.json();
         
         if(!data.exercises || data.exercises.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-slate-400">Henüz egzersiz atanmamış.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-400 font-medium">${_t('Henüz egzersiz atanmamış.')}</td></tr>`;
             return;
         }
         
@@ -702,14 +704,21 @@ async function loadScoliosisAssignedExercises() {
                     </div>
                 </td>
                 <td class="px-4 py-3">
-                    <div class="font-bold text-slate-800 text-sm">${ex.name}</div>
-                    <div class="text-xs text-slate-500">${ex.category}</div>
+                    <div class="font-bold text-slate-800 text-sm">${_t(ex.name)}</div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">${_t(ex.category)}</span>
+                        ${ex.video_url ? `
+                            <a href="${ex.video_url}" target="_blank" class="text-[11px] text-rose-500 hover:text-rose-600 font-bold inline-flex items-center gap-1">
+                                <i class="fa-brands fa-youtube"></i> ${_t('Video İzle')}
+                            </a>
+                        ` : ''}
+                    </div>
                 </td>
                 <td class="px-4 py-3">
-                    <input type="text" value="${ex.sets}" onchange="updateScoliosisExercise(${ex.id}, this, 'sets')" class="w-16 p-1 text-sm border-slate-200 rounded focus:ring-indigo-500 focus:border-indigo-500 text-center bg-white shadow-inner">
+                    <input type="text" value="${ex.sets}" onchange="updateScoliosisExercise(${ex.id}, this, 'sets')" class="w-16 p-1 text-sm border-slate-200 rounded focus:ring-indigo-500 focus:border-indigo-500 text-center bg-white shadow-inner font-bold">
                 </td>
                 <td class="px-4 py-3">
-                    <input type="text" value="${ex.reps}" onchange="updateScoliosisExercise(${ex.id}, this, 'reps')" class="w-20 p-1 text-sm border-slate-200 rounded focus:ring-indigo-500 focus:border-indigo-500 text-center bg-white shadow-inner">
+                    <input type="text" value="${_t(ex.reps)}" onchange="updateScoliosisExercise(${ex.id}, this, 'reps')" class="w-24 p-1 text-sm border-slate-200 rounded focus:ring-indigo-500 focus:border-indigo-500 text-center bg-white shadow-inner font-bold">
                 </td>
                 <td class="px-4 py-3 text-center">
                     <button onclick="deleteScoliosisExercise(${ex.id})" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors">

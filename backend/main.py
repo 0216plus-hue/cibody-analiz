@@ -138,8 +138,20 @@ def startup_event():
             db.commit()
 
             count = db.execute(text("SELECT COUNT(*) FROM exercise_translations")).scalar()
-            if count == 0:
-                seed_rows = [
+            if count < 9240:
+                gz_path = os.path.join(os.path.dirname(__file__), 'exercise_translations.json.gz')
+                if os.path.exists(gz_path):
+                    import gzip, json
+                    with gzip.open(gz_path, 'rt', encoding='utf-8') as f:
+                        all_translations = json.load(f)
+                    db.execute(text("""
+                        INSERT OR REPLACE INTO exercise_translations (exercise_id, lang, name, category, description)
+                        VALUES (:id, :l, :n, :c, :d)
+                    """), all_translations)
+                    db.commit()
+                    print(f"Başarıyla {len(all_translations)} egzersiz çevirisi (9 dil) yüklendi.")
+                else:
+                    seed_rows = [
                     (523, 'en', "Brugger's Wall Posture", 'Spine', 'Lean against the wall with heels, hips, shoulders, and head in contact. Place hands on the wall with palms facing forward. Pull shoulder blades down and toward the center, retract the chin. Breathe deeply. Strengthens chest and back muscles to improve posture and increase flexibility.'),
                     (523, 'ru', 'Постуральное упражнение Брюггера у стены', 'Позвоночник', 'Прислонитесь к стене: пятки, ягодицы, плечи и голова касаются стены. Ладони направлены вперед на стену. Опустите и сведите лопатки, слегка втяните подбородок. Дышите глубоко. Укрепляет мышцы груди и спины, улучшая осанку.'),
                     (523, 'ar', 'وضعية جدار بروجر', 'العمود الفقري', 'استند إلى الجدار بحيث تلامس الكعبين والأرداف والكتفين والرأس الجدار. ضع يديك على الجدار بحيث تكون راحتا اليد للأمام. اسحب لوحي الكتف للأسفل وإلى المنتصف، وتراجع بالذقن. خذ نفسًا عميقًا. يقوي عضلات الصدر والظهر لتحسين الوضعية.'),
@@ -180,12 +192,12 @@ def startup_event():
                     (207, 'es', 'Propiocepción cervical con láser extensión (ojos cerrados) 2', 'Cuello', 'Colóquese un puntero láser en la cabeza, extienda ligeramente el cuello (20°) y fije un punto en la pared. Cierre los ojos, vuelva a la posición neutra y regrese. Abra los ojos para comprobar.'),
                     (207, 'it', 'Propriocezione cervicale laser estensione (occhi chiusi) 2', 'Collo', 'Fissa un puntatore laser sulla testa, porta il collo in leggera estensione (20°) e individua un punto sulla parete. Chiudi gli occhi, torna in posizione neutra e ritorna. Apri gli occhi per controllare.'),
                     (207, 'pt', 'Propriocepção cervical laser extensão (olhos fechados) 2', 'Pescoço', 'Fixe um ponteiro laser na cabeça, estenda ligeiramente o pescoço (20°) e marque um ponto na parede. Feche os olhos, regresse à posição neutra e volte. Abra os olhos para verificar.')
-                ]
-                for r in seed_rows:
-                    db.execute(text("INSERT OR REPLACE INTO exercise_translations (exercise_id, lang, name, category, description) VALUES (:ex_id, :lang, :name, :category, :description)"),
-                               {"ex_id": r[0], "lang": r[1], "name": r[2], "category": r[3], "description": r[4]})
-                db.commit()
-                print(f"Başarıyla {len(seed_rows)} egzersiz çevirisi eklendi.")
+                    ]
+                    for r in seed_rows:
+                        db.execute(text("INSERT OR REPLACE INTO exercise_translations (exercise_id, lang, name, category, description) VALUES (:ex_id, :lang, :name, :category, :description)"),
+                                   {"ex_id": r[0], "lang": r[1], "name": r[2], "category": r[3], "description": r[4]})
+                    db.commit()
+                    print(f"Başarıyla {len(seed_rows)} egzersiz çevirisi eklendi.")
         except Exception as e:
             print("exercise_translations startup init error:", e)
 
