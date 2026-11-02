@@ -265,7 +265,10 @@ function switchTab(tabId) {
                 if(typeof initFootSimulation === 'function') initFootSimulation();
                 if(typeof onFootViewerResize === 'function') onFootViewerResize();
             }, 120);
-            if(currentPatientId && typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
+            if(currentPatientId) {
+                if(typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
+                if(typeof generateFootScanQR === 'function') generateFootScanQR();
+            }
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -3512,6 +3515,22 @@ function displayFootScanResult(m) {
     }
 }
 
+async function deleteFootScan(measurementId) {
+    if(!confirm("Bu 3D ayak tarama kaydını silmek istediğinizden emin misiniz?")) return;
+    try {
+        const res = await authFetch(`/api/foot_scan/${measurementId}`, { method: 'DELETE' });
+        if(res.ok) {
+            if(typeof showToast === 'function') showToast("3D Tarama kaydı başarıyla silindi.");
+            if(currentPatientId) loadFootScanHistory(currentPatientId);
+        } else {
+            alert("Silme işlemi başarısız oldu.");
+        }
+    } catch(e) {
+        console.error("deleteFootScan error:", e);
+        alert("Sunucuya bağlanılamadı.");
+    }
+}
+
 async function loadFootScanHistory(patientId) {
     if(!patientId) return;
     try {
@@ -3535,9 +3554,12 @@ async function loadFootScanHistory(patientId) {
                 let lenStr = `<span class="text-slate-700 font-mono text-xs font-semibold">${lenNum} mm</span>`;
 
                 let actionButtons = `
-                    <div class="flex items-center justify-center gap-2">
-                        <button onclick="displayFootScanResult({arch_height_right: ${archNum}, foot_length_right: ${lenNum}})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="displayFootScanResult({arch_height_right: ${archNum}, foot_length_right: ${lenNum}})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1">
                             <i class="fa-solid fa-cube"></i> 3D İncele
+                        </button>
+                        <button onclick="deleteFootScan(${row.id})" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors border border-rose-200 text-xs font-bold flex items-center gap-1" title="Taramayı Sil">
+                            <i class="fa-solid fa-trash"></i> Sil
                         </button>
                     </div>
                 `;

@@ -2028,6 +2028,33 @@ def download_foot_scan_stl(measurement_id: int, side: str, db: Session = Depends
     filename = f"Hasta_{m.patient_id}_{side.upper()}_Ayak.stl"
     return FileResponse(local_path, media_type="application/sla", filename=filename)
 
+@app.delete("/api/foot_scan/{measurement_id}")
+def delete_foot_scan(measurement_id: int, db: Session = Depends(get_db)):
+    try:
+        m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.id == measurement_id).first()
+        if not m:
+            raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+        
+        # Dosyaları diskten de temizle
+        try:
+            if m.right_foot_stl:
+                p = m.right_foot_stl.lstrip("/")
+                if os.path.exists(p): os.remove(p)
+            if m.left_foot_stl:
+                p = m.left_foot_stl.lstrip("/")
+                if os.path.exists(p): os.remove(p)
+        except Exception as file_err:
+            print("Foot scan file delete warning:", file_err)
+
+        db.delete(m)
+        db.commit()
+        return {"status": "success", "message": "3D Tarama kaydı başarıyla silindi"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 class SimulationCreate(BaseModel):
     patient_id: int
     cobb_angle: float

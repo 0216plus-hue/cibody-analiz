@@ -3551,15 +3551,15 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <button onclick="toggleFootScanQR()" id="btnToggleFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-emerald-200 flex items-center gap-2 text-xs">
+                <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-emerald-200 flex items-center gap-2 text-xs">
                     <i class="fa-solid fa-qrcode text-base"></i>
-                    <span>iPhone QR Kodu Aç / Kapat</span>
+                    <span>QR Kodu Yenile</span>
                 </button>
             </div>
         </div>
 
-        <!-- Açılır QR Eşleşme Paneli -->
-        <div id="footScanQrCollapse" class="hidden mt-6 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-center gap-8 bg-slate-50/80 p-6 rounded-2xl">
+        <!-- QR Eşleşme Paneli (Varsayılan Olarak Açık ve Hazır) -->
+        <div id="footScanQrCollapse" class="mt-6 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-center gap-8 bg-slate-50/80 p-6 rounded-2xl">
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
                 <div id="footScanQR" class="w-44 h-44 flex items-center justify-center">
                     <i class="fa-solid fa-qrcode text-5xl text-slate-300"></i>
@@ -3723,7 +3723,7 @@
                         <th class="px-4 py-3">Tarih</th>
                         <th class="px-4 py-3 text-center">Ark Yüksekliği</th>
                         <th class="px-4 py-3 text-center">Ayak Uzunluğu</th>
-                        <th class="px-4 py-3 text-center">3D İncele / İndir</th>
+                        <th class="px-4 py-3 text-center">İşlemler (İncele / Sil)</th>
                     </tr>
                 </thead>
                 <tbody id="footScanHistoryList" class="divide-y divide-slate-100">
