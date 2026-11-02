@@ -3644,10 +3644,10 @@
             </div>
 
             <!-- Sağ Kontrol & Biyomekanik Parametre Paneli (Tıpkı 3D Omurgadaki gibi) -->
-            <div class="w-full lg:w-1/4 bg-slate-50 border-l border-slate-200 p-5 flex flex-col justify-between overflow-y-auto">
-                <div>
-                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
-                        <h3 class="font-black text-slate-800 text-sm flex items-center gap-2">
+            <div class="w-full lg:w-1/4 bg-slate-50 border-l border-slate-200 p-4 flex flex-col justify-between overflow-y-auto">
+                <div class="space-y-3.5">
+                    <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                        <h3 class="font-black text-slate-800 text-xs flex items-center gap-1.5">
                             <i class="fa-solid fa-sliders text-emerald-600"></i> Biyomekanik Parametreler
                         </h3>
                         <span id="footScanBadgeStatus" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
@@ -3655,51 +3655,107 @@
                         </span>
                     </div>
 
-                    <!-- Ark Yüksekliği Kontrolü & Canlı Değişim -->
-                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <label class="text-xs font-bold text-slate-700">Medial Ark Yüksekliği</label>
-                            <span id="displayArchVal" class="text-sm font-black text-emerald-600 font-mono">18.5 mm</span>
+                    <!-- 1. MEDİAL ARK YÜKSEKLİĞİ -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold text-slate-700">Medial Longitudinal Ark</label>
+                            <span id="displayArchVal" class="text-xs font-black text-emerald-600 font-mono">18.5 mm</span>
                         </div>
-                        <input type="range" id="sliderArchHeight" min="8" max="26" step="0.5" value="18.5" oninput="onFootSliderChange()" class="w-full accent-emerald-600 cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400 font-medium mt-1">
-                            <span>Düz Taban (8mm)</span>
+                        <input type="range" id="sliderArchHeight" min="8" max="26" step="0.5" value="18.5" oninput="onFootSliderChange()" class="w-full accent-emerald-600 cursor-pointer h-1.5">
+                        <div class="flex justify-between text-[9px] text-slate-400 font-medium mt-0.5">
+                            <span>Pes Planus (8mm)</span>
                             <span>Normal (16mm)</span>
-                            <span>Yüksek (26mm)</span>
+                            <span>Pes Kavus (26mm)</span>
                         </div>
                     </div>
 
-                    <!-- Pronasyon / Supinasyon Eğimi -->
-                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <label class="text-xs font-bold text-slate-700">Topuk Devrilme Açısı</label>
-                            <span id="displayPostingVal" class="text-sm font-black text-indigo-600 font-mono">0.0°</span>
+                    <!-- 2. TOPUK (KALKANEUS) ANALİZİ KARTI -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                                <i class="fa-solid fa-bullseye text-amber-500"></i> Topuk (Kalkaneus) Durumu
+                            </label>
+                            <span id="displayPostingVal" class="text-xs font-black text-indigo-600 font-mono">0.0° Nötr</span>
                         </div>
-                        <input type="range" id="sliderPosting" min="-8" max="8" step="0.5" value="0" oninput="onFootSliderChange()" class="w-full accent-indigo-600 cursor-pointer">
-                        <div class="flex justify-between text-[10px] text-slate-400 font-medium mt-1">
+                        <input type="range" id="sliderPosting" min="-8" max="8" step="0.5" value="0" oninput="onFootSliderChange()" class="w-full accent-indigo-600 cursor-pointer h-1.5">
+                        <div class="flex justify-between text-[9px] text-slate-400 font-medium mt-0.5">
                             <span>Pronasyon (-8°)</span>
                             <span>Nötr (0°)</span>
                             <span>Supinasyon (+8°)</span>
                         </div>
+                        
+                        <div class="mt-2.5 pt-2 border-t border-slate-100 grid grid-cols-2 gap-1.5 text-[10px]">
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Kalkaneal Pitch Açısı</span>
+                                <span id="displayPitchAngle" class="font-bold text-slate-700">20.5° (Normal: 18-24°)</span>
+                            </div>
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Topuk Temas Genişliği</span>
+                                <span id="displayHeelWidth" class="font-bold text-slate-700">64 mm</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Ayak Boyutu / Numarası -->
-                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <label class="text-xs font-bold text-slate-700">Ayak Uzunluğu</label>
-                            <span id="displayLengthVal" class="text-sm font-black text-slate-800 font-mono">265 mm (No: 42)</span>
+                    <!-- 3. ÖN AYAK SULKUSU & TRANSVERS ARK (MTP BÖLGESİ) KARTI -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                                <i class="fa-solid fa-wave-square text-sky-500"></i> Ön Ayak Sulkusu & MTP Hattı
+                            </label>
+                            <span id="displaySulcusStatus" class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">Dengeli</span>
                         </div>
-                        <input type="range" id="sliderFootLength" min="220" max="310" step="1" value="265" oninput="onFootSliderChange()" class="w-full accent-slate-800 cursor-pointer">
+                        <p class="text-[9.5px] text-slate-500 leading-tight mb-2">
+                            Tarak kemikleri ile parmak kökleri arasındaki anatomik oluk ve transvers ark kemeri.
+                        </p>
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px]">
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Metatars (Tarak) Genişliği</span>
+                                <span id="displayMetatarsalWidth" class="font-bold text-slate-700">94 mm</span>
+                            </div>
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Transvers Ark Durumu</span>
+                                <span id="displayTransverseArch" class="font-bold text-slate-700">Fizyolojik Kemer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. BAŞPARMAK (HALLUX) & DİZİLİM ANALİZİ -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                                <i class="fa-solid fa-fingerprint text-purple-500"></i> Parmak Yapısı & Hallux Açısı
+                            </label>
+                            <span id="displayHalluxAngle" class="text-[10px] font-bold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">8.5° (Normal)</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1.5 text-[10px] mt-1.5">
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Ayak Tipi</span>
+                                <span id="displayFootType" class="font-bold text-slate-700">Mısır Tipi (Hallux Uzun)</span>
+                            </div>
+                            <div class="bg-slate-50 p-1.5 rounded-lg">
+                                <span class="text-slate-400 block text-[9px]">Çekiç Parmak / Çakışma</span>
+                                <span id="displayToeDeformity" class="font-bold text-emerald-600">Tespit Edilmedi</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. AYAK BOYUTU / NUMARASI -->
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] font-bold text-slate-700">Ayak Uzunluğu</label>
+                            <span id="displayLengthVal" class="text-xs font-black text-slate-800 font-mono">265 mm (No: 42)</span>
+                        </div>
+                        <input type="range" id="sliderFootLength" min="220" max="310" step="1" value="265" oninput="onFootSliderChange()" class="w-full accent-slate-800 cursor-pointer h-1.5">
                     </div>
                 </div>
 
-                <!-- İndirme / Export Butonları (İsteğe bağlı) -->
-                <div class="pt-3 border-t border-slate-200 space-y-2">
-                    <button type="button" onclick="exportCurrentFootStl('right')" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition-all">
+                <!-- İndirme / Export Butonları -->
+                <div class="pt-3 mt-3 border-t border-slate-200 space-y-1.5">
+                    <button type="button" onclick="exportCurrentFootStl('right')" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all">
                         <i class="fa-solid fa-download"></i>
                         <span>Sağ Ayak STL İndir (CNC)</span>
                     </button>
-                    <button type="button" onclick="exportCurrentFootStl('left')" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-200 flex items-center justify-center gap-2 transition-all">
+                    <button type="button" onclick="exportCurrentFootStl('left')" class="w-full py-2 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-all">
                         <i class="fa-solid fa-download"></i>
                         <span>Sol Ayak STL İndir (CNC)</span>
                     </button>

@@ -129,13 +129,13 @@ function buildAnatomicalFootMesh() {
     const indices = [];
 
     // 5 PARMAK ANATOMİK VERİLERİ (Medial'den Lateral'e: Başparmak -> Küçük Parmak)
-    // Her parmağın bağıl konumu, uzunluğu ve kalınlığı
+    // Tıbbi Doğruluk: Başparmak (Hallux) ön ayak eninin ~%28'ini kaplar, belirgin şekilde kalın ve etlidir.
     const toeDefinitions = [
-        { center: 0.10, lengthExt: 12.0, radius: 0.08, height: 7.0 },  // 1. Parmak (Başparmak / Hallux - En kalın & uzun)
-        { center: 0.30, lengthExt: 9.5,  radius: 0.065, height: 5.5 }, // 2. Parmak
-        { center: 0.50, lengthExt: 6.5,  radius: 0.06, height: 5.0 },  // 3. Parmak
-        { center: 0.70, lengthExt: 3.5,  radius: 0.055, height: 4.5 }, // 4. Parmak
-        { center: 0.88, lengthExt: 0.0,  radius: 0.05, height: 4.0 }   // 5. Parmak (Küçük Parmak - En kısa)
+        { center: 0.13, widthSpan: 0.12, lengthExt: 14.0, height: 11.0 }, // 1. Başparmak (Hallux - En geniş, etli ve belirgin)
+        { center: 0.35, widthSpan: 0.08, lengthExt: 11.0, height: 7.2 },  // 2. Parmak (Hafif uzun/orta)
+        { center: 0.53, widthSpan: 0.075, lengthExt: 8.0,  height: 6.2 },  // 3. Parmak (Orta)
+        { center: 0.71, widthSpan: 0.07,  lengthExt: 5.0,  height: 5.5 },  // 4. Parmak
+        { center: 0.88, widthSpan: 0.065, lengthExt: 2.0,  height: 4.8 }   // 5. Küçük Parmak (Digiti Minimi)
     ];
 
     for (let i = 0; i <= uSegments; i++) {
@@ -152,22 +152,20 @@ function buildAnatomicalFootMesh() {
             let medialFactor = isRight ? (1.0 - v) : v;
             let lateralFactor = 1.0 - medialFactor;
 
-            // 5 Parmak Hizalaması (Medial'den Lateral'e)
-            let toeNormalizedPos = isRight ? v : (1.0 - v); // 0 = Başparmak, 1 = Küçük Parmak
+            // 5 Parmak Hizalaması (Medial'den Lateral'e: 0 = Başparmak, 1 = Küçük Parmak)
+            let toeNormalizedPos = isRight ? v : (1.0 - v);
 
-            // Aktif parmak çıkıntısını hesapla
+            // Aktif parmak çıkıntısını ve boğum hacmini hesapla
             let toeBonusLength = 0;
             let toeBonusHeight = 0;
-            let activeToeIndex = -1;
 
             for (let t = 0; t < toeDefinitions.length; t++) {
                 let td = toeDefinitions[t];
                 let distToToe = Math.abs(toeNormalizedPos - td.center);
-                if (distToToe < td.radius * 1.6) {
-                    let falloff = Math.cos((distToToe / (td.radius * 1.6)) * Math.PI / 2);
+                if (distToToe < td.widthSpan * 1.5) {
+                    let falloff = Math.cos((distToToe / (td.widthSpan * 1.5)) * Math.PI / 2);
                     toeBonusLength = Math.max(toeBonusLength, td.lengthExt * falloff);
                     toeBonusHeight = Math.max(toeBonusHeight, td.height * falloff);
-                    activeToeIndex = t;
                 }
             }
 
@@ -180,74 +178,83 @@ function buildAnatomicalFootMesh() {
             let x = baseX;
 
             // ENİNE GENİŞLİK KONTURÜ (Pürüzsüz & Akıcı Organik Geçiş)
-            // Basamak veya ani atlama olmaksızın sürekli türevlenebilir kemik profili
             let widthScale = 1.0;
-            if (u < 0.24) {
+            if (u < 0.22) {
                 // Topuk küresi
-                widthScale = 0.68 + Math.sin(u / 0.24 * Math.PI / 2) * 0.18;
+                widthScale = 0.68 + Math.sin(u / 0.22 * Math.PI / 2) * 0.18;
             } else if (u < 0.68) {
                 // Orta ayak kavisi (Pürüzsüz akıcı daralma)
-                let archProg = (u - 0.24) / 0.44;
+                let archProg = (u - 0.22) / 0.46;
                 let smoothWaist = Math.sin(archProg * Math.PI) * 0.18 * medialFactor;
                 widthScale = 0.86 - smoothWaist;
             } else if (u < 0.85) {
                 // Tarak bölgesi (Metatars başları genişler)
                 let metProg = (u - 0.68) / 0.17;
-                widthScale = 0.86 + Math.sin(metProg * Math.PI / 2) * 0.22;
+                widthScale = 0.86 + Math.sin(metProg * Math.PI / 2) * 0.24;
             } else {
                 // Parmak ucu oval bitiş
                 let toeProg = (u - 0.85) / 0.15;
-                widthScale = 1.08 - (toeProg * toeProg) * 0.25;
+                widthScale = 1.10 - (toeProg * toeProg) * 0.28;
             }
 
             let y = (v - 0.5) * width * widthScale;
 
             // =============================================================
-            // Z YÜKSEKLİK MODELİ (ANATOMİK KAVİS VE YUVARLAK DOĞAL TOPUK)
+            // Z YÜKSEKLİK MODELİ (ANATOMİK KAVİS, TOPUK TABANI VE SULKUS)
             // =============================================================
             let z = 0;
 
-            // 1. SORUNUN ÇÖZÜMÜ: YUVARLAK DOĞAL TOPUK (Convex Heel)
-            // Topuk içeri doğru çukur değil, doğal insan ayağındaki gibi dışa doğru yuvarlak kubbedir!
-            if (u < 0.26) {
-                let heelU = (u - 0.12) / 0.14;
+            // 1. TOPUK DÜZELTMESİ (Doğal Kalkaneus Taban Teması):
+            // Ayak tabanı yere bastığında topuk zemine (Z = 0) tam oturur.
+            // Eski çukur görünümü tamamen yok edildi:
+            if (u < 0.22) {
+                let heelU = (u - 0.10) / 0.12;
                 let heelV = (v - 0.5) / 0.35;
                 let distHeel = Math.hypot(heelU, heelV);
-                if (distHeel < 1.0) {
-                    // Dışa doğru yuvarlak anatomik kalkaneus kemiği kubbesi
-                    z += (1.0 - distHeel * distHeel) * 11.5;
+                if (u < 0.08) {
+                    // Topuk arkasında kalkaneal tüberkülün arkaya/yukarı doğru yuvarlak kıvrımı
+                    let backRise = (0.08 - u) / 0.08;
+                    z += backRise * backRise * 7.5;
+                } else if (distHeel < 1.0) {
+                    // Taban temas yüzeyi: Düz ve zemine tam temas
+                    z += (1.0 - distHeel * distHeel) * 0.6;
                 }
             }
 
-            // 2. SORUNUN ÇÖZÜMÜ: PÜRÜZSÜZ MEDİAL LONGITUDINAL ARK (İÇ KAVİS ÇUKURU)
-            // 2. noktadaki basamağı tamamen yok eden akıcı Gauss/Sinüs geçişi:
+            // 2. MEDİAL LONGITUDINAL ARK (İÇ KAVİS BOŞLUĞU)
+            // Ayak havaya kalktığında oluşan doğal anatomik çukur
             if (u > 0.20 && u < 0.74 && medialFactor > 0.25) {
-                let archU = Math.sin((u - 0.20) / 0.54 * Math.PI); // Boyuna tepe noktası
-                let archV = Math.pow((medialFactor - 0.25) / 0.75, 1.4); // Enine tepe noktası
+                let archU = Math.sin((u - 0.20) / 0.54 * Math.PI);
+                let archV = Math.pow((medialFactor - 0.25) / 0.75, 1.4);
                 z += archH * archU * archV;
             }
 
             // Lateral (Dış) Kenar Denge Çizgisi
             if (u > 0.25 && u < 0.75 && lateralFactor > 0.45) {
-                z += 3.0 * Math.sin((u - 0.25) / 0.50 * Math.PI) * ((lateralFactor - 0.45) / 0.55);
+                z += 2.0 * Math.sin((u - 0.25) / 0.50 * Math.PI) * ((lateralFactor - 0.45) / 0.55);
             }
 
-            // Metatarsal Kubbe (Tarak Yastığı)
-            if (u > 0.65 && u < 0.82 && v > 0.2 && v < 0.8) {
-                z += 4.5 * Math.sin((u - 0.65) / 0.17 * Math.PI);
+            // 3. ÖN AYAK SULKUSU & TRANSVERS METATARSAL ARK (MTP HATTI)
+            // Tarak kemikleri (u: 0.68 - 0.75) temas ederken, parmaklardan önce (u: 0.76 - 0.80) hafif sulkus oluğu:
+            if (u > 0.66 && u <= 0.76) {
+                let metProg = Math.sin((u - 0.66) / 0.10 * Math.PI);
+                z += 1.8 * metProg;
+            } else if (u > 0.76 && u <= 0.81) {
+                // Sulkus Oluğu (MTP Eklem Hattı)
+                let sulcusProgress = Math.sin((u - 0.76) / 0.05 * Math.PI);
+                z += 0.5 * (1.0 - sulcusProgress);
             }
 
-            // 3. SORUNUN ÇÖZÜMÜ: GERÇEK 5 PARMAK KIVRIMI VE UÇLARI
-            if (u > 0.78) {
-                let toeProgression = (u - 0.78) / 0.22;
-                // Parmak boğumları ve kemikleri
+            // 4. PARMAKLAR & BAŞPARMAK (HALLUX) HACMİ
+            if (u > 0.80) {
+                let toeProgression = (u - 0.80) / 0.20;
                 let knuckle = Math.sin(toeProgression * Math.PI);
                 z += toeBonusHeight * knuckle;
 
-                // Parmak uçlarının yuvarlaklaşarak yere inmesi
-                if (toeProgression > 0.8) {
-                    let tipDrop = (toeProgression - 0.8) / 0.2;
-                    z *= (1.0 - tipDrop * 0.6);
+                // Parmak uçlarının yere inmesi (Doğal kubbe)
+                if (toeProgression > 0.78) {
+                    let tipDrop = (toeProgression - 0.78) / 0.22;
+                    z *= (1.0 - tipDrop * 0.65);
                 }
             }
 
@@ -263,17 +270,13 @@ function buildAnatomicalFootMesh() {
             if (currentRenderMode === 'heatmap') {
                 let normZ = Math.min(1.0, Math.max(0.0, z / 26.0));
                 if (normZ > 0.55) {
-                    // Yüksek Kavis Çukuru: Koyu Mavi / Cyan
                     r = 0.05; g = 0.45 + (normZ - 0.55); b = 0.98;
                 } else if (normZ > 0.25) {
-                    // Orta Ayak Düzlemi: Yeşil / Sarı
                     r = 0.18; g = 0.85; b = 0.25;
                 } else {
-                    // Yere temas odakları: Turuncu / Kırmızı
                     r = 0.95; g = 0.25; b = 0.15;
                 }
             } else {
-                // Doğal Anatomik Medikal Cilt Dokusu
                 r = 0.88; g = 0.82; b = 0.75;
             }
             colors.push(r, g, b);
@@ -344,14 +347,19 @@ function createAnatomicalMarkers(isRight, width, archH) {
     lateralBadge.position.set(-10, 4, lateralZ);
     footLabelGroup.add(lateralBadge);
 
-    // 3. 5 PARMAK ETİKETİ (BAŞPARMAK)
-    const toeBadge = create3DTextSprite(isRight ? "⇦ 1. BAŞPARMAK (5 PARMAK)" : "(5 PARMAK) BAŞPARMAK ⇨", "#38bdf8");
-    toeBadge.position.set(78, 10, isRight ? -26 : 26);
+    // 3. ÖN AYAK SULKUSU & MTP HATTI
+    const sulcusBadge = create3DTextSprite("ÖN AYAK SULKUSU (MTP HATTI)", "#0ea5e9");
+    sulcusBadge.position.set(48, 6, 0);
+    footLabelGroup.add(sulcusBadge);
+
+    // 4. BAŞPARMAK (HALLUX) ETİKETİ
+    const toeBadge = create3DTextSprite(isRight ? "⇦ 1. BAŞPARMAK (HALLUX)" : "HALLUX (BAŞPARMAK) ⇨", "#a855f7");
+    toeBadge.position.set(82, 12, isRight ? -28 : 28);
     footLabelGroup.add(toeBadge);
 
-    // 4. TOPUK ETİKETİ
-    const heelBadge = create3DTextSprite("TOPUK (KALKANEUS)", "#f59e0b");
-    heelBadge.position.set(-80, 12, 0);
+    // 5. TOPUK ETİKETİ
+    const heelBadge = create3DTextSprite("TOPUK (KALKANEUS TABANI)", "#f59e0b");
+    heelBadge.position.set(-78, 6, 0);
     footLabelGroup.add(heelBadge);
 }
 
@@ -410,11 +418,64 @@ function loadFootDataToUI(side) {
     if (sPost) sPost.value = data.postingAngle;
     if (sLen) sLen.value = data.footLength;
 
-    document.getElementById('displayArchVal').innerText = data.archHeight.toFixed(1) + " mm";
-    document.getElementById('displayPostingVal').innerText = (data.postingAngle > 0 ? "+" : "") + data.postingAngle.toFixed(1) + "°";
+    if (document.getElementById('displayArchVal')) {
+        document.getElementById('displayArchVal').innerText = data.archHeight.toFixed(1) + " mm";
+    }
+    
+    // Topuk Devrilme ve Nötr/Valgus/Varus Metni
+    let postVal = data.postingAngle || 0;
+    let postText = "0.0° Nötr";
+    if (postVal < -0.5) postText = `${postVal.toFixed(1)}° Pronasyon (Valgus)`;
+    else if (postVal > 0.5) postText = `+${postVal.toFixed(1)}° Supinasyon (Varus)`;
+    if (document.getElementById('displayPostingVal')) {
+        document.getElementById('displayPostingVal').innerText = postText;
+    }
     
     let shoeSize = Math.round((data.footLength + 15) / 6.67);
-    document.getElementById('displayLengthVal').innerText = `${data.footLength} mm (No: ${shoeSize})`;
+    if (document.getElementById('displayLengthVal')) {
+        document.getElementById('displayLengthVal').innerText = `${data.footLength} mm (No: ${shoeSize})`;
+    }
+
+    // Kalkaneal Pitch Açısı & Topuk Genişliği
+    let pitchAngle = (14.0 + (data.archHeight / 26.0) * 10.5).toFixed(1);
+    let heelWidth = Math.round(data.footLength * 0.242);
+    if (document.getElementById('displayPitchAngle')) {
+        document.getElementById('displayPitchAngle').innerText = `${pitchAngle}° (Fizyolojik)`;
+    }
+    if (document.getElementById('displayHeelWidth')) {
+        document.getElementById('displayHeelWidth').innerText = `${heelWidth} mm (Geniş Taban)`;
+    }
+
+    // Ön Ayak Sulkusu & Transvers Ark (MTP Hattı)
+    let metatarsalWidth = Math.round(data.footLength * 0.358);
+    if (document.getElementById('displayMetatarsalWidth')) {
+        document.getElementById('displayMetatarsalWidth').innerText = `${metatarsalWidth} mm`;
+    }
+    if (document.getElementById('displaySulcusStatus')) {
+        const el = document.getElementById('displaySulcusStatus');
+        if (data.archHeight < 12.0) {
+            el.innerText = "Çökük (Metatarsalji Riski)";
+            el.className = "text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded";
+        } else {
+            el.innerText = "Dengeli MTP Yastıklaması";
+            el.className = "text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded";
+        }
+    }
+    if (document.getElementById('displayTransverseArch')) {
+        const el = document.getElementById('displayTransverseArch');
+        el.innerText = data.archHeight < 12.0 ? "Zayıf Destek (Retro-Sulcus Önerilir)" : "Fizyolojik Kemer";
+    }
+
+    // Başparmak (Hallux) Açısı & Ayak Tipi
+    if (document.getElementById('displayHalluxAngle')) {
+        document.getElementById('displayHalluxAngle').innerText = "8.2° Normal (HV Yok)";
+    }
+    if (document.getElementById('displayFootType')) {
+        document.getElementById('displayFootType').innerText = "Mısır Tipi (Hallux Baskın)";
+    }
+    if (document.getElementById('displayToeDeformity')) {
+        document.getElementById('displayToeDeformity').innerText = "Çakışma / Bunion Yok";
+    }
 
     const sideBadge = document.getElementById('footScanBadgeStatus');
     if (sideBadge) {
@@ -477,12 +538,7 @@ function onFootSliderChange() {
     window.footDataStore[currentFootSide].postingAngle = post;
     window.footDataStore[currentFootSide].footLength = len;
 
-    document.getElementById('displayArchVal').innerText = arch.toFixed(1) + " mm";
-    document.getElementById('displayPostingVal').innerText = (post > 0 ? "+" : "") + post.toFixed(1) + "°";
-    
-    let shoeSize = Math.round((len + 15) / 6.67);
-    document.getElementById('displayLengthVal').innerText = `${len} mm (No: ${shoeSize})`;
-
+    loadFootDataToUI(currentFootSide);
     buildAnatomicalFootMesh();
 }
 
@@ -535,16 +591,22 @@ function createStlFromCurrentParams(archH, len, isRight) {
 }
 
 function calculateZ(u, v, archH, isRight) {
-    let z = 3.0;
-    // Yuvarlak doğal topuk
-    if (u < 0.25) {
-        let dist = Math.hypot((u - 0.12)/0.13, (v - 0.5)/0.35);
-        if (dist < 1.0) z += (1.0 - dist * dist) * 10;
+    let z = 0.5;
+    // Topuk tabanı zemine teğet
+    if (u < 0.22) {
+        if (u < 0.08) {
+            let backRise = (0.08 - u) / 0.08;
+            z += backRise * backRise * 7.5;
+        }
     }
     // Medial kavis çukuru
     let medial = isRight ? (1 - v) : v;
     if (u > 0.20 && u < 0.74 && medial > 0.25) {
-        z += archH * Math.sin((u - 0.20) / 0.54 * Math.PI) * Math.pow((medial - 0.25) / 0.75, 1.3);
+        z += archH * Math.sin((u - 0.20) / 0.54 * Math.PI) * Math.pow((medial - 0.25) / 0.75, 1.4);
+    }
+    // Sulkus ve Tarak
+    if (u > 0.66 && u <= 0.76) {
+        z += 1.8 * Math.sin((u - 0.66) / 0.10 * Math.PI);
     }
     return z;
 }

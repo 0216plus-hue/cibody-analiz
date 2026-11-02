@@ -320,22 +320,24 @@ function generateFootStlBlob(archHeight, footLength, isRight) {
     const cols = 12;
 
     function getZ(u, v) {
-        let z = 3.5;
-        // Topuk çukuru
-        if (u < 0.25) {
-            let dist = Math.hypot(u - 0.15, v - 0.5);
-            z += Math.max(0, (0.32 - dist) * 14);
+        let z = 0.5;
+        // Topuk tabanı: Zemine teğet doğal temas
+        if (u < 0.22) {
+            if (u < 0.08) {
+                let backRise = (0.08 - u) / 0.08;
+                z += backRise * backRise * 7.5;
+            }
         }
         // Medial kavis (Doğru Anatomik Yönelim: Sağ ayakta sol/iç, Sol ayakta sağ/iç)
         let innerSide = isRight ? (1 - v) : v;
-        if (u > 0.25 && u < 0.75 && innerSide > 0.35) {
-            let archU = Math.sin((u - 0.25) / 0.5 * Math.PI);
-            let archV = (innerSide - 0.35) / 0.65;
+        if (u > 0.20 && u < 0.74 && innerSide > 0.25) {
+            let archU = Math.sin((u - 0.20) / 0.54 * Math.PI);
+            let archV = Math.pow((innerSide - 0.25) / 0.75, 1.4);
             z += archHeight * archU * archV;
         }
-        // Metatarsal yükselti
-        if (u > 0.62 && u < 0.78 && v > 0.3 && v < 0.7) {
-            z += 4.5 * Math.sin((u - 0.62) / 0.16 * Math.PI);
+        // Metatarsal yükselti ve Ön Ayak Sulkusu
+        if (u > 0.66 && u <= 0.76) {
+            z += 1.8 * Math.sin((u - 0.66) / 0.10 * Math.PI);
         }
         return z;
     }
