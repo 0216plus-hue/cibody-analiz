@@ -3494,24 +3494,27 @@ function toggleFootScanQR() {
 function displayFootScanResult(m) {
     if(!m) return;
     
-    // Ölçüm değerleri
-    const archVal = m.arch_height_right || m.arch_height_left || 18.5;
-    const lenVal = m.foot_length_right || m.foot_length_left || 265;
+    // Sağ ve Sol ayak için bağımsız sakla
+    if(window.footDataStore) {
+        if(m.arch_height_right || m.foot_length_right) {
+            window.footDataStore.right.archHeight = m.arch_height_right || 18.8;
+            window.footDataStore.right.footLength = m.foot_length_right || 266;
+        }
+        if(m.arch_height_left || m.foot_length_left) {
+            window.footDataStore.left.archHeight = m.arch_height_left || 17.2;
+            window.footDataStore.left.footLength = m.foot_length_left || 263;
+        }
+    }
     
-    const sliderArch = document.getElementById('sliderArchHeight');
-    const sliderLen = document.getElementById('sliderFootLength');
-    if(sliderArch) sliderArch.value = archVal;
-    if(sliderLen) sliderLen.value = lenVal;
-    
-    if(typeof onFootSliderChange === 'function') {
-        onFootSliderChange();
+    if(typeof loadFootDataToUI === 'function') {
+        loadFootDataToUI(currentFootSide);
+    }
+    if(typeof buildAnatomicalFootMesh === 'function') {
+        buildAnatomicalFootMesh();
     }
 
-    const badge = document.getElementById('footScanBadgeStatus');
-    if(badge) badge.innerText = "Yeni Tarama Geldi (" + archVal + " mm)";
-
     if(typeof showToast === 'function') {
-        showToast("Yeni 3D Ayak Taraması Başarıyla Ekrana Yüklendi!");
+        showToast("Yeni 3D Ayak Taraması Başarıyla Yüklendi!");
     }
 }
 
@@ -3548,14 +3551,17 @@ async function loadFootScanHistory(patientId) {
             tbody.innerHTML = '';
             data.scans.forEach((row, idx) => {
                 let d = row.date ? new Date(row.date).toLocaleString('tr-TR') : '-';
-                let archNum = row.arch_height_right || row.arch_height_left || 18.5;
-                let lenNum = row.foot_length_right || row.foot_length_left || 265;
-                let archStr = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold font-mono text-xs">${archNum} mm</span>`;
-                let lenStr = `<span class="text-slate-700 font-mono text-xs font-semibold">${lenNum} mm</span>`;
+                let rArch = row.arch_height_right || 18.8;
+                let rLen = row.foot_length_right || 266;
+                let lArch = row.arch_height_left || 17.2;
+                let lLen = row.foot_length_left || 263;
+
+                let archStr = `<div class="text-xs font-mono font-bold"><span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Sağ: ${rArch} mm</span> <span class="text-teal-700 bg-teal-50 px-2 py-0.5 rounded ml-1">Sol: ${lArch} mm</span></div>`;
+                let lenStr = `<div class="text-xs font-mono text-slate-700 font-semibold">Sağ: ${rLen} mm | Sol: ${lLen} mm</div>`;
 
                 let actionButtons = `
                     <div class="flex items-center justify-center gap-1.5">
-                        <button onclick="displayFootScanResult({arch_height_right: ${archNum}, foot_length_right: ${lenNum}})" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1">
+                        <button onclick='displayFootScanResult(${JSON.stringify(row)})' class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1">
                             <i class="fa-solid fa-cube"></i> 3D İncele
                         </button>
                         <button onclick="deleteFootScan(${row.id})" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors border border-rose-200 text-xs font-bold flex items-center gap-1" title="Taramayı Sil">
@@ -3576,18 +3582,7 @@ async function loadFootScanHistory(patientId) {
 
             // En son kaydı ilk açılışta 3D modele yükle
             if(data.scans.length > 0) {
-                const latest = data.scans[0];
-                const arch = latest.arch_height_right || latest.arch_height_left || 18.5;
-                const len = latest.foot_length_right || latest.foot_length_left || 265;
-                if(typeof footParams !== 'undefined') {
-                    footParams.archHeight = arch;
-                    footParams.footLength = len;
-                    const slArch = document.getElementById('sliderArchHeight');
-                    const slLen = document.getElementById('sliderFootLength');
-                    if(slArch) slArch.value = arch;
-                    if(slLen) slLen.value = len;
-                    if(typeof onFootSliderChange === 'function') onFootSliderChange();
-                }
+                displayFootScanResult(data.scans[0]);
             }
         }
     } catch(e) {
