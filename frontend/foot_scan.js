@@ -289,7 +289,7 @@ async function sendScansToDesktop() {
         formData.append('arch_height_left', completedScans.left.arch);
         formData.append('foot_length_left', completedScans.left.length);
     }
-    formData.append('notes', "iPhone Canlı Kamera 3D Taraması");
+    formData.append('notes', "Mobil Canlı Kamera 3D Taraması");
 
     try {
         const response = await fetch(`/api/foot_scan/upload/${token}`, {

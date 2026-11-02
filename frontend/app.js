@@ -3453,7 +3453,7 @@ async function generateFootScanQR() {
         }
     } catch(e) {
         console.error("generateFootScanQR error:", e);
-        btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> iPhone İçin QR Kod Oluştur ve Bağlan';
+        btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> Yeni QR Kod Oluştur';
         btn.disabled = false;
     }
 }

@@ -1033,7 +1033,7 @@
                     <i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i> <span>Kişiye Özel Tabanlık</span>
                 </button>
                 <button onclick="switchTab('footScanTab')" id="btn_footScanTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
-                    <i class="fa-solid fa-cube mr-2 text-emerald-600"></i> <span>3D Ayak Tarama (iPhone)</span>
+                    <i class="fa-solid fa-cube mr-2 text-emerald-600"></i> <span>3D Ayak Tarama</span>
                 </button>
 
             </div>
@@ -3530,55 +3530,60 @@
 <!-- SEKME: 3D AYAK TARAMA & SİMÜLASYON -->
 <div id="footScanTab" class="hidden">
     
-    <!-- Üst Kontrol & QR Eşleşme Çubuğu -->
+    <!-- Üst Kontrol & QR Eşleşme Alanı (Tek Bölüm / Kompakt ve Akıcı Tasarım) -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-6 p-6">
-        <div class="flex flex-col md:flex-row gap-6 items-center justify-between">
-            <div class="flex-1 text-center md:text-left">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+            
+            <!-- Sol: Başlık, Bilgi & Hızlı Kılavuz -->
+            <div class="flex-1 text-center lg:text-left">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2.5">
                     <i class="fa-solid fa-cube text-emerald-600"></i>
-                    <span>Apple iPhone Canlı 3D Ayak Tarama</span>
+                    <span>Mobil Canlı 3D Ayak Tarama</span>
                 </div>
-                <h2 class="text-xl font-black text-slate-800 mb-1 flex items-center justify-center md:justify-start gap-2">
+                <h2 class="text-xl font-black text-slate-800 mb-1.5 flex items-center justify-center lg:justify-start gap-2">
                     <i class="fa-solid fa-shoe-prints text-emerald-600"></i> 3D Ayak Anatomisi & Kavis İnceleme
                 </h2>
-                <p class="text-slate-600 text-xs leading-relaxed max-w-xl">
-                    iPhone kamerasıyla ayağı 20 saniye tarayarak anatomik modeli sisteme aktarın. Fare ile ayağı <b>360° serbestçe çevirip</b> kavis çukurunu, topuk açısını ve taban basışını inceleyebilirsiniz.
+                <p class="text-slate-600 text-xs leading-relaxed max-w-xl mb-3">
+                    Telefon kamerasıyla ayağı 20 saniye tarayarak anatomik modeli sisteme aktarın. Fare ile ayağı <b>360° serbestçe çevirip</b> kavis çukurunu, topuk temasını ve basışını inceleyebilirsiniz.
                 </p>
-                <!-- iPhone Uyarısı -->
-                <p class="text-[11px] text-amber-700 font-semibold mt-2">
-                    <i class="fa-solid fa-triangle-exclamation mr-1 text-amber-500"></i> Canlı kamera taraması yalnızca Apple iPhone (TrueDepth özellikli) cihazlarda geçerlidir.
-                </p>
-            </div>
 
-            <div class="flex items-center gap-3">
-                <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-emerald-200 flex items-center gap-2 text-xs">
-                    <i class="fa-solid fa-qrcode text-base"></i>
-                    <span>QR Kodu Yenile</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- QR Eşleşme Paneli (Varsayılan Olarak Açık ve Hazır) -->
-        <div id="footScanQrCollapse" class="mt-6 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-center gap-8 bg-slate-50/80 p-6 rounded-2xl">
-            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
-                <div id="footScanQR" class="w-44 h-44 flex items-center justify-center">
-                    <i class="fa-solid fa-qrcode text-5xl text-slate-300"></i>
+                <!-- Adımlar & Canlı Durum -->
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-[11px] text-slate-600 font-medium">
+                    <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+                        <strong class="text-emerald-600">1.</strong> QR Kodu Okutun
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+                        <strong class="text-emerald-600">2.</strong> 20 Sn Taramayı Başlatın
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
+                        <strong class="text-emerald-600">3.</strong> "Gönder" Deyin, 3D Ekrana Gelsin
+                    </span>
                 </div>
-                <p class="text-[11px] text-slate-500 font-semibold mt-2">iPhone Kameranızla Okutun</p>
-            </div>
-            <div class="text-center md:text-left max-w-sm">
-                <h4 class="font-bold text-slate-800 text-sm mb-1">iPhone İle Canlı 20 Saniyelik Tarama:</h4>
-                <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside leading-relaxed">
-                    <li>Kamerayla QR kodu okutun.</li>
-                    <li>Ayağı ekrandaki yeşil kılavuza hizalayıp <b>"Taramayı Başlat (20 sn)"</b>a basın.</li>
-                    <li>İlk 10 sn boyuna, son 10 sn enine kavis çukurunu gezdirin.</li>
-                    <li><b>"Bilgisayara Gönder"</b> deyin; 3D model ekranda anında güncellensin!</li>
-                </ol>
-                <div id="footScanStatus" class="hidden mt-3 p-2.5 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-semibold flex items-center">
+
+                <div id="footScanStatus" class="hidden mt-3 p-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center border border-emerald-200 w-fit mx-auto lg:mx-0">
                     <i class="fa-solid fa-circle-notch fa-spin mr-2 text-emerald-600"></i>
-                    <span>iPhone ile eşleşme bekleniyor veya tarama yapılıyor...</span>
+                    <span>Mobil cihaz ile eşleşme bekleniyor veya tarama yapılıyor...</span>
                 </div>
             </div>
+
+            <!-- Sağ: QR Kod Kartı & Yenile Butonu (Kompakt ve Şık) -->
+            <div id="footScanQrCollapse" class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/90 border border-slate-200 p-3.5 rounded-2xl shrink-0">
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
+                    <div id="footScanQR" class="w-32 h-32 flex items-center justify-center">
+                        <i class="fa-solid fa-qrcode text-4xl text-slate-300"></i>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold mt-1.5">Telefonla Okutun</p>
+                </div>
+                
+                <div class="flex flex-col gap-2">
+                    <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-emerald-200 flex items-center justify-center gap-2 text-xs whitespace-nowrap">
+                        <i class="fa-solid fa-rotate text-sm"></i>
+                        <span>Yeni QR Oluştur</span>
+                    </button>
+                    <span class="text-[10px] text-slate-400 text-center">Otomatik Eşleşir</span>
+                </div>
+            </div>
+
         </div>
     </div>
 
