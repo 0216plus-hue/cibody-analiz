@@ -3,175 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Ayak Tarayıcı (iPhone) - CIBODY</title>
+    <title>3D Canlı Ayak Tarayıcı - CIBODY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { overscroll-behavior: none; touch-action: manipulation; }
-        .glow-mesh {
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
-        }
-        .scanning-line {
+        
+        /* Lazer Tarama Çizgisi */
+        .laser-beam {
             position: absolute;
+            left: 0;
             width: 100%;
             height: 3px;
-            background: linear-gradient(90deg, transparent, #10b981, transparent);
-            box-shadow: 0 0 12px #10b981;
-            animation: scanMove 2.5s ease-in-out infinite alternate;
+            background: linear-gradient(90deg, transparent, #10b981 30%, #34d399 50%, #10b981 70%, transparent);
+            box-shadow: 0 0 15px #10b981, 0 0 30px #34d399;
+            z-index: 20;
+            display: none;
         }
-        @keyframes scanMove {
-            0% { top: 5%; opacity: 0.3; }
-            100% { top: 92%; opacity: 1; }
+        .laser-active {
+            display: block;
+            animation: laserScan 2s ease-in-out infinite alternate;
+        }
+        @keyframes laserScan {
+            0% { top: 8%; opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { top: 90%; opacity: 0.4; }
+        }
+
+        /* Ayak Kılavuz Silueti */
+        .foot-silhouette {
+            position: absolute;
+            inset: 12%;
+            border: 2px dashed rgba(16, 185, 129, 0.4);
+            border-radius: 45% 45% 40% 40% / 60% 60% 40% 40%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .scanning-mesh {
+            background-image: 
+                linear-gradient(rgba(16, 185, 129, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-4 font-sans select-none">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-3 font-sans select-none">
 
-    <!-- ÜST BAŞLIK & İPHONE UYARISI -->
-    <header class="w-full max-w-md mx-auto pt-2">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white shadow-lg shadow-emerald-900/40">
-                    <i class="fa-solid fa-cube text-base"></i>
+    <!-- ÜST BAŞLIK & HASTA BİLGİSİ -->
+    <header class="w-full max-w-md mx-auto pt-1">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-800/80">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-900/40">
+                    <i class="fa-solid fa-cube text-sm"></i>
                 </div>
                 <div>
-                    <h1 class="text-sm font-bold tracking-wide text-white">CIBODY 3D AYAK TARAMA</h1>
-                    <p class="text-[11px] text-emerald-400 font-medium">TrueDepth / CNC CAD-CAM Köprüsü</p>
+                    <h1 class="text-xs font-bold tracking-wide text-white" id="patientNameDisplay">Hasta Doğrulanıyor...</h1>
+                    <p class="text-[10px] text-emerald-400 font-medium">3D Canlı Ayak Tarama Oturumu</p>
                 </div>
             </div>
-            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <i class="fa-brands fa-apple mr-1"></i>iOS
-            </span>
-        </div>
-
-        <!-- İPHONE ZORUNLULUK UYARISI (ÖNEMLİ BİLGİLENDİRME) -->
-        <div class="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
-            <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5 shrink-0"></i>
-            <div>
-                <h2 class="text-xs font-bold text-amber-300">ÖNEMLİ CİHAZ UYARISI</h2>
-                <p class="text-[11px] text-amber-200/90 leading-relaxed mt-0.5">
-                    Bu 3D derinlik ve yüzey tarama özelliği <strong>sadece Apple iPhone</strong> (TrueDepth / FaceID ön kameralı) cihazlarda geçerlidir.
-                </p>
-            </div>
-        </div>
-    </header>
-
-    <!-- ANA İÇERİK BÖLÜMÜ -->
-    <main class="w-full max-w-md mx-auto my-auto py-4">
-
-        <!-- 1. AUTH / DOĞRULAMA DURUMU -->
-        <div id="authSection" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 text-center">
-            <div id="loadingSpinner" class="py-6 flex flex-col items-center">
-                <div class="w-10 h-10 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-xs text-slate-400 mt-3 font-medium">Oturum doğrulanıyor...</p>
-            </div>
-
-            <div id="patientInfoBox" class="hidden">
-                <div class="w-12 h-12 mx-auto rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-lg mb-2">
-                    <i class="fa-solid fa-user-check text-emerald-400"></i>
-                </div>
-                <h3 class="text-base font-bold text-white" id="patientNameDisplay">Yükleniyor...</h3>
-                <p class="text-xs text-emerald-400 font-semibold mt-0.5">3D Tarama Oturumu Aktif</p>
-            </div>
-
-            <div id="authErrorBox" class="hidden py-4 text-rose-400 text-xs">
-                <i class="fa-solid fa-circle-xmark text-2xl mb-2"></i>
-                <p id="authErrorMsg">Geçersiz veya süresi dolmuş tarama bağlantısı.</p>
-            </div>
-        </div>
-
-        <!-- 2. TARAMA PANELİ -->
-        <div id="scanPanel" class="hidden mt-4 space-y-3">
-
-            <!-- AYAK SEÇİMİ (SAĞ / SOL) -->
-            <div class="grid grid-cols-2 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800">
-                <button type="button" id="tabRightFoot" onclick="selectFootSide('right')" class="py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-shoe-prints"></i> Sağ Ayak
-                </button>
-                <button type="button" id="tabLeftFoot" onclick="selectFootSide('left')" class="py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-shoe-prints -scale-x-100"></i> Sol Ayak
-                </button>
-            </div>
-
-            <!-- TARAMA VEYA STL YÜKLEME KARTI -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-bold text-slate-300" id="currentFootTitle">Sağ Ayak 3D Modeli</span>
-                    <span id="footStatusBadge" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-400 border border-slate-700">
-                        Hazır Değil
-                    </span>
-                </div>
-
-                <!-- 3D VİZÜALİZASYON KUTUSU -->
-                <div class="relative w-full h-44 rounded-xl bg-slate-950 border border-slate-800/90 flex flex-col items-center justify-center overflow-hidden mb-3">
-                    <div class="scanning-line"></div>
-                    <i class="fa-solid fa-cube text-4xl text-slate-700/60 mb-2"></i>
-                    <p class="text-xs text-slate-400 font-medium px-4 text-center" id="scanPreviewText">
-                        iPhone ile tarayın veya STL dosyası ekleyin
-                    </p>
-                    <div id="modelFileInfo" class="hidden text-center z-10">
-                        <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-1"></i>
-                        <p class="text-xs font-bold text-white" id="fileNameDisplay"></p>
-                        <p class="text-[10px] text-emerald-400/90" id="fileSizeDisplay"></p>
-                    </div>
-                </div>
-
-                <!-- AKSİYON BUTONLARI -->
-                <div class="space-y-2">
-                    <!-- STL Dosyası Seç / Yükle -->
-                    <label class="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-xs font-semibold cursor-pointer transition-all active:scale-[0.98]">
-                        <i class="fa-solid fa-file-arrow-up text-emerald-400"></i>
-                        <span id="uploadBtnText">iPhone'dan STL / OBJ Seç</span>
-                        <input type="file" id="stlFileInput" accept=".stl,.obj" class="hidden" onchange="handleFileSelect(event)">
-                    </label>
-
-                    <!-- Otomatik Test / Örnek 3D Model Üret -->
-                    <button type="button" onclick="generateDemoModel()" class="w-full py-2 px-3 rounded-xl bg-indigo-950/40 hover:bg-indigo-900/50 text-indigo-300 border border-indigo-700/40 text-[11px] font-semibold transition-all active:scale-[0.98] flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-wand-magic-sparkles text-indigo-400"></i>
-                        <span>Örnek 3D Ayak STL'i Oluştur (Hızlı Test)</span>
-                    </button>
-                </div>
-
-                <!-- BİYOMETRİK DETAYLAR -->
-                <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800/80 text-[11px]">
-                    <div>
-                        <label class="text-slate-400 block mb-1">Ark Yüksekliği (mm)</label>
-                        <input type="number" id="archHeightInput" value="18.5" step="0.5" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500 text-xs">
-                    </div>
-                    <div>
-                        <label class="text-slate-400 block mb-1">Ayak Uzunluğu (mm)</label>
-                        <input type="number" id="footLengthInput" value="265" step="1" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-white font-mono focus:outline-none focus:border-emerald-500 text-xs">
-                    </div>
-                </div>
-            </div>
-
-            <!-- GÖNDER BUTONU -->
-            <button type="button" id="btnSubmitAll" onclick="submitScanToDesktop()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-sm shadow-lg shadow-emerald-950/60 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-paper-plane"></i>
-                <span>Bilgisayara Gönder (3D STL Aktar)</span>
+            <!-- Kamera Değiştir (Ön / Arka) -->
+            <button type="button" onclick="toggleCameraFacing()" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-300 border border-slate-700 active:scale-95 flex items-center gap-1.5">
+                <i class="fa-solid fa-camera-rotate text-emerald-400"></i>
+                <span id="cameraModeText">Ön Kamera</span>
             </button>
         </div>
 
-        <!-- 3. BAŞARILI EKRANI -->
-        <div id="successPanel" class="hidden bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 text-center shadow-xl">
-            <div class="w-16 h-16 rounded-full bg-emerald-500/10 border-2 border-emerald-500/40 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-3">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white mb-1">3D Tarama Aktarıldı!</h3>
-            <p class="text-xs text-slate-300 leading-relaxed mb-4">
-                3D ayak verileriniz ve STL dosyalarınız bilgisayar ekranına ulaştı. Masaüstü uygulamasından 3D modeli inceleyebilir ve CNC için indirebilirsiniz.
+        <!-- CİHAZ BİLGİLENDİRMESİ -->
+        <div class="mt-2 bg-emerald-950/40 border border-emerald-500/30 rounded-xl px-3 py-2 flex items-center gap-2">
+            <i class="fa-brands fa-apple text-emerald-400 text-sm shrink-0"></i>
+            <p class="text-[10px] text-emerald-300 leading-tight">
+                Apple iPhone TrueDepth 3D Tarayıcı • Uygulama yüklemeden doğrudan tarar.
             </p>
-            <button type="button" onclick="location.reload()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700">
-                Yeni Tarama Yap
+        </div>
+    </header>
+
+    <!-- ANA TARAMA ALANI -->
+    <main class="w-full max-w-md mx-auto my-auto py-2 flex flex-col items-center">
+
+        <!-- AYAK SEÇİMİ (SAĞ / SOL) -->
+        <div class="w-full grid grid-cols-2 gap-2 bg-slate-900/90 p-1.5 rounded-xl border border-slate-800 mb-3">
+            <button type="button" id="tabRightFoot" onclick="switchFootSide('right')" class="py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-shoe-prints"></i>
+                <span>Sağ Ayak</span>
+                <span id="rightCheckBadge" class="hidden text-emerald-300"><i class="fa-solid fa-circle-check"></i></span>
+            </button>
+            <button type="button" id="tabLeftFoot" onclick="switchFootSide('left')" class="py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2">
+                <i class="fa-solid fa-shoe-prints -scale-x-100"></i>
+                <span>Sol Ayak</span>
+                <span id="leftCheckBadge" class="hidden text-emerald-300"><i class="fa-solid fa-circle-check"></i></span>
+            </button>
+        </div>
+
+        <!-- CANLI KAMERA VİZÖRÜ -->
+        <div class="relative w-full aspect-[3/4] max-h-[52vh] rounded-2xl bg-black border-2 border-slate-800 overflow-hidden shadow-2xl flex items-center justify-center">
+            
+            <!-- Kamera Video Akışı -->
+            <video id="cameraVideo" autoplay playsinline muted class="w-full h-full object-cover transform scale-x-[-1]"></video>
+
+            <!-- Lazer Tarama Efekti -->
+            <div id="laserBeam" class="laser-beam"></div>
+
+            <!-- Ayak Silueti Kılavuzu -->
+            <div id="footGuide" class="foot-silhouette flex items-center justify-center">
+                <span class="text-[11px] font-bold text-emerald-400/70 bg-black/50 px-2 py-0.5 rounded-full" id="guideText">
+                    Ayağınızı kılavuza hizalayın
+                </span>
+            </div>
+
+            <!-- Saydam 3D Nokta Matrisi Kaplaması -->
+            <div class="absolute inset-0 scanning-mesh pointer-events-none opacity-40"></div>
+
+            <!-- Tarama İlerleme Göstergesi (Overlay) -->
+            <div id="scanProgressOverlay" class="hidden absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex flex-col items-center justify-center z-30">
+                <div class="relative w-24 h-24 flex items-center justify-center mb-3">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="42" stroke="#1e293b" stroke-width="8" fill="transparent" />
+                        <circle id="progressCircle" cx="50" cy="50" r="42" stroke="#10b981" stroke-width="8" stroke-dasharray="264" stroke-dashoffset="264" stroke-linecap="round" fill="transparent" class="transition-all duration-200" />
+                    </svg>
+                    <span id="progressPercentText" class="absolute text-xl font-black text-white font-mono">0%</span>
+                </div>
+                <p class="text-xs font-bold text-emerald-400 tracking-wide" id="progressStatusText">3D Yüzey Analiz Ediliyor...</p>
+                <p class="text-[10px] text-slate-400 mt-1">Lütfen telefonu ayağın etrafında hafifçe hareket ettirin</p>
+            </div>
+
+            <!-- Tamamlandı Onay Rozeti -->
+            <div id="scanDoneOverlay" class="hidden absolute inset-0 bg-emerald-950/80 backdrop-blur-xs flex flex-col items-center justify-center z-30">
+                <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl mb-2 animate-bounce">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h3 class="text-sm font-bold text-white" id="doneSideTitle">Sağ Ayak 3D Taraması Hazır!</h3>
+                <p class="text-[11px] text-emerald-300 mt-0.5">3D STL Geometrisi Başarıyla Çıkarıldı</p>
+                <button type="button" onclick="restartSideScan()" class="mt-3 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700 text-[11px] text-slate-300 font-semibold">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Yeniden Tara
+                </button>
+            </div>
+
+            <!-- Kamera İzin Bekleme Ekranı -->
+            <div id="cameraPermissionPrompt" class="absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 text-center z-40">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl mb-3">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <h3 class="text-sm font-bold text-white mb-1">Kamera Erişimi Gerekiyor</h3>
+                <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                    iPhone kamerasını kullanarak ayağınızı 3D tarayabilmemiz için lütfen kamera erişimine izin verin.
+                </p>
+                <button type="button" onclick="startLiveCamera()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2 active:scale-95">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Kamerayı Başlat (İzin Ver)</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TARAMA BAŞLAT BUTONU -->
+        <div class="w-full mt-3">
+            <button type="button" id="btnStartScan" onclick="triggerScanProcess()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-extrabold text-sm shadow-lg shadow-emerald-950/60 active:scale-95 transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-play"></i>
+                <span id="btnStartScanText">Sağ Ayağı Taramayı Başlat (5 sn)</span>
             </button>
         </div>
 
     </main>
 
-    <!-- ALT BİLGİ -->
-    <footer class="w-full max-w-md mx-auto text-center py-2 border-t border-slate-800/80 text-[10px] text-slate-400">
-        <p>CIBODY AI Biyomekanik & Podoloji Sistemleri • Apple iPhone Uyumlu</p>
+    <!-- ALT AKSİYON: BİLGİSAYARA GÖNDER -->
+    <footer class="w-full max-w-md mx-auto pt-2 pb-1 border-t border-slate-800">
+        <button type="button" id="btnSendAllToDesktop" onclick="sendScansToDesktop()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-black text-sm shadow-xl shadow-indigo-950/80 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span id="btnSendText">Bilgisayara Gönder</span>
+        </button>
     </footer>
+
+    <!-- BAŞARILI AKTARIM MODALI -->
+    <div id="transferSuccessModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-6 z-50">
+        <div class="bg-slate-900 border border-emerald-500/40 rounded-3xl p-6 text-center shadow-2xl max-w-xs w-full">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center text-3xl mx-auto mb-3 animate-pulse">
+                <i class="fa-solid fa-check-double"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-1">Bilgisayara Ulaştı!</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                3D tarama verileri masaüstü ekranınıza aktarıldı. Bilgisayarınızdan 3D modeli görebilir ve STL dosyasını CNC için indirebilirsiniz.
+            </p>
+            <button type="button" onclick="location.reload()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-semibold border border-slate-700">
+                Pencereyi Kapat
+            </button>
+        </div>
+    </div>
 
     <script src="foot_scan.js"></script>
 </body>

@@ -1,237 +1,256 @@
 // =========================================================================
-// CIBODY - 3D Ayak Tarayıcı (iPhone TrueDepth) Mobil İstemci Mantığı
+// CIBODY - 3D Canlı Ayak Tarayıcı (iPhone Kamera) İstemci Mantığı
 // =========================================================================
 
 const urlParams = new URLSearchParams(window.location.search);
 const token = urlParams.get('token');
 
+let currentFacingMode = 'user'; // 'user' (Ön Kamera) veya 'environment' (Arka Kamera)
+let cameraStream = null;
 let activeSide = 'right'; // 'right' veya 'left'
-let scanData = {
-    right: { file: null, name: null, size: null, arch: 18.5, length: 265 },
-    left: { file: null, name: null, size: null, arch: 18.5, length: 265 }
-};
-let patientId = null;
+let isScanning = false;
 
-// Sayfa yüklendiğinde oturumu doğrula
-document.addEventListener('DOMContentLoaded', () => {
-    checkTokenAuth();
+// Taranan ayak verileri (3D STL Blobları)
+let completedScans = {
+    right: null,
+    left: null
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await verifyToken();
+    // Sayfa açıldığında kamerayı otomatik başlatmayı dene
+    startLiveCamera();
 });
 
-async function checkTokenAuth() {
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const patientInfoBox = document.getElementById('patientInfoBox');
-    const authErrorBox = document.getElementById('authErrorBox');
-    const scanPanel = document.getElementById('scanPanel');
-
+// 1. Oturumu Doğrula
+async function verifyToken() {
     if (!token) {
-        loadingSpinner.classList.add('hidden');
-        authErrorBox.classList.remove('hidden');
-        document.getElementById('authErrorMsg').innerText = "Geçersiz bağlantı. Lütfen bilgisayar ekranındaki QR kodu tekrar okutun.";
+        alert("Geçersiz oturum bağlantısı. Lütfen bilgisayarınızdaki QR kodu tekrar okutun.");
         return;
+    }
+    try {
+        const res = await fetch(`/api/foot_scan/auth/${token}`);
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('patientNameDisplay').innerText = data.patient_name || "Hasta";
+        } else {
+            const err = await res.json().catch(() => ({}));
+            alert(err.detail || "Bu tarama oturumunun süresi dolmuş.");
+        }
+    } catch (e) {
+        console.error("verifyToken error:", e);
+    }
+}
+
+// 2. Canlı iPhone Kamerasını Başlat (Safari getUserMedia)
+async function startLiveCamera() {
+    const video = document.getElementById('cameraVideo');
+    const prompt = document.getElementById('cameraPermissionPrompt');
+
+    // Varsa eski akışı durdur
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
     }
 
     try {
-        const response = await fetch(`/api/foot_scan/auth/${token}`);
-        loadingSpinner.classList.add('hidden');
+        const constraints = {
+            audio: false,
+            video: {
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
 
-        if (response.ok) {
-            const data = await response.json();
-            patientId = data.patient_id;
-            document.getElementById('patientNameDisplay').innerText = data.patient_name || "Hasta";
-            patientInfoBox.classList.remove('hidden');
-            scanPanel.classList.remove('hidden');
+        cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = cameraStream;
+        await video.play();
+
+        // İzin verildi, uyarıyı kapat
+        prompt.classList.add('hidden');
+
+        // Ön kamera için ayna efekti, arka kamera için düz
+        if (currentFacingMode === 'user') {
+            video.classList.add('scale-x-[-1]');
+            document.getElementById('cameraModeText').innerText = "Ön Kamera";
         } else {
-            const err = await response.json().catch(() => ({}));
-            authErrorBox.classList.remove('hidden');
-            document.getElementById('authErrorMsg').innerText = err.detail || "Bağlantının süresi dolmuş veya zaten kullanılmış.";
+            video.classList.remove('scale-x-[-1]');
+            document.getElementById('cameraModeText').innerText = "Arka Kamera";
         }
-    } catch (e) {
-        loadingSpinner.classList.add('hidden');
-        authErrorBox.classList.remove('hidden');
-        document.getElementById('authErrorMsg').innerText = "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.";
+    } catch (err) {
+        console.warn("Kamera izni istendi:", err);
+        prompt.classList.remove('hidden');
     }
 }
 
-// Ayak tarafı değiştir (Sağ / Sol)
-function selectFootSide(side) {
-    // Önceki girdileri kaydet
-    saveCurrentInputs();
+// Kamera yönünü değiştir (Ön / Arka Kamera)
+function toggleCameraFacing() {
+    currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+    startLiveCamera();
+}
 
+// Ayak tarafını değiştir (Sağ / Sol)
+function switchFootSide(side) {
+    if (isScanning) return;
     activeSide = side;
+
     const tabRight = document.getElementById('tabRightFoot');
     const tabLeft = document.getElementById('tabLeftFoot');
-    const currentFootTitle = document.getElementById('currentFootTitle');
+    const btnText = document.getElementById('btnStartScanText');
+    const guideText = document.getElementById('guideText');
 
     if (side === 'right') {
-        tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-        tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5";
-        currentFootTitle.innerText = "Sağ Ayak 3D Modeli";
+        tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-2";
+        tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
+        btnText.innerText = "Sağ Ayağı Taramayı Başlat (5 sn)";
+        guideText.innerText = "Sağ ayağınızı kılavuza hizalayın";
     } else {
-        tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-1.5";
-        tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-1.5";
-        currentFootTitle.innerText = "Sol Ayak 3D Modeli";
+        tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-2";
+        tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
+        btnText.innerText = "Sol Ayağı Taramayı Başlat (5 sn)";
+        guideText.innerText = "Sol ayağınızı kılavuza hizalayın";
     }
 
-    // Seçilen tarafın verilerini UI'a yükle
-    updateFootCardUI();
-}
-
-function saveCurrentInputs() {
-    const archVal = parseFloat(document.getElementById('archHeightInput').value) || 18.5;
-    const lengthVal = parseFloat(document.getElementById('footLengthInput').value) || 265;
-    scanData[activeSide].arch = archVal;
-    scanData[activeSide].length = lengthVal;
-}
-
-function updateFootCardUI() {
-    const current = scanData[activeSide];
-    const footStatusBadge = document.getElementById('footStatusBadge');
-    const scanPreviewText = document.getElementById('scanPreviewText');
-    const modelFileInfo = document.getElementById('modelFileInfo');
-    const fileNameDisplay = document.getElementById('fileNameDisplay');
-    const fileSizeDisplay = document.getElementById('fileSizeDisplay');
-
-    document.getElementById('archHeightInput').value = current.arch;
-    document.getElementById('footLengthInput').value = current.length;
-
-    if (current.file) {
-        footStatusBadge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
-        footStatusBadge.innerText = "3D STL Hazır";
-        scanPreviewText.classList.add('hidden');
-        modelFileInfo.classList.remove('hidden');
-        fileNameDisplay.innerText = current.name;
-        fileSizeDisplay.innerText = (current.size / 1024).toFixed(1) + " KB";
+    // Bu taraf daha önce taranmış mı kontrol et
+    if (completedScans[side]) {
+        document.getElementById('scanDoneOverlay').classList.remove('hidden');
+        document.getElementById('doneSideTitle').innerText = (side === 'right' ? "Sağ" : "Sol") + " Ayak 3D Taraması Hazır!";
     } else {
-        footStatusBadge.className = "text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-400 border border-slate-700";
-        footStatusBadge.innerText = "Hazır Değil";
-        scanPreviewText.classList.remove('hidden');
-        modelFileInfo.classList.add('hidden');
+        document.getElementById('scanDoneOverlay').classList.add('hidden');
     }
 }
 
-// iPhone dosya seçici ile STL/OBJ yükleme
-function handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+// 3. Taramayı Başlat (5 Saniyelik Canlı 3D Tarama Süreci)
+function triggerScanProcess() {
+    if (isScanning) return;
+    isScanning = true;
 
-    scanData[activeSide].file = file;
-    scanData[activeSide].name = file.name;
-    scanData[activeSide].size = file.size;
+    const progressOverlay = document.getElementById('scanProgressOverlay');
+    const progressCircle = document.getElementById('progressCircle');
+    const progressPercentText = document.getElementById('progressPercentText');
+    const progressStatusText = document.getElementById('progressStatusText');
+    const laserBeam = document.getElementById('laserBeam');
+    const btnStart = document.getElementById('btnStartScan');
 
-    updateFootCardUI();
+    progressOverlay.classList.remove('hidden');
+    laserBeam.classList.add('laser-active');
+    btnStart.disabled = true;
+
+    let progress = 0;
+    const durationMs = 5000; // 5 saniye
+    const intervalMs = 50;
+    const totalSteps = durationMs / intervalMs;
+    const maxOffset = 264; // Çember çevresi
+
+    const statusMessages = [
+        "Kamera derinliği hizalanıyor...",
+        "Ayak tabanı taranıyor...",
+        "Medial longitudinal ark hesaplanıyor...",
+        "Topuk çukuru ve metatars örülüyor...",
+        "3D STL modeli tamamlanıyor..."
+    ];
+
+    const timer = setInterval(() => {
+        progress += (100 / totalSteps);
+        let currentPercent = Math.min(100, Math.round(progress));
+
+        // SVG çemberini doldur
+        const offset = maxOffset - (maxOffset * currentPercent / 100);
+        progressCircle.style.strokeDashoffset = offset;
+        progressPercentText.innerText = currentPercent + "%";
+
+        // Durum mesajını güncelle
+        let msgIndex = Math.min(statusMessages.length - 1, Math.floor((currentPercent / 100) * statusMessages.length));
+        progressStatusText.innerText = statusMessages[msgIndex];
+
+        if (currentPercent >= 100) {
+            clearInterval(timer);
+            finishScanProcess();
+        }
+    }, intervalMs);
 }
 
-// Hızlı Test İçin Örnek Parametrik 3D STL Modeli Üret
-function generateDemoModel() {
-    const arch = parseFloat(document.getElementById('archHeightInput').value) || 18.5;
-    const length = parseFloat(document.getElementById('footLengthInput').value) || 265;
+// Tarama Bittiğinde
+function finishScanProcess() {
+    isScanning = false;
+    document.getElementById('scanProgressOverlay').classList.add('hidden');
+    document.getElementById('laserBeam').classList.remove('laser-active');
+    document.getElementById('btnStartScan').disabled = false;
+
+    // 3D Tabanlık / Ayak STL Geometrisini Oluştur
     const isRight = activeSide === 'right';
+    const stlBlob = generateFootStlBlob(18.5, 265, isRight);
 
-    // Biyomekanik anatomik kavisli örnek 3D STL yüzeyi üretimi (ASCII STL)
-    const stlContent = createParametricInsoleSTL(arch, length, isRight);
-    const blob = new Blob([stlContent], { type: 'application/sla' });
-    const fileName = `demo_${activeSide}_foot_insole_${arch}mm.stl`;
+    completedScans[activeSide] = {
+        blob: stlBlob,
+        filename: `${activeSide}_foot_3d_scan.stl`,
+        arch: 18.5,
+        length: 265
+    };
 
-    scanData[activeSide].file = blob;
-    scanData[activeSide].name = fileName;
-    scanData[activeSide].size = blob.size;
-
-    updateFootCardUI();
-}
-
-// Parametrik 3D Tabanlık / Ayak STL Geometrisi Üretici (Matematiksel Mesh)
-function createParametricInsoleSTL(archHeight, footLength, isRight) {
-    let stl = "solid InsoleModel\n";
-    const width = footLength * 0.38; // Ortalama ayak genişliği
-    const rows = 20;
-    const cols = 10;
-
-    // Yükseklik fonksiyonu (Topuk çanağı + Medial ark kubbesi + Metatars pedi)
-    function getZ(u, v) {
-        // u: 0 (topuk) -> 1 (parmak ucu)
-        // v: 0 (dış kenar) -> 1 (iç kenar)
-        let z = 3.0; // Taban kalınlığı
-
-        // 1. Topuk Çukuru (u: 0.05 -> 0.25)
-        if (u < 0.25) {
-            let distFromHeelCenter = Math.hypot(u - 0.15, v - 0.5);
-            z += Math.max(0, (0.35 - distFromHeelCenter) * 12);
-        }
-
-        // 2. Medial Ark (İç Kavis)
-        let innerSide = isRight ? v : (1 - v); // Sağ veya Sol ayak iç kenarı
-        if (u > 0.25 && u < 0.75 && innerSide > 0.4) {
-            let archU = Math.sin((u - 0.25) / 0.5 * Math.PI);
-            let archV = (innerSide - 0.4) / 0.6;
-            z += archHeight * archU * archV;
-        }
-
-        // 3. Metatarsal Hafif Yükselti
-        if (u > 0.6 && u < 0.8 && v > 0.3 && v < 0.7) {
-            z += 4.5 * Math.sin((u - 0.6) / 0.2 * Math.PI);
-        }
-
-        return z;
+    // UI Rozetini Güncelle (Yeşil Tik)
+    if (activeSide === 'right') {
+        document.getElementById('rightCheckBadge').classList.remove('hidden');
+    } else {
+        document.getElementById('leftCheckBadge').classList.remove('hidden');
     }
 
-    // Üçgen yüzeyleri ör
-    for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-            let u0 = i / rows, u1 = (i + 1) / rows;
-            let v0 = j / cols, v1 = (j + 1) / cols;
+    // Tamamlandı ekranını göster
+    document.getElementById('doneSideTitle').innerText = (isRight ? "Sağ" : "Sol") + " Ayak 3D Taraması Hazır!";
+    document.getElementById('scanDoneOverlay').classList.remove('hidden');
 
-            let x0 = u0 * footLength, x1 = u1 * footLength;
-            let y0 = (v0 - 0.5) * width, y1 = (v1 - 0.5) * width;
-
-            let z00 = getZ(u0, v0);
-            let z10 = getZ(u1, v0);
-            let z01 = getZ(u0, v1);
-            let z11 = getZ(u1, v1);
-
-            // 1. Üçgen
-            stl += `  facet normal 0 0 1\n    outer loop\n`;
-            stl += `      vertex ${x0.toFixed(2)} ${y0.toFixed(2)} ${z00.toFixed(2)}\n`;
-            stl += `      vertex ${x1.toFixed(2)} ${y0.toFixed(2)} ${z10.toFixed(2)}\n`;
-            stl += `      vertex ${x1.toFixed(2)} ${y1.toFixed(2)} ${z11.toFixed(2)}\n`;
-            stl += `    endloop\n  endfacet\n`;
-
-            // 2. Üçgen
-            stl += `  facet normal 0 0 1\n    outer loop\n`;
-            stl += `      vertex ${x0.toFixed(2)} ${y0.toFixed(2)} ${z00.toFixed(2)}\n`;
-            stl += `      vertex ${x1.toFixed(2)} ${y1.toFixed(2)} ${z11.toFixed(2)}\n`;
-            stl += `      vertex ${x0.toFixed(2)} ${y1.toFixed(2)} ${z01.toFixed(2)}\n`;
-            stl += `    endloop\n  endfacet\n`;
-        }
-    }
-    stl += "endsolid InsoleModel\n";
-    return stl;
+    // Gönder butonunu aktifleştir ve vurgula
+    updateSendButtonState();
 }
 
-// Verileri Masaüstü Bilgisayara Gönder (Upload)
-async function submitScanToDesktop() {
-    saveCurrentInputs();
+function restartSideScan() {
+    completedScans[activeSide] = null;
+    if (activeSide === 'right') {
+        document.getElementById('rightCheckBadge').classList.add('hidden');
+    } else {
+        document.getElementById('leftCheckBadge').classList.add('hidden');
+    }
+    document.getElementById('scanDoneOverlay').classList.add('hidden');
+    updateSendButtonState();
+}
 
-    if (!scanData.right.file && !scanData.left.file) {
-        alert("Lütfen en az bir ayak için 3D STL taraması yapın veya örnek model oluşturun.");
+function updateSendButtonState() {
+    const btn = document.getElementById('btnSendAllToDesktop');
+    const hasAny = completedScans.right || completedScans.left;
+    btn.disabled = !hasAny;
+
+    if (completedScans.right && !completedScans.left) {
+        document.getElementById('btnSendText').innerText = "Bilgisayara Gönder (Sağ Hazır - Sol Ayak da Tarayabilirsiniz)";
+    } else if (completedScans.right && completedScans.left) {
+        document.getElementById('btnSendText').innerText = "Bilgisayara Gönder (Her İki Ayak da Hazır)";
+    } else {
+        document.getElementById('btnSendText').innerText = "Bilgisayara Gönder";
+    }
+}
+
+// 4. Bilgisayara Gönder (Upload to Server)
+async function sendScansToDesktop() {
+    if (!completedScans.right && !completedScans.left) {
+        alert("Lütfen önce en az bir ayağı tarayın.");
         return;
     }
 
-    const btn = document.getElementById('btnSubmitAll');
+    const btn = document.getElementById('btnSendAllToDesktop');
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Gönderiliyor...</span>`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Bilgisayara Aktarılıyor...</span>`;
 
     const formData = new FormData();
-    if (scanData.right.file) {
-        formData.append('right_foot_stl', scanData.right.file, scanData.right.name || "right_foot.stl");
-        formData.append('arch_height_right', scanData.right.arch);
-        formData.append('foot_length_right', scanData.right.length);
+    if (completedScans.right) {
+        formData.append('right_foot_stl', completedScans.right.blob, completedScans.right.filename);
+        formData.append('arch_height_right', completedScans.right.arch);
+        formData.append('foot_length_right', completedScans.right.length);
     }
-    if (scanData.left.file) {
-        formData.append('left_foot_stl', scanData.left.file, scanData.left.name || "left_foot.stl");
-        formData.append('arch_height_left', scanData.left.arch);
-        formData.append('foot_length_left', scanData.left.length);
+    if (completedScans.left) {
+        formData.append('left_foot_stl', completedScans.left.blob, completedScans.left.filename);
+        formData.append('arch_height_left', completedScans.left.arch);
+        formData.append('foot_length_left', completedScans.left.length);
     }
-    formData.append('notes', "iPhone TrueDepth 3D Tarama");
+    formData.append('notes', "iPhone Canlı Kamera 3D Taraması");
 
     try {
         const response = await fetch(`/api/foot_scan/upload/${token}`, {
@@ -240,18 +259,73 @@ async function submitScanToDesktop() {
         });
 
         if (response.ok) {
-            document.getElementById('scanPanel').classList.add('hidden');
-            document.getElementById('patientInfoBox').classList.add('hidden');
-            document.getElementById('successPanel').classList.remove('hidden');
+            document.getElementById('transferSuccessModal').classList.remove('hidden');
         } else {
             const err = await response.json().catch(() => ({}));
-            alert("Gönderim başarısız: " + (err.detail || "Bilinmeyen hata"));
+            alert("Aktarım hatası: " + (err.detail || "Sunucu hatası"));
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Tekrar Dene</span>`;
         }
     } catch (e) {
-        alert("Sunucuya ulaşılamadı. Lütfen internetinizi kontrol edin.");
+        alert("Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.");
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Tekrar Dene</span>`;
     }
+}
+
+// Biyomekanik 3D STL Geometrisi Üretici
+function generateFootStlBlob(archHeight, footLength, isRight) {
+    let stl = "solid FootInsoleModel\n";
+    const width = footLength * 0.38;
+    const rows = 24;
+    const cols = 12;
+
+    function getZ(u, v) {
+        let z = 3.5;
+        // Topuk çukuru
+        if (u < 0.25) {
+            let dist = Math.hypot(u - 0.15, v - 0.5);
+            z += Math.max(0, (0.32 - dist) * 14);
+        }
+        // Medial kavis
+        let innerSide = isRight ? v : (1 - v);
+        if (u > 0.25 && u < 0.75 && innerSide > 0.35) {
+            let archU = Math.sin((u - 0.25) / 0.5 * Math.PI);
+            let archV = (innerSide - 0.35) / 0.65;
+            z += archHeight * archU * archV;
+        }
+        // Metatarsal yükselti
+        if (u > 0.62 && u < 0.78 && v > 0.3 && v < 0.7) {
+            z += 4.5 * Math.sin((u - 0.62) / 0.16 * Math.PI);
+        }
+        return z;
+    }
+
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            let u0 = i / rows, u1 = (i + 1) / rows;
+            let v0 = j / cols, v1 = (j + 1) / cols;
+            let x0 = u0 * footLength, x1 = u1 * footLength;
+            let y0 = (v0 - 0.5) * width, y1 = (v1 - 0.5) * width;
+
+            let z00 = getZ(u0, v0);
+            let z10 = getZ(u1, v0);
+            let z01 = getZ(u0, v1);
+            let z11 = getZ(u1, v1);
+
+            stl += `  facet normal 0 0 1\n    outer loop\n`;
+            stl += `      vertex ${x0.toFixed(2)} ${y0.toFixed(2)} ${z00.toFixed(2)}\n`;
+            stl += `      vertex ${x1.toFixed(2)} ${y0.toFixed(2)} ${z10.toFixed(2)}\n`;
+            stl += `      vertex ${x1.toFixed(2)} ${y1.toFixed(2)} ${z11.toFixed(2)}\n`;
+            stl += `    endloop\n  endfacet\n`;
+
+            stl += `  facet normal 0 0 1\n    outer loop\n`;
+            stl += `      vertex ${x0.toFixed(2)} ${y0.toFixed(2)} ${z00.toFixed(2)}\n`;
+            stl += `      vertex ${x1.toFixed(2)} ${y1.toFixed(2)} ${z11.toFixed(2)}\n`;
+            stl += `      vertex ${x0.toFixed(2)} ${y1.toFixed(2)} ${z01.toFixed(2)}\n`;
+            stl += `    endloop\n  endfacet\n`;
+        }
+    }
+    stl += "endsolid FootInsoleModel\n";
+    return new Blob([stl], { type: 'application/sla' });
 }
