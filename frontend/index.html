@@ -1032,6 +1032,9 @@
                 <button onclick="switchTab('insoleTab')" id="btn_insoleTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.insole_order">
                     <i class="fa-solid fa-shoe-prints mr-2 text-indigo-600"></i> <span>Kişiye Özel Tabanlık</span>
                 </button>
+                <button onclick="switchTab('footScanTab')" id="btn_footScanTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none">
+                    <i class="fa-solid fa-cube mr-2 text-emerald-600"></i> <span>3D Ayak Tarama (iPhone)</span>
+                </button>
 
             </div>
 
@@ -3518,6 +3521,135 @@
                 </thead>
                 <tbody id="patientOrdersTableBody" class="divide-y divide-slate-50 text-sm">
                     <tr><td colspan="3" class="text-center py-4 text-slate-400 italic">Yükleniyor...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SEKME: 3D AYAK TARAMA (IPHONE TRUEDEPTH) -->
+<div id="footScanTab" class="hidden">
+    <!-- Üst Bilgi ve QR Eşleşme Kartı -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
+            <div class="flex-1 text-center md:text-left">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
+                    <i class="fa-solid fa-cube text-emerald-600"></i>
+                    <span>Apple iPhone TrueDepth 3D Tarama</span>
+                </div>
+                <h2 class="text-2xl font-black text-slate-800 mb-2 flex items-center justify-center md:justify-start gap-3">
+                    <i class="fa-solid fa-shoe-prints text-emerald-600"></i> 3D Ayak Tarama & STL İndirme
+                </h2>
+                <p class="text-slate-600 mb-4 leading-relaxed">
+                    Hastanın ayağını iPhone ön kamerasındaki 3D derinlik sensörü ile tarayarak milimetrik anatomik kavis ölçüsü alabilir ve CNC router için hazır <b>.STL dosyasını</b> doğrudan indirebilirsiniz.
+                </p>
+
+                <!-- ÖNEMLİ CİHAZ BİLGİLENDİRMESİ -->
+                <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-6 flex items-start gap-3 text-left">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl mt-0.5 shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-900">Önemli Cihaz Uyumluluğu Uyarısı:</h4>
+                        <p class="text-xs text-amber-800 leading-relaxed mt-0.5">
+                            Bu 3D derinlik ve anatomik kavis tarama özelliği <strong>yalnızca Apple iPhone (TrueDepth / FaceID özellikli)</strong> telefonlarda geçerlidir.
+                        </p>
+                    </div>
+                </div>
+
+                <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 mx-auto md:mx-0">
+                    <i class="fa-solid fa-qrcode text-lg"></i>
+                    <span>iPhone İçin QR Kod Oluştur ve Bağlan</span>
+                </button>
+
+                <div id="footScanStatus" class="hidden mt-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium flex items-center">
+                    <i class="fa-solid fa-circle-notch fa-spin mr-3 text-lg text-emerald-600"></i>
+                    <span>iPhone ile eşleşme bekleniyor veya 3D tarama yapılıyor...</span>
+                </div>
+            </div>
+
+            <!-- QR Kod Alanı -->
+            <div class="shrink-0 bg-slate-50 p-6 rounded-3xl border border-slate-200 flex flex-col items-center justify-center w-64 h-64 relative shadow-inner">
+                <div id="footScanQR" class="w-48 h-48 flex items-center justify-center">
+                    <i class="fa-solid fa-qrcode text-6xl text-slate-300"></i>
+                </div>
+                <p class="text-[11px] text-slate-400 font-medium mt-2 text-center">iPhone Kameranızla Okutun</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D MODEL ÖNİZLEME VE CNC STL İNDİRME KARTI (CANLI / AKTİF) -->
+    <div id="footScanActiveResult" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8 p-6">
+        <div class="flex flex-col md:flex-row items-center justify-between pb-4 mb-6 border-b border-slate-100 gap-4">
+            <div>
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 mb-1">
+                    <i class="fa-solid fa-check-circle mr-1"></i> Yeni 3D Tarama Geldi
+                </span>
+                <h3 class="text-xl font-black text-slate-800">3D Ayak Modeli ve Biyomekanik Parametreler</h3>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="footScanDateDisplay" class="text-xs text-slate-500 font-medium"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+            <!-- 3D Canvas / Görsel Önizleme -->
+            <div class="lg:col-span-2 h-72 rounded-2xl bg-slate-950 border border-slate-800 relative flex items-center justify-center overflow-hidden" id="footScan3dCanvasContainer">
+                <div class="text-center p-6 text-slate-400">
+                    <i class="fa-solid fa-cube text-5xl text-emerald-500/80 mb-3 animate-pulse"></i>
+                    <p class="text-sm font-bold text-white">3D STL Yüzeyi Hazır</p>
+                    <p class="text-xs text-slate-400 mt-1">Modeli CNC Router takım yolu (G-Code) için doğrudan indirebilirsiniz.</p>
+                </div>
+            </div>
+
+            <!-- Ölçüm Değerleri ve İndirme Butonları -->
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between h-full space-y-4">
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Algılanan Biyometrik Ölçümler</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
+                            <span class="text-slate-600 font-medium text-xs">Medial Ark Yüksekliği:</span>
+                            <span id="valArchHeight" class="font-black text-emerald-600 font-mono text-sm">—</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
+                            <span class="text-slate-600 font-medium text-xs">Ayak Uzunluğu:</span>
+                            <span id="valFootLength" class="font-black text-slate-800 font-mono text-sm">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CNC STL İndirme Butonları -->
+                <div class="space-y-2 pt-2 border-t border-slate-200">
+                    <a id="btnDownloadRightStl" href="#" download class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Sağ Ayak STL İndir (CNC İçin)</span>
+                    </a>
+                    <a id="btnDownloadLeftStl" href="#" download class="w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-200 flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Sol Ayak STL İndir (CNC İçin)</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TARAMA GEÇMİŞİ LİSTESİ -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="bg-slate-50 border-b border-slate-200 p-4 flex items-center justify-between">
+            <h3 class="font-black text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> 3D Ayak Tarama Geçmişi
+            </h3>
+        </div>
+        <div class="p-4">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold">
+                    <tr>
+                        <th class="px-4 py-3">Tarih</th>
+                        <th class="px-4 py-3 text-center">Ark Yüksekliği</th>
+                        <th class="px-4 py-3 text-center">Ayak Uzunluğu</th>
+                        <th class="px-4 py-3 text-center">İndirme (STL)</th>
+                    </tr>
+                </thead>
+                <tbody id="footScanHistoryList" class="divide-y divide-slate-100">
+                    <tr><td colspan="4" class="text-center py-8 text-slate-400">Henüz 3D tarama kaydı bulunmuyor.</td></tr>
                 </tbody>
             </table>
         </div>

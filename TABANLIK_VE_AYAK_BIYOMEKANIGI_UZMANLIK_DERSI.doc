@@ -1,0 +1,331 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta charset="utf-8">
+<title>Klinik Ayak Biyomekaniği ve Tabanlık Uzmanlık Eğitimi</title>
+<style>
+body {
+    font-family: 'Calibri', 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+    color: #222;
+    padding: 30px;
+}
+h1 {
+    color: #1a365d;
+    border-bottom: 3px solid #2b6cb0;
+    padding-bottom: 8px;
+    font-size: 24pt;
+}
+h2 {
+    color: #2b6cb0;
+    border-bottom: 1.5px solid #cbd5e0;
+    padding-bottom: 5px;
+    margin-top: 25px;
+    font-size: 16pt;
+}
+h3 {
+    color: #2d3748;
+    margin-top: 18px;
+    font-size: 13pt;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 15px 0;
+}
+th, td {
+    border: 1px solid #cbd5e0;
+    padding: 10px;
+    text-align: left;
+    font-size: 11pt;
+}
+th {
+    background-color: #edf2f7;
+    color: #2d3748;
+}
+.callout {
+    background-color: #ebf8ff;
+    border-left: 5px solid #3182ce;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+.warning {
+    background-color: #fffaf0;
+    border-left: 5px solid #dd6b20;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+}
+.diagram {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 10pt;
+    white-space: pre;
+    line-height: 1.25;
+    margin: 15px 0;
+}
+.badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-weight: bold;
+    border-radius: 3px;
+    font-size: 9pt;
+}
+.badge-blue { background-color: #bee3f8; color: #2b6cb0; }
+.badge-green { background-color: #c6f6d5; color: #22543d; }
+.badge-orange { background-color: #feebc8; color: #7b341e; }
+</style>
+</head>
+<body>
+
+<h1>KLİNİK AYAK BİYOMEKANİĞİ VE KİŞİYE ÖZEL TABANLIK UZMANLIK EĞİTİMİ</h1>
+<p><strong>Yazar:</strong> Ortez-Protez & Biyomekanik Uzmanı Gözüyle<br>
+<strong>Öğrenci:</strong> Ayak Analiz Sistemi Geliştiricisi & Girişimcisi<br>
+<strong>Tarih:</strong> 2026 | <strong>Seviye:</strong> Sıfırdan İleri Seviyeye Uygulamalı Rehber</p>
+
+<div class="callout">
+<strong>Öğretmeninden Mentörlük Notu:</strong><br>
+Sevgili Dostum, bu konuya ilk baktığında ters köşe hissetmen, karmaşık gelmesi son derece doğaldır. Çünkü bir tarafta kemikler, eklemler, bağ dokuları ve tıp terminolojisi varken; diğer tarafta sensör matrisleri, basınç grafikleri ve CNC frezeleri var. Ancak sana söz veriyorum: Bu notları okuyup bitirdiğinde bir ortopedi hekimi ya da podologla yan yana oturduğunda raporu eline alıp <em>"Hocam bakın dinamik analizde aşırı pronasyon var, CoP çizgisi 1. metatarsa kaymış, hastada hafif hallux valgus başlangıcı var; biz buna 18 mm medial ark desteği ve 4 derece arka ayak varus posting uygulayacağız"</em> diyecek teknik donanıma sahip olacaksın. Rahat bir nefes al, kahveni koy, adım adım başlayalım!
+</div>
+
+<hr>
+
+<h2>1. DERS: AYAK BİYOMEKANİĞİNİN TEMEL FELSEFESİ (SIFIRDAN BAŞLANGIÇ)</h2>
+
+<p>İnsan ayağını düz bir zemin veya odun parçası gibi göremeyiz. Ayak, 26 kemikten ve yay benzeri elastik bağlardan oluşan dinamik bir süspansiyon sistemidir.</p>
+
+<h3>1.1. Ayağın İki Zıt Görevi</h3>
+<ol>
+    <li><strong>Yere Çarpma Fazı (Amortisör Görevi):</strong> Topuk yere ilk vurduğunda ayak gevşer, yayılır ve darbeyi emer. Buna <strong>Pronasyon (Esnek Ayak)</strong> denir.</li>
+    <li><strong>Yerden Kalkış Fazı (Mancınık Görevi):</strong> Parmak ucuna geçildiğinde ayak bir anda kilitlenir, taş gibi sert bir kemik bloğuna dönüşür ve tüm vücudu ileri fırlatır. Buna <strong>Supinasyon (Rijit Kaldıraç)</strong> denir.</li>
+</ol>
+
+<h3>1.2. Pronasyon ve Supinasyon Nedir?</h3>
+<p>Sektörde en çok duyacağın iki kelime budur. Bunlar aslında hastalık değil, ayağın doğal hareketleridir. Ancak dozajı kaçtığında hastalık olur:</p>
+
+<div class="diagram">
+       AŞIRI SUPİNASYON                   NÖTR (İDEAL)                  AŞIRI PRONASYON
+         (Dışa Basma)                   (Dengeli Basış)                   (İçe Basma)
+
+             / \                             | |                              \ /
+            /   \                            | |                               \ \
+       Topuk dışa basar                 Aşil düz iner                  Topuk içe devrilir
+       Aşil dışa kavislenir             Yük dengelidir                 Aşil içe doğru kırılır
+   (Sert ayak, darbe bele gider)     (Kusursuz biyomekanik)        (Ayak kavsi çöker, diz döner)
+</div>
+
+<ul>
+    <li><strong>Aşırı Pronasyon (İçe Basma):</strong> Ayak amortisör gibi esner ama tekrar kilitlenemez, iç kavis tamamen çöker. Bacak kemiği içe döner, dizler birbirine çarpar (X bacak), belde fıtık riski artar.</li>
+    <li><strong>Aşırı Supinasyon (Dışa Basma):</strong> Ayak hiç esnemez, tahta gibidir. Yerden gelen darbe sönümlenmeden doğrudan ayak bileğine, dize ve omurgaya iletilir. Ayak bileği dışa doğru sık sık burkulur.</li>
+</ul>
+
+<hr>
+
+<h2>2. DERS: BİZİM 3 ANALİZ RAPORUMUZU BİR UZMAN GİBİ OKUMAK</h2>
+
+<p>Sizin platformunuzdan çıkan 3 analiz raporu (Statik, Dinamik, Denge), tabanlık tasarlarken bir CAD programında hangi düğmenin kaç milimetre çevrileceğini söyler:</p>
+
+<table>
+    <tr>
+        <th>Rapor Türü</th>
+        <th>Sensörün Gördüğü Şey</th>
+        <th>Tabanlık Tasarımındaki Karşılığı</th>
+    </tr>
+    <tr>
+        <td><strong>1. STATİK ANALİZ</strong><br>(Dururken Basınç)</td>
+        <td>• Ayak kavsinin temas alanı<br>• Aşırı basınç odakları (Kırmızı/Mor leke)</td>
+        <td>• <strong>Medial Ark Yüksekliği:</strong> Çöken kavsi kaç mm kaldıracağımızı belirler.<br>• <strong>Boşaltma Havuzu:</strong> Ağrıyan yerin altına CNC ile havuz oyulur.</td>
+    </tr>
+    <tr>
+        <td><strong>2. DİNAMİK ANALİZ</strong><br>(Yürürken Kuvvet Hattı)</td>
+        <td>• Yürüme ekseni (Gait Line / CoP Çizgisi)<br>• Temas ve itiş evreleri süreleri</td>
+        <td>• <strong>Kama (Posting) Derecesi:</strong> Topuğa içeri veya dışarı kaç derecelik açı vereceğimizi söyler.<br>• <strong>Metatarsal Damla:</strong> Ön ayak itişini rahatlatır.</td>
+    </tr>
+    <tr>
+        <td><strong>3. DENGE TESTİ</strong><br>(Postür / Stabilite)</td>
+        <td>• Sağ/Sol yük oranı (%50-%50 mi?)<br>• Ön/Arka yük oranı (%40-%60 mı?)</td>
+        <td>• <strong>Topuk Yükseltisi (Heel Lift):</strong> Bacak boyu farkı varsa kısa bacağa eklenen takoz kalınlığını belirler.<br>• Ağırlık merkezini öne/arkaya taşır.</td>
+    </tr>
+</table>
+
+<hr>
+
+<h2>3. DERS: HASTALIKLAR, ANALİZ BULGULARI VE TABANLIK REÇETELERİ</h2>
+
+<p>İşte bir ortez-protez uzmanının yıllar içinde edindiği tecrübenin damıtılmış vaka rehberi:</p>
+
+<h3>VAKA 1: Pes Planus (Düz Tabanlık)</h3>
+<ul>
+    <li><strong>Klinik Şikayet:</strong> Hasta uzun süre ayakta duramaz, kaval kemiğinde (shin splints) ve ayak iç kısmında yanma tarzı ağrıdan şikayet eder. Ayakkabılarının iç kenarı aşırı yıpranır.</li>
+    <li><strong>Raporlarımızdaki İpucu:</strong>
+        <ul>
+            <li><em>Statik Rapor:</em> Normalde bembeyaz (boş) olması gereken ayak iç kısmı (orta kavis) tamamen zeminle temas halindedir.</li>
+            <li><em>Dinamik Rapor:</em> Adım atarken yürüme çizgisi topuktan çıkar çıkmaz hızla ayağın iç tarafına (medial) kaçar.</li>
+        </ul>
+    </li>
+    <li><strong>Tabanlıkta Ne Yapmalıyız?</strong>
+        <ol>
+            <li><strong>Medial Ark Desteği:</strong> 16 mm - 22 mm yüksekliğinde destek konulur.</li>
+            <li><strong>Medial Rearfoot Wedge (İç Topuk Kaması):</strong> Topuğun iç kısmına 3° - 5° eğim verilir. Bu açı bileğin içeri devrilmesini fiziksel olarak durdurur.</li>
+            <li><strong>Derin Topuk Çanağı (Deep Heel Cup):</strong> Topuk havuzu 12-15 mm derin yapılır, böylece topuk kemiği yana kaçamaz.</li>
+        </ol>
+    </li>
+    <li class="warning"><strong>Uzman Uyarısı:</strong> Eğer hastanın düz tabanlığı kemiksel olarak kilitli (rijit) ise çok sert ark koymayın! Canı çok yanar. Yumuşak (35-40 Shore) malzeme ile hafif destekleyin.</li>
+</ul>
+
+<h3>VAKA 2: Pes Cavus (Yüksek Kavis)</h3>
+<ul>
+    <li><strong>Klinik Şikayet:</strong> Hastanın beli ve dizleri çok ağrır. Ayak tabanında şok emici kavis olmadığı için her adımda omurgaya balyoz iner gibi darbe gider. Tarak kemiklerinin altında ve topukta dev nasırlar vardır.</li>
+    <li><strong>Raporlarımızdaki İpucu:</strong>
+        <ul>
+            <li><em>Statik Rapor:</em> Ayağın ortası tamamen boştur. Yalnızca topukta ve parmak köklerinde kıpkırmızı iki izole basınç adası görünür.</li>
+        </ul>
+    </li>
+    <li><strong>Tabanlıkta Ne Yapmalıyız?</strong>
+        <ol>
+            <li><strong>Kavis Boşluğunu Doldurma:</strong> Yüksek kavis (18 - 25 mm) boş bırakılmaz, doldurulur. Amaç ayağın yere temas alanını artırarak topuk ve taraktaki basıncı paylaştırmaktır.</li>
+            <li><strong>Lateral Ark Desteği (Küboid Desteği):</strong> Ayak dış kenarına 4-6 mm destek eklenir.</li>
+            <li><strong>Yumuşak & Yastıklayıcı Malzeme:</strong> Yüksek kavisli ayağa asla sert malzeme verilmez! 30-35 Shore yumuşak EVA veya Poron katman seçilir.</li>
+        </ol>
+    </li>
+</ul>
+
+<h3>VAKA 3: Plantar Fasiit ve Topuk Dikeni (Calcaneal Spur)</h3>
+<ul>
+    <li><strong>Klinik Şikayet:</strong> "Sabah yataktan kalkıp ilk adımı attığımda topuğuma çivi batıyor gibi oluyor, 10 dakika yürüyünce biraz açılıyor."</li>
+    <li><strong>Raporlarımızdaki İpucu:</strong>
+        <ul>
+            <li><em>Statik Rapor:</em> Topuğun tam ortasında veya hafif iç kenarında kıpkırmızı, noktasal aşırı pik basınç odağı.</li>
+        </ul>
+    </li>
+    <li><strong>Tabanlıkta Ne Yapmalıyız?</strong>
+        <ol>
+            <li><strong>Topuk Dikeni Boşaltma Havuzu (Relief Cutout):</strong> CNC ile dikenin tam koordinatına 4-6 mm derinliğinde havuz açılır. Burası boş bırakılır veya içine ekstra yumuşak Poron yerleştirilir. Diken kemiği havada kalır, zemine çarpmaz!</li>
+            <li><strong>Medial Arkı Sert Kaldırmak (Kritik!):</strong> Sadece topuğu yumuşatmak hastalığı iyileştirmez. Plantar fasia bağını gevşetmek için ayak kavsi 14-18 mm sert EVA ile kaldırılmalıdır. Kavis yukarı kalkınca tabandaki bağ gevşer ve ağrı son bulur.</li>
+        </ol>
+    </li>
+</ul>
+
+<h3>VAKA 4: Metatarsalji ve Morton Nöroması (Ön Ayak Yanması)</h3>
+<ul>
+    <li><strong>Klinik Şikayet:</strong> "Ayakkabımın ön tarafında çorabım katlanmış gibi bir yumru hissediyorum", "Yürürken parmak köklerim yanıyor ve uyuşuyor."</li>
+    <li><strong>Raporlarımızdaki İpucu:</strong>
+        <ul>
+            <li><em>Statik & Dinamik:</em> 2., 3. veya 4. tarak kemiği başlarında kıpkırmızı aşırı yüklenme alanları.</li>
+        </ul>
+    </li>
+    <li><strong>Tabanlıkta Ne Yapmalıyız?</strong>
+        <ol>
+            <li><strong>Metatarsal Damla / Ped (Metatarsal Pad):</strong> Tabanlığın ön tarafına gözyaşı şeklinde 4-7 mm kabartı konur.</li>
+            <li><strong>Altın Kural (Konumlandırma):</strong> Metatars pedi ezilen kemik başlarının **tam altına değil, 5-8 mm hemen arkasına (boyun kısmına)** konur! Kemik başlarını arkadan kaldırarak aralarını açar ve sıkışan siniri serbest bırakır.</li>
+        </ol>
+    </li>
+</ul>
+
+<h3>VAKA 5: Bacak Boyu Eşitsizliği (Kısalık / Asimetri)</h3>
+<ul>
+    <li><strong>Klinik Şikayet:</strong> Kişide tek taraflı bel fıtığı, skolyoz veya kalça ağrısı vardır. Bir omzu diğerinden daha aşağıdadır.</li>
+    <li><strong>Raporlarımızdaki İpucu:</strong>
+        <ul>
+            <li><em>Denge Testi:</em> Hasta düz dururken ağırlık sürekli bir ayağa %56-%62 oranında yığılırken diğer bacak %38-%44'te kalır.</li>
+        </ul>
+    </li>
+    <li><strong>Tabanlıkta Ne Yapmalıyız?</strong>
+        <ol>
+            <li><strong>Topuk Yükseltisi (Heel Lift):</strong> Kısa olan taraftaki tabanlığın altına (topuk bölgesine) bacak boyu farkı kadar sert EVA takoz eklenir (örn: 5 mm veya 8 mm). İki bacak boyu eşitlendiğinde omurga ve leğen kemiği derhal teraziye gelir.</li>
+        </ol>
+    </li>
+</ul>
+
+<hr>
+
+<h2>4. DERS: TABANLIK ELEMANLARININ GÖRSEL VE GEOMETRİK HARİTASI</h2>
+
+<p>Bir tabanlığı 3D tasarlarken veya CNC'de keserken karşına çıkacak tüm geometrik parçalar şunlardır:</p>
+
+<div class="diagram">
+                         TABANLIK ANATOMİK ELEMANLARI
+                         
+              [ 1. Metatars ]             [ METATARSAL DAMLA ]
+              Boşaltma Alanı                 (Tarak Pedi)
+                     \                           /
+                      \                         /
+                   +-------------------------------+
+                   |    ( )        /\              |
+                   |              /  \             |  <-- Tarak Bölgesi
+                   |             (____)            |
+                   |                               |
+                   |       /--------------\        |
+                   |      /                \       |  <-- MEDİAL ARK DESTEĞİ
+                   |     |    MEDİAL ARK    |      |      (İç Kavis Boşluğu)
+                   |      \                /       |
+                   |       \--------------/        |
+                   |                               |
+                   |          .--------.           |
+                   |         (  HAVUZ   )          |  <-- TOPUK DİKENİ BOŞALTMASI
+                   |          '--------'           |      (Relief Cutout)
+                   |                               |
+                   +-------------------------------+
+                            \             /
+                             \___________/
+                            [ TOPUK ÇANAĞI ]
+                           (Deep Heel Cup: 12-15mm)
+</div>
+
+<h3>Kesit Görünüşü: Neden ve Nasıl Çalışır?</h3>
+
+<div class="diagram">
+1. METATARSAL DAMLA KESİTİ (Yandan Görünüş):
+
+                      Kemik Başı (Ağrıyan ve Yanan Bölge)
+                             |
+                             v
+         Kemik Gövdesi     [OOO] 
+            \_______         |
+                    \________|____
+                             |
+                        [MET. DAMLA]  <-- Kemik başını havaya kaldırır!
+                       ==============
+                   (Ağrıyan yer zemine çarpmaz)
+</div>
+
+<div class="diagram">
+2. MEDİAL KAMALI TOPUK KESİTİ (Arkadan Görünüş):
+
+               İÇ (Medial)                    DIŞ (Lateral)
+                    |                              |
+                    | \                          / |
+                    |  \________________________/  |
+                    |                              |
+                    +------------------------------+  <-- EĞİMLİ KESİM (3°-5° AÇI)
+                    \                             /
+                     \___________________________/
+                   (Bileğin içe devrilmesini önler)
+</div>
+
+<hr>
+
+<h2>5. DERS: HASTA KABULÜNDEN TESLİMATA 7 ADIMLIK STANDART İŞ AKIŞI</h2>
+
+<ol>
+    <li><strong>Raporları Al:</strong> Statik, dinamik ve denge analizlerini tamamla.</li>
+    <li><strong>Patolojiyi Belirle:</strong>
+        <ul>
+            <li>Orta kavis dolu mu, boş mu? (Düz taban mı, yüksek kavis mi?)</li>
+            <li>Dinamik yürüme hattı içe mi dışa mı sapıyor? (Pronasyon mu, supinasyon mu?)</li>
+            <li>Topukta veya tarakta kırmızı nokta var mı? (Diken mi, metatarsalji mi?)</li>
+        </ul>
+    </li>
+    <li><strong>Parametreleri Çıkar:</strong> Ark yüksekliği kaç mm olacak? (örn: 18 mm). Kama açısı kaç derece? (örn: 3° medial). Havuz açılacak mı? (örn: Topuk merkezine 5 mm derinlik).</li>
+    <li><strong>STL Dosyasını Oluştur:</strong> Parametreleri CAD yazılımına girip veya otomatik STL üreticinizden sağ ve sol STL'i indirin.</li>
+    <li><strong>CAM Takım Yolu (G-Code):</strong> DeskProto veya CAM programında 4-6 mm küre uç seçerek G-Code üretin.</li>
+    <li><strong>CNC Routerda Kesim:</strong> Vakum tablasına uygun sertlikteki EVA bloğu yapıştırıp 12-18 dakikada kesin.</li>
+    <li><strong>Zımpara ve Ayakkabıya Uydurma:</strong> Kenar açılarını 45 derece pah kırıp hastanın ayakkabısının orijinal astarını çıkararak yerine takın.</li>
+</ol>
+
+<hr>
+<p style="text-align: center; color: #718096; font-size: 10pt;">© 2026 Klinik Ayak Biyomekaniği ve Ortez Tasarım Kılavuzu. Tüm hakları saklıdır.</p>
+</body>
+</html>

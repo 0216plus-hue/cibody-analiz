@@ -171,6 +171,34 @@ class ScoliometerToken(Base):
     expires_at = Column(DateTime)
     is_used = Column(Boolean, default=False)
 
+class FootScanToken(Base):
+    __tablename__ = "foot_scan_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String, unique=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    expires_at = Column(DateTime)
+    is_used = Column(Boolean, default=False)
+
+class FootScanMeasurement(Base):
+    __tablename__ = "foot_scan_measurements"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"))
+    token = Column(String, nullable=True, index=True)
+    
+    right_foot_stl = Column(String, nullable=True)
+    left_foot_stl = Column(String, nullable=True)
+    arch_height_right = Column(Float, nullable=True)
+    arch_height_left = Column(Float, nullable=True)
+    foot_length_right = Column(Float, nullable=True)
+    foot_length_left = Column(Float, nullable=True)
+    notes = Column(String, nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    patient = relationship("Patient")
+
 class SimulationAnalysis(Base):
     __tablename__ = "simulation_analyses"
     id = Column(Integer, primary_key=True, index=True)

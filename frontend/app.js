@@ -118,7 +118,7 @@ function showDashboard(clearActive = false) {
 
         
         // Hide all extra tabs
-        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
             const el = document.getElementById(t); 
             if(el) el.classList.add('hidden'); 
         });
@@ -204,14 +204,14 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 function switchTab(tabId) {
     try {
         // Hide all tabs
-        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'];
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'];
         tabs.forEach(t => {
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden');
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab', 'btn_insoleTab', 'btn_footScanTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
@@ -259,6 +259,9 @@ function switchTab(tabId) {
         }
         if(tabId === 'insoleTab' && currentPatientId) {
             if(typeof loadInsoleDropdowns === 'function') loadInsoleDropdowns();
+        }
+        if(tabId === 'footScanTab' && currentPatientId) {
+            if(typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -3399,6 +3402,238 @@ async function loadScoliometerHistory(patientId) {
     } catch(e) { console.error(e); }
 }
 
+// ==========================================
+// 3D FOOT SCAN (IPHONE TRUEDEPTH) DESKTOP LOGIC
+// ==========================================
+let footScanPollInterval = null;
+let currentFootScanToken = null;
+
+async function generateFootScanQR() {
+    if(!currentPatientId) {
+        alert("Lütfen önce bir hasta seçin veya profilini açın.");
+        return;
+    }
+    const patientId = currentPatientId;
+    const btn = document.getElementById('btnGenerateFootScanQR');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Oluşturuluyor...';
+    btn.disabled = true;
+
+    try {
+        const res = await authFetch(`/api/foot_scan/token/${patientId}`, { method: 'POST' });
+        if(res.ok) {
+            const data = await res.json();
+            currentFootScanToken = data.token;
+            let targetUrl = data.url;
+
+            const qrContainer = document.getElementById('footScanQR');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: targetUrl,
+                width: 192,
+                height: 192,
+                colorDark : "#059669", // Emerald-600
+                colorLight : "#f8fafc",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> Yeni QR Kod Oluştur';
+            btn.disabled = false;
+            document.getElementById('footScanStatus').classList.remove('hidden');
+
+            // Polling başlat (2.5 saniyede bir telefondan yükleme geldi mi kontrol et)
+            if(footScanPollInterval) clearInterval(footScanPollInterval);
+            footScanPollInterval = setInterval(() => checkFootScanUploadStatus(data.token, patientId), 2500);
+        }
+    } catch(e) {
+        console.error("generateFootScanQR error:", e);
+        btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> iPhone İçin QR Kod Oluştur ve Bağlan';
+        btn.disabled = false;
+    }
+}
+
+async function checkFootScanUploadStatus(token, patientId) {
+    if(!token) return;
+    try {
+        const res = await fetch(`/api/foot_scan/status/${token}`);
+        if(res.ok) {
+            const data = await res.json();
+            if(data.scanned && data.measurement) {
+                // Tarama tamamlandı! Polling'i durdur
+                if(footScanPollInterval) {
+                    clearInterval(footScanPollInterval);
+                    footScanPollInterval = null;
+                }
+                document.getElementById('footScanStatus').classList.add('hidden');
+                displayFootScanResult(data.measurement);
+                loadFootScanHistory(patientId);
+            }
+        }
+    } catch(e) {
+        console.error("checkFootScanUploadStatus error:", e);
+    }
+}
+
+function displayFootScanResult(m) {
+    const resBox = document.getElementById('footScanActiveResult');
+    if(!resBox) return;
+    resBox.classList.remove('hidden');
+
+    const d = m.created_at ? new Date(m.created_at).toLocaleString('tr-TR') : 'Bugün';
+    const dateEl = document.getElementById('footScanDateDisplay');
+    if(dateEl) dateEl.innerText = d;
+
+    // Ölçüm değerleri
+    const archVal = m.arch_height_right || m.arch_height_left || 18.5;
+    const lenVal = m.foot_length_right || m.foot_length_left || 265;
+    const archEl = document.getElementById('valArchHeight');
+    const lenEl = document.getElementById('valFootLength');
+    if(archEl) archEl.innerText = archVal + " mm";
+    if(lenEl) lenEl.innerText = lenVal + " mm";
+
+    // İndirme linkleri
+    const btnRight = document.getElementById('btnDownloadRightStl');
+    const btnLeft = document.getElementById('btnDownloadLeftStl');
+
+    if(m.right_foot_stl) {
+        btnRight.href = `/api/foot_scan/download/${m.id}/right`;
+        btnRight.classList.remove('opacity-50', 'pointer-events-none');
+    } else {
+        btnRight.classList.add('opacity-50', 'pointer-events-none');
+    }
+
+    if(m.left_foot_stl) {
+        btnLeft.href = `/api/foot_scan/download/${m.id}/left`;
+        btnLeft.classList.remove('opacity-50', 'pointer-events-none');
+    } else {
+        btnLeft.classList.add('opacity-50', 'pointer-events-none');
+    }
+
+    // Three.js ile 3D Canlı Önizleme
+    initFootScan3DViewer(archVal, lenVal);
+}
+
+function initFootScan3DViewer(archHeight, footLength) {
+    const container = document.getElementById('footScan3dCanvasContainer');
+    if(!container || typeof THREE === 'undefined') return;
+
+    container.innerHTML = ''; // Temizle
+
+    const width = container.clientWidth || 500;
+    const height = container.clientHeight || 280;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x020617); // Slate-950
+
+    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+    camera.position.set(0, -180, 220);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    container.appendChild(renderer.domElement);
+
+    // Işıklar
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0x10b981, 1.2);
+    dirLight.position.set(50, 100, 150);
+    scene.add(dirLight);
+
+    // Kavisli 3D Ayak Yüzeyi (Parametrik Geometri)
+    const segX = 30;
+    const segY = 15;
+    const geom = new THREE.PlaneGeometry(160, 75, segX, segY);
+    const pos = geom.attributes.position;
+
+    for (let i = 0; i < pos.count; i++) {
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+        let normX = (x + 80) / 160;
+        let normY = (y + 37.5) / 75;
+
+        let z = 0;
+        // Medial ark kavis tepe noktası
+        if (normX > 0.25 && normX < 0.75 && normY > 0.3) {
+            z += (archHeight * 0.9) * Math.sin((normX - 0.25) / 0.5 * Math.PI) * ((normY - 0.3) / 0.7);
+        }
+        // Topuk çukuru
+        if (normX < 0.25) {
+            z += Math.max(0, 12 - Math.hypot(normX - 0.15, normY - 0.5) * 45);
+        }
+        pos.setZ(i, z);
+    }
+    geom.computeVertexNormals();
+
+    const mat = new THREE.MeshPhongMaterial({
+        color: 0x10b981,
+        wireframe: true,
+        emissive: 0x064e3b,
+        shininess: 80
+    });
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.rotation.x = -Math.PI / 4;
+    scene.add(mesh);
+
+    // Animasyon döngüsü (Hafifçe dönsün)
+    let isRunning = true;
+    function animate() {
+        if(!isRunning) return;
+        requestAnimationFrame(animate);
+        mesh.rotation.z += 0.008;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+
+async function loadFootScanHistory(patientId) {
+    if(!patientId) return;
+    try {
+        const res = await authFetch(`/api/foot_scan/patient/${patientId}`);
+        if(res.ok) {
+            const data = await res.json();
+            const tbody = document.getElementById('footScanHistoryList');
+            if(!tbody) return;
+
+            if(!data.scans || data.scans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400">Henüz 3D tarama kaydı bulunmuyor.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            data.scans.forEach(row => {
+                let d = row.date ? new Date(row.date).toLocaleString('tr-TR') : '-';
+                let archStr = (row.arch_height_right || row.arch_height_left) ? `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold font-mono text-xs">${row.arch_height_right || row.arch_height_left} mm</span>` : '-';
+                let lenStr = (row.foot_length_right || row.foot_length_left) ? `<span class="text-slate-700 font-mono text-xs font-semibold">${row.foot_length_right || row.foot_length_left} mm</span>` : '-';
+
+                let downloadButtons = '<div class="flex items-center justify-center gap-1.5">';
+                if(row.right_foot_stl) {
+                    downloadButtons += `<a href="/api/foot_scan/download/${row.id}/right" download class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1"><i class="fa-solid fa-download"></i> Sağ</a>`;
+                }
+                if(row.left_foot_stl) {
+                    downloadButtons += `<a href="/api/foot_scan/download/${row.id}/left" download class="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1"><i class="fa-solid fa-download"></i> Sol</a>`;
+                }
+                downloadButtons += '</div>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-4 py-3 text-slate-600 font-medium text-xs">${d}</td>
+                        <td class="px-4 py-3 text-center">${archStr}</td>
+                        <td class="px-4 py-3 text-center">${lenStr}</td>
+                        <td class="px-4 py-3 text-center">${downloadButtons}</td>
+                    </tr>
+                `;
+            });
+
+            // En son kaydı önizlemede göster
+            if(data.scans.length > 0 && document.getElementById('footScanActiveResult').classList.contains('hidden')) {
+                displayFootScanResult(data.scans[0]);
+            }
+        }
+    } catch(e) {
+        console.error("loadFootScanHistory error:", e);
+    }
+}
+
 
 
 // ==========================================
@@ -3627,7 +3862,7 @@ function showTherapistOrders() {
     if(pat) pat.classList.add('hidden');
     
     // Hide all extra tabs just in case
-    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
+    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
         const el = document.getElementById(t); 
         if(el) el.classList.add('hidden'); 
     });
@@ -3795,7 +4030,7 @@ function openOrderReport(orderId, type) {
         document.getElementById('patientView').classList.remove('hidden');
         
         // Hide all patient tabs, show target tab
-        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab'].forEach(t => { 
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden'); 
         });

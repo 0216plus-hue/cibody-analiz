@@ -1860,6 +1860,174 @@ def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), curr
     history = db.query(models.ScoliometerMeasurement).filter(models.ScoliometerMeasurement.patient_id == patient_id).order_by(models.ScoliometerMeasurement.created_at.desc()).all()
     return {"history": [{"id": h.id, "thoracic": h.thoracic_angle, "lumbar": h.lumbar_angle, "date": h.created_at.isoformat()} for h in history]}
 
+# =========================================================================
+# 3D AYAK TARAMA (IPHONE TRUEDEPTH) ENDPOINTS
+# =========================================================================
+
+@app.post("/api/foot_scan/token/{patient_id}")
+def generate_foot_scan_token(patient_id: int, request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Hasta bulunamadı")
+    
+    token_str = str(uuid.uuid4())
+    token = models.FootScanToken(
+        token=token_str,
+        patient_id=patient.id,
+        expires_at=datetime.utcnow() + timedelta(hours=2)
+    )
+    db.add(token)
+    db.commit()
+    
+    proto = request.headers.get("x-forwarded-proto", request.url.scheme)
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host") or request.base_url.netloc
+    if "localhost" not in str(host) and "127.0.0.1" not in str(host):
+        proto = "https"
+    base_url = f"{proto}://{host}"
+    url = f"{base_url}/foot_scan.html?token={token_str}"
+    return {"url": url, "token": token_str}
+
+@app.get("/foot_scan")
+def serve_foot_scan():
+    return FileResponse("../frontend/foot_scan.html")
+
+@app.get("/api/foot_scan/auth/{token}")
+def get_foot_scan_patient(token: str, db: Session = Depends(get_db)):
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token, models.FootScanToken.is_used == False).first()
+    if not t or t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş tarama bağlantısı.")
+    
+    patient = db.query(models.Patient).filter(models.Patient.id == t.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Hasta bulunamadı.")
+    return {"patient_id": patient.id, "patient_name": patient.name}
+
+@app.post("/api/foot_scan/upload/{token}")
+async def upload_foot_scan(
+    token: str,
+    right_foot_stl: Optional[UploadFile] = File(None),
+    left_foot_stl: Optional[UploadFile] = File(None),
+    arch_height_right: Optional[float] = Form(None),
+    arch_height_left: Optional[float] = Form(None),
+    foot_length_right: Optional[float] = Form(None),
+    foot_length_left: Optional[float] = Form(None),
+    notes: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token, models.FootScanToken.is_used == False).first()
+    if not t or t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş oturum.")
+    
+    patient_id = t.patient_id
+    save_dir = os.path.join("uploads", "foot_scans", str(patient_id))
+    os.makedirs(save_dir, exist_ok=True)
+    
+    right_path = None
+    left_path = None
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    
+    if right_foot_stl and right_foot_stl.filename:
+        filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}.stl"
+        dest_right = os.path.join(save_dir, filename_right)
+        content = await right_foot_stl.read()
+        with open(dest_right, "wb") as f:
+            f.write(content)
+        right_path = f"/uploads/foot_scans/{patient_id}/{filename_right}"
+        
+    if left_foot_stl and left_foot_stl.filename:
+        filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}.stl"
+        dest_left = os.path.join(save_dir, filename_left)
+        content = await left_foot_stl.read()
+        with open(dest_left, "wb") as f:
+            f.write(content)
+        left_path = f"/uploads/foot_scans/{patient_id}/{filename_left}"
+
+    m = models.FootScanMeasurement(
+        patient_id=patient_id,
+        token=token,
+        right_foot_stl=right_path,
+        left_foot_stl=left_path,
+        arch_height_right=arch_height_right,
+        arch_height_left=arch_height_left,
+        foot_length_right=foot_length_right,
+        foot_length_left=foot_length_left,
+        notes=notes
+    )
+    db.add(m)
+    t.is_used = True
+    db.commit()
+    db.refresh(m)
+    
+    return {
+        "status": "success",
+        "message": "3D Ayak Taraması başarıyla yüklendi",
+        "measurement_id": m.id,
+        "right_foot_stl": right_path,
+        "left_foot_stl": left_path
+    }
+
+@app.get("/api/foot_scan/status/{token}")
+def get_foot_scan_status(token: str, db: Session = Depends(get_db)):
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Token bulunamadı")
+    
+    m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.token == token).order_by(models.FootScanMeasurement.id.desc()).first()
+    if not m:
+        return {"scanned": False, "is_used": t.is_used}
+        
+    return {
+        "scanned": True,
+        "measurement": {
+            "id": m.id,
+            "patient_id": m.patient_id,
+            "right_foot_stl": m.right_foot_stl,
+            "left_foot_stl": m.left_foot_stl,
+            "arch_height_right": m.arch_height_right,
+            "arch_height_left": m.arch_height_left,
+            "foot_length_right": m.foot_length_right,
+            "foot_length_left": m.foot_length_left,
+            "notes": m.notes,
+            "created_at": m.created_at.isoformat() if m.created_at else None
+        }
+    }
+
+@app.get("/api/foot_scan/patient/{patient_id}")
+def get_foot_scan_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    scans = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.patient_id == patient_id).order_by(models.FootScanMeasurement.created_at.desc()).all()
+    return {
+        "scans": [
+            {
+                "id": s.id,
+                "right_foot_stl": s.right_foot_stl,
+                "left_foot_stl": s.left_foot_stl,
+                "arch_height_right": s.arch_height_right,
+                "arch_height_left": s.arch_height_left,
+                "foot_length_right": s.foot_length_right,
+                "foot_length_left": s.foot_length_left,
+                "date": s.created_at.isoformat() if s.created_at else None
+            }
+            for s in scans
+        ]
+    }
+
+@app.get("/api/foot_scan/download/{measurement_id}/{side}")
+def download_foot_scan_stl(measurement_id: int, side: str, db: Session = Depends(get_db)):
+    m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.id == measurement_id).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    
+    file_rel_path = m.right_foot_stl if side.lower() == "right" else m.left_foot_stl
+    if not file_rel_path:
+        raise HTTPException(status_code=404, detail=f"{side.upper()} ayak için STL dosyası bulunamadı")
+        
+    local_path = file_rel_path.lstrip("/")
+    if not os.path.exists(local_path):
+        raise HTTPException(status_code=404, detail="Dosya sunucuda bulunamadı")
+        
+    filename = f"Hasta_{m.patient_id}_{side.upper()}_Ayak.stl"
+    return FileResponse(local_path, media_type="application/sla", filename=filename)
+
 class SimulationCreate(BaseModel):
     patient_id: int
     cobb_angle: float
