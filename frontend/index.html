@@ -3527,107 +3527,185 @@
     </div>
 </div>
 
-<!-- SEKME: 3D AYAK TARAMA (IPHONE TRUEDEPTH) -->
+<!-- SEKME: 3D AYAK TARAMA & SİMÜLASYON -->
 <div id="footScanTab" class="hidden">
-    <!-- Üst Bilgi ve QR Eşleşme Kartı -->
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div class="p-8 flex flex-col md:flex-row gap-8 items-center">
+    
+    <!-- Üst Kontrol & QR Eşleşme Çubuğu -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-6 p-6">
+        <div class="flex flex-col md:flex-row gap-6 items-center justify-between">
             <div class="flex-1 text-center md:text-left">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-3">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2">
                     <i class="fa-solid fa-cube text-emerald-600"></i>
-                    <span>Apple iPhone TrueDepth 3D Tarama</span>
+                    <span>Apple iPhone Canlı 3D Ayak Tarama</span>
                 </div>
-                <h2 class="text-2xl font-black text-slate-800 mb-2 flex items-center justify-center md:justify-start gap-3">
-                    <i class="fa-solid fa-shoe-prints text-emerald-600"></i> 3D Ayak Tarama & STL İndirme
+                <h2 class="text-xl font-black text-slate-800 mb-1 flex items-center justify-center md:justify-start gap-2">
+                    <i class="fa-solid fa-shoe-prints text-emerald-600"></i> 3D Ayak Anatomisi & Kavis İnceleme
                 </h2>
-                <p class="text-slate-600 mb-4 leading-relaxed">
-                    Hastanın ayağını iPhone ön kamerasındaki 3D derinlik sensörü ile tarayarak milimetrik anatomik kavis ölçüsü alabilir ve CNC router için hazır <b>.STL dosyasını</b> doğrudan indirebilirsiniz.
+                <p class="text-slate-600 text-xs leading-relaxed max-w-xl">
+                    iPhone kamerasıyla ayağı 20 saniye tarayarak anatomik modeli sisteme aktarın. Fare ile ayağı <b>360° serbestçe çevirip</b> kavis çukurunu, topuk açısını ve taban basışını inceleyebilirsiniz.
                 </p>
-
-                <!-- ÖNEMLİ CİHAZ BİLGİLENDİRMESİ -->
-                <div class="bg-amber-50 border border-amber-300 rounded-2xl p-4 mb-6 flex items-start gap-3 text-left">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl mt-0.5 shrink-0"></i>
-                    <div>
-                        <h4 class="text-sm font-bold text-amber-900">Önemli Cihaz Uyumluluğu Uyarısı:</h4>
-                        <p class="text-xs text-amber-800 leading-relaxed mt-0.5">
-                            Bu 3D derinlik ve anatomik kavis tarama özelliği <strong>yalnızca Apple iPhone (TrueDepth / FaceID özellikli)</strong> telefonlarda geçerlidir.
-                        </p>
-                    </div>
-                </div>
-
-                <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-xl transition-all shadow-lg shadow-emerald-200 flex items-center justify-center gap-2 mx-auto md:mx-0">
-                    <i class="fa-solid fa-qrcode text-lg"></i>
-                    <span>iPhone İçin QR Kod Oluştur ve Bağlan</span>
-                </button>
-
-                <div id="footScanStatus" class="hidden mt-6 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200 text-sm font-medium flex items-center">
-                    <i class="fa-solid fa-circle-notch fa-spin mr-3 text-lg text-emerald-600"></i>
-                    <span>iPhone ile eşleşme bekleniyor veya 3D tarama yapılıyor...</span>
-                </div>
+                <!-- iPhone Uyarısı -->
+                <p class="text-[11px] text-amber-700 font-semibold mt-2">
+                    <i class="fa-solid fa-triangle-exclamation mr-1 text-amber-500"></i> Canlı kamera taraması yalnızca Apple iPhone (TrueDepth özellikli) cihazlarda geçerlidir.
+                </p>
             </div>
 
-            <!-- QR Kod Alanı -->
-            <div class="shrink-0 bg-slate-50 p-6 rounded-3xl border border-slate-200 flex flex-col items-center justify-center w-64 h-64 relative shadow-inner">
-                <div id="footScanQR" class="w-48 h-48 flex items-center justify-center">
-                    <i class="fa-solid fa-qrcode text-6xl text-slate-300"></i>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleFootScanQR()" id="btnToggleFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-emerald-200 flex items-center gap-2 text-xs">
+                    <i class="fa-solid fa-qrcode text-base"></i>
+                    <span>iPhone QR Kodu Aç / Kapat</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Açılır QR Eşleşme Paneli -->
+        <div id="footScanQrCollapse" class="hidden mt-6 pt-6 border-t border-slate-100 flex flex-col md:flex-row items-center justify-center gap-8 bg-slate-50/80 p-6 rounded-2xl">
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
+                <div id="footScanQR" class="w-44 h-44 flex items-center justify-center">
+                    <i class="fa-solid fa-qrcode text-5xl text-slate-300"></i>
                 </div>
-                <p class="text-[11px] text-slate-400 font-medium mt-2 text-center">iPhone Kameranızla Okutun</p>
+                <p class="text-[11px] text-slate-500 font-semibold mt-2">iPhone Kameranızla Okutun</p>
+            </div>
+            <div class="text-center md:text-left max-w-sm">
+                <h4 class="font-bold text-slate-800 text-sm mb-1">iPhone İle Canlı 20 Saniyelik Tarama:</h4>
+                <ol class="text-xs text-slate-600 space-y-1.5 list-decimal list-inside leading-relaxed">
+                    <li>Kamerayla QR kodu okutun.</li>
+                    <li>Ayağı ekrandaki yeşil kılavuza hizalayıp <b>"Taramayı Başlat (20 sn)"</b>a basın.</li>
+                    <li>İlk 10 sn boyuna, son 10 sn enine kavis çukurunu gezdirin.</li>
+                    <li><b>"Bilgisayara Gönder"</b> deyin; 3D model ekranda anında güncellensin!</li>
+                </ol>
+                <div id="footScanStatus" class="hidden mt-3 p-2.5 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-semibold flex items-center">
+                    <i class="fa-solid fa-circle-notch fa-spin mr-2 text-emerald-600"></i>
+                    <span>iPhone ile eşleşme bekleniyor veya tarama yapılıyor...</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 3D MODEL ÖNİZLEME VE CNC STL İNDİRME KARTI (CANLI / AKTİF) -->
-    <div id="footScanActiveResult" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8 p-6">
-        <div class="flex flex-col md:flex-row items-center justify-between pb-4 mb-6 border-b border-slate-100 gap-4">
-            <div>
-                <span class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 mb-1">
-                    <i class="fa-solid fa-check-circle mr-1"></i> Yeni 3D Tarama Geldi
-                </span>
-                <h3 class="text-xl font-black text-slate-800">3D Ayak Modeli ve Biyomekanik Parametreler</h3>
-            </div>
-            <div class="flex items-center gap-2">
-                <span id="footScanDateDisplay" class="text-xs text-slate-500 font-medium"></span>
-            </div>
-        </div>
+    <!-- 3D İNTERAKTİF AYAK GÖRÜNTÜLEYİCİ (ANA SAHNE - TIPKI 3D OMURGA GİBİ) -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+        <div class="flex flex-col lg:flex-row h-[620px]">
+            
+            <!-- 3D Canvas Alanı -->
+            <div class="w-full lg:w-3/4 h-full relative bg-slate-950 flex flex-col justify-between" id="foot3dViewport">
+                
+                <!-- Üst Kontrol Barı (Sol/Sağ Ayak Seçimi & Hızlı Görünüm Açıları) -->
+                <div class="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
+                    <!-- Ayak Seçici -->
+                    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg">
+                        <button type="button" onclick="setFootViewerSide('right')" id="btnViewRightFoot" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-sm flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-shoe-prints"></i> Sağ Ayak
+                        </button>
+                        <button type="button" onclick="setFootViewerSide('left')" id="btnViewLeftFoot" class="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white flex items-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-shoe-prints -scale-x-100"></i> Sol Ayak
+                        </button>
+                    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
-            <!-- 3D Canvas / Görsel Önizleme -->
-            <div class="lg:col-span-2 h-72 rounded-2xl bg-slate-950 border border-slate-800 relative flex items-center justify-center overflow-hidden" id="footScan3dCanvasContainer">
-                <div class="text-center p-6 text-slate-400">
-                    <i class="fa-solid fa-cube text-5xl text-emerald-500/80 mb-3 animate-pulse"></i>
-                    <p class="text-sm font-bold text-white">3D STL Yüzeyi Hazır</p>
-                    <p class="text-xs text-slate-400 mt-1">Modeli CNC Router takım yolu (G-Code) için doğrudan indirebilirsiniz.</p>
-                </div>
-            </div>
+                    <!-- Kamera Açıları -->
+                    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg overflow-x-auto text-xs">
+                        <button type="button" onclick="setFootCameraAngle('plantar')" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-all flex items-center gap-1">
+                            <i class="fa-solid fa-magnifying-glass-plus text-emerald-400"></i> Taban (Kavis Çukuru)
+                        </button>
+                        <button type="button" onclick="setFootCameraAngle('medial')" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                            İç Kavis Profili
+                        </button>
+                        <button type="button" onclick="setFootCameraAngle('dorsal')" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                            Üstten Bakış
+                        </button>
+                        <button type="button" onclick="setFootCameraAngle('perspective')" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> 3D Serbest
+                        </button>
+                    </div>
 
-            <!-- Ölçüm Değerleri ve İndirme Butonları -->
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between h-full space-y-4">
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">Algılanan Biyometrik Ölçümler</h4>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
-                            <span class="text-slate-600 font-medium text-xs">Medial Ark Yüksekliği:</span>
-                            <span id="valArchHeight" class="font-black text-emerald-600 font-mono text-sm">—</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-200">
-                            <span class="text-slate-600 font-medium text-xs">Ayak Uzunluğu:</span>
-                            <span id="valFootLength" class="font-black text-slate-800 font-mono text-sm">—</span>
-                        </div>
+                    <!-- Görünüm Modu (Doku vs Isı Haritası) -->
+                    <div class="bg-slate-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-1.5 flex items-center gap-1 shadow-lg text-xs">
+                        <button type="button" onclick="setFootRenderMode('anatomical')" id="btnRenderAnatomic" class="px-2.5 py-1.5 rounded-xl font-bold bg-slate-800 text-white">
+                            Anatomik
+                        </button>
+                        <button type="button" onclick="setFootRenderMode('heatmap')" id="btnRenderHeatmap" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-white">
+                            Kavis Isı Haritası
+                        </button>
+                        <button type="button" onclick="setFootRenderMode('wireframe')" id="btnRenderWireframe" class="px-2.5 py-1.5 rounded-xl font-bold text-slate-400 hover:text-white">
+                            Tel Kafes
+                        </button>
                     </div>
                 </div>
 
-                <!-- CNC STL İndirme Butonları -->
-                <div class="space-y-2 pt-2 border-t border-slate-200">
-                    <a id="btnDownloadRightStl" href="#" download class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-download"></i>
-                        <span>Sağ Ayak STL İndir (CNC İçin)</span>
-                    </a>
-                    <a id="btnDownloadLeftStl" href="#" download class="w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-200 flex items-center justify-center gap-2 transition-all">
-                        <i class="fa-solid fa-download"></i>
-                        <span>Sol Ayak STL İndir (CNC İçin)</span>
-                    </a>
+                <!-- WebGL Canvas -->
+                <canvas id="footScanCanvas" class="w-full h-full cursor-grab active:cursor-grabbing block"></canvas>
+
+                <!-- Alt Rehber / Bilgi Rozeti -->
+                <div class="absolute bottom-4 left-4 z-20 pointer-events-none">
+                    <div class="bg-slate-900/80 backdrop-blur-md border border-slate-800 rounded-2xl px-3.5 py-2 text-xs text-slate-300 flex items-center gap-2 shadow-lg">
+                        <i class="fa-solid fa-arrows-rotate text-emerald-400 animate-spin"></i>
+                        <span>Farenin sol tuşuyla ayağı <b>360° çevirebilir</b>, tekerlek ile <b>yakınlaştırıp uzaklaştırabilirsiniz</b>.</span>
+                    </div>
                 </div>
             </div>
+
+            <!-- Sağ Kontrol & Biyomekanik Parametre Paneli (Tıpkı 3D Omurgadaki gibi) -->
+            <div class="w-full lg:w-1/4 bg-slate-50 border-l border-slate-200 p-5 flex flex-col justify-between overflow-y-auto">
+                <div>
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+                        <h3 class="font-black text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-emerald-600"></i> Biyomekanik Parametreler
+                        </h3>
+                        <span id="footScanBadgeStatus" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            Canlı Model
+                        </span>
+                    </div>
+
+                    <!-- Ark Yüksekliği Kontrolü & Canlı Değişim -->
+                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-bold text-slate-700">Medial Ark Yüksekliği</label>
+                            <span id="displayArchVal" class="text-sm font-black text-emerald-600 font-mono">18.5 mm</span>
+                        </div>
+                        <input type="range" id="sliderArchHeight" min="8" max="26" step="0.5" value="18.5" oninput="onFootSliderChange()" class="w-full accent-emerald-600 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-medium mt-1">
+                            <span>Düz Taban (8mm)</span>
+                            <span>Normal (16mm)</span>
+                            <span>Yüksek (26mm)</span>
+                        </div>
+                    </div>
+
+                    <!-- Pronasyon / Supinasyon Eğimi -->
+                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-bold text-slate-700">Topuk Devrilme Açısı</label>
+                            <span id="displayPostingVal" class="text-sm font-black text-indigo-600 font-mono">0.0°</span>
+                        </div>
+                        <input type="range" id="sliderPosting" min="-8" max="8" step="0.5" value="0" oninput="onFootSliderChange()" class="w-full accent-indigo-600 cursor-pointer">
+                        <div class="flex justify-between text-[10px] text-slate-400 font-medium mt-1">
+                            <span>Pronasyon (-8°)</span>
+                            <span>Nötr (0°)</span>
+                            <span>Supinasyon (+8°)</span>
+                        </div>
+                    </div>
+
+                    <!-- Ayak Boyutu / Numarası -->
+                    <div class="mb-5 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="text-xs font-bold text-slate-700">Ayak Uzunluğu</label>
+                            <span id="displayLengthVal" class="text-sm font-black text-slate-800 font-mono">265 mm (No: 42)</span>
+                        </div>
+                        <input type="range" id="sliderFootLength" min="220" max="310" step="1" value="265" oninput="onFootSliderChange()" class="w-full accent-slate-800 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- İndirme / Export Butonları (İsteğe bağlı) -->
+                <div class="pt-3 border-t border-slate-200 space-y-2">
+                    <button type="button" onclick="exportCurrentFootStl('right')" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Sağ Ayak STL İndir (CNC)</span>
+                    </button>
+                    <button type="button" onclick="exportCurrentFootStl('left')" class="w-full py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-200 flex items-center justify-center gap-2 transition-all">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Sol Ayak STL İndir (CNC)</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -3645,7 +3723,7 @@
                         <th class="px-4 py-3">Tarih</th>
                         <th class="px-4 py-3 text-center">Ark Yüksekliği</th>
                         <th class="px-4 py-3 text-center">Ayak Uzunluğu</th>
-                        <th class="px-4 py-3 text-center">İndirme (STL)</th>
+                        <th class="px-4 py-3 text-center">3D İncele / İndir</th>
                     </tr>
                 </thead>
                 <tbody id="footScanHistoryList" class="divide-y divide-slate-100">
@@ -3685,6 +3763,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <script src="simulation.js?v=20.2"></script>
+    <script src="foot_simulation.js?v=1.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="gait.js?v=20.2"></script>

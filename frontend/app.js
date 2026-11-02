@@ -260,8 +260,12 @@ function switchTab(tabId) {
         if(tabId === 'insoleTab' && currentPatientId) {
             if(typeof loadInsoleDropdowns === 'function') loadInsoleDropdowns();
         }
-        if(tabId === 'footScanTab' && currentPatientId) {
-            if(typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
+        if(tabId === 'footScanTab') {
+            setTimeout(() => {
+                if(typeof initFootSimulation === 'function') initFootSimulation();
+                if(typeof onFootViewerResize === 'function') onFootViewerResize();
+            }, 120);
+            if(currentPatientId && typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -3473,116 +3477,39 @@ async function checkFootScanUploadStatus(token, patientId) {
     }
 }
 
+function toggleFootScanQR() {
+    const col = document.getElementById('footScanQrCollapse');
+    if(!col) return;
+    if(col.classList.contains('hidden')) {
+        col.classList.remove('hidden');
+        generateFootScanQR();
+    } else {
+        col.classList.add('hidden');
+    }
+}
+
 function displayFootScanResult(m) {
-    const resBox = document.getElementById('footScanActiveResult');
-    if(!resBox) return;
-    resBox.classList.remove('hidden');
-
-    const d = m.created_at ? new Date(m.created_at).toLocaleString('tr-TR') : 'Bugün';
-    const dateEl = document.getElementById('footScanDateDisplay');
-    if(dateEl) dateEl.innerText = d;
-
+    if(!m) return;
+    
     // Ölçüm değerleri
     const archVal = m.arch_height_right || m.arch_height_left || 18.5;
     const lenVal = m.foot_length_right || m.foot_length_left || 265;
-    const archEl = document.getElementById('valArchHeight');
-    const lenEl = document.getElementById('valFootLength');
-    if(archEl) archEl.innerText = archVal + " mm";
-    if(lenEl) lenEl.innerText = lenVal + " mm";
-
-    // İndirme linkleri
-    const btnRight = document.getElementById('btnDownloadRightStl');
-    const btnLeft = document.getElementById('btnDownloadLeftStl');
-
-    if(m.right_foot_stl) {
-        btnRight.href = `/api/foot_scan/download/${m.id}/right`;
-        btnRight.classList.remove('opacity-50', 'pointer-events-none');
-    } else {
-        btnRight.classList.add('opacity-50', 'pointer-events-none');
+    
+    const sliderArch = document.getElementById('sliderArchHeight');
+    const sliderLen = document.getElementById('sliderFootLength');
+    if(sliderArch) sliderArch.value = archVal;
+    if(sliderLen) sliderLen.value = lenVal;
+    
+    if(typeof onFootSliderChange === 'function') {
+        onFootSliderChange();
     }
 
-    if(m.left_foot_stl) {
-        btnLeft.href = `/api/foot_scan/download/${m.id}/left`;
-        btnLeft.classList.remove('opacity-50', 'pointer-events-none');
-    } else {
-        btnLeft.classList.add('opacity-50', 'pointer-events-none');
+    const badge = document.getElementById('footScanBadgeStatus');
+    if(badge) badge.innerText = "Yeni Tarama Geldi (" + archVal + " mm)";
+
+    if(typeof showToast === 'function') {
+        showToast("Yeni 3D Ayak Taraması Başarıyla Ekrana Yüklendi!");
     }
-
-    // Three.js ile 3D Canlı Önizleme
-    initFootScan3DViewer(archVal, lenVal);
-}
-
-function initFootScan3DViewer(archHeight, footLength) {
-    const container = document.getElementById('footScan3dCanvasContainer');
-    if(!container || typeof THREE === 'undefined') return;
-
-    container.innerHTML = ''; // Temizle
-
-    const width = container.clientWidth || 500;
-    const height = container.clientHeight || 280;
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x020617); // Slate-950
-
-    const camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
-    camera.position.set(0, -180, 220);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(renderer.domElement);
-
-    // Işıklar
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0x10b981, 1.2);
-    dirLight.position.set(50, 100, 150);
-    scene.add(dirLight);
-
-    // Kavisli 3D Ayak Yüzeyi (Parametrik Geometri)
-    const segX = 30;
-    const segY = 15;
-    const geom = new THREE.PlaneGeometry(160, 75, segX, segY);
-    const pos = geom.attributes.position;
-
-    for (let i = 0; i < pos.count; i++) {
-        let x = pos.getX(i);
-        let y = pos.getY(i);
-        let normX = (x + 80) / 160;
-        let normY = (y + 37.5) / 75;
-
-        let z = 0;
-        // Medial ark kavis tepe noktası
-        if (normX > 0.25 && normX < 0.75 && normY > 0.3) {
-            z += (archHeight * 0.9) * Math.sin((normX - 0.25) / 0.5 * Math.PI) * ((normY - 0.3) / 0.7);
-        }
-        // Topuk çukuru
-        if (normX < 0.25) {
-            z += Math.max(0, 12 - Math.hypot(normX - 0.15, normY - 0.5) * 45);
-        }
-        pos.setZ(i, z);
-    }
-    geom.computeVertexNormals();
-
-    const mat = new THREE.MeshPhongMaterial({
-        color: 0x10b981,
-        wireframe: true,
-        emissive: 0x064e3b,
-        shininess: 80
-    });
-    const mesh = new THREE.Mesh(geom, mat);
-    mesh.rotation.x = -Math.PI / 4;
-    scene.add(mesh);
-
-    // Animasyon döngüsü (Hafifçe dönsün)
-    let isRunning = true;
-    function animate() {
-        if(!isRunning) return;
-        requestAnimationFrame(animate);
-        mesh.rotation.z += 0.008;
-        renderer.render(scene, camera);
-    }
-    animate();
 }
 
 async function loadFootScanHistory(patientId) {
@@ -3600,33 +3527,45 @@ async function loadFootScanHistory(patientId) {
             }
 
             tbody.innerHTML = '';
-            data.scans.forEach(row => {
+            data.scans.forEach((row, idx) => {
                 let d = row.date ? new Date(row.date).toLocaleString('tr-TR') : '-';
-                let archStr = (row.arch_height_right || row.arch_height_left) ? `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold font-mono text-xs">${row.arch_height_right || row.arch_height_left} mm</span>` : '-';
-                let lenStr = (row.foot_length_right || row.foot_length_left) ? `<span class="text-slate-700 font-mono text-xs font-semibold">${row.foot_length_right || row.foot_length_left} mm</span>` : '-';
+                let archNum = row.arch_height_right || row.arch_height_left || 18.5;
+                let lenNum = row.foot_length_right || row.foot_length_left || 265;
+                let archStr = `<span class="bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-lg font-bold font-mono text-xs">${archNum} mm</span>`;
+                let lenStr = `<span class="text-slate-700 font-mono text-xs font-semibold">${lenNum} mm</span>`;
 
-                let downloadButtons = '<div class="flex items-center justify-center gap-1.5">';
-                if(row.right_foot_stl) {
-                    downloadButtons += `<a href="/api/foot_scan/download/${row.id}/right" download class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1"><i class="fa-solid fa-download"></i> Sağ</a>`;
-                }
-                if(row.left_foot_stl) {
-                    downloadButtons += `<a href="/api/foot_scan/download/${row.id}/left" download class="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1"><i class="fa-solid fa-download"></i> Sol</a>`;
-                }
-                downloadButtons += '</div>';
+                let actionButtons = `
+                    <div class="flex items-center justify-center gap-2">
+                        <button onclick="displayFootScanResult({arch_height_right: ${archNum}, foot_length_right: ${lenNum}})" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 text-[11px] font-bold rounded-lg transition-all shadow-xs flex items-center gap-1">
+                            <i class="fa-solid fa-cube"></i> 3D İncele
+                        </button>
+                    </div>
+                `;
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="px-4 py-3 text-slate-600 font-medium text-xs">${d}</td>
                         <td class="px-4 py-3 text-center">${archStr}</td>
                         <td class="px-4 py-3 text-center">${lenStr}</td>
-                        <td class="px-4 py-3 text-center">${downloadButtons}</td>
+                        <td class="px-4 py-3 text-center">${actionButtons}</td>
                     </tr>
                 `;
             });
 
-            // En son kaydı önizlemede göster
-            if(data.scans.length > 0 && document.getElementById('footScanActiveResult').classList.contains('hidden')) {
-                displayFootScanResult(data.scans[0]);
+            // En son kaydı ilk açılışta 3D modele yükle
+            if(data.scans.length > 0) {
+                const latest = data.scans[0];
+                const arch = latest.arch_height_right || latest.arch_height_left || 18.5;
+                const len = latest.foot_length_right || latest.foot_length_left || 265;
+                if(typeof footParams !== 'undefined') {
+                    footParams.archHeight = arch;
+                    footParams.footLength = len;
+                    const slArch = document.getElementById('sliderArchHeight');
+                    const slLen = document.getElementById('sliderFootLength');
+                    if(slArch) slArch.value = arch;
+                    if(slLen) slLen.value = len;
+                    if(typeof onFootSliderChange === 'function') onFootSliderChange();
+                }
             }
         }
     } catch(e) {

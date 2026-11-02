@@ -102,12 +102,12 @@ function switchFootSide(side) {
     if (side === 'right') {
         tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-2";
         tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
-        btnText.innerText = "Sağ Ayağı Taramayı Başlat (10 sn)";
+        btnText.innerText = "Sağ Ayağı Taramayı Başlat (20 sn)";
         guideText.innerText = "Sağ ayağınızı kılavuza hizalayın";
     } else {
         tabLeft.className = "py-2.5 rounded-lg text-xs font-bold transition-all bg-emerald-600 text-white shadow-sm flex items-center justify-center gap-2";
         tabRight.className = "py-2.5 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-white flex items-center justify-center gap-2";
-        btnText.innerText = "Sol Ayağı Taramayı Başlat (10 sn)";
+        btnText.innerText = "Sol Ayağı Taramayı Başlat (20 sn)";
         guideText.innerText = "Sol ayağınızı kılavuza hizalayın";
     }
 
@@ -120,7 +120,7 @@ function switchFootSide(side) {
     }
 }
 
-// 3. Taramayı Başlat (10 Saniyelik İki Eksenli Canlı 3D Tarama Süreci)
+// 3. Taramayı Başlat (20 Saniyelik İki Eksenli Canlı 3D Tarama Süreci)
 function triggerScanProcess() {
     if (isScanning) return;
     isScanning = true;
@@ -137,7 +137,7 @@ function triggerScanProcess() {
     btnStart.disabled = true;
 
     let progress = 0;
-    const durationMs = 10000; // 10 saniye (Boyuna + Enine tarama)
+    const durationMs = 20000; // 20 saniye (Rahat ve kapsamlı tarama)
     const intervalMs = 50;
     const totalSteps = durationMs / intervalMs;
     const maxOffset = 264; // Çember çevresi
@@ -151,16 +151,16 @@ function triggerScanProcess() {
         progressCircle.style.strokeDashoffset = offset;
         progressPercentText.innerText = currentPercent + "%";
 
-        // Aşama Durumu (0-50% Boyuna Eksen, 50-100% Enine Eksen)
+        // Aşama Durumu (0-50% Boyuna Eksen, 50-100% Enine Eksen & Kavis)
         if (currentPercent < 50) {
             progressStatusText.innerHTML = `
-                <span class="text-amber-400 font-bold block text-xs">AŞAMA 1/2: BOYUNA TARAMA</span>
+                <span class="text-amber-400 font-bold block text-xs">AŞAMA 1/2: BOYUNA TARAMA (1-10 sn)</span>
                 <span class="text-white text-[11px]">Topuktan parmak ucuna doğru yavaşça gezdirin</span>
             `;
         } else {
             progressStatusText.innerHTML = `
-                <span class="text-emerald-400 font-bold block text-xs">AŞAMA 2/2: ENİNE TARAMA</span>
-                <span class="text-white text-[11px]">İç kavis çukurundan dış kenara doğru gezdirin</span>
+                <span class="text-emerald-400 font-bold block text-xs">AŞAMA 2/2: ENİNE TARAMA & KAVİS (11-20 sn)</span>
+                <span class="text-white text-[11px]">İç kavis çukurundan dış kenara doğru detaylı gezdirin</span>
             `;
         }
 
