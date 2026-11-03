@@ -3530,39 +3530,39 @@
 <!-- SEKME: 3D AYAK TARAMA & SİMÜLASYON -->
 <div id="footScanTab" class="hidden">
     
-    <!-- Üst Kontrol & QR Eşleşme Alanı (Tek Bölüm / Kompakt ve Akıcı Tasarım) -->
+    <!-- Üst Kontrol & QR Eşleşme Alanı (CIBODY iOS Native TrueDepth Entegrasyonu) -->
     <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-6 p-6">
         <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
             
             <!-- Sol: Başlık, Bilgi & Hızlı Kılavuz -->
             <div class="flex-1 text-center lg:text-left">
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 mb-2.5">
-                    <i class="fa-solid fa-cube text-emerald-600"></i>
-                    <span>Mobil Canlı 3D Ayak Tarama</span>
+                    <i class="fa-brands fa-apple text-emerald-600 text-sm"></i>
+                    <span>CIBODY Apple iOS TrueDepth / LiDAR Lazer Tarama</span>
                 </div>
                 <h2 class="text-xl font-black text-slate-800 mb-1.5 flex items-center justify-center lg:justify-start gap-2">
-                    <i class="fa-solid fa-shoe-prints text-emerald-600"></i> 3D Ayak Anatomisi & Kavis İnceleme
+                    <i class="fa-solid fa-shoe-prints text-emerald-600"></i> Gerçek 3D Lazer Ayak Anatomisi & Kavis İnceleme
                 </h2>
                 <p class="text-slate-600 text-xs leading-relaxed max-w-xl mb-3">
-                    Telefon kamerasıyla ayağı 20 saniye tarayarak anatomik modeli sisteme aktarın. Fare ile ayağı <b>360° serbestçe çevirip</b> kavis çukurunu, topuk temasını ve basışını inceleyebilirsiniz.
+                    iPhone'unuzdaki <b>Ayak Analiz</b> uygulamasını açarak bu QR kodu okutun. Donanımsal kızılötesi lazerle taranan milimetrik 3D ayak modeli doğrudan bu ekrana aktarılacaktır.
                 </p>
 
                 <!-- Adımlar & Canlı Durum -->
                 <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-[11px] text-slate-600 font-medium">
                     <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
-                        <strong class="text-emerald-600">1.</strong> QR Kodu Okutun
+                        <strong class="text-emerald-600">1.</strong> Ayak Analiz Uygulamasını Açın
                     </span>
                     <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
-                        <strong class="text-emerald-600">2.</strong> 20 Sn Taramayı Başlatın
+                        <strong class="text-emerald-600">2.</strong> QR Kodu Okutun & Taramayı Başlatın
                     </span>
                     <span class="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-lg">
-                        <strong class="text-emerald-600">3.</strong> "Gönder" Deyin, 3D Ekrana Gelsin
+                        <strong class="text-emerald-600">3.</strong> "Gönder" Deyin, 3D Model Ekranda Açılsın
                     </span>
                 </div>
 
                 <div id="footScanStatus" class="hidden mt-3 p-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center border border-emerald-200 w-fit mx-auto lg:mx-0">
                     <i class="fa-solid fa-circle-notch fa-spin mr-2 text-emerald-600"></i>
-                    <span>Mobil cihaz ile eşleşme bekleniyor veya tarama yapılıyor...</span>
+                    <span>iPhone uygulaması ile eşleşildi, tarama bekleniyor...</span>
                 </div>
             </div>
 
@@ -3572,7 +3572,7 @@
                     <div id="footScanQR" class="w-32 h-32 flex items-center justify-center">
                         <i class="fa-solid fa-qrcode text-4xl text-slate-300"></i>
                     </div>
-                    <p class="text-[10px] text-slate-500 font-bold mt-1.5">Telefonla Okutun</p>
+                    <p class="text-[10px] text-slate-500 font-bold mt-1.5">Uygulama İle Okutun</p>
                 </div>
                 
                 <div class="flex flex-col gap-2">
