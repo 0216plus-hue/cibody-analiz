@@ -267,7 +267,6 @@ function switchTab(tabId) {
             }, 120);
             if(currentPatientId) {
                 if(typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
-                if(typeof generateFootScanQR === 'function') generateFootScanQR();
             }
         }
     } catch(err) {
@@ -3443,17 +3442,23 @@ async function generateFootScanQR() {
                 correctLevel : QRCode.CorrectLevel.H
             });
 
-            btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> Yeni QR Kod Oluştur';
+            btn.innerHTML = '<i class="fa-solid fa-rotate mr-2"></i> Yeni QR Üret';
             btn.disabled = false;
-            document.getElementById('footScanStatus').classList.remove('hidden');
+            
+            const statusEl = document.getElementById('footScanStatus');
+            if (statusEl) {
+                statusEl.className = "mt-3 p-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold flex items-center border border-slate-200 w-fit mx-auto lg:mx-0";
+                statusEl.innerHTML = '<i class="fa-solid fa-qrcode text-slate-500 mr-2"></i><span>iPhone uygulamasını açıp bu QR kodu okutun...</span>';
+                statusEl.classList.remove('hidden');
+            }
 
-            // Polling başlat (2.5 saniyede bir telefondan yükleme geldi mi kontrol et)
+            // Polling başlat (2 saniyede bir telefondan eşleşme veya yükleme geldi mi kontrol et)
             if(footScanPollInterval) clearInterval(footScanPollInterval);
-            footScanPollInterval = setInterval(() => checkFootScanUploadStatus(data.token, patientId), 2500);
+            footScanPollInterval = setInterval(() => checkFootScanUploadStatus(data.token, patientId), 2000);
         }
     } catch(e) {
         console.error("generateFootScanQR error:", e);
-        btn.innerHTML = '<i class="fa-solid fa-qrcode mr-2"></i> Yeni QR Kod Oluştur';
+        btn.innerHTML = '<i class="fa-solid fa-rotate mr-2"></i> Yeni QR Üret';
         btn.disabled = false;
     }
 }
@@ -3464,19 +3469,30 @@ async function checkFootScanUploadStatus(token, patientId) {
         const res = await fetch(`/api/foot_scan/status/${token}`);
         if(res.ok) {
             const data = await res.json();
+            const statusEl = document.getElementById('footScanStatus');
+
+            // 1) Tarama tamamlandı ve yüklendi!
             if(data.scanned && data.measurement) {
-                // Tarama tamamlandı! Polling'i durdur
                 if(footScanPollInterval) {
                     clearInterval(footScanPollInterval);
                     footScanPollInterval = null;
                 }
-                const statusEl = document.getElementById('footScanStatus');
                 if(statusEl) {
-                    statusEl.innerHTML = '<i class="fa-solid fa-check text-emerald-600 mr-2"></i><span>3D Tarama Başarıyla Alındı!</span>';
-                    setTimeout(() => statusEl.classList.add('hidden'), 3500);
+                    statusEl.className = "mt-3 p-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center border border-emerald-200 w-fit mx-auto lg:mx-0";
+                    statusEl.innerHTML = '<i class="fa-solid fa-check text-emerald-600 mr-2"></i><span>3D Lazer Taraması Başarıyla Alındı!</span>';
+                    setTimeout(() => statusEl.classList.add('hidden'), 4000);
                 }
                 displayFootScanResult(data.measurement);
                 loadFootScanHistory(patientId);
+                return;
+            }
+
+            // 2) Henüz yükleme bitmedi ama iPhone kamerası QR kodu okuttu (gerçek eşleşme sağlandı!)
+            if(data.paired) {
+                if(statusEl) {
+                    statusEl.className = "mt-3 p-2 bg-emerald-50 text-emerald-800 rounded-xl text-xs font-semibold flex items-center border border-emerald-200 w-fit mx-auto lg:mx-0";
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 mr-2"></i><span>iPhone ile eşleşildi! Tarama bekleniyor...</span>';
+                }
             }
         }
     } catch(e) {
@@ -3486,12 +3502,21 @@ async function checkFootScanUploadStatus(token, patientId) {
 
 function toggleFootScanQR() {
     const col = document.getElementById('footScanQrCollapse');
+    const btnText = document.getElementById('btnToggleFootScanQRText');
     if(!col) return;
     if(col.classList.contains('hidden')) {
         col.classList.remove('hidden');
+        if (btnText) btnText.innerText = "QR Kodu Gizle";
         generateFootScanQR();
     } else {
         col.classList.add('hidden');
+        if (btnText) btnText.innerText = "iPhone ile 3D Tara (QR Göster)";
+        if(footScanPollInterval) {
+            clearInterval(footScanPollInterval);
+            footScanPollInterval = null;
+        }
+        const statusEl = document.getElementById('footScanStatus');
+        if(statusEl) statusEl.classList.add('hidden');
     }
 }
 
@@ -3532,12 +3557,12 @@ function displayFootScanResult(m) {
         loadFootDataToUI(currentFootSide);
     }
     
-    // Eğer taranan gerçek dosya varsa doğrudan yükle, yoksa parametrik çiz
+    // Eğer taranan gerçek dosya varsa doğrudan yükle, yoksa sahneyi temizle
     const fileUrl = window.footDataStore ? window.footDataStore[currentFootSide]?.scanFileUrl : null;
     if(fileUrl && typeof loadScannedFootFile === 'function') {
         loadScannedFootFile(fileUrl, currentFootSide);
-    } else if(typeof buildAnatomicalFootMesh === 'function') {
-        buildAnatomicalFootMesh();
+    } else if(typeof clearFootViewer === 'function') {
+        clearFootViewer();
     }
 
     if(typeof showToast === 'function') {
@@ -3551,6 +3576,7 @@ async function deleteFootScan(measurementId) {
         const res = await authFetch(`/api/foot_scan/${measurementId}`, { method: 'DELETE' });
         if(res.ok) {
             if(typeof showToast === 'function') showToast("3D Tarama kaydı başarıyla silindi.");
+            if(typeof clearFootViewer === 'function') clearFootViewer();
             if(currentPatientId) loadFootScanHistory(currentPatientId);
         } else {
             alert("Silme işlemi başarısız oldu.");
@@ -3572,6 +3598,7 @@ async function loadFootScanHistory(patientId) {
 
             if(!data.scans || data.scans.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400">Henüz 3D tarama kaydı bulunmuyor.</td></tr>';
+                if(typeof clearFootViewer === 'function') clearFootViewer();
                 return;
             }
 
@@ -3606,11 +3633,6 @@ async function loadFootScanHistory(patientId) {
                     </tr>
                 `;
             });
-
-            // En son kaydı ilk açılışta 3D modele yükle
-            if(data.scans.length > 0) {
-                displayFootScanResult(data.scans[0]);
-            }
         }
     } catch(e) {
         console.error("loadFootScanHistory error:", e);

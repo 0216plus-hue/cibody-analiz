@@ -128,6 +128,14 @@ def startup_event():
         except Exception as e:
             db.rollback()
 
+        # QR eşleşme durumu takibi için is_paired sütunu (yoksa ekle)
+        try:
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE foot_scan_tokens ADD COLUMN is_paired BOOLEAN DEFAULT 0"))
+            db.commit()
+        except Exception as e:
+            db.rollback()
+
         # Ensure exercise_translations table exists and seed default translations if empty
         try:
             from sqlalchemy import text
@@ -2001,12 +2009,14 @@ def get_foot_scan_status(token: str, db: Session = Depends(get_db)):
     if not t:
         raise HTTPException(status_code=404, detail="Token bulunamadı")
     
+    is_paired = bool(getattr(t, 'is_paired', False))
     m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.token == token).order_by(models.FootScanMeasurement.id.desc()).first()
     if not m:
-        return {"scanned": False, "is_used": t.is_used}
+        return {"scanned": False, "paired": is_paired, "is_used": t.is_used}
         
     return {
         "scanned": True,
+        "paired": True,
         "measurement": {
             "id": m.id,
             "patient_id": m.patient_id,
@@ -2111,6 +2121,10 @@ def ios_verify_token(token: str, db: Session = Depends(get_db)):
     patient = db.query(models.Patient).filter(models.Patient.id == t.patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Hasta bulunamadı.")
+
+    # QR iPhone ile okutuldu, eşleşti olarak işaretle
+    t.is_paired = True
+    db.commit()
 
     remaining = int((t.expires_at - datetime.utcnow()).total_seconds())
     return {

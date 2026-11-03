@@ -3154,7 +3154,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=24.0"></script>
+    <script src="app.js?v=25.0"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -3566,21 +3566,30 @@
                 </div>
             </div>
 
-            <!-- Sağ: QR Kod Kartı & Yenile Butonu (Kompakt ve Şık) -->
-            <div id="footScanQrCollapse" class="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/90 border border-slate-200 p-3.5 rounded-2xl shrink-0">
-                <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
-                    <div id="footScanQR" class="w-32 h-32 flex items-center justify-center">
-                        <i class="fa-solid fa-qrcode text-4xl text-slate-300"></i>
-                    </div>
-                    <p class="text-[10px] text-slate-500 font-bold mt-1.5">Uygulama İle Okutun</p>
-                </div>
+            <!-- Sağ: QR Kod Kartı & Aç/Kapat Butonu -->
+            <div class="flex flex-col items-center lg:items-end gap-3 shrink-0">
+                <button type="button" onclick="toggleFootScanQR()" id="btnToggleFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-5 rounded-2xl transition-all shadow-md shadow-emerald-200 flex items-center gap-2.5 text-xs whitespace-nowrap">
+                    <i class="fa-solid fa-qrcode text-base"></i>
+                    <span id="btnToggleFootScanQRText">iPhone ile 3D Tara (QR Göster)</span>
+                </button>
                 
-                <div class="flex flex-col gap-2">
-                    <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-emerald-200 flex items-center justify-center gap-2 text-xs whitespace-nowrap">
-                        <i class="fa-solid fa-rotate text-sm"></i>
-                        <span>Yeni QR Oluştur</span>
-                    </button>
-                    <span class="text-[10px] text-slate-400 text-center">Otomatik Eşleşir</span>
+                <div id="footScanQrCollapse" class="hidden flex flex-col sm:flex-row items-center gap-4 bg-slate-50/90 border border-slate-200 p-3.5 rounded-2xl shadow-sm">
+                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
+                        <div id="footScanQR" class="w-32 h-32 flex items-center justify-center">
+                            <i class="fa-solid fa-qrcode text-4xl text-slate-300"></i>
+                        </div>
+                        <p class="text-[10px] text-slate-500 font-bold mt-1.5">Ayak Analiz ile Okutun</p>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2">
+                        <button onclick="generateFootScanQR()" id="btnGenerateFootScanQR" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-3 rounded-xl transition-all text-xs flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs">
+                            <i class="fa-solid fa-rotate text-xs"></i>
+                            <span>Yeni QR Üret</span>
+                        </button>
+                        <button type="button" onclick="toggleFootScanQR()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-1.5 px-3 rounded-xl transition-all text-xs">
+                            Gizle
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -3634,6 +3643,17 @@
                             Tel Kafes
                         </button>
                     </div>
+                </div>
+
+                <!-- Boş Durum Göstergesi (Model seçilmediğinde veya tarama yokken) -->
+                <div id="footScanEmptyState" class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none p-6 text-center">
+                    <div class="w-16 h-16 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center text-slate-500 mb-3 shadow-xl">
+                        <i class="fa-solid fa-shoe-prints text-2xl text-emerald-500/60"></i>
+                    </div>
+                    <h3 class="text-white font-bold text-sm mb-1">Görüntülenecek 3D Model Yok</h3>
+                    <p class="text-slate-400 text-xs max-w-sm">
+                        iPhone ile tarama yapmak için yukarıdaki <b>"iPhone ile 3D Tara"</b> butonuna tıklayın veya aşağıdaki listeden bir analizi <b>"3D İncele"</b> diyerek açın.
+                    </p>
                 </div>
 
                 <!-- WebGL Canvas -->
@@ -3826,7 +3846,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
     <script src="simulation.js?v=20.2"></script>
-    <script src="foot_simulation.js?v=2.0"></script>
+    <script src="foot_simulation.js?v=3.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="gait.js?v=20.2"></script>

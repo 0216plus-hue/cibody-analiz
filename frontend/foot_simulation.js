@@ -46,6 +46,9 @@ function loadScannedFootFile(fileUrl, side) {
     }
 
     loader.load(fileUrl, function (geometry) {
+        const emptyEl = document.getElementById('footScanEmptyState');
+        if (emptyEl) emptyEl.classList.add('hidden');
+
         if (footMesh) {
             footScene.remove(footMesh);
             if (footMesh.geometry) footMesh.geometry.dispose();
@@ -181,11 +184,38 @@ function initFootSimulation() {
     footLabelGroup = new THREE.Group();
     footScene.add(footLabelGroup);
 
-    // Modeli Oluştur
-    buildAnatomicalFootMesh();
+    // Boş sahne başlatılır, kullanıcı analiz seçmeden veya tarama yapmadan sahte model çizilmez
+    clearFootViewer();
 
     window.addEventListener('resize', onFootViewerResize);
     animateFootViewer();
+}
+
+function clearFootViewer() {
+    if (footMesh && footScene) {
+        footScene.remove(footMesh);
+        if (footMesh.geometry) footMesh.geometry.dispose();
+        footMesh = null;
+    }
+    if (footLabelGroup) {
+        while (footLabelGroup.children.length > 0) {
+            footLabelGroup.remove(footLabelGroup.children[0]);
+        }
+    }
+    const emptyEl = document.getElementById('footScanEmptyState');
+    if (emptyEl) emptyEl.classList.remove('hidden');
+
+    const badge = document.getElementById('footScanBadgeStatus');
+    if (badge) {
+        badge.innerText = "Model Bekleniyor";
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600";
+    }
+    if (document.getElementById('displayLengthVal')) {
+        document.getElementById('displayLengthVal').innerText = "-";
+    }
+    if (document.getElementById('displayArchVal')) {
+        document.getElementById('displayArchVal').innerText = "-";
+    }
 }
 
 function onFootViewerResize() {
@@ -512,12 +542,12 @@ function setFootViewerSide(side) {
 
     loadFootDataToUI(side);
     
-    // Eğer bu tarafın gerçek 3D dosyası varsa onu yükle, yoksa parametrik çiz
+    // Eğer bu tarafın gerçek 3D dosyası varsa onu yükle, yoksa temizle
     const fileUrl = window.footDataStore[side]?.scanFileUrl;
     if (fileUrl) {
         loadScannedFootFile(fileUrl, side);
     } else {
-        buildAnatomicalFootMesh();
+        clearFootViewer();
     }
 }
 

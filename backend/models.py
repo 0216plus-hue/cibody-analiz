@@ -179,6 +179,7 @@ class FootScanToken(Base):
     patient_id = Column(Integer, ForeignKey("patients.id"))
     expires_at = Column(DateTime)
     is_used = Column(Boolean, default=False)
+    is_paired = Column(Boolean, default=False)
 
 class FootScanMeasurement(Base):
     __tablename__ = "foot_scan_measurements"
