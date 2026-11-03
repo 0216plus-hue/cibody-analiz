@@ -120,6 +120,14 @@ def startup_event():
         except Exception as e:
             pass
 
+        # iOS bireysel sipariş taramaları için order_number sütunu (yoksa ekle)
+        try:
+            from sqlalchemy import text
+            db.execute(text("ALTER TABLE foot_scan_measurements ADD COLUMN order_number VARCHAR"))
+            db.commit()
+        except Exception as e:
+            db.rollback()
+
         # Ensure exercise_translations table exists and seed default translations if empty
         try:
             from sqlalchemy import text
@@ -2274,6 +2282,9 @@ async def ios_upload_order_scan(
     Dosyalar /uploads/foot_scans/orders/{order_number}/ klasörüne kaydedilir.
     """
     order_no = order_number.strip().upper()
+    import re
+    if not re.match(r'^CBY-\d{4}-\d+$', order_no):
+        raise HTTPException(status_code=400, detail="Geçersiz sipariş numarası. Örnek: CBY-2026-00123")
     save_dir = os.path.join("uploads", "foot_scans", "orders", order_no)
     os.makedirs(save_dir, exist_ok=True)
 
@@ -2317,6 +2328,7 @@ async def ios_upload_order_scan(
     m = models.FootScanMeasurement(
         patient_id=None,
         token=None,
+        order_number=order_no,
         right_foot_stl=right_path,
         left_foot_stl=left_path,
         arch_height_right=arch_height_right,
