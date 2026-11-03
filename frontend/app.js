@@ -3504,17 +3504,28 @@ function displayFootScanResult(m) {
             window.footDataStore.left.archHeight = m.arch_height_left || 17.2;
             window.footDataStore.left.footLength = m.foot_length_left || 263;
         }
+        if(m.right_foot_stl) {
+            window.footDataStore.right.scanFileUrl = m.right_foot_stl;
+        }
+        if(m.left_foot_stl) {
+            window.footDataStore.left.scanFileUrl = m.left_foot_stl;
+        }
     }
     
     if(typeof loadFootDataToUI === 'function') {
         loadFootDataToUI(currentFootSide);
     }
-    if(typeof buildAnatomicalFootMesh === 'function') {
+    
+    // Eğer taranan gerçek dosya varsa doğrudan yükle, yoksa parametrik çiz
+    const fileUrl = window.footDataStore ? window.footDataStore[currentFootSide]?.scanFileUrl : null;
+    if(fileUrl && typeof loadScannedFootFile === 'function') {
+        loadScannedFootFile(fileUrl, currentFootSide);
+    } else if(typeof buildAnatomicalFootMesh === 'function') {
         buildAnatomicalFootMesh();
     }
 
     if(typeof showToast === 'function') {
-        showToast("Yeni 3D Ayak Taraması Başarıyla Yüklendi!");
+        showToast("Gerçek 3D Lazer Taraması Başarıyla Yüklendi!");
     }
 }
 

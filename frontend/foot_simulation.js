@@ -10,11 +10,118 @@ let currentFootSide = 'right'; // 'right' veya 'left'
 let currentRenderMode = 'anatomical'; // 'anatomical', 'heatmap', 'wireframe'
 let currentModelType = 'humanFoot'; // 'humanFoot' (5 Parmaklı Gerçek Ayak) veya 'insole' (CNC Tabanlık)
 
-// Her iki ayak için bağımsız saklanan biyomekanik ölçümler
+// Her iki ayak için bağımsız saklanan biyomekanik ölçümler ve gerçek taranan dosya URL'leri
 window.footDataStore = {
-    right: { archHeight: 18.5, footLength: 265, postingAngle: 0.0 },
-    left: { archHeight: 17.0, footLength: 262, postingAngle: 0.0 }
+    right: { archHeight: 18.5, footLength: 265, postingAngle: 0.0, scanFileUrl: null },
+    left: { archHeight: 17.0, footLength: 262, postingAngle: 0.0, scanFileUrl: null }
 };
+
+// =========================================================================
+// İPHONE'DAN TARANAN GERÇEK 3D LAZER DOSYASINI (PLY / STL) YÜKLE
+// =========================================================================
+function loadScannedFootFile(fileUrl, side) {
+    if (!fileUrl) return;
+    if (side) currentFootSide = side;
+
+    window.footDataStore[currentFootSide].scanFileUrl = fileUrl;
+
+    if (!footScene) {
+        initFootSimulation();
+    }
+
+    const isPly = fileUrl.toLowerCase().endsWith('.ply');
+    const isStl = fileUrl.toLowerCase().endsWith('.stl');
+
+    const loader = isPly ? new THREE.PLYLoader() : (isStl ? new THREE.STLLoader() : null);
+    if (!loader) {
+        console.warn("Bilinmeyen 3D dosya formatı:", fileUrl);
+        return;
+    }
+
+    // Yükleniyor göstergesi
+    const badge = document.getElementById('footScanBadgeStatus');
+    if (badge) {
+        badge.innerText = "3D Lazer Modeli Yükleniyor...";
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 animate-pulse";
+    }
+
+    loader.load(fileUrl, function (geometry) {
+        if (footMesh) {
+            footScene.remove(footMesh);
+            if (footMesh.geometry) footMesh.geometry.dispose();
+        }
+        if (footLabelGroup) {
+            while (footLabelGroup.children.length > 0) {
+                footLabelGroup.remove(footLabelGroup.children[0]);
+            }
+        }
+
+        geometry.computeVertexNormals();
+        geometry.center();
+
+        // Boyutları hesapla
+        geometry.computeBoundingBox();
+        const bbox = geometry.boundingBox;
+        const sizeX = Math.round(bbox.max.x - bbox.min.x);
+        const sizeY = Math.round(bbox.max.y - bbox.min.y);
+        const sizeZ = Math.round(bbox.max.z - bbox.min.z);
+
+        // Materyal Seçimi
+        let mat;
+        if (currentRenderMode === 'wireframe') {
+            mat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true });
+        } else if (currentRenderMode === 'heatmap') {
+            mat = new THREE.MeshStandardMaterial({
+                color: 0x0ea5e9,
+                roughness: 0.35,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+        } else {
+            // Gerçek Medikal Doku Rengi
+            mat = new THREE.MeshStandardMaterial({
+                color: 0x38bdf8,
+                roughness: 0.30,
+                metalness: 0.05,
+                side: THREE.DoubleSide
+            });
+        }
+
+        footMesh = new THREE.Mesh(geometry, mat);
+        footMesh.castShadow = true;
+        footMesh.receiveShadow = true;
+
+        // Model yönünü ayarla (Zemine oturt)
+        footMesh.position.y = (sizeY / 2) - 4;
+        footScene.add(footMesh);
+
+        // Kamera mesafesini model boyutuna göre ayarla
+        const maxDim = Math.max(sizeX, sizeY, sizeZ);
+        if (footCamera && footControls) {
+            footControls.target.set(0, sizeY / 4, 0);
+            footCamera.position.set(maxDim * 1.2, maxDim * 1.1, maxDim * 1.3);
+            footControls.update();
+        }
+
+        if (badge) {
+            badge.innerText = `Gerçek ${currentFootSide === 'right' ? 'Sağ' : 'Sol'} Ayak (${maxDim} mm)`;
+            badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800";
+        }
+
+        // Ölçüm alanlarını güncelle
+        if (document.getElementById('displayLengthVal')) {
+            document.getElementById('displayLengthVal').innerText = `${maxDim} mm (Lazer Ölçümü)`;
+        }
+
+    }, undefined, function (error) {
+        console.error("3D Dosya Yükleme Hatası:", error);
+        if (badge) {
+            badge.innerText = "Yükleme Hatası";
+            badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800";
+        }
+        buildAnatomicalFootMesh();
+    });
+}
 
 function initFootSimulation() {
     const canvas = document.getElementById('footScanCanvas');
@@ -404,7 +511,14 @@ function setFootViewerSide(side) {
     }
 
     loadFootDataToUI(side);
-    buildAnatomicalFootMesh();
+    
+    // Eğer bu tarafın gerçek 3D dosyası varsa onu yükle, yoksa parametrik çiz
+    const fileUrl = window.footDataStore[side]?.scanFileUrl;
+    if (fileUrl) {
+        loadScannedFootFile(fileUrl, side);
+    } else {
+        buildAnatomicalFootMesh();
+    }
 }
 
 function loadFootDataToUI(side) {
