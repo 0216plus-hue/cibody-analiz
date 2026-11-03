@@ -1915,15 +1915,22 @@ async def upload_foot_scan(
     token: str,
     right_foot_stl: Optional[UploadFile] = File(None),
     left_foot_stl: Optional[UploadFile] = File(None),
+    right_foot_file: Optional[UploadFile] = File(None),
+    left_foot_file: Optional[UploadFile] = File(None),
     arch_height_right: Optional[float] = Form(None),
     arch_height_left: Optional[float] = Form(None),
     foot_length_right: Optional[float] = Form(None),
     foot_length_left: Optional[float] = Form(None),
+    scan_duration_seconds: Optional[float] = Form(None),
+    device_model: Optional[str] = Form(None),
+    scanner_type: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     db: Session = Depends(get_db)
 ):
-    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token, models.FootScanToken.is_used == False).first()
-    if not t or t.expires_at < datetime.utcnow():
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Token bulunamadı.")
+    if t.expires_at < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Geçersiz veya süresi dolmuş oturum.")
     
     patient_id = t.patient_id
@@ -1933,22 +1940,34 @@ async def upload_foot_scan(
     right_path = None
     left_path = None
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+    r_file = right_foot_file or right_foot_stl
+    l_file = left_foot_file or left_foot_stl
     
-    if right_foot_stl and right_foot_stl.filename:
-        filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}.stl"
+    if r_file and r_file.filename:
+        ext = os.path.splitext(r_file.filename.lower())[1] or ".ply"
+        filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_right = os.path.join(save_dir, filename_right)
-        content = await right_foot_stl.read()
+        content = await r_file.read()
         with open(dest_right, "wb") as f:
             f.write(content)
         right_path = f"/uploads/foot_scans/{patient_id}/{filename_right}"
         
-    if left_foot_stl and left_foot_stl.filename:
-        filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}.stl"
+    if l_file and l_file.filename:
+        ext = os.path.splitext(l_file.filename.lower())[1] or ".ply"
+        filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_left = os.path.join(save_dir, filename_left)
-        content = await left_foot_stl.read()
+        content = await l_file.read()
         with open(dest_left, "wb") as f:
             f.write(content)
         left_path = f"/uploads/foot_scans/{patient_id}/{filename_left}"
+
+    full_notes = notes or ""
+    if device_model or scanner_type:
+        full_notes += f" | Cihaz: {device_model or 'Bilinmiyor'} | Sensör: {scanner_type or 'Bilinmiyor'}"
+    if scan_duration_seconds:
+        full_notes += f" | Tarama: {scan_duration_seconds:.1f}sn"
+    full_notes = full_notes.strip(" |")
 
     m = models.FootScanMeasurement(
         patient_id=patient_id,
@@ -1959,7 +1978,7 @@ async def upload_foot_scan(
         arch_height_left=arch_height_left,
         foot_length_right=foot_length_right,
         foot_length_left=foot_length_left,
-        notes=notes
+        notes=full_notes or "CIBODY iOS Derinlik Taraması"
     )
     db.add(m)
     t.is_used = True
@@ -1971,7 +1990,9 @@ async def upload_foot_scan(
         "message": "3D Ayak Taraması başarıyla yüklendi",
         "measurement_id": m.id,
         "right_foot_stl": right_path,
-        "left_foot_stl": left_path
+        "left_foot_stl": left_path,
+        "right_foot_file": right_path,
+        "left_foot_file": left_path
     }
 
 @app.get("/api/foot_scan/status/{token}")
@@ -1991,6 +2012,8 @@ def get_foot_scan_status(token: str, db: Session = Depends(get_db)):
             "patient_id": m.patient_id,
             "right_foot_stl": m.right_foot_stl,
             "left_foot_stl": m.left_foot_stl,
+            "right_foot_file": m.right_foot_stl,
+            "left_foot_file": m.left_foot_stl,
             "arch_height_right": m.arch_height_right,
             "arch_height_left": m.arch_height_left,
             "foot_length_right": m.foot_length_right,
@@ -2009,6 +2032,8 @@ def get_foot_scan_history(patient_id: int, db: Session = Depends(get_db), curren
                 "id": s.id,
                 "right_foot_stl": s.right_foot_stl,
                 "left_foot_stl": s.left_foot_stl,
+                "right_foot_file": s.right_foot_stl,
+                "left_foot_file": s.left_foot_stl,
                 "arch_height_right": s.arch_height_right,
                 "arch_height_left": s.arch_height_left,
                 "foot_length_right": s.foot_length_right,
@@ -2102,8 +2127,10 @@ def ios_verify_token(token: str, db: Session = Depends(get_db)):
 @app.post("/api/ios/upload_scan/{token}")
 async def ios_upload_scan(
     token: str,
-    right_foot_file: Optional[UploadFile] = File(None),   # STL veya OBJ veya USDZ
+    right_foot_file: Optional[UploadFile] = File(None),
     left_foot_file: Optional[UploadFile] = File(None),
+    right_foot_stl: Optional[UploadFile] = File(None),
+    left_foot_stl: Optional[UploadFile] = File(None),
     arch_height_right: Optional[float] = Form(None),
     arch_height_left: Optional[float] = Form(None),
     foot_length_right: Optional[float] = Form(None),
@@ -2116,7 +2143,7 @@ async def ios_upload_scan(
 ):
     """
     iOS uygulamasından gelen gerçek 3D tarama dosyasını alır.
-    STL, OBJ ve USDZ formatlarını kabul eder.
+    PLY, STL, OBJ ve USDZ formatlarını kabul eder.
     Token bir kez kullanıldıktan sonra is_used=True yapılır.
     """
     t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
@@ -2133,27 +2160,29 @@ async def ios_upload_scan(
     left_path = None
     timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
-    # Desteklenen formatlar: .stl, .obj, .usdz
     ALLOWED_EXTENSIONS = {".stl", ".obj", ".usdz", ".ply"}
 
-    if right_foot_file and right_foot_file.filename:
-        ext = os.path.splitext(right_foot_file.filename.lower())[1]
+    r_file = right_foot_file or right_foot_stl
+    l_file = left_foot_file or left_foot_stl
+
+    if r_file and r_file.filename:
+        ext = os.path.splitext(r_file.filename.lower())[1]
         if ext not in ALLOWED_EXTENSIONS:
             raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
         filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_right = os.path.join(save_dir, filename_right)
-        content = await right_foot_file.read()
+        content = await r_file.read()
         with open(dest_right, "wb") as f:
             f.write(content)
         right_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_right}"
 
-    if left_foot_file and left_foot_file.filename:
-        ext = os.path.splitext(left_foot_file.filename.lower())[1]
+    if l_file and l_file.filename:
+        ext = os.path.splitext(l_file.filename.lower())[1]
         if ext not in ALLOWED_EXTENSIONS:
             raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
         filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_left = os.path.join(save_dir, filename_left)
-        content = await left_foot_file.read()
+        content = await l_file.read()
         with open(dest_left, "wb") as f:
             f.write(content)
         left_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_left}"
@@ -2191,7 +2220,9 @@ async def ios_upload_scan(
         "measurement_id": m.id,
         "patient_id": patient_id,
         "right_foot_file": right_path,
-        "left_foot_file": left_path
+        "left_foot_file": left_path,
+        "right_foot_stl": right_path,
+        "left_foot_stl": left_path
     }
 
 

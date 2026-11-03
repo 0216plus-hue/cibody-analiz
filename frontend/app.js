@@ -3470,7 +3470,11 @@ async function checkFootScanUploadStatus(token, patientId) {
                     clearInterval(footScanPollInterval);
                     footScanPollInterval = null;
                 }
-                document.getElementById('footScanStatus').classList.add('hidden');
+                const statusEl = document.getElementById('footScanStatus');
+                if(statusEl) {
+                    statusEl.innerHTML = '<i class="fa-solid fa-check text-emerald-600 mr-2"></i><span>3D Tarama Başarıyla Alındı!</span>';
+                    setTimeout(() => statusEl.classList.add('hidden'), 3500);
+                }
                 displayFootScanResult(data.measurement);
                 loadFootScanHistory(patientId);
             }
@@ -3494,6 +3498,9 @@ function toggleFootScanQR() {
 function displayFootScanResult(m) {
     if(!m) return;
     
+    const rFile = m.right_foot_file || m.right_foot_stl;
+    const lFile = m.left_foot_file || m.left_foot_stl;
+
     // Sağ ve Sol ayak için bağımsız sakla
     if(window.footDataStore) {
         if(m.arch_height_right || m.foot_length_right) {
@@ -3504,11 +3511,20 @@ function displayFootScanResult(m) {
             window.footDataStore.left.archHeight = m.arch_height_left || 17.2;
             window.footDataStore.left.footLength = m.foot_length_left || 263;
         }
-        if(m.right_foot_stl) {
-            window.footDataStore.right.scanFileUrl = m.right_foot_stl;
+        if(rFile) {
+            window.footDataStore.right.scanFileUrl = rFile;
         }
-        if(m.left_foot_stl) {
-            window.footDataStore.left.scanFileUrl = m.left_foot_stl;
+        if(lFile) {
+            window.footDataStore.left.scanFileUrl = lFile;
+        }
+
+        // Eğer mevcut seçili tarafta dosya yok ama diğer tarafta varsa o tarafa otomatik geç
+        if (!window.footDataStore[currentFootSide]?.scanFileUrl) {
+            if (window.footDataStore.right?.scanFileUrl) {
+                currentFootSide = 'right';
+            } else if (window.footDataStore.left?.scanFileUrl) {
+                currentFootSide = 'left';
+            }
         }
     }
     
