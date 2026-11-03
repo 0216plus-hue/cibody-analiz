@@ -184,8 +184,9 @@ class FootScanMeasurement(Base):
     __tablename__ = "foot_scan_measurements"
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id"))
+    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=True)  # Bireysel sipariş kullanıcıları için nullable
     token = Column(String, nullable=True, index=True)
+    order_number = Column(String, nullable=True, index=True)  # Bireysel e-ticaret sipariş numarası (CBY-2026-xxxxx)
     
     right_foot_stl = Column(String, nullable=True)
     left_foot_stl = Column(String, nullable=True)
@@ -197,7 +198,7 @@ class FootScanMeasurement(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    patient = relationship("Patient")
+    patient = relationship("Patient", foreign_keys=[patient_id])
 
 class SimulationAnalysis(Base):
     __tablename__ = "simulation_analyses"

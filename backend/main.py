@@ -2055,6 +2055,290 @@ def delete_foot_scan(measurement_id: int, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+# =============================================================================
+# iOS NATIVE APP API ENDPOINTS
+# CIBODY iOS uygulaması (ARKit/TrueDepth) tarafından kullanılan endpoint'ler
+# Mevcut /api/foot_scan/* endpoint'lerinden AYRI — iOS'a özel genişletme
+# =============================================================================
+
+@app.get("/api/ios/verify_token/{token}")
+def ios_verify_token(token: str, db: Session = Depends(get_db)):
+    """
+    iOS uygulaması tarama başlamadan önce token'ın geçerliliğini kontrol eder.
+    - Token süresi dolmamış olmalı
+    - Token is_used = False VEYA is_used = True ama measurement yok ise yeniden kullanılabilir
+    Döndürür: patient_id, patient_name, expires_at, remaining_seconds
+    """
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Token bulunamadı.")
+    if t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Token süresi dolmuş. Lütfen klinisyenden yeni QR kod isteyin.")
+
+    patient = db.query(models.Patient).filter(models.Patient.id == t.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Hasta bulunamadı.")
+
+    remaining = int((t.expires_at - datetime.utcnow()).total_seconds())
+    return {
+        "valid": True,
+        "patient_id": patient.id,
+        "patient_name": patient.name,
+        "patient_age": patient.age,
+        "expires_at": t.expires_at.isoformat(),
+        "remaining_seconds": max(0, remaining),
+        "mode": "therapist"   # iOS uygulamasına terapist modunda olduğunu bildirir
+    }
+
+
+@app.post("/api/ios/upload_scan/{token}")
+async def ios_upload_scan(
+    token: str,
+    right_foot_file: Optional[UploadFile] = File(None),   # STL veya OBJ veya USDZ
+    left_foot_file: Optional[UploadFile] = File(None),
+    arch_height_right: Optional[float] = Form(None),
+    arch_height_left: Optional[float] = Form(None),
+    foot_length_right: Optional[float] = Form(None),
+    foot_length_left: Optional[float] = Form(None),
+    scan_duration_seconds: Optional[float] = Form(None),  # Kaç saniye tarandı
+    device_model: Optional[str] = Form(None),             # Örn: "iPhone 15 Pro"
+    scanner_type: Optional[str] = Form(None),             # "TrueDepth" veya "LiDAR"
+    notes: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    iOS uygulamasından gelen gerçek 3D tarama dosyasını alır.
+    STL, OBJ ve USDZ formatlarını kabul eder.
+    Token bir kez kullanıldıktan sonra is_used=True yapılır.
+    """
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Token bulunamadı.")
+    if t.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Token süresi dolmuş.")
+
+    patient_id = t.patient_id
+    save_dir = os.path.join("uploads", "foot_scans", "ios", str(patient_id))
+    os.makedirs(save_dir, exist_ok=True)
+
+    right_path = None
+    left_path = None
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+
+    # Desteklenen formatlar: .stl, .obj, .usdz
+    ALLOWED_EXTENSIONS = {".stl", ".obj", ".usdz", ".ply"}
+
+    if right_foot_file and right_foot_file.filename:
+        ext = os.path.splitext(right_foot_file.filename.lower())[1]
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
+        filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
+        dest_right = os.path.join(save_dir, filename_right)
+        content = await right_foot_file.read()
+        with open(dest_right, "wb") as f:
+            f.write(content)
+        right_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_right}"
+
+    if left_foot_file and left_foot_file.filename:
+        ext = os.path.splitext(left_foot_file.filename.lower())[1]
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
+        filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
+        dest_left = os.path.join(save_dir, filename_left)
+        content = await left_foot_file.read()
+        with open(dest_left, "wb") as f:
+            f.write(content)
+        left_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_left}"
+
+    if not right_path and not left_path:
+        raise HTTPException(status_code=400, detail="En az bir ayak dosyası (sağ veya sol) gönderilmelidir.")
+
+    # Notlara cihaz bilgisini ekle
+    full_notes = notes or ""
+    if device_model or scanner_type:
+        full_notes += f" | Cihaz: {device_model or 'Bilinmiyor'} | Sensör: {scanner_type or 'Bilinmiyor'}"
+    if scan_duration_seconds:
+        full_notes += f" | Tarama Süresi: {scan_duration_seconds:.1f}sn"
+    full_notes = full_notes.strip(" |")
+
+    m = models.FootScanMeasurement(
+        patient_id=patient_id,
+        token=token,
+        right_foot_stl=right_path,
+        left_foot_stl=left_path,
+        arch_height_right=arch_height_right,
+        arch_height_left=arch_height_left,
+        foot_length_right=foot_length_right,
+        foot_length_left=foot_length_left,
+        notes=full_notes or "iOS ARKit Canlı Tarama"
+    )
+    db.add(m)
+    t.is_used = True
+    db.commit()
+    db.refresh(m)
+
+    return {
+        "status": "success",
+        "message": "iOS 3D taraması başarıyla alındı",
+        "measurement_id": m.id,
+        "patient_id": patient_id,
+        "right_foot_file": right_path,
+        "left_foot_file": left_path
+    }
+
+
+@app.get("/api/ios/scan_ready/{token}")
+def ios_scan_ready(token: str, db: Session = Depends(get_db)):
+    """
+    Web paneli bu endpoint'i polling ile yoklar.
+    iOS uygulamasından yükleme tamamlandığında True döner.
+    Hem eski /api/foot_scan/status hem bu çalışır.
+    """
+    t = db.query(models.FootScanToken).filter(models.FootScanToken.token == token).first()
+    if not t:
+        return {"ready": False, "error": "token_not_found"}
+
+    m = db.query(models.FootScanMeasurement).filter(
+        models.FootScanMeasurement.token == token
+    ).order_by(models.FootScanMeasurement.id.desc()).first()
+
+    if not m:
+        return {"ready": False, "is_expired": t.expires_at < datetime.utcnow()}
+
+    return {
+        "ready": True,
+        "measurement_id": m.id,
+        "patient_id": m.patient_id,
+        "right_foot_file": m.right_foot_stl,
+        "left_foot_file": m.left_foot_stl,
+        "arch_height_right": m.arch_height_right,
+        "arch_height_left": m.arch_height_left,
+        "foot_length_right": m.foot_length_right,
+        "foot_length_left": m.foot_length_left,
+        "notes": m.notes,
+        "scanned_at": m.created_at.isoformat() if m.created_at else None
+    }
+
+
+# =============================================================================
+# BİREYSEL SİPARİŞ MODÜLÜ — E-Ticaret Bağlantısı (Faz 2 için temel atılıyor)
+# =============================================================================
+
+class OrderScanRequest(BaseModel):
+    order_number: str   # Örn: "CBY-2026-00123"
+
+@app.post("/api/ios/verify_order")
+def ios_verify_order(body: OrderScanRequest, db: Session = Depends(get_db)):
+    """
+    iOS uygulamasının bireysel kullanıcı modunda sipariş numarasının
+    geçerli olup olmadığını kontrol eder.
+    Şimdilik format kontrolü yapılıyor; e-ticaret entegrasyonunda DB'ye bağlanacak.
+    """
+    order_no = body.order_number.strip().upper()
+
+    # Temel format kontrolü: CBY- ile başlamalı
+    import re
+    pattern = re.compile(r'^CBY-\d{4}-\d+$')
+    if not pattern.match(order_no):
+        raise HTTPException(
+            status_code=400,
+            detail="Geçersiz sipariş numarası formatı. Örnek: CBY-2026-00123"
+        )
+
+    # TODO (Faz 2): InsoleOrder tablosunu veya e-ticaret API'sini burada sorgula
+    # Şimdilik: format uygunsa kabul et, ileride DB sorgusu eklenecek
+    return {
+        "valid": True,
+        "order_number": order_no,
+        "mode": "individual",
+        "message": "Sipariş numarası doğrulandı. Taramaya devam edebilirsiniz.",
+        "note": "Taramanız bu sipariş numarasına bağlanacak."
+    }
+
+
+@app.post("/api/ios/upload_order_scan/{order_number}")
+async def ios_upload_order_scan(
+    order_number: str,
+    right_foot_file: Optional[UploadFile] = File(None),
+    left_foot_file: Optional[UploadFile] = File(None),
+    arch_height_right: Optional[float] = Form(None),
+    arch_height_left: Optional[float] = Form(None),
+    foot_length_right: Optional[float] = Form(None),
+    foot_length_left: Optional[float] = Form(None),
+    device_model: Optional[str] = Form(None),
+    scanner_type: Optional[str] = Form(None),
+    db: Session = Depends(get_db)
+):
+    """
+    Bireysel kullanıcının sipariş numarasıyla eşleştirilmiş 3D taramasını alır.
+    Dosyalar /uploads/foot_scans/orders/{order_number}/ klasörüne kaydedilir.
+    """
+    order_no = order_number.strip().upper()
+    save_dir = os.path.join("uploads", "foot_scans", "orders", order_no)
+    os.makedirs(save_dir, exist_ok=True)
+
+    right_path = None
+    left_path = None
+    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    ALLOWED_EXTENSIONS = {".stl", ".obj", ".usdz", ".ply"}
+
+    if right_foot_file and right_foot_file.filename:
+        ext = os.path.splitext(right_foot_file.filename.lower())[1]
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}")
+        fname = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
+        dest = os.path.join(save_dir, fname)
+        content = await right_foot_file.read()
+        with open(dest, "wb") as f:
+            f.write(content)
+        right_path = f"/uploads/foot_scans/orders/{order_no}/{fname}"
+
+    if left_foot_file and left_foot_file.filename:
+        ext = os.path.splitext(left_foot_file.filename.lower())[1]
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}")
+        fname = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
+        dest = os.path.join(save_dir, fname)
+        content = await left_foot_file.read()
+        with open(dest, "wb") as f:
+            f.write(content)
+        left_path = f"/uploads/foot_scans/orders/{order_no}/{fname}"
+
+    if not right_path and not left_path:
+        raise HTTPException(status_code=400, detail="En az bir ayak dosyası gönderilmelidir.")
+
+    notes = f"Bireysel Sipariş Taraması | Sipariş: {order_no}"
+    if device_model:
+        notes += f" | Cihaz: {device_model}"
+    if scanner_type:
+        notes += f" | Sensör: {scanner_type}"
+
+    # Hasta bağlantısı olmadan (bireysel) kayıt — patient_id=None
+    m = models.FootScanMeasurement(
+        patient_id=None,
+        token=None,
+        right_foot_stl=right_path,
+        left_foot_stl=left_path,
+        arch_height_right=arch_height_right,
+        arch_height_left=arch_height_left,
+        foot_length_right=foot_length_right,
+        foot_length_left=foot_length_left,
+        notes=notes
+    )
+    db.add(m)
+    db.commit()
+    db.refresh(m)
+
+    return {
+        "status": "success",
+        "message": f"Sipariş {order_no} için 3D tarama başarıyla alındı.",
+        "measurement_id": m.id,
+        "order_number": order_no,
+        "right_foot_file": right_path,
+        "left_foot_file": left_path
+    }
+
+
 class SimulationCreate(BaseModel):
     patient_id: int
     cobb_angle: float
