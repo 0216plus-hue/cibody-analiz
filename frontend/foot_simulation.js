@@ -194,9 +194,9 @@ function initFootSimulation() {
     footScene = new THREE.Scene();
     footScene.background = new THREE.Color(0x0b1120); // Slate-950
 
-    // Izgara Zemin
-    const gridHelper = new THREE.GridHelper(380, 24, 0x1e293b, 0x0f172a);
-    gridHelper.position.y = -6;
+    // Izgara Zemin (Ayağın rahatça altından görülebilmesi için aşağı indirildi)
+    const gridHelper = new THREE.GridHelper(400, 24, 0x1e293b, 0x0f172a);
+    gridHelper.position.y = -60;
     footScene.add(gridHelper);
 
     // 2. Kamera
@@ -209,16 +209,21 @@ function initFootSimulation() {
     footRenderer.setPixelRatio(window.devicePixelRatio);
     footRenderer.shadowMap.enabled = true;
 
-    // 4. OrbitControls
+    // 4. OrbitControls — 360 Derece Kesintisiz Serbest Döndürme
     if (typeof THREE.OrbitControls !== 'undefined') {
         footControls = new THREE.OrbitControls(footCamera, footRenderer.domElement);
         footControls.enableDamping = true;
-        footControls.dampingFactor = 0.06;
+        footControls.dampingFactor = 0.08;
         footControls.target.set(0, 10, 0);
-        footControls.minDistance = 40;
-        footControls.maxDistance = 800;
-        footControls.minPolarAngle = 0;
-        footControls.maxPolarAngle = Math.PI; // Alttan, üstten ve her açıdan serbest inceleme
+        footControls.minDistance = 30;
+        footControls.maxDistance = 1200;
+        // Kutup tekilliklerini (gimbal lock kilitlenmesini) önleyen 0.03 radyanlık koruma marjı
+        footControls.minPolarAngle = 0.03;
+        footControls.maxPolarAngle = Math.PI - 0.03;
+        footControls.enableRotate = true;
+        footControls.rotateSpeed = 0.95;
+        footControls.enablePan = true;
+        footControls.screenSpacePanning = true;
     }
 
     // 5. Stüdyo Işıklandırması
@@ -690,29 +695,34 @@ function setFootCameraAngle(angle) {
     if (!footCamera || !footControls) return;
 
     let isRight = (currentFootSide === 'right');
+    const targetY = (footMesh && footMesh.geometry && footMesh.geometry.boundingBox)
+        ? (footMesh.geometry.boundingBox.max.y / 2)
+        : 10;
 
     if (angle === 'plantar') {
-        // Taban kavis çukuruna doğrudan yukarıdan dik bakış (ayak izi açısı)
-        footCamera.position.set(0, 260, 0);
-        footControls.target.set(0, 8, 0);
+        // Taban kavis çukuruna dik bakış (0.02 ofset ile gimbal lock / kilitlenme önlenir)
+        footCamera.position.set(0.02, 260, 0.02);
+        footControls.target.set(0, targetY, 0);
     } else if (angle === 'medial') {
-        // İç yan kavis profili (Hem sağ hem sol ayakta tam iç kavisi gösterir)
-        let medialZ = isRight ? -220 : -220;
-        footCamera.position.set(0, 16, medialZ);
-        footControls.target.set(0, 8, 0);
+        // İç yan kavis profili:
+        // Sağ ayakta iç kavis -Z yönünde, Sol ayakta +Z yönündedir
+        let medialZ = isRight ? -220 : 220;
+        footCamera.position.set(0, targetY + 8, medialZ);
+        footControls.target.set(0, targetY, 0);
     } else if (angle === 'lateral') {
-        // Dış yan profil (Lateral kenar)
-        let lateralZ = isRight ? 220 : 220;
-        footCamera.position.set(0, 16, lateralZ);
-        footControls.target.set(0, 8, 0);
+        // Dış yan profil (Lateral kenar):
+        // Sağ ayakta dış kenar +Z yönünde, Sol ayakta -Z yönündedir
+        let lateralZ = isRight ? 220 : -220;
+        footCamera.position.set(0, targetY + 8, lateralZ);
+        footControls.target.set(0, targetY, 0);
     } else if (angle === 'dorsal') {
         // Boyuna bakış (Parmak ucundan topuğa)
-        footCamera.position.set(240, 30, 0);
-        footControls.target.set(0, 8, 0);
+        footCamera.position.set(240, targetY + 20, 0);
+        footControls.target.set(0, targetY, 0);
     } else {
         // 3D Serbest Perspektif (3/4 Doğal Açı)
-        footCamera.position.set(140, 110, 150);
-        footControls.target.set(0, 10, 0);
+        footCamera.position.set(150, targetY + 110, 150);
+        footControls.target.set(0, targetY, 0);
     }
     footCamera.lookAt(footControls.target);
     footControls.update();
