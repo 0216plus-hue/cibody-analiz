@@ -212,8 +212,10 @@ function initFootSimulation() {
         footControls.enableDamping = true;
         footControls.dampingFactor = 0.06;
         footControls.target.set(0, 10, 0);
-        footControls.minDistance = 60;
-        footControls.maxDistance = 650;
+        footControls.minDistance = 40;
+        footControls.maxDistance = 800;
+        footControls.minPolarAngle = 0;
+        footControls.maxPolarAngle = Math.PI; // Alttan, üstten ve her açıdan serbest inceleme
     }
 
     // 5. Stüdyo Işıklandırması
@@ -693,6 +695,12 @@ function setFootCameraAngle(angle) {
         let isRight = (currentFootSide === 'right');
         let medialZ = isRight ? -190 : 190;
         footCamera.position.set(0, 18, medialZ);
+        footControls.target.set(0, 10, 0);
+    } else if (angle === 'lateral') {
+        // Dış yan profil (Lateral)
+        let isRight = (currentFootSide === 'right');
+        let lateralZ = isRight ? 190 : -190;
+        footCamera.position.set(0, 18, lateralZ);
         footControls.target.set(0, 10, 0);
     } else if (angle === 'dorsal') {
         // Üstten bakış
