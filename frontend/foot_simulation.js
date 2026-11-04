@@ -71,15 +71,25 @@ function loadScannedFootFile(fileUrl, side) {
         const pos = geometry.attributes.position;
         const count = pos.count;
 
-        // Eğer Y ekseni en uzunsa (tipik iPhone TrueDepth dikey tutuşu)
-        if (dimY > dimX && dimY > dimZ) {
+        // Eğer dosya doğrudan CAD koordinatlarında gelmişse (X en uzun eksen)
+        if (dimX > dimY && dimX > dimZ) {
             let isLeft = (currentFootSide === 'left');
-            // Y eksenini X'e (boy), Z eksenini Y'ye (kavis yüksekliği), X eksenini Z'ye (en) aktar
             for (let i = 0; i < count; i++) {
                 let rx = pos.getX(i);
                 let ry = pos.getY(i);
                 let rz = pos.getZ(i);
-                // Sol ayakta ön kamera ayna simetrisini düzelterek iç kavisi doğru tarafa hizala
+                let zCoord = isLeft ? -ry : ry;
+                // rx: Boy (X), rz: Kavis Yüksekliği (Y), zCoord: Tarak Eni (Z)
+                pos.setXYZ(i, rx, rz, zCoord);
+            }
+            pos.needsUpdate = true;
+        } else if (dimY > dimX && dimY > dimZ) {
+            // Eğer Y ekseni en uzunsa (ham iPhone TrueDepth dikey kamera tutuşu)
+            let isLeft = (currentFootSide === 'left');
+            for (let i = 0; i < count; i++) {
+                let rx = pos.getX(i);
+                let ry = pos.getY(i);
+                let rz = pos.getZ(i);
                 let zCoord = isLeft ? -rx : rx;
                 // ry: boy (X), -rz: kavis yüksekliği (Y), zCoord: tarak genişliği (Z)
                 pos.setXYZ(i, ry, -rz, zCoord);
