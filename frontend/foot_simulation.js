@@ -59,23 +59,74 @@ function loadScannedFootFile(fileUrl, side) {
             }
         }
 
+        // --- 1. Anatomik Eksen Hizalaması (Gerçek Lazer Verisi -> Klinik Koordinatlar) ---
+        // Telefon kamerasında Y=Boy, X=En, Z=Derinlik gelir.
+        // Klinik simülatörde: X=Boy (Topuk->Parmak), Z=En, Y=Kavis/Yükseklik
+        geometry.computeBoundingBox();
+        let b = geometry.boundingBox;
+        let dimX = b.max.x - b.min.x;
+        let dimY = b.max.y - b.min.y;
+        let dimZ = b.max.z - b.min.z;
+
+        const pos = geometry.attributes.position;
+        const count = pos.count;
+
+        // Eğer Y ekseni en uzunsa (tipik iPhone TrueDepth dikey tutuşu)
+        if (dimY > dimX && dimY > dimZ) {
+            // Y eksenini X'e (boy), X eksenini Z'ye (en), Z eksenini Y'ye (kavis yüksekliği) aktar
+            for (let i = 0; i < count; i++) {
+                let rx = pos.getX(i);
+                let ry = pos.getY(i);
+                let rz = pos.getZ(i);
+                // ry: boy (X), rz: kavis yüksekliği (Y), rx: genişlik (Z)
+                pos.setXYZ(i, ry, -rz, rx);
+            }
+            pos.needsUpdate = true;
+        }
+
         geometry.computeVertexNormals();
         geometry.center();
-
-        // Boyutları hesapla
         geometry.computeBoundingBox();
         const bbox = geometry.boundingBox;
-        const sizeX = Math.round(bbox.max.x - bbox.min.x);
-        const sizeY = Math.round(bbox.max.y - bbox.min.y);
-        const sizeZ = Math.round(bbox.max.z - bbox.min.z);
 
-        // Materyal Seçimi
+        const footLength = Math.round(bbox.max.x - bbox.min.x);
+        const footHeight = Math.round(bbox.max.y - bbox.min.y);
+        const footWidth  = Math.round(bbox.max.z - bbox.min.z);
+
+        // Tabanı zemin ızgarasına oturt (Y min = 0)
+        const minY = bbox.min.y;
+        for (let i = 0; i < count; i++) {
+            pos.setY(i, pos.getY(i) - minY);
+        }
+        pos.needsUpdate = true;
+        geometry.computeBoundingBox();
+
+        // --- 2. Topografik Kavis Isı Haritası Renklendirmesi ---
+        const colors = [];
+        const maxY = geometry.boundingBox.max.y;
+        const colorLow = new THREE.Color(0xef4444);  // Zemin basma noktaları (Kırmızı / Turuncu)
+        const colorMid = new THREE.Color(0x10b981);  // Geçiş bölgesi (Yeşil)
+        const colorHigh = new THREE.Color(0x0284c7); // Derin kavis boşluğu / çukur (Mavi / Lacivert)
+
+        for (let i = 0; i < count; i++) {
+            let yNorm = maxY > 0 ? (pos.getY(i) / maxY) : 0;
+            let c = new THREE.Color();
+            if (yNorm < 0.35) {
+                c.lerpColors(colorLow, colorMid, yNorm / 0.35);
+            } else {
+                c.lerpColors(colorMid, colorHigh, (yNorm - 0.35) / 0.65);
+            }
+            colors.push(c.r, c.g, c.b);
+        }
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+        // --- 3. Materyal Seçimi ---
         let mat;
         if (currentRenderMode === 'wireframe') {
             mat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true });
         } else if (currentRenderMode === 'heatmap') {
             mat = new THREE.MeshStandardMaterial({
-                color: 0x0ea5e9,
+                vertexColors: true,
                 roughness: 0.35,
                 metalness: 0.1,
                 side: THREE.DoubleSide
@@ -84,7 +135,7 @@ function loadScannedFootFile(fileUrl, side) {
             // Gerçek Medikal Doku Rengi
             mat = new THREE.MeshStandardMaterial({
                 color: 0x38bdf8,
-                roughness: 0.30,
+                roughness: 0.28,
                 metalness: 0.05,
                 side: THREE.DoubleSide
             });
@@ -93,27 +144,29 @@ function loadScannedFootFile(fileUrl, side) {
         footMesh = new THREE.Mesh(geometry, mat);
         footMesh.castShadow = true;
         footMesh.receiveShadow = true;
-
-        // Model yönünü ayarla (Zemine oturt)
-        footMesh.position.y = (sizeY / 2) - 4;
         footScene.add(footMesh);
 
         // Kamera mesafesini model boyutuna göre ayarla
-        const maxDim = Math.max(sizeX, sizeY, sizeZ);
         if (footCamera && footControls) {
-            footControls.target.set(0, sizeY / 4, 0);
-            footCamera.position.set(maxDim * 1.2, maxDim * 1.1, maxDim * 1.3);
+            footControls.target.set(0, footHeight / 2, 0);
+            footCamera.position.set(footLength * 0.9, footLength * 0.7, footLength * 0.9);
             footControls.update();
         }
 
         if (badge) {
-            badge.innerText = `Gerçek ${currentFootSide === 'right' ? 'Sağ' : 'Sol'} Ayak (${maxDim} mm)`;
+            badge.innerText = `Gerçek ${currentFootSide === 'right' ? 'Sağ' : 'Sol'} Ayak (${footLength} mm)`;
             badge.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800";
         }
 
         // Ölçüm alanlarını güncelle
         if (document.getElementById('displayLengthVal')) {
-            document.getElementById('displayLengthVal').innerText = `${maxDim} mm (Lazer Ölçümü)`;
+            document.getElementById('displayLengthVal').innerText = `${footLength} mm (Lazer Ölçümü)`;
+        }
+        if (document.getElementById('displayArchVal')) {
+            document.getElementById('displayArchVal').innerText = `${footHeight} mm (Lazer Kavis Derinliği)`;
+        }
+        if (document.getElementById('displayMetatarsalWidth')) {
+            document.getElementById('displayMetatarsalWidth').innerText = `${footWidth} mm (Lazer Tarak Eni)`;
         }
 
     }, undefined, function (error) {
@@ -669,6 +722,28 @@ function setFootRenderMode(mode) {
     if (mode === 'anatomical' && btnA) btnA.className = "px-2.5 py-1.5 rounded-xl font-bold bg-slate-800 text-white";
     if (mode === 'heatmap' && btnH) btnH.className = "px-2.5 py-1.5 rounded-xl font-bold bg-slate-800 text-white";
     if (mode === 'wireframe' && btnW) btnW.className = "px-2.5 py-1.5 rounded-xl font-bold bg-slate-800 text-white";
+
+    // Eğer gerçek lazer taraması ekrandaysa materyali anında güncelle
+    if (footMesh && window.footDataStore && window.footDataStore[currentFootSide] && window.footDataStore[currentFootSide].scanFileUrl) {
+        if (mode === 'wireframe') {
+            footMesh.material = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true });
+        } else if (mode === 'heatmap') {
+            footMesh.material = new THREE.MeshStandardMaterial({
+                vertexColors: true,
+                roughness: 0.35,
+                metalness: 0.1,
+                side: THREE.DoubleSide
+            });
+        } else {
+            footMesh.material = new THREE.MeshStandardMaterial({
+                color: 0x38bdf8,
+                roughness: 0.28,
+                metalness: 0.05,
+                side: THREE.DoubleSide
+            });
+        }
+        return;
+    }
 
     buildAnatomicalFootMesh();
 }
