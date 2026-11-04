@@ -73,13 +73,16 @@ function loadScannedFootFile(fileUrl, side) {
 
         // Eğer Y ekseni en uzunsa (tipik iPhone TrueDepth dikey tutuşu)
         if (dimY > dimX && dimY > dimZ) {
-            // Y eksenini X'e (boy), X eksenini Z'ye (en), Z eksenini Y'ye (kavis yüksekliği) aktar
+            let isLeft = (currentFootSide === 'left');
+            // Y eksenini X'e (boy), Z eksenini Y'ye (kavis yüksekliği), X eksenini Z'ye (en) aktar
             for (let i = 0; i < count; i++) {
                 let rx = pos.getX(i);
                 let ry = pos.getY(i);
                 let rz = pos.getZ(i);
-                // ry: boy (X), rz: kavis yüksekliği (Y), rx: genişlik (Z)
-                pos.setXYZ(i, ry, -rz, rx);
+                // Sol ayakta ön kamera ayna simetrisini düzelterek iç kavisi doğru tarafa hizala
+                let zCoord = isLeft ? -rx : rx;
+                // ry: boy (X), -rz: kavis yüksekliği (Y), zCoord: tarak genişliği (Z)
+                pos.setXYZ(i, ry, -rz, zCoord);
             }
             pos.needsUpdate = true;
         }
@@ -686,30 +689,30 @@ function loadFootDataToUI(side) {
 function setFootCameraAngle(angle) {
     if (!footCamera || !footControls) return;
 
+    let isRight = (currentFootSide === 'right');
+
     if (angle === 'plantar') {
-        // Doğrudan taban altından kavis çukuruna bakış
-        footCamera.position.set(0, -210, 0);
+        // Taban kavis çukuruna doğrudan yukarıdan dik bakış (ayak izi açısı)
+        footCamera.position.set(0, 260, 0);
         footControls.target.set(0, 8, 0);
     } else if (angle === 'medial') {
-        // İç yan kavis profili
-        let isRight = (currentFootSide === 'right');
-        let medialZ = isRight ? -190 : 190;
-        footCamera.position.set(0, 18, medialZ);
-        footControls.target.set(0, 10, 0);
+        // İç yan kavis profili (Hem sağ hem sol ayakta tam iç kavisi gösterir)
+        let medialZ = isRight ? -220 : -220;
+        footCamera.position.set(0, 16, medialZ);
+        footControls.target.set(0, 8, 0);
     } else if (angle === 'lateral') {
-        // Dış yan profil (Lateral)
-        let isRight = (currentFootSide === 'right');
-        let lateralZ = isRight ? 190 : -190;
-        footCamera.position.set(0, 18, lateralZ);
-        footControls.target.set(0, 10, 0);
+        // Dış yan profil (Lateral kenar)
+        let lateralZ = isRight ? 220 : 220;
+        footCamera.position.set(0, 16, lateralZ);
+        footControls.target.set(0, 8, 0);
     } else if (angle === 'dorsal') {
-        // Üstten bakış
-        footCamera.position.set(0, 220, 0);
+        // Boyuna bakış (Parmak ucundan topuğa)
+        footCamera.position.set(240, 30, 0);
         footControls.target.set(0, 8, 0);
     } else {
-        // 3D Serbest Perspektif
-        footCamera.position.set(130, 95, 140);
-        footControls.target.set(0, 12, 0);
+        // 3D Serbest Perspektif (3/4 Doğal Açı)
+        footCamera.position.set(140, 110, 150);
+        footControls.target.set(0, 10, 0);
     }
     footCamera.lookAt(footControls.target);
     footControls.update();
