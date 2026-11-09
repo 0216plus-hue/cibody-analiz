@@ -185,6 +185,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         }
         
         if (typeof resetScoliosisUI === 'function') resetScoliosisUI();
+        if (typeof resetStaticFootUI === 'function') resetStaticFootUI();
         switchTab('postureTab');
         loadPatientData(patientId);
 
@@ -241,8 +242,12 @@ function switchTab(tabId) {
             const pH = document.getElementById('postureHistorySelect');
             if(!pH || pH.options.length <= 1) loadPatientData(currentPatientId);
         }
-        if(tabId === 'footTab' && currentPatientId) {
-            if(typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
+        if(tabId === 'footTab') {
+            const fH = document.getElementById('staticFootHistorySelect');
+            if(!fH || !fH.value) {
+                if(typeof resetStaticFootUI === 'function') resetStaticFootUI();
+            }
+            if(currentPatientId && typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
         }
         if(tabId === 'gaitTab' && currentPatientId) {
             if(typeof refreshGaitHistoryDropdown === 'function') refreshGaitHistoryDropdown();

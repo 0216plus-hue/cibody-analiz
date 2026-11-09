@@ -2123,8 +2123,8 @@
                     <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10"><i class="fa-solid fa-scale-balanced mr-2 text-blue-600"></i><span data-i18n="foot.lr_dist">Sol / Sağ Dağılımı</span></h4>
                     <div class="h-8 bg-slate-200 rounded-xl overflow-hidden relative flex shadow-inner border border-slate-300 z-10">
                         <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/60 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.15)]"></div>
-                        <div id="barL" class="bar-left h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-blue-600" style="width:50%">Sol %50</div>
-                        <div id="barR" class="bar-right h-full flex items-center justify-end pr-3 font-black text-white text-xs shadow-sm bg-cyan-600" style="width:50%">Sağ %50</div>
+                        <div id="barL" class="bar-left h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-blue-600" style="width:0%">Sol %0</div>
+                        <div id="barR" class="bar-right h-full flex items-center justify-end pr-3 font-black text-white text-xs shadow-sm bg-cyan-600" style="width:0%">Sağ %0</div>
                     </div>
                 </div>
 
@@ -2133,8 +2133,8 @@
                     <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10"><i class="fa-solid fa-arrows-up-down mr-2 text-purple-600"></i><span data-i18n="foot.fr_dist">Ön / Arka Dağılımı</span></h4>
                     <div class="h-8 bg-slate-200 rounded-xl overflow-hidden relative flex shadow-inner border border-slate-300 z-10">
                         <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/60 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.15)]"></div>
-                        <div id="barT" class="bar-top h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-purple-600" style="width:30%">Ön %30</div>
-                        <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-3 font-black text-white text-xs shadow-sm bg-pink-600" style="width:70%">Arka %70</div>
+                        <div id="barT" class="bar-top h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-purple-600" style="width:0%">Ön %0</div>
+                        <div id="barB" class="bar-bottom h-full flex items-center justify-end pr-3 font-black text-white text-xs shadow-sm bg-pink-600" style="width:0%">Arka %0</div>
                     </div>
                 </div>
 
@@ -2611,28 +2611,64 @@
             }
         };
 
+        window.resetStaticFootUI = function() {
+            window.isFootLive = false;
+            const _t = (window.translateText || (s => s));
+            
+            // Barları ve yüzdeleri sıfırla
+            const bL = document.getElementById('barL');
+            if (bL) { bL.style.width = "0%"; bL.innerText = _t("Sol") + " %0"; }
+            const bR = document.getElementById('barR');
+            if (bR) { bR.style.width = "0%"; bR.innerText = _t("Sağ") + " %0"; }
+            const bT = document.getElementById('barT');
+            if (bT) { bT.style.width = "0%"; bT.innerText = _t("Ön") + " %0"; }
+            const bB = document.getElementById('barB');
+            if (bB) { bB.style.width = "0%"; bB.innerText = _t("Arka") + " %0"; }
+
+            // Biyomekanik parametreleri sıfırla
+            const vlc = document.getElementById('val_left_clarke');
+            if (vlc) vlc.innerText = "-°";
+            const vla = document.getElementById('val_left_arch');
+            if (vla) vla.innerText = "-";
+            const vrc = document.getElementById('val_right_clarke');
+            if (vrc) vrc.innerText = "-°";
+            const vra = document.getElementById('val_right_arch');
+            if (vra) vra.innerText = "-";
+
+            // Canvas temizle
+            const canvas = document.getElementById("foot_analysis_canvas");
+            if (canvas) {
+                const ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+
+            // Buton ve durumları hazırla
+            const btnStart = document.getElementById('btnStartStaticFoot');
+            if (btnStart) btnStart.classList.remove('hidden');
+            const btnSave = document.getElementById('btnSaveFootAnalysis');
+            if (btnSave) btnSave.classList.add('hidden');
+            const btnPdf = document.getElementById('btnDownloadFootPdf');
+            if (btnPdf) btnPdf.classList.add('hidden');
+
+            const statusBadge = document.getElementById('footLiveStatus');
+            if (statusBadge) {
+                statusBadge.innerHTML = '<i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...';
+                statusBadge.className = "absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600";
+            }
+
+            const patientBanner = document.getElementById('staticFootPatientBanner');
+            if (patientBanner) patientBanner.classList.add('hidden');
+
+            lastFootData = {};
+        };
+
         function loadStaticFootHistory(recordId) {
             let statusBadge = document.getElementById('footLiveStatus');
             let btnSave = document.getElementById('btnSaveFootAnalysis');
             let patientBanner = document.getElementById('staticFootPatientBanner');
             
             if (!recordId) {
-                window.isFootLive = false; // Bekleme durumu
-                if (patientBanner) patientBanner.classList.add('hidden');
-                if (statusBadge) {
-                    statusBadge.innerHTML = '<i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...';
-                    statusBadge.className = "absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600";
-                }
-                document.getElementById('btnStartStaticFoot').classList.remove('hidden');
-                document.getElementById('btnSaveFootAnalysis').classList.add('hidden');
-                document.getElementById('btnDownloadFootPdf').classList.add('hidden');
-                
-                // clear canvas
-                const canvas = document.getElementById("foot_analysis_canvas");
-                if(canvas) {
-                    const ctx = canvas.getContext("2d");
-                    ctx.clearRect(0,0, canvas.width, canvas.height);
-                }
+                window.resetStaticFootUI();
                 return;
             }
             
