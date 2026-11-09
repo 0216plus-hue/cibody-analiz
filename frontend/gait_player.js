@@ -7,7 +7,7 @@
     let gaitSteps = [];
     let activeStepIdx = -1; // -1: Tüm Yürüyüş Sıralı, >=0: Belirli adım
     let isPlaying = false;
-    let playbackSpeed = 1.0;
+    let playbackSpeed = 0.25; // Varsayılan: 0.25x Ağır Çekim (Klinik İnceleme)
     let isLooping = true;
     let playTimer = null;
     
@@ -131,13 +131,13 @@
 
             for (let f = 0; f < totalF; f++) {
                 let progress = f / Math.max(1, totalF - 1);
-                let phaseName = _t('Topuk Vuruşu (Initial Contact)');
+                let phaseName = _t('Topuk Vuruşu');
                 if (progress > 0.20 && progress <= 0.60) {
-                    phaseName = _t('Tam Basış & Duruş (Midstance)');
+                    phaseName = _t('Tam Basış');
                 } else if (progress > 0.60 && progress <= 0.85) {
-                    phaseName = _t('Topuk Kalkışı (Heel Off)');
+                    phaseName = _t('Topuk Kalkışı');
                 } else if (progress > 0.85) {
-                    phaseName = _t('Parmak İtme (Toe Off)');
+                    phaseName = _t('Parmak İtme');
                 }
 
                 timelineFrames.push({
@@ -212,7 +212,7 @@
      * Bever Medikal pürüzsüzlüğünde ayak karesini ve üzerine COP çizgisini çizer
      */
     function drawReplayFoot(canvas, item) {
-        const outSize = 320;
+        const outSize = 350;
         canvas.width = outSize;
         canvas.height = outSize;
         const ctx = canvas.getContext('2d');
