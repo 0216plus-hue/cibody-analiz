@@ -2641,13 +2641,21 @@ def save_static_foot(patient_id: int, request: SessionDataCreate, db: Session = 
     db.commit()
     return {"status": "success"}
 
+def _safe_session_json(val):
+    if not val:
+        return {}
+    if isinstance(val, (dict, list)):
+        return val
+    try:
+        import json
+        return json.loads(val)
+    except Exception:
+        return {}
+
 @app.get("/api/static-foot/patient/{patient_id}")
 def get_static_foot(patient_id: int, db: Session = Depends(get_db)):
     records = db.query(models.StaticFootSession).filter(models.StaticFootSession.patient_id == patient_id).order_by(models.StaticFootSession.created_at.desc()).all()
-    # We expect an array of objects
-    # Parse them back since they were stored as text
-    import json
-    return [{"id": r.id, "created_at": r.created_at, "session_data": json.loads(r.session_data)} for r in records]
+    return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/static-foot/{session_id}")
 def delete_static_foot(session_id: int, db: Session = Depends(get_db)):
@@ -2667,8 +2675,7 @@ def save_gait(patient_id: int, request: SessionDataCreate, db: Session = Depends
 @app.get("/api/gait/patient/{patient_id}")
 def get_gait(patient_id: int, db: Session = Depends(get_db)):
     records = db.query(models.GaitSession).filter(models.GaitSession.patient_id == patient_id).order_by(models.GaitSession.created_at.desc()).all()
-    import json
-    return [{"id": r.id, "created_at": r.created_at, "session_data": json.loads(r.session_data)} for r in records]
+    return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/gait/{session_id}")
 def delete_gait(session_id: int, db: Session = Depends(get_db)):
@@ -2688,8 +2695,7 @@ def save_balance(patient_id: int, request: SessionDataCreate, db: Session = Depe
 @app.get("/api/balance/patient/{patient_id}")
 def get_balance(patient_id: int, db: Session = Depends(get_db)):
     records = db.query(models.BalanceSession).filter(models.BalanceSession.patient_id == patient_id).order_by(models.BalanceSession.created_at.desc()).all()
-    import json
-    return [{"id": r.id, "created_at": r.created_at, "session_data": json.loads(r.session_data)} for r in records]
+    return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/balance/{session_id}")
 def delete_balance(session_id: int, db: Session = Depends(get_db)):

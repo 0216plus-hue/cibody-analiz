@@ -221,28 +221,37 @@ window.loadGaitHistory = function(recordId) {
 window.refreshGaitHistoryDropdown = async function() {
     const sel = document.getElementById('gaitHistorySelect');
     if(!sel) return;
-    if(!currentPatientId) return;
+    if(!currentPatientId) {
+        sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
+        return;
+    }
 
     // Yükleniyor placeholder
     sel.innerHTML = '<option value="">⏳ Yükleniyor...</option>';
     
     try {
         const res = await authFetch(`/api/gait/patient/${currentPatientId}`);
-        if(res.ok) {
+        if(res && res.ok) {
             const data = await res.json();
-            window.cachedGaitHistory = data.map(d => d.session_data);
+            window.cachedGaitHistory = (Array.isArray(data) ? data : []).map(d => d.session_data).filter(Boolean);
         }
-    } catch(e) { console.error(e); }
-    
-    sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
-    
-    window.cachedGaitHistory.forEach(r => {
-        let opt = document.createElement('option');
-        opt.value = r.id;
-        let date = new Date(r.timestamp);
-        opt.text = date.toLocaleDateString('tr-TR') + " " + date.toLocaleTimeString('tr-TR');
-        sel.appendChild(opt);
-    });
+    } catch(e) {
+        console.warn("[CIBODY] Gait history fetch hatası:", e);
+    } finally {
+        sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
+        if (Array.isArray(window.cachedGaitHistory)) {
+            window.cachedGaitHistory.forEach(r => {
+                if(!r) return;
+                let opt = document.createElement('option');
+                opt.value = r.id || '';
+                let date = r.timestamp ? new Date(r.timestamp) : new Date();
+                opt.text = (typeof formatAppDate === 'function')
+                    ? formatAppDate(date, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : (date.toLocaleDateString('tr-TR') + " " + date.toLocaleTimeString('tr-TR'));
+                sel.appendChild(opt);
+            });
+        }
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -52,13 +52,31 @@ async function authFetch(url, options = {}) {
         const separator = url.includes('?') ? '&' : '?';
         url = url + separator + 't=' + Date.now();
     }
-    const res = await fetch(url, options);
-    if (res.status === 401) {
-        clearAuth();
-        showLoginView();
-        throw new Error('Oturum süresi doldu');
+
+    // Guvenli Zaman Asimi (Timeout) - Sonsuza kadar takilmayi onler
+    const timeoutMs = options.timeout || (isGet ? 10000 : 25000);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    if (!options.signal) {
+        options.signal = controller.signal;
     }
-    return res;
+
+    try {
+        const res = await fetch(url, options);
+        clearTimeout(timer);
+        if (res.status === 401) {
+            clearAuth();
+            showLoginView();
+            throw new Error('Oturum süresi doldu');
+        }
+        return res;
+    } catch(err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+            throw new Error('Ağ zaman aşımı (Sunucu yanıt vermedi)');
+        }
+        throw err;
+    }
 }
 
 // ─────────────────────────────────────────────

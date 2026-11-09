@@ -804,20 +804,25 @@ function renderBalanceHistorySelect() {
 window.refreshBalanceSessionDropdown = async function() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
-    if(!currentPatientId) return;
+    if(!currentPatientId) {
+        renderBalanceHistorySelect();
+        return;
+    }
     
     // Yükleniyor placeholder
     historySelect.innerHTML = `<option value="">${_t('⏳ Yükleniyor...')}</option>`;
     
     try {
         const res = await authFetch(`/api/balance/patient/${currentPatientId}`);
-        if(res.ok) {
+        if(res && res.ok) {
             const data = await res.json();
-            window.cachedBalanceHistory = data.map(d => d.session_data);
+            window.cachedBalanceHistory = (Array.isArray(data) ? data : []).map(d => d.session_data).filter(Boolean);
         }
-    } catch(e) { console.error(e); }
-    
-    renderBalanceHistorySelect();
+    } catch(e) {
+        console.warn("[CIBODY] Balance history fetch hatası:", e);
+    } finally {
+        renderBalanceHistorySelect();
+    }
 }
 
 window.addEventListener('cibody:languageChanged', function() {

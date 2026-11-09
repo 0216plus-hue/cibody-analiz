@@ -2356,12 +2356,31 @@
             const wsUrls = ["ws://127.0.0.1:8765", "ws://localhost:8765"];
             let urlIdx = 0;
             let ws = null;
+            let wsFailCount = 0;
+            let wsReconnectTimer = null;
 
             window.ensureFootWs = function() {
+                wsFailCount = 0;
+                if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
                 if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
                     connectWs();
                 }
             };
+
+            function scheduleReconnect() {
+                if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+                wsFailCount++;
+                // Exponential backoff: İlk 3 deneme 2 sn, ardından 5 sn, 6 denemeden sonra 10 sn
+                let delay = 2000;
+                if (wsFailCount > 5) delay = 10000;
+                else if (wsFailCount > 2) delay = 5000;
+                
+                urlIdx++;
+                wsReconnectTimer = setTimeout(() => {
+                    wsReconnectTimer = null;
+                    connectWs();
+                }, delay);
+            }
 
             function connectWs() {
                 if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
@@ -2375,6 +2394,7 @@
                     ws.onopen = () => {
                         console.log("[CIBODY] Sensor köprüsüne bağlanıldı:", targetUrl);
                         window.isFootWsConnected = true;
+                        wsFailCount = 0;
                         let statusBadge = document.getElementById('footLiveStatus');
                         if (statusBadge && window.isFootLive) {
                             statusBadge.innerHTML = '<i class="fa-solid fa-circle text-red-500 animate-pulse"></i> ' + (window.translateText ? window.translateText('CANLI') : 'CANLI');
@@ -2406,15 +2426,13 @@
                             statusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> ' + (window.translateText ? window.translateText('Köprü Bekleniyor...') : 'Köprü Bekleniyor...');
                             statusBadge.className = "absolute top-4 left-4 bg-amber-900/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-amber-500/50";
                         }
-                        urlIdx++;
-                        setTimeout(connectWs, 1500);
+                        scheduleReconnect();
                     };
                     ws.onerror = () => {
                         try { ws.close(); } catch(e) {}
                     };
                 } catch(e) {
-                    urlIdx++;
-                    setTimeout(connectWs, 1500);
+                    scheduleReconnect();
                 }
             }
             connectWs();
@@ -2678,9 +2696,14 @@
         }
 
         window.refreshStaticFootHistoryDropdown = async function() {
-            if (!currentPatientId) return;
             const select = document.getElementById('staticFootHistorySelect');
             if(!select) return;
+
+            const returnLiveText = window.translateText ? window.translateText('-- Canlı Akışa Dön --') : '-- Canlı Akışa Dön --';
+            if (!currentPatientId) {
+                select.innerHTML = `<option value="">${returnLiveText}</option>`;
+                return;
+            }
 
             // Yükleniyor placeholder göster
             const loadingText = window.translateText ? window.translateText('Yükleniyor...') : 'Yükleniyor...';
@@ -2688,7 +2711,7 @@
             
             try {
                 const res = await authFetch(`/api/static-foot/patient/${currentPatientId}`);
-                if(res.ok) {
+                if(res && res.ok) {
                     const data = await res.json();
                     window.cachedStaticFootHistory = (Array.isArray(data) ? data : []).map(d => {
                         try {
@@ -2698,23 +2721,25 @@
                         }
                     }).filter(Boolean);
                 }
-            } catch(e) { console.error(e); }
-            
-            const returnLiveText = window.translateText ? window.translateText('-- Canlı Akışa Dön --') : '-- Canlı Akışa Dön --';
-            select.innerHTML = `<option value="">${returnLiveText}</option>`;
-            
-            if (Array.isArray(window.cachedStaticFootHistory)) {
-                window.cachedStaticFootHistory.forEach(record => {
-                    if (!record) return;
-                    let dateVal = record.date || record.timestamp;
-                    let d = (typeof formatAppDate === 'function')
-                        ? formatAppDate(dateVal, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                        : (dateVal ? new Date(dateVal).toLocaleString() : 'Analiz');
-                    let opt = document.createElement('option');
-                    opt.value = record.id || '';
-                    opt.text = d;
-                    select.appendChild(opt);
-                });
+            } catch(e) {
+                console.warn("[CIBODY] Static foot history fetch hatası:", e);
+            } finally {
+                // Hata veya timeout durumunda bile Yükleniyor'da asılı kalmayı %100 önle
+                select.innerHTML = `<option value="">${returnLiveText}</option>`;
+                
+                if (Array.isArray(window.cachedStaticFootHistory)) {
+                    window.cachedStaticFootHistory.forEach(record => {
+                        if (!record) return;
+                        let dateVal = record.date || record.timestamp;
+                        let d = (typeof formatAppDate === 'function')
+                            ? formatAppDate(dateVal, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                            : (dateVal ? new Date(dateVal).toLocaleString() : 'Analiz');
+                        let opt = document.createElement('option');
+                        opt.value = record.id || '';
+                        opt.text = d;
+                        select.appendChild(opt);
+                    });
+                }
             }
         };
 
@@ -3558,8 +3583,8 @@
     </div><!-- end appView -->
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=25.5"></script>
+    <script src="auth.js?v=19.5"></script>
+    <script src="app.js?v=25.6"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -4432,10 +4457,10 @@
     <script src="foot_simulation.js?v=8.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=20.2"></script>
+<script src="gait.js?v=20.3"></script>
 <script src="gait_analysis.js?v=20.3"></script>
 <script src="gait_player.js?v=20.5"></script>
-    <script src="balance.js?v=22.1"></script>
+    <script src="balance.js?v=22.2"></script>
     <script src="comparison.js?v=1.0"></script>
 </body>
 </html>
