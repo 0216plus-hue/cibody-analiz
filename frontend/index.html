@@ -1501,30 +1501,53 @@
                         <!-- Metrik Kartlar -->
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Kifoz Açısı">Kifoz Açısı</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1 flex items-center justify-center gap-1.5">
+                                    <span data-i18n="Kifoz Açısı">Kifoz Açısı</span>
+                                    <button type="button" onclick="showInfoPopup('spine_kyphosis')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricKyphosis">—</div>
                                 <div id="metricKyphosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Lordoz Açısı">Lordoz Açısı</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1 flex items-center justify-center gap-1.5">
+                                    <span data-i18n="Lordoz Açısı">Lordoz Açısı</span>
+                                    <button type="button" onclick="showInfoPopup('spine_lordosis')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricLordosis">—</div>
                                 <div id="metricLordosisStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Boyun Sapması">Boyun Sapması</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1 flex items-center justify-center gap-1.5">
+                                    <span data-i18n="Boyun Sapması">Boyun Sapması</span>
+                                    <button type="button" onclick="showInfoPopup('spine_fhp')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </div>
                                 <div class="text-3xl font-black text-indigo-900" id="metricFHP">—</div>
                                 <div id="metricFHPStatus" class="text-xs font-bold mt-1 text-slate-400"></div>
                             </div>
                             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-                                <div class="text-xs font-black text-slate-400 uppercase mb-1" data-i18n="Skolyoz Riski">Skolyoz Riski</div>
+                                <div class="text-xs font-black text-slate-400 uppercase mb-1 flex items-center justify-center gap-1.5">
+                                    <span data-i18n="Skolyoz Riski">Skolyoz Riski</span>
+                                    <button type="button" onclick="showInfoPopup('spine_scoliosis_risk')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </div>
                                 <div class="text-xl font-black" id="metricScoliosis">—</div>
                             </div>
                         </div>
 
                         <!-- Koronal Tablo -->
                         <div id="coronalSection" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-5">
-                            <h4 class="font-black text-slate-800 mb-4 text-lg">
+                            <h4 class="font-black text-slate-800 mb-4 text-lg flex items-center">
                                 <i class="fa-solid fa-arrows-left-right mr-2 text-blue-500"></i><span data-i18n="Koronal Düzlem — Omurga Sapma Tablosu">Koronal Düzlem — Omurga Sapma Tablosu</span>
+                                <button type="button" onclick="showInfoPopup('spine_coronal_deviation')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-2 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                    <i class="fa-solid fa-circle-info text-sm"></i>
+                                </button>
                             </h4>
                             <p class="text-xs text-slate-400 mb-4" data-i18n="Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.">Referans: C7-S1 çekül hattı. Pozitif = Sağa, Negatif = Sola.</p>
                             <table class="w-full text-sm">
@@ -1540,12 +1563,22 @@
                                 <tbody id="coronalTableBody" class="divide-y divide-slate-100"></tbody>
                             </table>
                             <div class="mt-4 grid grid-cols-2 gap-4">
-                                <div class="bg-blue-50 rounded-xl p-3 text-sm">
-                                    <span class="font-bold text-blue-800" data-i18n="Omuz Seviye Farkı:">Omuz Seviye Farkı: </span>
+                                <div class="bg-blue-50 rounded-xl p-3 text-sm flex items-center justify-between">
+                                    <span class="font-bold text-blue-800 flex items-center gap-1.5">
+                                        <span data-i18n="Omuz Seviye Farkı:">Omuz Seviye Farkı: </span>
+                                        <button type="button" onclick="showInfoPopup('spine_shoulder_diff')" class="text-blue-400 hover:text-blue-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                            <i class="fa-solid fa-circle-info text-xs"></i>
+                                        </button>
+                                    </span>
                                     <span id="shoulderDiff" class="font-black text-blue-900">—</span>
                                 </div>
-                                <div class="bg-purple-50 rounded-xl p-3 text-sm">
-                                    <span class="font-bold text-purple-800" data-i18n="Pelvis Tilt:">Pelvis Tilt: </span>
+                                <div class="bg-purple-50 rounded-xl p-3 text-sm flex items-center justify-between">
+                                    <span class="font-bold text-purple-800 flex items-center gap-1.5">
+                                        <span data-i18n="Pelvis Tilt:">Pelvis Tilt: </span>
+                                        <button type="button" onclick="showInfoPopup('spine_pelvis_tilt')" class="text-purple-400 hover:text-purple-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                            <i class="fa-solid fa-circle-info text-xs"></i>
+                                        </button>
+                                    </span>
                                     <span id="pelvisTilt" class="font-black text-purple-900">—</span>
                                 </div>
                             </div>
@@ -1558,17 +1591,32 @@
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="bg-orange-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-orange-600 uppercase mb-1" data-i18n="Kifoz (Kamburluk)">Kifoz (Kamburluk)</div>
+                                    <div class="text-xs font-black text-orange-600 uppercase mb-1 flex items-center justify-between">
+                                        <span data-i18n="Kifoz (Kamburluk)">Kifoz (Kamburluk)</span>
+                                        <button type="button" onclick="showInfoPopup('spine_kyphosis')" class="text-orange-400 hover:text-orange-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                            <i class="fa-solid fa-circle-info text-xs"></i>
+                                        </button>
+                                    </div>
                                     <div class="text-2xl font-black text-orange-900" id="sagKyphosis">—</div>
                                     <div class="text-xs text-orange-600 mt-1" data-i18n="Normal: 20-45°">Normal: 20-45°</div>
                                 </div>
                                 <div class="bg-yellow-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-yellow-600 uppercase mb-1" data-i18n="Lordoz (Bel Çukuru)">Lordoz (Bel Çukuru)</div>
+                                    <div class="text-xs font-black text-yellow-600 uppercase mb-1 flex items-center justify-between">
+                                        <span data-i18n="Lordoz (Bel Çukuru)">Lordoz (Bel Çukuru)</span>
+                                        <button type="button" onclick="showInfoPopup('spine_lordosis')" class="text-yellow-500 hover:text-yellow-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                            <i class="fa-solid fa-circle-info text-xs"></i>
+                                        </button>
+                                    </div>
                                     <div class="text-2xl font-black text-yellow-900" id="sagLordosis">—</div>
                                     <div class="text-xs text-yellow-600 mt-1" data-i18n="Normal: 20-45°">Normal: 20-45°</div>
                                 </div>
                                 <div class="bg-red-50 rounded-xl p-4">
-                                    <div class="text-xs font-black text-red-600 uppercase mb-1" data-i18n="İleri Baş Postürü">İleri Baş Postürü</div>
+                                    <div class="text-xs font-black text-red-600 uppercase mb-1 flex items-center justify-between">
+                                        <span data-i18n="İleri Baş Postürü">İleri Baş Postürü</span>
+                                        <button type="button" onclick="showInfoPopup('spine_fhp')" class="text-red-400 hover:text-red-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                            <i class="fa-solid fa-circle-info text-xs"></i>
+                                        </button>
+                                    </div>
                                     <div class="text-2xl font-black text-red-900" id="sagFHP">—</div>
                                     <div class="text-xs text-red-600 mt-1" data-i18n="Normal: 0-15 mm">Normal: 0-15 mm</div>
                                 </div>
@@ -3392,7 +3440,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=25.1"></script>
+    <script src="app.js?v=25.2"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->

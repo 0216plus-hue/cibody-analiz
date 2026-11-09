@@ -3482,6 +3482,34 @@ const POSTURE_METRIC_INFO = {
     pelvic_tilt: {
         title: "Pelvik Eğim (Pelvic Tilt)",
         desc: "Pelvik Eğim, sagital düzlemde pelvisin öne (anterior tilt) veya arkaya (posterior tilt) rotasyonel eğim açısını ifade eder. Anterior Superior Iliac Spine (ASIS) ve Posterior Superior Iliac Spine (PSIS) / trokanter majör referans noktaları arasındaki hattın yatay zemin eksenine göre oluşturduğu biyomekanik açı hesaplanır. 5° üzerindeki sapmalar aşırı anterior tilt (artan lumbal lordoz, zayıf karın ve gergin iliopsoas) ya da posterior tilt (düzleşmiş bel ve gergin hamstringler) gibi lumbo-pelvik disfonksiyonları ortaya koyar."
+    },
+    spine_kyphosis: {
+        title: "Kifoz Açısı (Thoracic Kyphosis)",
+        desc: "Kifoz Açısı, sagital (yan) düzlemde sırt bölgesindeki torakal omurganın arkaya doğru oluşturduğu fizyolojik dışbükey kavisin açısal büyüklüğünü ölçer. Biyomekanik hesaplama, üst torakal teğet çizgisi (T1-T4) ile torakolomber geçiş ekseni (T11-T12) arasındaki açısal yönelimin sagital profil üzerinden trigonometrik olarak türetilmesiyle elde edilir. 20° ile 45° arası değerler biyomekanik ve klinik normatif sınırlar (fizyolojik kifoz) olarak kabul edilirken, 45° üzerindeki değerler hiperkifoz (sırt kamburluğu artışı), 20° altındaki değerler ise düzleşmiş torakal omurga (hipokifoz) olarak değerlendirilir."
+    },
+    spine_lordosis: {
+        title: "Lordoz Açısı (Lumbar Lordosis)",
+        desc: "Lordoz Açısı, sagital düzlemde bel bölgesindeki lomber omurganın öne doğru oluşturduğu fizyolojik içbükey kavisi ifade eder. Biyomekanik analizde, torakolomber bileşke (L1) teğeti ile lumbosakral açı (L5-S1) arasındaki açısal eğim sagital omurga profili üzerinden trigonometrik yöntemlerle hesaplanır. 20° ile 45° arasındaki açılar fizyolojik normatif aralıkta kabul edilir; 45° üzeri aşırı anterior pelvik tiltle ilişkili hiperlordoz (artmış bel çukurluğu), 20° altı ise lumbosakral düzleşme ve posterior pelvik eğilim (hipolordoz) olarak klinik sınıflandırmaya tabi tutulur."
+    },
+    spine_fhp: {
+        title: "Boyun Sapması / İleri Baş Postürü (Forward Head Posture - FHP)",
+        desc: "Boyun Sapması (Forward Head), sagital düzlemde başın ağırlık merkezinin gövde yerçekimi hattına göre öne doğru kaymasını (anterior translasyonunu) milimetrik olarak değerlendirir. Ölçüm, kulak tragus referans noktasından indirilen dikey eksen ile servikotorakal bileşke (C7 spinöz çıkıntısı) arasındaki horizontal mesafe hesaplanarak milimetre (mm) cinsinden belirlenir. 0-15 mm arası sapmalar fizyolojik tolerans sınırları içinde normal kabul edilirken, 15 mm üzerindeki değerler servikal omurga disklerine ve suboksipital kaslara binen mekanik yükün katlanarak arttığını gösterir."
+    },
+    spine_scoliosis_risk: {
+        title: "Skolyoz Riski Değerlendirmesi",
+        desc: "Skolyoz Riski, koronal (arka) düzlemde omurganın merkezi dikey çekül ekseninden (C7-S1 hattı) gösterdiği lateral eğriliklerin ve rotasyonel asimetrilerin biyomekanik risk derecesini ifade eder. Sistem; servikal (C7), torakal (T7), lomber (L3) ve sakral (S1) nirengi noktalarının dikey referans hattından milimetrik sapma miktarlarını, omuz kuşağı seviye farkını ve pelvik obliklik katsayılarını kombine bir kinematik formülle analiz ederek hastayı Düşük, Orta veya Belirgin Skolyoz Riski kategorilerinde sınıflandırır."
+    },
+    spine_coronal_deviation: {
+        title: "Koronal Düzlem Omurga Sapma Analizi (C7-S1 Çekül Hattı)",
+        desc: "Koronal Düzlem Omurga Sapma Analizi, omurganın frontal düzlemdeki global dengesini ve yana doğru eğrilik paternini değerlendirir. Analiz, C7 vertebra spinöz çıkıntısından sacrum orta noktasına (S1) indirilen dikey aksı (C7-S1 Plumb Line / Çekül Hattı) merkezi referans kabul eder. Omurganın T7 (torakal zirve) ve L3 (lomber tepe) gibi kilit segmentlerinin bu merkezi eksenden sağa (+) veya sola (-) olan dik uzaklıkları milimetre cinsinden hesaplanır; 5 mm altı normal denge, 5-15 mm hafif kompanse eğrilik, 15 mm üzeri ise belirgin koronal dengesizlik olarak tanımlanır."
+    },
+    spine_shoulder_diff: {
+        title: "Omuz Seviye Farkı (Shoulder Level Difference)",
+        desc: "Omuz Seviye Farkı, koronal düzlemde sağ ve sol omuz akromion tepe noktalarının birbirine göre dikey kot (yükseklik) farkını milimetre cinsinden ifade eder. Kalibre edilmiş koordinat düzleminde iki omuz nirengi noktası arasındaki dikey mesafe farkı hesaplanır; 5 mm üzerindeki farklar omuz asimetrisi, skolyotik eğriliklere eşlik eden kompansatuar omuz elevasyonu veya trapez kas tonusu dengesizliğine işaret eden klinik uyarı eşiğidir."
+    },
+    spine_pelvis_tilt: {
+        title: "Pelvis Tilt / Obliklik (Pelvic Obliquity)",
+        desc: "Pelvis Tilt (Pelvik Obliklik), koronal düzlemde leğen kemiğinin sağ ve sol krista iliaka tepe noktaları arasındaki dikey seviye farkını milimetre cinsinden ölçer. Horizontal zemin paraleline göre pelvik tabanın dikey sapması hesaplanır; 8 mm üzerindeki seviye farkları anatomik veya fonksiyonel bacak boyu eşitsizliği (LLD), sakroiliak eklem rotasyonu veya lumbal skolyoz kompansasyonu açısından önemli bir klinik biyomekanik belirteçtir."
     }
 };
 
