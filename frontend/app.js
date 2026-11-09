@@ -780,40 +780,42 @@ function calcHorizontalAngle(pLeft, pRight) {
 
 function refreshAllCanvases() {
     let resFront=null, resBack=null, resLeft=null, resRight=null;
+    const infoBtn = (type) => `<button type="button" onclick="showInfoPopup('${type}')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 inline-flex items-center cursor-pointer align-middle" data-html2canvas-ignore="true" title="Bilgi"><i class="fa-solid fa-circle-info text-xs"></i></button>`;
+
     if(globalPostureState.front) { if(globalPostureState.front.error) { document.getElementById('table_front').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.front.error + '</div>'; } else {
         const res = drawCanvas('canvas_front', 'preview_front', globalPostureState.front, 'front');
         const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Omuz Simetrisi')}${infoBtn('shoulder_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Kalça Simetrisi')}${infoBtn('hip_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Diz Simetrisi')}${infoBtn('knee_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
         document.getElementById('table_front').innerHTML = html; resFront = res; } }
     
     if(globalPostureState.back) { if(globalPostureState.back.error) { document.getElementById('table_back').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.back.error + '</div>'; } else {
         const res = drawCanvas('canvas_back', 'preview_back', globalPostureState.back, 'back');
         const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Omuz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Skolyoz Riski')+' - '+_t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Kalça Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Pelvik Asimetri')+' - '+_t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Diz Simetrisi')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Omuz Simetrisi')}${infoBtn('shoulder_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Skolyoz Riski')+' - '+_t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Kalça Simetrisi')}${infoBtn('hip_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Pelvik Asimetri')+' - '+_t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
+        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Diz Simetrisi')}${infoBtn('knee_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
         document.getElementById('table_back').innerHTML = html; resBack = res; } }
     
     if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
         const res = drawCanvas('canvas_left', 'preview_left', globalPostureState.left, 'left');
         const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Baş Öne Eğikliği')}${infoBtn('forward_head')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Torakal Eğiklik')}${infoBtn('thoracic_kyphosis')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Pelvik Eğim')}${infoBtn('pelvic_tilt')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
         document.getElementById('table_left').innerHTML = html; resLeft = res; } }
     
     if(globalPostureState.right) { if(globalPostureState.right.error) { document.getElementById('table_right').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.right.error + '</div>'; } else {
         const res = drawCanvas('canvas_right', 'preview_right', globalPostureState.right, 'right');
         const _t = window.translateText || (s=>s);
         let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Baş Öne Eğikliği')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Torakal Eğiklik')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500">${_t('Pelvik Eğim')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
+        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Baş Öne Eğikliği')}${infoBtn('forward_head')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
+        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Torakal Eğiklik')}${infoBtn('thoracic_kyphosis')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
+        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Pelvik Eğim')}${infoBtn('pelvic_tilt')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
         document.getElementById('table_right').innerHTML = html; resRight = res; } }
 
     // Skor ve Bulgu Hesaplamaları
@@ -3444,19 +3446,61 @@ function showRefGuide(view) {
 }
 
 // --- INFO POPUP LOGIC ---
+const POSTURE_METRIC_INFO = {
+    quality: {
+        title: "Genel Ölçüm Kalitesi",
+        desc: "Genel Ölçüm Kalitesi, hastanın frontal ve sagital düzlemdeki tüm anatomik referans noktalarının (omuz, pelvis, diz, servikal ve torakal omurga) ideal nötral dikey postür eksenine yakınlık derecesini gösteren genel biyomekanik uyum skorudur. Sistem, taranan görüntü üzerindeki temel anatomik nirengi noktalarının yerçekimi hattı ve horizontal referans eksenlerine göre oluşturduğu açısal sapmaları (angular deviation) trigonometrik olarak hesaplar; tespit edilen toplam açısal sapmalar 100 tam puan üzerinden ağırlıklı bir kümülatif formülle düşülerek normalize edilir ve sapma azaldıkça skor ideale (100) yaklaşır."
+    },
+    findings: {
+        title: "Tespit Edilen Bulgu",
+        desc: "Tespit Edilen Bulgu, hastanın duruşunda klinik normatif sınırların ve biyomekanik tolerans aralıklarının dışında kalan toplam segmental anomali ve postüral asimetri adedini ifade eder. Değerlendirmede; frontal düzlemde 2°'den büyük omuz, pelvis veya diz seviye farkları ile sagital düzlemde 5°'den büyük servikal (forward head), torakal (kifoz artışı) ve pelvik tilt sapmaları klinik eşik değeri aşan bağımsız patolojik bulgular olarak sınıflandırılır. Bu sayı, hastadaki kompanse edici kas-iskelet yüklenmelerinin ve düzeltici protokollere ihtiyaç duyan bölge sayısının nicel bir göstergesidir."
+    },
+    stability: {
+        title: "Postür Stabilize Endeksi",
+        desc: "Postür Stabilize Endeksi, vücut segmentlerinin yerçekimi merkezine göre genel statik dengesini ve kinetik zincirin stabilizasyon kapasitesini yansıtan yüzdesel bir değerlendirmedir. Sistem, tespit edilen her bir majör postüral sapmanın (omuz asimetrisi, pelvik eğiklik, boyun protraksiyonu vb.) kas-iskelet kinetik zincirinde yarattığı mekanik stres ve destabilize edici etkiyi baz alarak temel stabilite rezervinden belirli bir katsayıyla düşürür. Yüksek oran ağırlık merkezinin dengeli dağılımını, düşük oran ise telafi edici kas gerilimleri ve postüral instabilite riskini işaret eder."
+    },
+    shoulder_symmetry: {
+        title: "Omuz Simetrisi (Shoulder Symmetry)",
+        desc: "Omuz Simetrisi, frontal düzlemde sağ ve sol omuz tepe noktaları (akromionlar) arasındaki yatay seviye uyumunu ve omuz kuşağı dengesini ifade eder. İki akromion anatomik referans noktasını birleştiren biyomekanik vektörün zemin paraleli olan transvers (yatay) eksene göre oluşturduğu açısal sapma trigonometrik olarak (atan2) hesaplanır. 2° altındaki değerler fizyolojik/normal kabul edilirken, 2° üzerindeki sapmalar omuz elevasyonunu, tek taraflı trapezius/levator scapulae hiperaktivitesini veya olası skolyotik kompansasyonları derecesi ve yönüyle (sağ/sol yüksek) ortaya koyar."
+    },
+    hip_symmetry: {
+        title: "Kalça Simetrisi (Pelvic Symmetry)",
+        desc: "Kalça Simetrisi, frontal düzlemde pelvisin sağ ve sol tarafları arasındaki seviye farkını ve pelvik oblikliği (lateral pelvik tilt) değerlendirir. Sağ ve sol spina iliaca (ASIS/PSIS) veya krista iliaka referans noktalarını birleştiren transvers eksenin zemin paraleline göre açısal eğimi trigonometrik olarak hesaplanır. 2° üzerindeki sapmalar pelvik asimetriyi gösterir; bu durum anatomik veya fonksiyonel bacak boyu eşitsizliği (LLD), sakroiliak eklem disfonksiyonu ve lumbal omurganın kompansatuar eğrilikleri hakkında doğrudan klinik bilgi sağlar."
+    },
+    knee_symmetry: {
+        title: "Diz Simetrisi (Knee Symmetry)",
+        desc: "Diz Simetrisi, frontal düzlemde her iki diz eklem merkezinin (patella / tibiofemoral eklem aralığı) transvers zemin paraleline göre seviye ve yükseklik dengesini gösterir. Sağ ve sol diz referans noktalarını birleştiren hattın yatay eksene göre oluşturduğu açısal sapma hesaplanır. 2° üzerindeki seviye farkları; alt ekstremite uzunluk farkları, tek taraflı ayak pronasyonu/supinasyonu veya dizdeki açısal deformiteler (genu valgum/varum asimetrisi) ile ilişkili kinetik zincir disfonksiyonlarını yansıtır."
+    },
+    forward_head: {
+        title: "Baş Öne Eğikliği (Forward Head Posture)",
+        desc: "Baş Öne Eğikliği, sagital (yan) düzlemde baş ağırlık merkezinin omuz hattına kıyasla öne doğru yer değiştirmesini (anterior protraksiyon) değerlendirir. Kulak tragus noktası ile servikotorakal bileşke (C7 vertebra spinöz çıkıntısı) arasındaki eksenin dikey referans hattıyla oluşturduğu kraniyoservikal açısal sapma trigonometrik olarak hesaplanır. 5° üzerindeki açısal sapmalar Forward Head olarak sınıflandırılır; bu durum servikal omurgaya binen kaldıraç yükünün, suboksipital kas gerginliğinin ve boyun düzleşmesi/fıtığı riskinin arttığını gösterir."
+    },
+    thoracic_kyphosis: {
+        title: "Torakal Eğiklik (Thoracic Kyphosis)",
+        desc: "Torakal Eğiklik, sagital düzlemde sırt bölgesindeki torakal omurganın fizyolojik eğriliğini ve kifotik artış derecesini (kamburluk eğilimini) değerlendirir. Üst torakal omurga hattı (C7 seviyesi) ile torakolomber geçiş segmenti arasındaki anatomik profil eğriliği sagital dikey referans hattına göre oranlanarak hesaplanır. 5° üzerindeki artışlar torakal kifoz artışı (hiperkifoz), pektoral kas kısalığı ve göğüs kafesi solunum mobilitesindeki mekanik kısıtlılıkları işaret eder."
+    },
+    pelvic_tilt: {
+        title: "Pelvik Eğim (Pelvic Tilt)",
+        desc: "Pelvik Eğim, sagital düzlemde pelvisin öne (anterior tilt) veya arkaya (posterior tilt) rotasyonel eğim açısını ifade eder. Anterior Superior Iliac Spine (ASIS) ve Posterior Superior Iliac Spine (PSIS) / trokanter majör referans noktaları arasındaki hattın yatay zemin eksenine göre oluşturduğu biyomekanik açı hesaplanır. 5° üzerindeki sapmalar aşırı anterior tilt (artan lumbal lordoz, zayıf karın ve gergin iliopsoas) ya da posterior tilt (düzleşmiş bel ve gergin hamstringler) gibi lumbo-pelvik disfonksiyonları ortaya koyar."
+    }
+};
+
 function showInfoPopup(type) {
     const modal = document.getElementById('infoModal');
     const title = document.getElementById('infoModalTitle');
     const content = document.getElementById('infoModalContent');
     
-    if(!modal) return;
+    if(!modal || !title || !content) return;
 
-    if (type === 'quality') {
-        title.textContent = 'Genel Ölçüm Kalitesi Nasıl Hesaplanır?';
-        content.innerHTML = `Sistemimiz her bir referans noktasındaki (omuz, kalça, diz, boyun vb.) sapma açılarını milimetrik olarak toplar.<br><br>Bulunan toplam sapma değeri, 100 tam puan üzerinden matematiksel bir formülle düşülerek hesaplanır. Yani vücuttaki asimetri ve postural sapmalar ne kadar azsa, puan 100'e o kadar yakın olur.<br><br>Bu skor, hastanın duruşunun ideal anatomik hizalamaya ne kadar yakın olduğu hakkında genel bir fikir vermek için tasarlanmıştır.`;
-    } else if (type === 'stability') {
-        title.textContent = 'Postür Stabilize Endeksi Nedir?';
-        content.innerHTML = `Bu endeks, vücudun genel denge ve duruş stabilizasyonunu gösterir.<br><br>Sistem tarafından tespit edilen majör bulgu (anomali) sayısı üzerinden hesaplanır. Bulunan her bir belirgin duruş bozukluğu (örneğin; başın öne eğikliği, pelvik asimetri, omuz düşüklüğü vb.) stabilite oranını belirli bir yüzdede düşürür.<br><br>Yüksek oran, vücut ağırlık merkezinin dengeli dağıldığını; düşük oran ise telafi edici (kompansatuar) kas yüklenmelerinin fazla olduğunu işaret eder.`;
+    const data = POSTURE_METRIC_INFO[type];
+    const _t = window.translateText || (s => s);
+
+    if (data) {
+        title.textContent = _t(data.title);
+        content.textContent = _t(data.desc);
+    } else {
+        title.textContent = _t('Biyomekanik Metrik Bilgisi');
+        content.textContent = _t('Bu alan için detaylı biyomekanik açıklama hazırlanmaktadır.');
     }
     
     modal.classList.remove('hidden');
