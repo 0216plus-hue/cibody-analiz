@@ -440,21 +440,36 @@ function renderAllTestDetails() {
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">${_t('Yol Uzunluğu (cm)')}</td>
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('Yol Uzunluğu (cm)')}</span>
+                                    <button type="button" onclick="showInfoPopup('balance_path')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </td>
                                 <td class="px-4 py-2"><${pathGood}</td>
                                 <td class="px-4 py-2">${pathGood}-${pathMed}</td>
                                 <td class="px-4 py-2">>${pathMed}</td>
                                 <td class="px-4 py-2 border-l font-bold ${pathS.color}">${m.pathCm.toFixed(2)} (${pathS.text})</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">${_t('Sallantı Alanı (cm²)')}</td>
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('Sallantı Alanı (cm²)')}</span>
+                                    <button type="button" onclick="showInfoPopup('balance_sway_area')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </td>
                                 <td class="px-4 py-2"><${areaGood}</td>
                                 <td class="px-4 py-2">${areaGood}-${areaMed}</td>
                                 <td class="px-4 py-2">>${areaMed}</td>
                                 <td class="px-4 py-2 border-l font-bold ${areaS.color}">${m.areaCm.toFixed(2)} (${areaS.text})</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-2 font-medium">${_t('COP Hızı (cm/s)')}</td>
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('COP Hızı (cm/s)')}</span>
+                                    <button type="button" onclick="showInfoPopup('balance_velocity')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
+                                </td>
                                 <td class="px-4 py-2"><${velGood.toFixed(1)}</td>
                                 <td class="px-4 py-2">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
                                 <td class="px-4 py-2">>${velMed.toFixed(1)}</td>
@@ -468,8 +483,13 @@ function renderAllTestDetails() {
         } else {
             // For cift kapali, we don't have hard references, just a note.
             section.innerHTML += `
-            <div class="balance-ref-card bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm">
-                <i class="fa-solid fa-circle-info mr-2"></i> ${_t('Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.')}
+            <div class="balance-ref-card bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm flex items-center justify-between">
+                <div>
+                    <i class="fa-solid fa-circle-info mr-2"></i> ${_t('Göz Kapalı testlerde Romberg Endeksi hesabı için Göz Açık test verileriyle kıyaslama yapılır. Sabit referans değerleri bulunmamaktadır.')}
+                </div>
+                <button type="button" onclick="showInfoPopup('balance_romberg')" class="text-amber-700 hover:text-amber-900 font-bold underline text-xs ml-3 whitespace-nowrap cursor-pointer" data-html2canvas-ignore="true">
+                    Romberg Nedir?
+                </button>
             </div>`;
         }
         
@@ -477,20 +497,35 @@ function renderAllTestDetails() {
         let chartHTML = `
         <div class="balance-charts-row grid grid-cols-1 lg:grid-cols-2 gap-6 w-full mt-2">
             <div class="balance-scatter-box bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full">
-                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2">${_t('Statokinezigram (COP Yörüngesi)')}</h3>
+                <h3 class="text-sm font-bold text-slate-700 mb-4 border-b pb-2 flex items-center justify-between">
+                    <span>${_t('Statokinezigram (COP Yörüngesi)')}</span>
+                    <button type="button" onclick="showInfoPopup('balance_statokinesigram')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                        <i class="fa-solid fa-circle-info text-xs"></i>
+                    </button>
+                </h3>
                 <div class="balance-scatter-canvas-container" style="position: relative; height:300px;">
                     <canvas id="scatter_${t.k}"></canvas>
                 </div>
             </div>
             <div class="balance-stabilo-box bg-white p-5 rounded-xl border border-slate-200 shadow-sm w-full flex flex-col gap-4">
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram X (ML)')}</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2 flex items-center justify-between">
+                        <span>${_t('Stabilogram X (ML)')}</span>
+                        <button type="button" onclick="showInfoPopup('balance_stabilogram')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h3>
                     <div class="balance-line-canvas-container" style="position: relative; height:120px;">
                         <canvas id="xline_${t.k}"></canvas>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2">${_t('Stabilogram Y (AP)')}</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-2 border-b pb-2 flex items-center justify-between">
+                        <span>${_t('Stabilogram Y (AP)')}</span>
+                        <button type="button" onclick="showInfoPopup('balance_stabilogram')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h3>
                     <div class="balance-line-canvas-container" style="position: relative; height:120px;">
                         <canvas id="yline_${t.k}"></canvas>
                     </div>

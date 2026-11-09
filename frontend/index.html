@@ -3559,7 +3559,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=25.4"></script>
+    <script src="app.js?v=25.5"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -3724,11 +3724,21 @@
                 
                 <div class="w-full flex justify-around border-t border-slate-800 pt-3 mt-3">
                     <div class="text-center">
-                        <div class="text-[10px] text-slate-500 font-bold uppercase">X (ML)</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase flex items-center justify-center gap-1">
+                            <span>X (ML)</span>
+                            <button type="button" onclick="showInfoPopup('balance_stabilogram')" class="text-slate-400 hover:text-indigo-400 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-[9px]"></i>
+                            </button>
+                        </div>
                         <div class="text-base text-indigo-400 font-mono font-bold" id="liveCopX">0.0</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-[10px] text-slate-500 font-bold uppercase">Y (AP)</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase flex items-center justify-center gap-1">
+                            <span>Y (AP)</span>
+                            <button type="button" onclick="showInfoPopup('balance_stabilogram')" class="text-slate-400 hover:text-emerald-400 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-[9px]"></i>
+                            </button>
+                        </div>
                         <div class="text-base text-emerald-400 font-mono font-bold" id="liveCopY">0.0</div>
                     </div>
                 </div>
@@ -3791,9 +3801,30 @@
                         <tr>
                             <th class="px-4 py-3" data-i18n="Test Tipi">Test Tipi</th>
                             <th class="px-4 py-3" data-i18n="Süre (s)">Süre (s)</th>
-                            <th class="px-4 py-3" data-i18n="Path (cm)">Path (cm)</th>
-                            <th class="px-4 py-3" data-i18n="Sway (cm²)">Sway (cm²)</th>
-                            <th class="px-4 py-3" data-i18n="Speed (cm/s)">Speed (cm/s)</th>
+                            <th class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1">
+                                    <span data-i18n="Path (cm)">Path (cm)</span>
+                                    <button type="button" onclick="showInfoPopup('balance_path')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[11px]"></i>
+                                    </button>
+                                </span>
+                            </th>
+                            <th class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1">
+                                    <span data-i18n="Sway (cm²)">Sway (cm²)</span>
+                                    <button type="button" onclick="showInfoPopup('balance_sway_area')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[11px]"></i>
+                                    </button>
+                                </span>
+                            </th>
+                            <th class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1">
+                                    <span data-i18n="Speed (cm/s)">Speed (cm/s)</span>
+                                    <button type="button" onclick="showInfoPopup('balance_velocity')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[11px]"></i>
+                                    </button>
+                                </span>
+                            </th>
                             <th class="px-4 py-3" data-i18n="Durum">Durum</th>
                         </tr>
                     </thead>
@@ -4404,7 +4435,7 @@
 <script src="gait.js?v=20.2"></script>
 <script src="gait_analysis.js?v=20.3"></script>
 <script src="gait_player.js?v=20.5"></script>
-    <script src="balance.js?v=22.0"></script>
+    <script src="balance.js?v=22.1"></script>
     <script src="comparison.js?v=1.0"></script>
 </body>
 </html>

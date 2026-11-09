@@ -3570,6 +3570,30 @@ const POSTURE_METRIC_INFO = {
     gait_video_replay: {
         title: "Dinamik Yürüyüş Replay ve Basınç Transferi",
         desc: "Dinamik Yürüyüş Replay sistemi, hastanın sensör matrisi üzerinden geçerken oluşturduğu tüm basınç değişimlerini milisaniye çözünürlüğünde kare kare kaydederek ağır çekimde oynatılmasını sağlar. Adım anındaki temas alanının büyümesi, pik basınç odaklarının yer değiştirmesi ve COP hattının anlık ilerleyişi incelenerek tabanlık tasarımında ortopedik kama veya metatarsal ped yerleşimi için hassas kinematik geri bildirim sunar."
+    },
+    balance_path: {
+        title: "Yol Uzunluğu (COP Sway Path Length)",
+        desc: "Yol Uzunluğu (Path Length), test süresi boyunca vücut ağırlık merkezinin (COP) iki boyutlu düzlemde katettiği toplam kümülatif yörünge mesafesini santimetre (cm) cinsinden ifade eder. Art arda kaydedilen her bir anlık COP koordinatı arasındaki öklid mesafelerinin toplamı alınarak hesaplanır. Düşük yol uzunluğu yüksek postüral stabiliteyi ve minimum kas eforuyla dengenin korunduğunu gösterirken, yolun uzaması postüral salınımın arttığını ve vestibüler, görsel veya propriyoseptif sistemlerde telafi edici efor harcandığını belgeler."
+    },
+    balance_sway_area: {
+        title: "Sallantı / Salınım Alanı (COP Sway Area - 95% Ellipse)",
+        desc: "Sallantı Alanı (Sway Area), bireyin dik duruş esnasında vücut ağırlık merkezini sabit tutabilmek için kapladığı yüzey alanını santimetrekare (cm²) cinsinden ölçer. Biyomekanik postürografide, COP salınım noktalarının %95'ini içine alan en küçük güven elipsi (95% Confidence Ellipse Area) temel bileşen analizi (PCA) ve kovaryans matrisi kullanılarak trigonometrik yöntemle hesaplanır. Alanın genişlemesi gövdenin denge konisi içerisinde aşırı salındığını, propriyoseptif duyu kaybını veya düşme riskinin yükseldiğini yansıtır."
+    },
+    balance_velocity: {
+        title: "COP Ortalama Hızı (Mean Sway Velocity)",
+        desc: "COP Ortalama Hızı (Mean Velocity), vücut ağırlık merkezinin dengeyi sağlamak amacıyla birim zamanda yer değiştirme hızını (cm/s) ifade eder. Toplam katedilen yol uzunluğunun test süresine bölünmesiyle hesaplanır. Postüral kontrolde hız, nöromüsküler düzeltici reflekslerin sıklığını ve harcanan enerji maliyetini temsil eder; yüksek COP hızları kas-iskelet sisteminin sürekli ani düzeltici mikro kasılmalar yapmak zorunda kaldığını ve yorgunluk/dengesizlik riskini ortaya koyar."
+    },
+    balance_romberg: {
+        title: "Romberg Endeksi (Göz Kapalı / Göz Açık Oranı)",
+        desc: "Romberg Endeksi, postüral dengenin korunmasında görsel sistemin (vizüel girdi) nörolojik katkısını ve somatosensoriyel/vestibüler rezervi ölçen klasik nöro-fizyolojik orandır. Gözler kapalı yapılan testteki salınım parametresinin (alan veya yol) gözler açık test değerine bölünmesiyle elde edilir. 1.0 değeri görsel girdiden bağımsız kusursuz propriyoseptif dengeyi simgeler; oranın belirgin şekilde yükselmesi hastanın dengesini sağlayabilmek için aşırı derecede görme duyusuna bağımlı olduğunu ve derin duyu/vestibüler disfonksiyon varlığını işaret eder."
+    },
+    balance_statokinesigram: {
+        title: "Statokinezigram (2D COP Yörüngesi)",
+        desc: "Statokinezigram, iki boyutlu kartezyen koordinat düzleminde (X: Mediolateral, Y: Anteroposterior) vücut ağırlık merkezinin anlık salınım noktalarının oluşturduğu saçılım haritasıdır. Geometrik merkezden sapma yönü, bireyin ağırlığını sağ/sol veya ön/arka eksende hangi tarafa eğilimle taşıdığını görselleştirir; asimetrik elips yönelimi tek taraflı ortopedik kaçınmaları ve yapısal duruş eğriliklerini gösterir."
+    },
+    balance_stabilogram: {
+        title: "Stabilogram (ML ve AP Zaman Dalgaları)",
+        desc: "Stabilogram, Mediolateral (ML / Sağ-Sol) ve Anteroposterior (AP / Ön-Arka) düzlemlerdeki salınımların zaman ekseni üzerindeki frekans ve genlik dalgalarını ayrı ayrı inceler. AP yönündeki salınımlar temel olarak ayak bileği stratejisi (triceps surae ve tibialis anterior) ile kontrol edilirken, ML yönündeki salınımlar kalça abdüktör/addüktör stratejisiyle yönetilir; dalgaların genlik artışı hangi eklem motor stratejisinin yetersiz kaldığını ayırt eder."
     }
 };
 
