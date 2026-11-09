@@ -3534,6 +3534,42 @@ const POSTURE_METRIC_INFO = {
     foot_cop: {
         title: "Basınç Merkezi (Center of Pressure - COP)",
         desc: "Basınç Merkezi (COP), dik duruş sırasında iki ayak tabanına dağılan tüm dikey yer tepki kuvvetlerinin anlık vektörel merkez noktasını (ağırlık merkezinin zemin projeksiyonunu) ifade eder. Sensör matrisindeki her bir aktif hücrenin koordinatları ve algıladığı basınç şiddeti kullanılarak ağırlıklı kütle merkezi formülüyle (weighted centroid) hesaplanır. COP koordinatlarının ideal geometrik merkezden sapması, hastanın duruş stabilitesi, postural salınımı ve gövdenin dengeyi korumak için hangi yöne kompansasyon uyguladığı hakkında doğrudan nesnel veri sağlar."
+    },
+    gait_stance_time: {
+        title: "Duruş Süresi (Stance Duration)",
+        desc: "Duruş Süresi (Stance Duration), yürüme döngüsü sırasında ayağın zeminle ilk temasından (Initial Contact) parmakların zeminden ayrıldığı ana (Toe-Off) kadar geçen toplam süreyi milisaniye (ms) cinsinden ifade eder. Normal fizyolojik yürüyüşte duruş fazı toplam yürüme siklusunun yaklaşık %60-62'sini kapsar. Sağ ve sol ekstremite arasındaki süre farkı, bacaklardan birinin yük taşımaktan kaçındığı antalgik yürüme kompansasyonlarını, alt ekstremite ağrılarını veya nöromüsküler asimetrileri doğrudan yansıtır."
+    },
+    gait_stance_asym: {
+        title: "Duruş Süresi Asimetrisi",
+        desc: "Duruş Süresi Asimetrisi, sağ ve sol ayakların yerle temas halinde geçirdiği duruş süreleri arasındaki oransal dengesizliği gösteren kinematik bir parametredir. İki taraf arasındaki duruş süresi farkının ortalama duruş süresine oranlanmasıyla hesaplanır. %3-5 altındaki asimetriler fizyolojik sınırlar içinde simetrik kabul edilirken, %5 üzerindeki değerler bir tarafta erken salınıma geçişi ve belirgin fonksiyonel veya yapısal asimetriyi (örneğin tek taraflı diz/kalça patolojisi veya bacak boyu eşitsizliği) gösterir."
+    },
+    gait_peak_asym: {
+        title: "Tepe Kuvvet Asimetrisi (Peak Force Asymmetry)",
+        desc: "Tepe Kuvvet Asimetrisi, yürüme esnasında sağ ve sol ayakların platform zeminine uyguladığı maksimum dikey kuvvetlerin (Fmax) birbirine oranını ifade eder. Dinamik temas boyunca sensörlerden okunan tepe dikey yer tepki kuvvetleri karşılaştırılarak hesaplanır. Bireyin bir ekstremiteye diğerinden belirgin derecede daha fazla tepe darbe yükü bindirip bindirmediğini ortaya koyarak tek taraflı aşırı yüklenmeleri ve kompanse edici yürüyüş modellerini açığa çıkarır."
+    },
+    gait_rsi: {
+        title: "Genel Asimetri / Simetri İndeksi (Robinson Symmetry Index - RSI)",
+        desc: "Genel Simetri İndeksi (RSI), dinamik yürümede sağ ve sol ekstremitelerin biyomekanik kuvvet profilleri arasındaki toplam simetri düzeyini evrensel Robinson Simetri formülü [2*(Sağ-Sol)/(Sağ+Sol)*100] ile ölçen altın standart bir indekstir. %0 değeri kusursuz iki taraflı mekanik simetriyi gösterir. %5'e kadar olan değerler normal fizyolojik varyans kabul edilirken, %10'u aşan RSI skoru belirgin patolojik asimetriye, nörolojik dengesizliklere veya tek taraflı ortopedik yük aktarım kusurlarına işaret eder."
+    },
+    gait_phases: {
+        title: "Yürüme Fazları Analizi (Rancho Los Amigos Standardı)",
+        desc: "Yürüme Fazları Analizi, ayağın yerle temas halinde olduğu duruş süresini biyomekanik olarak üç ana alt evreye ayırarak inceler: Topuk Teması (Initial Contact / Loading Response - darbe emilimi evresi), Tam Basış (Midstance - tek bacak üzerinde vücut ağırlığının aktarımı) ve Parmak İtme (Terminal Stance / Preswing - ileriye doğru itiş evresi). Her bir fazın duruş süresi içerisindeki yüzdesel dağılımı ölçülerek aşil tendinopatisi, düşük ayak, pes planus veya itiş gücü yetersizliği gibi fonksiyonel disfonksiyonlar tespit edilir."
+    },
+    gait_five_regions: {
+        title: "5 Bölge Anatomik Yük Dağılımı (Cavanagh & Ulbrecht)",
+        desc: "5 Bölge Yük Dağılımı Analizi, ayak tabanını uluslararası literatürde (Cavanagh & Ulbrecht) kabul görmüş beş temel fonksiyonel anatomi bölgesine (Başparmak/Hallux, Küçük Parmaklar, Ön Ayak/Metatarslar, Orta Ayak ve Topuk) ayırarak her bölgenin taşıdığı dinamik basınç ve kuvvet payını hesaplar. Bu analiz; diyabetik ayak ülseri riski taşıyan fokal basınç noktalarını, metatarsalji odalarını, hallux rigidus/valgus kompansasyonlarını ve kişiye özel tabanlık tasarımında desteklenmesi veya boşaltılması gereken kilit bölgeleri belirler."
+    },
+    gait_grf: {
+        title: "Yer Tepki Kuvveti (GRF - Ground Reaction Force) Analizi",
+        desc: "Yer Tepki Kuvveti (GRF), adım atma esnasında ayak tabanının zemine uyguladığı kuvvete karşılık zeminin ayağa uyguladığı dikey reaksiyon kuvvetinin zamana bağlı dinamik eğrisidir (M-şekilli çift tepe eğrisi: F1 darbe sönümleme, F2 itiş zirvesi). Kuvvet-Zaman İntegrali (FTI / Impuls) dokuların toplam maruz kaldığı kümülatif yükü, Yüklenme Hızı (Loading Rate) ise topuk vuruşundaki darbe şiddetini gösterir; yüksek yüklenme hızı eklem kıkırdak aşınması ve stres kırığı risk faktörüdür."
+    },
+    gait_cop_trajectory: {
+        title: "Dinamik Basınç Merkezi (COP) Trajektorisi",
+        desc: "Dinamik Basınç Merkezi (COP) Trajektorisi, adım boyunca ayağın altındaki bileşke basınç noktasının topuğun dış-arka kenarından başlayıp orta ayak ve metatarslardan geçerek başparmaktan ayrılışına kadar çizdiği dinamik yolu (Gait Line) gösterir. COP hattının eğimi ve simetrisi; ayağın dinamik pronasyon/supinasyon paternini, torsiyonel omurga salınımlarını ve ağırlık merkezinin dinamik dengesini nesnel olarak belgeler."
+    },
+    gait_video_replay: {
+        title: "Dinamik Yürüyüş Replay ve Basınç Transferi",
+        desc: "Dinamik Yürüyüş Replay sistemi, hastanın sensör matrisi üzerinden geçerken oluşturduğu tüm basınç değişimlerini milisaniye çözünürlüğünde kare kare kaydederek ağır çekimde oynatılmasını sağlar. Adım anındaki temas alanının büyümesi, pik basınç odaklarının yer değiştirmesi ve COP hattının anlık ilerleyişi incelenerek tabanlık tasarımında ortopedik kama veya metatarsal ped yerleşimi için hassas kinematik geri bildirim sunar."
     }
 };
 

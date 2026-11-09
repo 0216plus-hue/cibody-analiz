@@ -3152,7 +3152,12 @@
                         <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-red-600 text-white font-bold text-sm shadow-lg shadow-red-600/40">
                             <i class="fa-solid fa-play"></i>
                         </span>
-                        <h3 class="text-xl font-black text-white tracking-wide" data-i18n="Dinamik Yürüyüş Video Oynatıcı">Dinamik Yürüyüş Video Oynatıcı</h3>
+                        <h3 class="text-xl font-black text-white tracking-wide flex items-center gap-2">
+                            <span data-i18n="Dinamik Yürüyüş Video Oynatıcı">Dinamik Yürüyüş Video Oynatıcı</span>
+                            <button type="button" onclick="showInfoPopup('gait_video_replay')" class="text-slate-400 hover:text-white transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-sm"></i>
+                            </button>
+                        </h3>
                         <span class="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-indigo-500/40">Klinik Replay</span>
                     </div>
                     <p class="text-xs text-slate-400 mt-1" data-i18n="Hastanın tüm yürüme adımlarını veya tekil adımlarını kare kare ağır çekimde izleyin.">
@@ -3303,25 +3308,80 @@
         
         <!-- Klinik Metrikler -->
         <div id="gaitMetricsCard" class="gait-pdf-card bg-emerald-50/50 p-6 rounded-2xl border border-emerald-100 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2"><i class="fa-solid fa-stethoscope text-emerald-500 mr-2"></i><span data-i18n="Klinik Metrikler">Klinik Metrikler</span></h3>
+            <h3 class="text-lg font-black text-emerald-900 mb-4 border-b border-emerald-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-stethoscope text-emerald-500"></i>
+                <span data-i18n="Klinik Metrikler">Klinik Metrikler</span>
+            </h3>
             <div class="gait-metrics-grid grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sol Duruş Süresi:">Sol Duruş Süresi:</span><span id="gMetricLeftStance" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sağ Duruş Süresi:">Sağ Duruş Süresi:</span><span id="gMetricRightStance" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold" data-i18n="Duruş Süresi Asimetrisi:">Duruş Süresi Asimetrisi:</span><span id="gMetricStanceAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-slate-600 flex items-center gap-1.5">
+                            <span data-i18n="Sol Duruş Süresi:">Sol Duruş Süresi:</span>
+                            <button type="button" onclick="showInfoPopup('gait_stance_time')" class="text-slate-400 hover:text-emerald-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-xs"></i>
+                            </button>
+                        </span>
+                        <span id="gMetricLeftStance" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-slate-600 flex items-center gap-1.5">
+                            <span data-i18n="Sağ Duruş Süresi:">Sağ Duruş Süresi:</span>
+                            <button type="button" onclick="showInfoPopup('gait_stance_time')" class="text-slate-400 hover:text-emerald-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-xs"></i>
+                            </button>
+                        </span>
+                        <span id="gMetricRightStance" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100">
+                        <span class="text-amber-600 font-bold flex items-center gap-1.5">
+                            <span data-i18n="Duruş Süresi Asimetrisi:">Duruş Süresi Asimetrisi:</span>
+                            <button type="button" onclick="showInfoPopup('gait_stance_asym')" class="text-amber-500 hover:text-amber-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-xs"></i>
+                            </button>
+                        </span>
+                        <span id="gMetricStanceAsym" class="font-bold text-amber-600">-</span>
+                    </div>
                 </div>
                 <div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sol Ayak Yükü:">Sol Ayak Yükü:</span><span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mb-2"><span class="text-slate-600" data-i18n="Sağ Ayak Yükü:">Sağ Ayak Yükü:</span><span id="gMetricRightLoad" class="font-bold text-slate-800">-</span></div>
-                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100"><span class="text-amber-600 font-bold" data-i18n="Tepe Kuvvet Asimetrisi:">Tepe Kuvvet Asimetrisi:</span><span id="gMetricPeakAsym" class="font-bold text-amber-600">-</span></div>
-                    <div class="flex justify-between mt-2"><span class="text-amber-600 font-bold" data-i18n="Genel Asimetri (RSI):">Genel Asimetri (RSI):</span><span id="gMetricForceAsym" class="font-bold text-amber-600">-</span></div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-slate-600" data-i18n="Sol Ayak Yükü:">Sol Ayak Yükü:</span>
+                        <span id="gMetricLeftLoad" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-slate-600" data-i18n="Sağ Ayak Yükü:">Sağ Ayak Yükü:</span>
+                        <span id="gMetricRightLoad" class="font-bold text-slate-800">-</span>
+                    </div>
+                    <div class="flex justify-between mt-4 pt-2 border-t border-emerald-100">
+                        <span class="text-amber-600 font-bold flex items-center gap-1.5">
+                            <span data-i18n="Tepe Kuvvet Asimetrisi:">Tepe Kuvvet Asimetrisi:</span>
+                            <button type="button" onclick="showInfoPopup('gait_peak_asym')" class="text-amber-500 hover:text-amber-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-xs"></i>
+                            </button>
+                        </span>
+                        <span id="gMetricPeakAsym" class="font-bold text-amber-600">-</span>
+                    </div>
+                    <div class="flex justify-between mt-2">
+                        <span class="text-amber-600 font-bold flex items-center gap-1.5">
+                            <span data-i18n="Genel Asimetri (RSI):">Genel Asimetri (RSI):</span>
+                            <button type="button" onclick="showInfoPopup('gait_rsi')" class="text-amber-500 hover:text-amber-700 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                <i class="fa-solid fa-circle-info text-xs"></i>
+                            </button>
+                        </span>
+                        <span id="gMetricForceAsym" class="font-bold text-amber-600">-</span>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Yürüme Fazları Analizi -->
         <div id="gaitPhasesCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-shoe-prints text-indigo-500 mr-2"></i><span data-i18n="Yürüme Fazları Analizi">Yürüme Fazları Analizi</span></h3>
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-shoe-prints text-indigo-500"></i>
+                <span data-i18n="Yürüme Fazları Analizi">Yürüme Fazları Analizi</span>
+                <button type="button" onclick="showInfoPopup('gait_phases')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </button>
+            </h3>
             <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGaitPhaseBar"></canvas></div>
                 <div class="h-64"><canvas id="chartAvgRegionalPie"></canvas></div>
@@ -3333,7 +3393,13 @@
 
         <!-- 5 Bölge Yük Dağılımı Analizi -->
         <div class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 hidden avoid-break" id="fiveRegionSection">
-            <h3 class="text-lg font-black text-slate-800 mb-1"><i class="fa-solid fa-chart-pie text-indigo-500 mr-2"></i><span data-i18n="5 Bölge Yük Dağılımı Analizi">5 Bölge Yük Dağılımı Analizi</span></h3>
+            <h3 class="text-lg font-black text-slate-800 mb-1 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-indigo-500"></i>
+                <span data-i18n="5 Bölge Yük Dağılımı Analizi">5 Bölge Yük Dağılımı Analizi</span>
+                <button type="button" onclick="showInfoPopup('gait_five_regions')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </button>
+            </h3>
             <p class="text-sm text-slate-500 mb-6 pb-2 border-b border-slate-100">Bölgeler: Başparmak, Parmaklar, Ön Ayak, Orta Ayak, Topuk (Cavanagh & Ulbrecht, 1994)</p>
             
             <div id="fiveRegionGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -3346,7 +3412,13 @@
 
         <!-- Yer Tepki Kuvveti (GRF) Analizi -->
         <div id="gaitGrfCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i><span data-i18n="Yer Tepki Kuvveti (GRF) Analizi">Yer Tepki Kuvveti (GRF) Analizi</span></h3>
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-chart-area text-indigo-500"></i>
+                <span data-i18n="Yer Tepki Kuvveti (GRF) Analizi">Yer Tepki Kuvveti (GRF) Analizi</span>
+                <button type="button" onclick="showInfoPopup('gait_grf')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </button>
+            </h3>
             <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-64"><canvas id="chartGRFLeft"></canvas></div>
                 <div class="h-64"><canvas id="chartGRFRight"></canvas></div>
@@ -3359,7 +3431,13 @@
 
         <!-- COP Trajektorisi -->
         <div id="gaitCopCard" class="gait-pdf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 avoid-break">
-            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-route text-indigo-500 mr-2"></i><span data-i18n="COP Trajektorisi">COP Trajektorisi</span></h3>
+            <h3 class="text-lg font-black text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-2">
+                <i class="fa-solid fa-route text-indigo-500"></i>
+                <span data-i18n="COP Trajektorisi">COP Trajektorisi</span>
+                <button type="button" onclick="showInfoPopup('gait_cop_trajectory')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                    <i class="fa-solid fa-circle-info text-sm"></i>
+                </button>
+            </h3>
             <div class="gait-2col-row grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="h-80"><canvas id="gaitCopChart"></canvas></div>
                 <div class="h-80"><canvas id="chartCopMetrics"></canvas></div>
@@ -3481,7 +3559,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=25.3"></script>
+    <script src="app.js?v=25.4"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
