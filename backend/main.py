@@ -264,11 +264,49 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 # ────────────────────────────────
 #  JWT & Şifre Ayarları
 # ────────────────────────────────
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "cibody-super-secret-key-2024-change-in-production")
+import secrets
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    # Guvenlik: Kod icinde statik fallback yerine kriptografik tek seferlik anahtar
+    SECRET_KEY = secrets.token_urlsafe(64)
+    print("\n[SECURITY NOTICE] 'JWT_SECRET_KEY' env degiskeni bulunamadi. Calisma zamani guvenli kripto anahtar uretildi.\n")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
+
+# Kaba Kuvvet (Brute-Force) Saldirilarina Karsi Rate Limiting
+LOGIN_ATTEMPTS = {}
+MAX_FAILED_ATTEMPTS = 5
+LOCKOUT_MINUTES = 5
+
+def check_login_rate_limit(key: str):
+    now = datetime.utcnow()
+    attempt_info = LOGIN_ATTEMPTS.get(key)
+    if attempt_info and attempt_info.get("lockout_until"):
+        if now < attempt_info["lockout_until"]:
+            remaining_sec = int((attempt_info["lockout_until"] - now).total_seconds())
+            remaining_min = max(1, remaining_sec // 60)
+            raise HTTPException(
+                status_code=429,
+                detail=f"Çok fazla hatalı giriş denemesi yapıldı. Güvenliğiniz için hesabınız geçici olarak kilitlendi. Lütfen {remaining_min} dakika sonra tekrar deneyin."
+            )
+        else:
+            LOGIN_ATTEMPTS.pop(key, None)
+
+def record_failed_login(key: str):
+    now = datetime.utcnow()
+    if key not in LOGIN_ATTEMPTS:
+        LOGIN_ATTEMPTS[key] = {"count": 1, "lockout_until": None}
+    else:
+        LOGIN_ATTEMPTS[key]["count"] += 1
+        if LOGIN_ATTEMPTS[key]["count"] >= MAX_FAILED_ATTEMPTS:
+            LOGIN_ATTEMPTS[key]["lockout_until"] = now + timedelta(minutes=LOCKOUT_MINUTES)
+
+def record_successful_login(key: str):
+    LOGIN_ATTEMPTS.pop(key, None)
 
 def verify_password(plain, hashed):
     try:
@@ -311,6 +349,15 @@ def require_superadmin(current_user: models.User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Bu işlem için yetkiniz yok")
     return current_user
 
+def _verify_patient_access(patient_id: int, current_user: models.User, db: Session):
+    if current_user.role == "superadmin":
+        return
+    patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Hasta bulunamadı")
+    if patient.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Bu hastanın verilerine erişim yetkiniz yok")
+
 # ────────────────────────────────
 #  Pydantic Şemaları
 # ────────────────────────────────
@@ -341,15 +388,25 @@ class AnalysisDataUpdate(BaseModel):
 #  AUTH ENDPOINTLERİ
 # ────────────────────────────────
 @app.post("/api/auth/login")
-def login(req: LoginRequest, db: Session = Depends(get_db)):
-    print(f"LOGIN ATTEMPT: {req.email.strip()}")
-    req.email = req.email.strip().lower()
+def login(req: LoginRequest, request: Request, db: Session = Depends(get_db)):
+    req_email = req.email.strip().lower()
+    client_ip = request.client.host if request.client else "unknown"
+    rate_key = f"{client_ip}:{req_email}"
+    
+    # 1. Kaba kuvvet (Brute-force) koruması
+    check_login_rate_limit(rate_key)
 
-    user = db.query(models.User).filter(models.User.email == req.email.strip()).first()
+    user = db.query(models.User).filter(models.User.email == req_email).first()
     if not user or not verify_password(req.password, user.hashed_password):
+        record_failed_login(rate_key)
         raise HTTPException(status_code=401, detail="E-posta veya şifre hatalı")
+        
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Hesabınız pasif durumda")
+        
+    # Başarılı girişte sayacı sıfırla
+    record_successful_login(rate_key)
+    
     token = create_token({"sub": str(user.id), "role": user.role})
     return {
         "access_token": token,
@@ -380,8 +437,10 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
     if "phone" in req:
         current_user.phone = req["phone"]
     if "password" in req and req["password"]:
-        import bcrypt
-        current_user.hashed_password = hash_password(req["password"])
+        pwd_str = str(req["password"]).strip()
+        if len(pwd_str) < 8:
+            raise HTTPException(status_code=400, detail="Yeni şifreniz en az 8 karakter olmalıdır.")
+        current_user.hashed_password = hash_password(pwd_str)
     db.commit()
     db.refresh(current_user)
     return {"name": current_user.name, "email": current_user.email, "phone": current_user.phone}
@@ -392,11 +451,13 @@ def update_me(req: dict, db: Session = Depends(get_db), current_user: models.Use
 @app.post("/api/admin/users")
 def admin_create_user(req: UserCreate, db: Session = Depends(get_db),
                       _: models.User = Depends(require_superadmin)):
+    if len(req.password.strip()) < 8:
+        raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalıdır.")
     if db.query(models.User).filter(models.User.email == req.email.strip()).first():
         raise HTTPException(status_code=400, detail="Bu e-posta zaten kayıtlı")
     user = models.User(
         name=req.name, email=req.email.strip(),
-        hashed_password=hash_password(req.password),
+        hashed_password=hash_password(req.password.strip()),
         role="therapist", monthly_limit=req.monthly_limit
     )
     db.add(user); db.commit(); db.refresh(user)
@@ -459,7 +520,11 @@ def admin_update_user(user_id: int, req: UserUpdate, db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     if req.name is not None: user.name = req.name
     if req.email.strip() is not None: user.email = req.email.strip()
-    if req.password is not None: user.hashed_password = hash_password(req.password)
+    if req.password is not None:
+        pwd_str = req.password.strip()
+        if len(pwd_str) < 8:
+            raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalıdır.")
+        user.hashed_password = hash_password(pwd_str)
     if req.monthly_limit is not None: user.monthly_limit = req.monthly_limit
     if req.is_active is not None: user.is_active = req.is_active
     db.commit()
@@ -2635,7 +2700,8 @@ class SessionDataCreate(BaseModel):
     session_data: str
 
 @app.post("/api/static-foot/{patient_id}")
-def save_static_foot(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db)):
+def save_static_foot(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     record = models.StaticFootSession(patient_id=patient_id, session_data=request.session_data)
     db.add(record)
     db.commit()
@@ -2653,54 +2719,62 @@ def _safe_session_json(val):
         return {}
 
 @app.get("/api/static-foot/patient/{patient_id}")
-def get_static_foot(patient_id: int, db: Session = Depends(get_db)):
+def get_static_foot(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     records = db.query(models.StaticFootSession).filter(models.StaticFootSession.patient_id == patient_id).order_by(models.StaticFootSession.created_at.desc()).all()
     return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/static-foot/{session_id}")
-def delete_static_foot(session_id: int, db: Session = Depends(get_db)):
+def delete_static_foot(session_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     record = db.query(models.StaticFootSession).filter(models.StaticFootSession.id == session_id).first()
     if record:
+        _verify_patient_access(record.patient_id, current_user, db)
         db.delete(record)
         db.commit()
     return {"status": "success"}
 
 @app.post("/api/gait/{patient_id}")
-def save_gait(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db)):
+def save_gait(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     record = models.GaitSession(patient_id=patient_id, session_data=request.session_data)
     db.add(record)
     db.commit()
     return {"status": "success"}
 
 @app.get("/api/gait/patient/{patient_id}")
-def get_gait(patient_id: int, db: Session = Depends(get_db)):
+def get_gait(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     records = db.query(models.GaitSession).filter(models.GaitSession.patient_id == patient_id).order_by(models.GaitSession.created_at.desc()).all()
     return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/gait/{session_id}")
-def delete_gait(session_id: int, db: Session = Depends(get_db)):
+def delete_gait(session_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     record = db.query(models.GaitSession).filter(models.GaitSession.id == session_id).first()
     if record:
+        _verify_patient_access(record.patient_id, current_user, db)
         db.delete(record)
         db.commit()
     return {"status": "success"}
 
 @app.post("/api/balance/{patient_id}")
-def save_balance(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db)):
+def save_balance(patient_id: int, request: SessionDataCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     record = models.BalanceSession(patient_id=patient_id, session_data=request.session_data)
     db.add(record)
     db.commit()
     return {"status": "success"}
 
 @app.get("/api/balance/patient/{patient_id}")
-def get_balance(patient_id: int, db: Session = Depends(get_db)):
+def get_balance(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     records = db.query(models.BalanceSession).filter(models.BalanceSession.patient_id == patient_id).order_by(models.BalanceSession.created_at.desc()).all()
     return [{"id": r.id, "created_at": r.created_at, "session_data": _safe_session_json(r.session_data)} for r in records]
 
 @app.delete("/api/balance/{session_id}")
-def delete_balance(session_id: int, db: Session = Depends(get_db)):
+def delete_balance(session_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     record = db.query(models.BalanceSession).filter(models.BalanceSession.id == session_id).first()
     if record:
+        _verify_patient_access(record.patient_id, current_user, db)
         db.delete(record)
         db.commit()
     return {"status": "success"}
