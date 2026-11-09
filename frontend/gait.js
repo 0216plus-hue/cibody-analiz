@@ -183,6 +183,8 @@ window.loadGaitHistory = function(recordId) {
     const banner = document.getElementById('gaitPatientBanner');
     if(!recordId) {
         if(banner) banner.classList.add('hidden');
+        const vCard = document.getElementById('gaitVideoPlayerCard');
+        if(vCard) vCard.classList.add('hidden');
         document.getElementById('gaitResultsSection').classList.add('hidden');
         document.getElementById('gaitRecordingSection').classList.remove('hidden');
         recordedSteps = [];

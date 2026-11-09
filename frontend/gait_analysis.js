@@ -220,7 +220,12 @@ function renderGaitResults() {
             let typeTrans = _t(step.type);
             
             div.innerHTML = `
-                <h4 class="text-xl font-bold ${titleColor} mb-4 border-b border-slate-100 pb-2">${stepTrans} ${step.id} - ${typeTrans}</h4>
+                <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                    <h4 class="text-xl font-bold ${titleColor}">${stepTrans} ${step.id} - ${typeTrans}</h4>
+                    <button onclick="playSpecificGaitStep(${step.id})" class="gait-hide-in-pdf bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all flex items-center gap-1.5 border border-slate-700 hover:scale-105" data-html2canvas-ignore="true">
+                        <i class="fa-solid fa-play text-red-500"></i> <span>${_t('Bu Adımı Oynat')}</span>
+                    </button>
+                </div>
                 
                 <p class="text-sm font-bold text-slate-700 mb-3">${_t('5 Faz Görüntüleri')}</p>
                 <div class="gait-step-phases-row flex gap-4 overflow-x-auto mb-8">
@@ -263,6 +268,13 @@ function renderGaitResults() {
         
         // Render Chart.js
         setTimeout(renderCharts, 100);
+
+        // Dinamik Yürüyüş Video Oynatıcıyı Başlat (Klinik Replay)
+        if (typeof window.initGaitPlayer === 'function') {
+            setTimeout(() => {
+                window.initGaitPlayer(gaitResults.processedSteps);
+            }, 150);
+        }
     }
 }
 
