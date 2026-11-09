@@ -184,6 +184,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
             dInfo.innerText = window.translateText ? window.translateText(rawInfo) : rawInfo;
         }
         
+        if (typeof resetScoliosisUI === 'function') resetScoliosisUI();
         switchTab('postureTab');
         loadPatientData(patientId);
 
@@ -249,8 +250,9 @@ function switchTab(tabId) {
         if(tabId === 'balanceTab' && currentPatientId) {
             if(typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
         }
-        if(tabId === 'scoliosisTab' && currentPatientId) {
-            if(typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
+        if(tabId === 'scoliosisTab') {
+            if(typeof resetScoliosisUI === 'function') resetScoliosisUI();
+            if(currentPatientId && typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         }
         if(tabId === 'scoliometerTab' && currentPatientId) {
             if(typeof loadScoliometerHistory === 'function') loadScoliometerHistory(currentPatientId);
@@ -494,6 +496,43 @@ async function loadPatientData(id) {
         const res = await authFetch(`/api/patients/${id}`);
         const data = await res.json();
         
+        // Hastanın tam profil bilgilerini canlı olarak senkronize et (yaş, boy, kilo, ayak no, cinsiyet)
+        if(data && (data.name || data.id)) {
+            window.currentPatientFullData = data;
+            const pHeight = (data.height !== undefined && data.height !== null && data.height !== '') ? parseFloat(data.height) : 0;
+            const pShoe = (data.shoe_size !== undefined && data.shoe_size !== null && data.shoe_size !== '') ? parseFloat(data.shoe_size) : 0;
+            globalPatientInfo = {
+                id: data.id,
+                name: data.name,
+                age: data.age,
+                weight: data.weight,
+                gender: data.gender || 'Erkek',
+                phone: data.phone || '',
+                height: pHeight,
+                shoeSize: pShoe
+            };
+            window.globalPatientInfo = globalPatientInfo;
+            try {
+                sessionStorage.setItem('cibody_active_patient_id', data.id);
+                sessionStorage.setItem('cibody_active_patient_name', data.name);
+                sessionStorage.setItem('cibody_active_patient_age', data.age);
+                sessionStorage.setItem('cibody_active_patient_weight', data.weight);
+                sessionStorage.setItem('cibody_active_patient_gender', data.gender || 'Erkek');
+                sessionStorage.setItem('cibody_active_patient_phone', data.phone || '');
+                sessionStorage.setItem('cibody_active_patient_height', pHeight);
+                sessionStorage.setItem('cibody_active_patient_shoe_size', pShoe);
+            } catch(e) {}
+            
+            // Üst barda bilgileri güncelle
+            const dInfo = document.getElementById('detailInfo');
+            if (dInfo) {
+                const maskedPhone = data.phone ? data.phone.replace(/(\d{4})\d{3}(\d{2})/, "$1***$2") : "-";
+                const rawInfo = `Yaş: ${data.age || '-'} | Boy: ${pHeight ? pHeight + 'cm' : '-'} | Kilo: ${data.weight ? data.weight + 'kg' : '-'} | Ayakkabı: ${pShoe || '-'} | Cinsiyet: ${data.gender || '-'} | Tel: ${maskedPhone}`;
+                dInfo._tr_orig = rawInfo;
+                dInfo.innerText = window.translateText ? window.translateText(rawInfo) : rawInfo;
+            }
+        }
+
         // Load Posture (Latest & History listesi - otomatik indirme yapılmaz, kullanıcı seçince gelir)
         if(data.posture_analyses && data.posture_analyses.length > 0) {
             currentPatientAnalyses = data.posture_analyses.sort((a,b) => b.id - a.id);
@@ -2169,23 +2208,29 @@ if (typeof window !== 'undefined') {
 
 // ─── Ortak Hasta Bilgisi ve Bilgi Kartı Yardımcıları ────────────────────────
 window.getPatientDisplayData = function() {
+    let full = (typeof window.currentPatientFullData !== 'undefined' && window.currentPatientFullData) ? window.currentPatientFullData : null;
     let pInfo = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo) ? globalPatientInfo : null;
     let found = null;
     if (typeof allPatients !== 'undefined' && Array.isArray(allPatients) && typeof currentPatientId !== 'undefined' && currentPatientId) {
         found = allPatients.find(p => p.id == currentPatientId);
     }
     
-    const pick = (k, sessK, foundK) => {
+    const pick = (k, sessK, fullK) => {
+        // 1. Doğrudan API'den gelen tam hasta nesnesi
+        if (full && full[fullK] !== undefined && full[fullK] !== null && full[fullK] !== '' && full[fullK] !== 0 && full[fullK] !== '0') return full[fullK];
+        // 2. globalPatientInfo
         if (pInfo && pInfo[k] !== undefined && pInfo[k] !== null && pInfo[k] !== '' && pInfo[k] !== 0 && pInfo[k] !== '0') return pInfo[k];
+        // 3. allPatients listesindeki nesne
+        if (found && found[fullK] !== undefined && found[fullK] !== null && found[fullK] !== '' && found[fullK] !== 0 && found[fullK] !== '0') return found[fullK];
+        // 4. SessionStorage
         try {
             const sv = sessionStorage.getItem(sessK);
-            if (sv !== undefined && sv !== null && sv !== '' && sv !== 0 && sv !== '0') return sv;
+            if (sv !== undefined && sv !== null && sv !== '' && sv !== 0 && sv !== '0' && sv !== 'null' && sv !== 'undefined') return sv;
         } catch(e) {}
-        if (found && found[foundK] !== undefined && found[foundK] !== null && found[foundK] !== '' && found[foundK] !== 0 && found[foundK] !== '0') return found[foundK];
         return null;
     };
 
-    let pName = (pInfo && pInfo.name) ? pInfo.name : null;
+    let pName = (full && full.name) ? full.name : ((pInfo && pInfo.name) ? pInfo.name : null);
     if (!pName) {
         try { pName = sessionStorage.getItem('cibody_active_patient_name'); } catch(e) {}
     }
@@ -2196,19 +2241,36 @@ window.getPatientDisplayData = function() {
     }
     if (!pName) pName = 'Hasta';
 
+    const rawGender = (full && full.gender) || (pInfo && pInfo.gender) || (found && found.gender);
+    let cleanGender = rawGender || null;
+    if (!cleanGender) {
+        try { cleanGender = sessionStorage.getItem('cibody_active_patient_gender'); } catch(e) {}
+    }
+    if (!cleanGender || cleanGender === 'null' || cleanGender === 'undefined') cleanGender = 'Erkek';
+
     return {
         name: pName,
         age: pick('age', 'cibody_active_patient_age', 'age') || '-',
         height: pick('height', 'cibody_active_patient_height', 'height'),
         weight: pick('weight', 'cibody_active_patient_weight', 'weight') || '-',
         shoeSize: pick('shoeSize', 'cibody_active_patient_shoe_size', 'shoe_size'),
-        gender: pick('gender', 'cibody_active_patient_gender', 'gender') || '-'
+        gender: cleanGender
     };
 };
 
 window.updatePatientInfoBanner = function(containerId, recordDate) {
     const banner = document.getElementById(containerId);
     if (!banner) return;
+
+    // Eğer veriler henüz belleğe düşmediyse backend'den hızlıca çekip tazele
+    if ((!window.currentPatientFullData || !window.currentPatientFullData.name) && currentPatientId) {
+        authFetch(`/api/patients/${currentPatientId}`).then(r => r.ok ? r.json() : null).then(p => {
+            if (p) {
+                window.currentPatientFullData = p;
+                window.updatePatientInfoBanner(containerId, recordDate);
+            }
+        }).catch(() => {});
+    }
     
     const data = window.getPatientDisplayData();
     const _t = (window.translateText || (s => s));

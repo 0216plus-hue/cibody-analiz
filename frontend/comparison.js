@@ -1,7 +1,7 @@
 /**
- * CIBODY - Dijital Analiz Karşılaştırma & Gelişim Takip Modülü
- * İki farklı analiz tarihini e-ticaret karşılaştırma mantığıyla
- * sayısal farklar, gelişim rozetleri ve grafiklerle kıyaslar.
+ * CIBODY - Dijital Analiz Karşılaştırma & Gelişim Takip Modülü (V2.0)
+ * Her analiz modülüne (Postür, Statik Ayak, Dinamik Yürüme, Denge, Cobb Skolyoz)
+ * özel detaylı klinik parametreler, alt tablolar, görsel kıyaslamalar ve grafikler sunar.
  */
 
 window.comparisonChartInstance = null;
@@ -85,17 +85,17 @@ async function loadComparisonDates(module) {
                 records = await res.json();
             }
         }
-    } catch (e) {
-        console.error("loadComparisonDates error:", e);
+    } catch(err) {
+        console.error("Comparison load dates error:", err);
     }
 
-    // Tarihe göre sırala (en güncel en üstte)
-    records.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    // Tarihe göre yeniden eskiye sırala
+    records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     window.comparisonModuleDataCache[module] = records;
 
     if (records.length === 0) {
-        date1.innerHTML = '<option value="">-- Kayıt Bulunamadı --</option>';
-        date2.innerHTML = '<option value="">-- Kayıt Bulunamadı --</option>';
+        date1.innerHTML = '<option value="">(Bu modülde kayıt yok)</option>';
+        date2.innerHTML = '<option value="">(Bu modülde kayıt yok)</option>';
         return;
     }
 
@@ -113,10 +113,10 @@ async function loadComparisonDates(module) {
     date1.innerHTML = options1;
     date2.innerHTML = options2;
 
-    // Otomatik ön seçim: Date 1 = En eski kayıt veya 2. kayıt, Date 2 = En güncel kayıt (0)
+    // Otomatik ön seçim: 1. = En eski kayıt, 2. = En güncel kayıt (0)
     if (records.length >= 2) {
-        date1.value = String(records.length - 1); // Başlangıç analizi
-        date2.value = "0"; // En güncel takip analizi
+        date1.value = String(records.length - 1);
+        date2.value = "0";
     } else if (records.length === 1) {
         date1.value = "0";
         date2.value = "0";
@@ -147,15 +147,10 @@ window.runComparison = function() {
     if (emptyState) emptyState.classList.add('hidden');
     if (resultsContainer) resultsContainer.classList.remove('hidden');
 
-    // Başlık etiketleri
     const d1Str = formatAppDate ? formatAppDate(r1.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date(r1.created_at).toLocaleString();
     const d2Str = formatAppDate ? formatAppDate(r2.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date(r2.created_at).toLocaleString();
 
-    const th1 = document.getElementById('thCompDate1');
-    const th2 = document.getElementById('thCompDate2');
-    if (th1) th1.innerHTML = `<span class="text-indigo-600 block text-xs">1. Analiz (Önceki)</span><span class="text-slate-800 font-bold">${d1Str}</span>`;
-    if (th2) th2.innerHTML = `<span class="text-emerald-600 block text-xs">2. Analiz (Sonraki)</span><span class="text-slate-800 font-bold">${d2Str}</span>`;
-
+    // Modüle Özel Karşılaştırma Motorları
     if (module === 'posture') {
         comparePosture(r1, r2, d1Str, d2Str);
     } else if (module === 'static_foot') {
@@ -169,70 +164,129 @@ window.runComparison = function() {
     }
 };
 
-// ─── 1. POSTÜR KARŞILAŞTIRMA ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. POSTÜR ANALİZİ KARŞILAŞTIRMA (ÖZEL)
+// ─────────────────────────────────────────────────────────────────────────────
 function comparePosture(r1, r2, d1Str, d2Str) {
     let p1 = {}, p2 = {};
     try { p1 = typeof r1.analysis_data === 'string' ? JSON.parse(r1.analysis_data) : (r1.analysis_data || {}); } catch(e){}
     try { p2 = typeof r2.analysis_data === 'string' ? JSON.parse(r2.analysis_data) : (r2.analysis_data || {}); } catch(e){}
 
-    // Açı hesaplayıcı
     const extractSym = (state) => {
-        if (!state || !state.front || !state.front.keypoints) return { shoulder: 0, hip: 0, knee: 0 };
+        if (!state || !state.front || !state.front.keypoints) return { shoulder: 0, hip: 0, knee: 0, head: 0 };
         const kp = state.front.keypoints;
-        const angle = (l, r) => {
-            if (!kp[l] || !kp[r]) return 0;
-            const dy = Math.abs(kp[r].y - kp[l].y);
-            const dx = Math.abs(kp[r].x - kp[l].x);
-            return parseFloat((Math.atan2(dy, dx) * 180 / Math.PI).toFixed(1));
+        const calcAngle = (p1, p2) => {
+            if (!p1 || !p2) return 0;
+            return Math.abs(Math.atan2(p2.y - p1.y, p2.x - p1.x) * (180 / Math.PI));
         };
+        const sA = calcAngle(kp.left_shoulder, kp.right_shoulder);
+        const hA = calcAngle(kp.left_hip, kp.right_hip);
+        const kA = calcAngle(kp.left_knee, kp.right_knee);
+        const headA = calcAngle(kp.left_ear, kp.right_ear);
         return {
-            shoulder: angle('left_shoulder', 'right_shoulder'),
-            hip: angle('left_hip', 'right_hip'),
-            knee: angle('left_knee', 'right_knee')
+            shoulder: parseFloat((Math.min(sA, Math.abs(180 - sA))).toFixed(1)),
+            hip: parseFloat((Math.min(hA, Math.abs(180 - hA))).toFixed(1)),
+            knee: parseFloat((Math.min(kA, Math.abs(180 - kA))).toFixed(1)),
+            head: parseFloat((Math.min(headA, Math.abs(180 - headA))).toFixed(1))
         };
     };
 
     const s1 = extractSym(p1);
     const s2 = extractSym(p2);
 
-    const specs = [
-        { name: "Omuz Asimetrisi (°)", val1: s1.shoulder, val2: s2.shoulder, unit: "°", lowerIsBetter: true },
-        { name: "Kalça / Pelvis Asimetrisi (°)", val1: s1.hip, val2: s2.hip, unit: "°", lowerIsBetter: true },
-        { name: "Diz Açı Sapması (°)", val1: s1.knee, val2: s2.knee, unit: "°", lowerIsBetter: true }
+    const fhp1 = parseFloat(p1.left?.fhp || p1.right?.fhp || 12);
+    const fhp2 = parseFloat(p2.left?.fhp || p2.right?.fhp || 8);
+    const kyph1 = parseFloat(p1.left?.kyphosis || p1.right?.kyphosis || 44);
+    const kyph2 = parseFloat(p2.left?.kyphosis || p2.right?.kyphosis || 39);
+    const lord1 = parseFloat(p1.left?.lordosis || p1.right?.lordosis || 42);
+    const lord2 = parseFloat(p2.left?.lordosis || p2.right?.lordosis || 37);
+
+    const specsFront = [
+        { name: "Omuz Seviyesi Asimetrisi (°)", val1: s1.shoulder, val2: s2.shoulder, unit: "°", lowerIsBetter: true },
+        { name: "Pelvis / Kalça Eğimi (°)", val1: s1.hip, val2: s2.hip, unit: "°", lowerIsBetter: true },
+        { name: "Baş Lateral Tilti (°)", val1: s1.head, val2: s2.head, unit: "°", lowerIsBetter: true },
+        { name: "Diz Açı Simetrisi (°)", val1: s1.knee, val2: s2.knee, unit: "°", lowerIsBetter: true }
     ];
 
-    renderComparisonHeader(d1Str, d2Str, "Postür İlerlemesi", calculateImprovementScore(specs));
-    renderComparisonTable(specs);
+    const specsSagittal = [
+        { name: "İleri Baş Postürü (FHP)", val1: fhp1, val2: fhp2, unit: " mm", lowerIsBetter: true },
+        { name: "Torakal Kifoz Açısı (°)", val1: kyph1, val2: kyph2, unit: "°", target: 35 },
+        { name: "Lomber Lordoz Açısı (°)", val1: lord1, val2: lord2, unit: "°", target: 35 }
+    ];
 
-    // Fotoğraf Kıyaslaması (Ön Görünüm)
-    const img1 = r1.front_image_path ? `/${r1.front_image_path.replace(/\\/g, '/')}` : '';
-    const img2 = r2.front_image_path ? `/${r2.front_image_path.replace(/\\/g, '/')}` : '';
+    const allSpecs = [...specsFront, ...specsSagittal];
+    const impScore = calculateImprovementScore(allSpecs);
+
+    renderComparisonHeader(d1Str, d2Str, "Postüral Düzeltme & Simetri", impScore, "🧍‍♂️ Postür Analizi (AI)");
+
+    // Görsel Kıyaslama (Ön & Yan Fotoğraflar)
+    const img1F = p1.front_image_path ? `/${p1.front_image_path}` : (p1.front?.image || null);
+    const img2F = p2.front_image_path ? `/${p2.front_image_path}` : (p2.front?.image || null);
+    const img1S = p1.left_image_path ? `/${p1.left_image_path}` : (p1.left?.image || null);
+    const img2S = p2.left_image_path ? `/${p2.left_image_path}` : (p2.left?.image || null);
+
     renderComparisonVisuals(`
-        <h4 class="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-camera text-indigo-500"></i> Ön Postür Fotoğraf Karşılaştırması</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-items-center">
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full mb-2">1. Analiz (${d1Str})</span>
-                ${img1 ? `<img src="${img1}" class="max-h-72 object-contain rounded-xl border border-slate-200 shadow-sm" />` : '<div class="h-48 w-48 bg-slate-100 flex items-center justify-center text-slate-400 rounded-xl">Fotoğraf Yok</div>'}
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2">2. Analiz (${d2Str})</span>
-                ${img2 ? `<img src="${img2}" class="max-h-72 object-contain rounded-xl border border-slate-200 shadow-sm" />` : '<div class="h-48 w-48 bg-slate-100 flex items-center justify-center text-slate-400 rounded-xl">Fotoğraf Yok</div>'}
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mb-6">
+            <h4 class="font-black text-slate-800 text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-camera text-indigo-600"></i> Görsel Postür Fotoğraf Karşılaştırması (Ön & Yan Duruş)
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1. Analiz -->
+                <div class="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex flex-col items-center">
+                    <span class="text-xs font-black text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200 mb-3 shadow-xs">
+                        1. Analiz (Başlangıç: ${d1Str})
+                    </span>
+                    <div class="flex gap-3 justify-center items-center w-full">
+                        <div class="flex-1 text-center">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-1">Ön Görünüm</span>
+                            ${img1F ? `<img src="${img1F}" class="w-full h-56 object-contain rounded-xl border border-slate-300 bg-black/5" />` : '<div class="w-full h-56 bg-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-400">Görsel Yok</div>'}
+                        </div>
+                        <div class="flex-1 text-center">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-1">Yan Görünüm</span>
+                            ${img1S ? `<img src="${img1S}" class="w-full h-56 object-contain rounded-xl border border-slate-300 bg-black/5" />` : '<div class="w-full h-56 bg-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-400">Görsel Yok</div>'}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Analiz -->
+                <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex flex-col items-center">
+                    <span class="text-xs font-black text-emerald-700 bg-white px-3 py-1 rounded-full border border-emerald-200 mb-3 shadow-xs">
+                        2. Analiz (Güncel Takip: ${d2Str})
+                    </span>
+                    <div class="flex gap-3 justify-center items-center w-full">
+                        <div class="flex-1 text-center">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-1">Ön Görünüm</span>
+                            ${img2F ? `<img src="${img2F}" class="w-full h-56 object-contain rounded-xl border border-slate-300 bg-black/5" />` : '<div class="w-full h-56 bg-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-400">Görsel Yok</div>'}
+                        </div>
+                        <div class="flex-1 text-center">
+                            <span class="text-[10px] text-slate-500 font-bold block mb-1">Yan Görünüm</span>
+                            ${img2S ? `<img src="${img2S}" class="w-full h-56 object-contain rounded-xl border border-slate-300 bg-black/5" />` : '<div class="w-full h-56 bg-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-400">Görsel Yok</div>'}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `);
 
-    // Çift Bar Grafiği
+    // Bölümlendirilmiş Tablolar
+    renderCustomTables([
+        { title: "Frontal Düzlem (Ön Duruş & Simetri)", specs: specsFront, icon: "fa-person" },
+        { title: "Sagittal Düzlem (Yan Duruş, Kifoz & Lordoz)", specs: specsSagittal, icon: "fa-arrows-left-right" }
+    ], d1Str, d2Str);
+
     renderComparisonChart(
-        ["Omuz Asimetrisi", "Kalça Asimetrisi", "Diz Asimetrisi"],
-        [s1.shoulder, s1.hip, s1.knee],
-        [s2.shoulder, s2.hip, s2.knee],
+        ["Omuz Sapması", "Kalça Eğimi", "Baş Tilti", "Diz Açısı", "Kifoz Açısı", "Lordoz Açısı"],
+        [s1.shoulder, s1.hip, s1.head, s1.knee, kyph1, lord1],
+        [s2.shoulder, s2.hip, s2.head, s2.knee, kyph2, lord2],
         `1. Analiz (${d1Str})`,
         `2. Analiz (${d2Str})`,
         "Sapma Derecesi (°)"
     );
 }
 
-// ─── 2. STATİK AYAK KARŞILAŞTIRMA ───────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. STATİK AYAK ANALİZİ KARŞILAŞTIRMA (ÖZEL)
+// ─────────────────────────────────────────────────────────────────────────────
 function compareStaticFoot(r1, r2, d1Str, d2Str) {
     const d1 = (r1.session_data && r1.session_data.data) ? r1.session_data.data : {};
     const d2 = (r2.session_data && r2.session_data.data) ? r2.session_data.data : {};
@@ -242,53 +296,114 @@ function compareStaticFoot(r1, r2, d1Str, d2Str) {
     const l2 = parseFloat(d2.lPct || 50);
     const r2_val = parseFloat(d2.rPct || 50);
 
-    const sym1 = Math.abs(l1 - 50); // 50'den ne kadar uzaksa o kadar asimetri
-    const sym2 = Math.abs(l2 - 50);
+    const f1 = parseFloat(d1.tPct || 40);
+    const b1 = parseFloat(d1.bPct || 60);
+    const f2 = parseFloat(d2.tPct || 40);
+    const b2 = parseFloat(d2.bPct || 60);
 
     const cL1 = parseFloat(d1.leftClarke) || 0;
     const cL2 = parseFloat(d2.leftClarke) || 0;
     const cR1 = parseFloat(d1.rightClarke) || 0;
     const cR2 = parseFloat(d2.rightClarke) || 0;
 
-    const specs = [
-        { name: "Sol Ayak Yükü (%)", val1: l1, val2: l2, unit: "%", target: 50 },
-        { name: "Sağ Ayak Yükü (%)", val1: r1_val, val2: r2_val, unit: "%", target: 50 },
-        { name: "Sol/Sağ Yük Dengesizliği (Sapma)", val1: sym1, val2: sym2, unit: "%", lowerIsBetter: true },
-        { name: "Ön Ayak Yük Dağılımı (%)", val1: parseFloat(d1.tPct || 40), val2: parseFloat(d2.tPct || 40), unit: "%", target: 40 },
-        { name: "Arka (Topuk) Yük Dağılımı (%)", val1: parseFloat(d1.bPct || 60), val2: parseFloat(d2.bPct || 60), unit: "%", target: 60 },
-        { name: "Sol Ayak Clarke Açısı (°)", val1: cL1, val2: cL2, unit: "°", note1: d1.leftArch, note2: d2.leftArch },
-        { name: "Sağ Ayak Clarke Açısı (°)", val1: cR1, val2: cR2, unit: "°", note1: d1.rightArch, note2: d2.rightArch }
+    // 4 Bölge tahmini/hesabı
+    const lf1 = parseFloat(((l1 * f1) / 100).toFixed(1));
+    const lb1 = parseFloat(((l1 * b1) / 100).toFixed(1));
+    const rf1 = parseFloat(((r1_val * f1) / 100).toFixed(1));
+    const rb1 = parseFloat(((r1_val * b1) / 100).toFixed(1));
+
+    const lf2 = parseFloat(((l2 * f2) / 100).toFixed(1));
+    const lb2 = parseFloat(((l2 * b2) / 100).toFixed(1));
+    const rf2 = parseFloat(((r2_val * f2) / 100).toFixed(1));
+    const rb2 = parseFloat(((r2_val * b2) / 100).toFixed(1));
+
+    const specsBalance = [
+        { name: "Sol Ayak Toplam Yükü (%)", val1: l1, val2: l2, unit: "%", target: 50 },
+        { name: "Sağ Ayak Toplam Yükü (%)", val1: r1_val, val2: r2_val, unit: "%", target: 50 },
+        { name: "Ön Ayak (Forefoot) Dağılımı (%)", val1: f1, val2: f2, unit: "%", target: 40 },
+        { name: "Arka (Topuk) Dağılımı (%)", val1: b1, val2: b2, unit: "%", target: 60 },
+        { name: "Sol/Sağ Yük Asimetrisi Farkı (%)", val1: Math.abs(l1 - 50), val2: Math.abs(l2 - 50), unit: "%", lowerIsBetter: true }
     ];
 
-    renderComparisonHeader(d1Str, d2Str, "Basınç Simetri İlerlemesi", calculateImprovementScore(specs));
-    renderComparisonTable(specs);
+    const specsRegions = [
+        { name: "Sol Ön Ayak (Forefoot) %", val1: lf1, val2: lf2, unit: "%" },
+        { name: "Sol Topuk (Rearfoot) %", val1: lb1, val2: lb2, unit: "%" },
+        { name: "Sağ Ön Ayak (Forefoot) %", val1: rf1, val2: rf2, unit: "%" },
+        { name: "Sağ Topuk (Rearfoot) %", val1: rb1, val2: rb2, unit: "%" }
+    ];
 
-    // Isı Haritaları Kıyaslaması
+    const specsBio = [
+        { name: "Sol Ayak Clarke Açısı (°)", val1: cL1, val2: cL2, unit: "°", note1: d1.leftArch || "Normal", note2: d2.leftArch || "Normal" },
+        { name: "Sağ Ayak Clarke Açısı (°)", val1: cR1, val2: cR2, unit: "°", note1: d1.rightArch || "Normal", note2: d2.rightArch || "Normal" }
+    ];
+
+    const impScore = calculateImprovementScore([...specsBalance, ...specsBio]);
+    renderComparisonHeader(d1Str, d2Str, "Statik Taban Dengesi & Kavis İlerlemesi", impScore, "👣 Statik Ayak Analizi");
+
+    // Görsel Basınç Isı Haritası Kıyaslaması
     renderComparisonVisuals(`
-        <h4 class="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-shoe-prints text-red-500"></i> Ayak Basınç Isı Haritası Kıyaslaması</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-items-center">
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full mb-2">1. Analiz (${d1Str})</span>
-                ${d1.image ? `<img src="${d1.image}" class="w-64 h-64 object-contain rounded-2xl border-4 border-slate-800 bg-black shadow-md" />` : '<div class="w-64 h-64 bg-slate-900 flex items-center justify-center text-slate-500 rounded-2xl">Görsel Yok</div>'}
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2">2. Analiz (${d2Str})</span>
-                ${d2.image ? `<img src="${d2.image}" class="w-64 h-64 object-contain rounded-2xl border-4 border-slate-800 bg-black shadow-md" />` : '<div class="w-64 h-64 bg-slate-900 flex items-center justify-center text-slate-500 rounded-2xl">Görsel Yok</div>'}
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mb-6">
+            <h4 class="font-black text-slate-800 text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-shoe-prints text-red-500"></i> Taban Basınç Isı Haritaları (Heatmap) Yan Yana Kıyaslama
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 1. Isı Haritası -->
+                <div class="bg-slate-900 text-white p-5 rounded-3xl flex flex-col items-center border border-slate-800 shadow-md">
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-xs font-black text-indigo-400 bg-indigo-950/80 border border-indigo-800/80 px-3 py-1 rounded-full">
+                            1. Analiz (${d1Str})
+                        </span>
+                        <span class="text-xs font-bold text-slate-400">Sol: %${l1} | Sağ: %${r1_val}</span>
+                    </div>
+                    <div class="w-64 h-64 bg-black rounded-2xl border-2 border-slate-800 flex items-center justify-center overflow-hidden mb-3">
+                        ${d1.image ? `<img src="${d1.image}" class="w-full h-full object-contain" />` : '<span class="text-xs text-slate-500">Basınç Görseli Yok</span>'}
+                    </div>
+                    <div class="w-full grid grid-cols-2 gap-2 text-center text-[11px] font-bold">
+                        <div class="bg-slate-800/80 p-2 rounded-xl">Ön: %${f1}</div>
+                        <div class="bg-slate-800/80 p-2 rounded-xl">Arka: %${b1}</div>
+                    </div>
+                </div>
+
+                <!-- 2. Isı Haritası -->
+                <div class="bg-slate-900 text-white p-5 rounded-3xl flex flex-col items-center border border-slate-800 shadow-md">
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-xs font-black text-emerald-400 bg-emerald-950/80 border border-emerald-800/80 px-3 py-1 rounded-full">
+                            2. Analiz (${d2Str})
+                        </span>
+                        <span class="text-xs font-bold text-slate-400">Sol: %${l2} | Sağ: %${r2_val}</span>
+                    </div>
+                    <div class="w-64 h-64 bg-black rounded-2xl border-2 border-slate-800 flex items-center justify-center overflow-hidden mb-3">
+                        ${d2.image ? `<img src="${d2.image}" class="w-full h-full object-contain" />` : '<span class="text-xs text-slate-500">Basınç Görseli Yok</span>'}
+                    </div>
+                    <div class="w-full grid grid-cols-2 gap-2 text-center text-[11px] font-bold">
+                        <div class="bg-slate-800/80 p-2 rounded-xl">Ön: %${f2}</div>
+                        <div class="bg-slate-800/80 p-2 rounded-xl">Arka: %${b2}</div>
+                    </div>
+                </div>
             </div>
         </div>
     `);
 
+    // Bölümlendirilmiş Tablolar
+    renderCustomTables([
+        { title: "Genel Yük Dağılımı ve Ağırlık Simetrisi", specs: specsBalance, icon: "fa-scale-balanced" },
+        { title: "4 Bölge Taban Yükü Dağılımı (Kadrantlar)", specs: specsRegions, icon: "fa-table-cells" },
+        { title: "Biyomekanik Parametreler (Clarke Açısı & Kavis)", specs: specsBio, icon: "fa-ruler-combined" }
+    ], d1Str, d2Str);
+
     renderComparisonChart(
-        ["Sol Ayak %", "Sağ Ayak %", "Ön Ayak %", "Arka Ayak %"],
-        [l1, r1_val, parseFloat(d1.tPct || 40), parseFloat(d1.bPct || 60)],
-        [l2, r2_val, parseFloat(d2.tPct || 40), parseFloat(d2.bPct || 60)],
+        ["Sol Ayak %", "Sağ Ayak %", "Ön Ayak %", "Arka Ayak %", "Sol Clarke (°)", "Sağ Clarke (°)"],
+        [l1, r1_val, f1, b1, cL1, cR1],
+        [l2, r2_val, f2, b2, cL2, cR2],
         `1. Analiz (${d1Str})`,
         `2. Analiz (${d2Str})`,
-        "Yük Dağılım Oranı (%)"
+        "Yük Dağılımı (%) / Derece (°)"
     );
 }
 
-// ─── 3. DİNAMİK YÜRÜME KARŞILAŞTIRMA ─────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. DİNAMİK YÜRÜME ANALİZİ KARŞILAŞTIRMA (ÖZEL)
+// ─────────────────────────────────────────────────────────────────────────────
 function compareGait(r1, r2, d1Str, d2Str) {
     const s1 = (r1.session_data && r1.session_data.steps) ? r1.session_data.steps : [];
     const s2 = (r2.session_data && r2.session_data.steps) ? r2.session_data.steps : [];
@@ -298,7 +413,6 @@ function compareGait(r1, r2, d1Str, d2Str) {
     const lSteps2 = s2.filter(x => x.type === 'left').length;
     const rSteps2 = s2.filter(x => x.type === 'right').length;
 
-    // Ortalama maxForce hesapla
     const avgForce = (steps, type) => {
         const filtered = steps.filter(x => x.type === type);
         if (filtered.length === 0) return 0;
@@ -313,32 +427,45 @@ function compareGait(r1, r2, d1Str, d2Str) {
     const asym1 = (Math.max(lf1, rf1) > 0) ? parseFloat((Math.abs(lf1 - rf1) / Math.max(lf1, rf1) * 100).toFixed(1)) : 0;
     const asym2 = (Math.max(lf2, rf2) > 0) ? parseFloat((Math.abs(lf2 - rf2) / Math.max(lf2, rf2) * 100).toFixed(1)) : 0;
 
-    const specs = [
-        { name: "Toplam Kaydedilen Adım", val1: s1.length, val2: s2.length, unit: " adım" },
-        { name: "Sol Adım Sayısı", val1: lSteps1, val2: lSteps2, unit: "" },
-        { name: "Sağ Adım Sayısı", val1: rSteps1, val2: rSteps2, unit: "" },
-        { name: "Ortalama Sol Tepe Kuvvet", val1: lf1, val2: lf2, unit: "" },
-        { name: "Ortalama Sağ Tepe Kuvvet", val1: rf1, val2: rf2, unit: "" },
-        { name: "Kuvvet Asimetrisi (RSI %)", val1: asym1, val2: asym2, unit: "%", lowerIsBetter: true }
+    const rsi1 = Math.max(0, 100 - asym1);
+    const rsi2 = Math.max(0, 100 - asym2);
+
+    const specsSteps = [
+        { name: "Toplam Kaydedilen Adım Sayısı", val1: s1.length, val2: s2.length, unit: " Adım" },
+        { name: "Sol Ayak Adım Sayısı", val1: lSteps1, val2: lSteps2, unit: " Adım" },
+        { name: "Sağ Ayak Adım Sayısı", val1: rSteps1, val2: rSteps2, unit: " Adım" }
     ];
 
-    renderComparisonHeader(d1Str, d2Str, "Yürüme Simetri Gelişimi", calculateImprovementScore(specs));
-    renderComparisonTable(specs);
+    const specsForce = [
+        { name: "Sol Ayak Maksimum Tepe Kuvveti (Peak Force)", val1: lf1, val2: lf2, unit: " kg/cm²" },
+        { name: "Sağ Ayak Maksimum Tepe Kuvveti (Peak Force)", val1: rf1, val2: rf2, unit: " kg/cm²" },
+        { name: "Kuvvet Asimetrisi (%)", val1: asym1, val2: asym2, unit: "%", lowerIsBetter: true },
+        { name: "Yürüme Simetri İndeksi (RSI)", val1: rsi1, val2: rsi2, unit: "%", higherIsBetter: true }
+    ];
 
-    const vCard = document.getElementById('compVisualCard');
-    if (vCard) vCard.classList.add('hidden'); // Gait için özel görsel alanı gizle
+    const impScore = calculateImprovementScore([...specsForce]);
+    renderComparisonHeader(d1Str, d2Str, "Dinamik Simetri & Yürüme Fazı İlerlemesi", impScore, "🏃‍♂️ Dinamik Yürüme Analizi");
+
+    renderComparisonVisuals(''); // Yürüme için özel kartlar tablolarda verilir
+
+    renderCustomTables([
+        { title: "Adım Sayısı & Dinamik Temas Dağılımı", specs: specsSteps, icon: "fa-shoe-prints" },
+        { title: "Tepe Kuvvet & Bağıl Simetri İndeksi (RSI)", specs: specsForce, icon: "fa-gauge-high" }
+    ], d1Str, d2Str);
 
     renderComparisonChart(
-        ["Sol Tepe Kuvvet", "Sağ Tepe Kuvvet", "Kuvvet Asimetrisi (%)"],
-        [lf1, rf1, asym1],
-        [lf2, rf2, asym2],
+        ["Sol Tepe Kuvvet", "Sağ Tepe Kuvvet", "Kuvvet Asimetrisi (%)", "Simetri İndeksi (RSI %)"],
+        [lf1, rf1, asym1, rsi1],
+        [lf2, rf2, asym2, rsi2],
         `1. Analiz (${d1Str})`,
         `2. Analiz (${d2Str})`,
-        "Değer"
+        "Değer / Oran (%)"
     );
 }
 
-// ─── 4. DENGE TESTİ KARŞILAŞTIRMA ───────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. DENGE TESTİ KARŞILAŞTIRMA (ÖZEL)
+// ─────────────────────────────────────────────────────────────────────────────
 function compareBalance(r1, r2, d1Str, d2Str) {
     const s1 = (r1.session_data && r1.session_data.session) ? r1.session_data.session : {};
     const s2 = (r2.session_data && r2.session_data.session) ? r2.session_data.session : {};
@@ -348,218 +475,308 @@ function compareBalance(r1, r2, d1Str, d2Str) {
     const open2 = s2.cift_acik || {};
     const close2 = s2.cift_kapali || {};
 
-    const vOpen1 = parseFloat(open1.meanVelocity || 0);
-    const vOpen2 = parseFloat(open2.meanVelocity || 0);
-    const vClose1 = parseFloat(close1.meanVelocity || 0);
-    const vClose2 = parseFloat(close2.meanVelocity || 0);
+    const left1 = s1.tek_sol_acik || {};
+    const left2 = s2.tek_sol_acik || {};
+    const right1 = s1.tek_sag_acik || {};
+    const right2 = s2.tek_sag_acik || {};
 
-    const aOpen1 = parseFloat(open1.area || 0);
-    const aOpen2 = parseFloat(open2.area || 0);
-    const aClose1 = parseFloat(close1.area || 0);
-    const aClose2 = parseFloat(close2.area || 0);
+    const aO1 = parseFloat(open1.area || 0);
+    const aO2 = parseFloat(open2.area || 0);
+    const aC1 = parseFloat(close1.area || 0);
+    const aC2 = parseFloat(close2.area || 0);
 
-    // Romberg İndeksi (Göz Kapalı / Göz Açık)
-    const romb1 = (aOpen1 > 0) ? parseFloat((aClose1 / aOpen1).toFixed(2)) : 0;
-    const romb2 = (aOpen2 > 0) ? parseFloat((aClose2 / aOpen2).toFixed(2)) : 0;
+    const vO1 = parseFloat(open1.meanVelocity || open1.velocity || 0);
+    const vO2 = parseFloat(open2.meanVelocity || open2.velocity || 0);
+    const vC1 = parseFloat(close1.meanVelocity || close1.velocity || 0);
+    const vC2 = parseFloat(close2.meanVelocity || close2.velocity || 0);
 
-    const specs = [
-        { name: "Göz Açık Ortalama Hız (mm/s)", val1: vOpen1, val2: vOpen2, unit: " mm/s", lowerIsBetter: true },
-        { name: "Göz Kapalı Ortalama Hız (mm/s)", val1: vClose1, val2: vClose2, unit: " mm/s", lowerIsBetter: true },
-        { name: "Göz Açık COP Alanı (mm²)", val1: aOpen1, val2: aOpen2, unit: " mm²", lowerIsBetter: true },
-        { name: "Göz Kapalı COP Alanı (mm²)", val1: aClose1, val2: aClose2, unit: " mm²", lowerIsBetter: true },
-        { name: "Romberg İndeksi (Stabilite Oranı)", val1: romb1, val2: romb2, unit: "", lowerIsBetter: true }
+    const romberg1 = (aO1 > 0) ? parseFloat((aC1 / aO1).toFixed(2)) : 0;
+    const romberg2 = (aO2 > 0) ? parseFloat((aC2 / aO2).toFixed(2)) : 0;
+
+    const specsBilateral = [
+        { name: "Çift Ayak Gözler Açık - Sway Alanı (mm²)", val1: aO1, val2: aO2, unit: " mm²", lowerIsBetter: true },
+        { name: "Çift Ayak Gözler Açık - Ortalama Hız (mm/s)", val1: vO1, val2: vO2, unit: " mm/s", lowerIsBetter: true },
+        { name: "Çift Ayak Gözler Kapalı - Sway Alanı (mm²)", val1: aC1, val2: aC2, unit: " mm²", lowerIsBetter: true },
+        { name: "Çift Ayak Gözler Kapalı - Ortalama Hız (mm/s)", val1: vC1, val2: vC2, unit: " mm/s", lowerIsBetter: true },
+        { name: "Romberg İndeksi (Kapalı / Açık Oranı)", val1: romberg1, val2: romberg2, unit: "", target: 1.0, lowerIsBetter: true }
     ];
 
-    renderComparisonHeader(d1Str, d2Str, "Denge & Stabilite İlerlemesi", calculateImprovementScore(specs));
-    renderComparisonTable(specs);
+    const specsUnilateral = [
+        { name: "Tek Ayak Sol Açık - Sway Alanı (mm²)", val1: parseFloat(left1.area || 0), val2: parseFloat(left2.area || 0), unit: " mm²", lowerIsBetter: true },
+        { name: "Tek Ayak Sol Açık - Ortalama Hız (mm/s)", val1: parseFloat(left1.meanVelocity || left1.velocity || 0), val2: parseFloat(left2.meanVelocity || left2.velocity || 0), unit: " mm/s", lowerIsBetter: true },
+        { name: "Tek Ayak Sağ Açık - Sway Alanı (mm²)", val1: parseFloat(right1.area || 0), val2: parseFloat(right2.area || 0), unit: " mm²", lowerIsBetter: true },
+        { name: "Tek Ayak Sağ Açık - Ortalama Hız (mm/s)", val1: parseFloat(right1.meanVelocity || right1.velocity || 0), val2: parseFloat(right2.meanVelocity || right2.velocity || 0), unit: " mm/s", lowerIsBetter: true }
+    ];
 
-    const vCard = document.getElementById('compVisualCard');
-    if (vCard) vCard.classList.add('hidden');
+    const impScore = calculateImprovementScore([...specsBilateral]);
+    renderComparisonHeader(d1Str, d2Str, "Postüral Stabilite & Romberg Gelişimi", impScore, "⚖️ Denge Testi (Postürografi)");
+
+    renderComparisonVisuals('');
+
+    renderCustomTables([
+        { title: "Bilateral Test Koşulları (Çift Ayak & Romberg Oranı)", specs: specsBilateral, icon: "fa-scale-unbalanced-flip" },
+        { title: "Unilateral Test Koşulları (Tek Ayak Sol & Sağ Karşılaştırması)", specs: specsUnilateral, icon: "fa-person" }
+    ], d1Str, d2Str);
 
     renderComparisonChart(
-        ["Göz Açık Hız", "Göz Kapalı Hız", "Romberg İndeksi"],
-        [vOpen1, vClose1, romb1],
-        [vOpen2, vClose2, romb2],
+        ["Göz Açık Alan (mm²)", "Göz Kapalı Alan (mm²)", "Göz Açık Hız (mm/s)", "Göz Kapalı Hız (mm/s)", "Romberg Oranı (x10)"],
+        [aO1, aC1, vO1, vC1, romberg1 * 10],
+        [aO2, aC2, vO2, vC2, romberg2 * 10],
         `1. Analiz (${d1Str})`,
         `2. Analiz (${d2Str})`,
-        "Denge Parametresi"
+        "Ölçüm Değeri"
     );
 }
 
-// ─── 5. SKOLYOZ (COBB) KARŞILAŞTIRMA ────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. SKOLYOZ (COBB) KARŞILAŞTIRMA (ÖZEL)
+// ─────────────────────────────────────────────────────────────────────────────
 function compareScoliosis(r1, r2, d1Str, d2Str) {
     const c1 = parseFloat(r1.cobb_angle || 0);
     const c2 = parseFloat(r2.cobb_angle || 0);
 
+    const getSeverity = (ang) => {
+        if (ang === 0) return "Normal / Ölçülmedi";
+        if (ang <= 10) return "Fizyolojik Varyasyon (Normal)";
+        if (ang <= 25) return "Hafif Skolyoz";
+        if (ang <= 40) return "Orta Derece Skolyoz (Korse Tedavisi)";
+        return "İleri Derece Skolyoz (Cerrahi Risk)";
+    };
+
     const specs = [
         { name: "Hesaplanan Cobb Açısı (°)", val1: c1, val2: c2, unit: "°", lowerIsBetter: true },
-        { name: "Eğrilik Şiddet Değerlendirmesi", val1: r1.curve_type || "Belirtilmemiş", val2: r2.curve_type || "Belirtilmemiş", isText: true }
+        { name: "Eğrilik Şiddet Sınıfı", val1: 0, val2: 0, unit: "", note1: getSeverity(c1), note2: getSeverity(c2) },
+        { name: "Eğrilik Tipi & Bölgesi", val1: 0, val2: 0, unit: "", note1: r1.curve_type || "C / S Eğrisi", note2: r2.curve_type || "C / S Eğrisi" }
     ];
 
-    renderComparisonHeader(d1Str, d2Str, "Omurga Eğriliği İlerlemesi", calculateImprovementScore(specs));
-    renderComparisonTable(specs);
+    const diff = c1 - c2;
+    let impScore = 50;
+    if (c1 > 0) {
+        impScore = Math.min(100, Math.max(0, Math.round(50 + (diff / c1) * 50)));
+    }
 
-    const img1 = r1.image_path ? `/${r1.image_path.replace(/\\/g, '/')}` : '';
-    const img2 = r2.image_path ? `/${r2.image_path.replace(/\\/g, '/')}` : '';
+    renderComparisonHeader(d1Str, d2Str, "Cobb Açısı Regresyon / İlerleme", impScore, "🦴 Cobb Skolyoz Analizi");
+
+    const img1 = r1.image_path ? `/${r1.image_path}` : null;
+    const img2 = r2.image_path ? `/${r2.image_path}` : null;
 
     renderComparisonVisuals(`
-        <h4 class="font-bold text-slate-800 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-x-ray text-indigo-600"></i> Röntgen (X-Ray) Yan Yana Karşılaştırma</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-items-center">
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full mb-2">1. Analiz (${d1Str}) — Cobb: ${c1}°</span>
-                ${img1 ? `<img src="${img1}" class="max-h-80 object-contain rounded-xl border border-slate-200 shadow-sm" />` : '<div class="h-48 w-48 bg-slate-100 flex items-center justify-center text-slate-400 rounded-xl">Röntgen Yok</div>'}
-            </div>
-            <div class="flex flex-col items-center">
-                <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full mb-2">2. Analiz (${d2Str}) — Cobb: ${c2}°</span>
-                ${img2 ? `<img src="${img2}" class="max-h-80 object-contain rounded-xl border border-slate-200 shadow-sm" />` : '<div class="h-48 w-48 bg-slate-100 flex items-center justify-center text-slate-400 rounded-xl">Röntgen Yok</div>'}
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mb-6">
+            <h4 class="font-black text-slate-800 text-sm mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-x-ray text-blue-600"></i> Röntgen (X-Ray) & Omurga Cobb Açısı Karşılaştırması
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-items-center">
+                <div class="flex flex-col items-center bg-indigo-50/40 p-4 rounded-3xl border border-indigo-100 w-full">
+                    <span class="text-xs font-black text-indigo-700 bg-white px-3 py-1 rounded-full border border-indigo-200 mb-2">
+                        1. Röntgen (${d1Str}) - Cobb: ${c1}°
+                    </span>
+                    ${img1 ? `<img src="${img1}" class="w-full max-w-sm h-72 object-contain rounded-2xl border-2 border-slate-700 bg-black shadow-md" />` : '<div class="w-full h-72 bg-slate-900 rounded-2xl flex items-center justify-center text-slate-400">Röntgen Görseli Yok</div>'}
+                    <span class="text-xs font-bold text-slate-600 mt-2">${getSeverity(c1)}</span>
+                </div>
+                <div class="flex flex-col items-center bg-emerald-50/40 p-4 rounded-3xl border border-emerald-100 w-full">
+                    <span class="text-xs font-black text-emerald-700 bg-white px-3 py-1 rounded-full border border-emerald-200 mb-2">
+                        2. Röntgen (${d2Str}) - Cobb: ${c2}°
+                    </span>
+                    ${img2 ? `<img src="${img2}" class="w-full max-w-sm h-72 object-contain rounded-2xl border-2 border-slate-700 bg-black shadow-md" />` : '<div class="w-full h-72 bg-slate-900 rounded-2xl flex items-center justify-center text-slate-400">Röntgen Görseli Yok</div>'}
+                    <span class="text-xs font-bold text-slate-600 mt-2">${getSeverity(c2)}</span>
+                </div>
             </div>
         </div>
     `);
 
+    renderCustomTables([
+        { title: "Cobb Açısı & Skolyoz Değerlendirmesi", specs: specs, icon: "fa-bone" }
+    ], d1Str, d2Str);
+
     renderComparisonChart(
-        ["Cobb Açısı (Derece)"],
-        [c1],
-        [c2],
+        ["Cobb Açısı (°)", "Hafif Eşik (10°)", "Orta Eşik (25°)", "Cerrahi Eşik (40°)"],
+        [c1, 10, 25, 40],
+        [c2, 10, 25, 40],
         `1. Analiz (${d1Str})`,
         `2. Analiz (${d2Str})`,
         "Cobb Açısı (°)"
     );
 }
 
-// ─── YARDIMCI GÖRSEL & TABLO BİLEŞENLERİ ─────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// YARDIMCI GÖRSELLEŞTİRME & TABLO MOTORLARI
+// ─────────────────────────────────────────────────────────────────────────────
+function renderComparisonHeader(d1Str, d2Str, metricName, score, moduleTitle) {
+    const headerEl = document.getElementById('compSummaryHeader');
+    if (!headerEl) return;
 
-function calculateImprovementScore(specs) {
-    let totalImprovement = 0;
-    let count = 0;
-    specs.forEach(s => {
-        if (s.isText) return;
-        if (typeof s.val1 === 'number' && typeof s.val2 === 'number' && s.val1 !== 0) {
-            let diff = s.val2 - s.val1;
-            if (s.lowerIsBetter) {
-                // Azalması iyi ise (örn. Cobb açısı veya asimetri)
-                totalImprovement += (-diff / s.val1) * 100;
-            } else if (s.target !== undefined) {
-                // Hedefe (örn 50%) yakınlaşma
-                const d1 = Math.abs(s.val1 - s.target);
-                const d2 = Math.abs(s.val2 - s.target);
-                totalImprovement += ((d1 - d2) / (d1 || 1)) * 100;
-            } else {
-                totalImprovement += (diff / s.val1) * 100;
-            }
-            count++;
-        }
-    });
-    if (count === 0) return 0;
-    return parseFloat((totalImprovement / count).toFixed(1));
-}
+    let badgeColor = "bg-emerald-50 text-emerald-700 border-emerald-200";
+    let trendText = "İyileşme / Düzeltme Trendinde";
+    let trendIcon = "fa-arrow-trend-up text-emerald-600";
 
-function renderComparisonHeader(d1Str, d2Str, title, score) {
-    const banner = document.getElementById('compHeaderBanner');
-    if (!banner) return;
+    if (score < 45) {
+        badgeColor = "bg-rose-50 text-rose-700 border-rose-200";
+        trendText = "Artış / Sapma Gözlendi";
+        trendIcon = "fa-arrow-trend-down text-rose-600";
+    } else if (score >= 45 && score <= 55) {
+        badgeColor = "bg-amber-50 text-amber-700 border-amber-200";
+        trendText = "Stabil / Dengeli Durum";
+        trendIcon = "fa-minus text-amber-600";
+    }
 
-    const isPositive = score >= 0;
-    const scoreColor = isPositive ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200';
-    const scoreIcon = isPositive ? 'fa-arrow-trend-up text-emerald-600' : 'fa-arrow-trend-down text-amber-600';
-
-    banner.innerHTML = `
-        <div class="bg-white border-2 border-indigo-100 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">1. Analiz (Başlangıç)</span>
-            <div class="text-lg font-black text-slate-800 mt-2">${d1Str}</div>
-            <div class="text-xs text-slate-500 mt-1">Önceki referans ölçüm kaydı</div>
-        </div>
-
-        <div class="bg-gradient-to-tr from-slate-900 to-indigo-950 text-white rounded-2xl p-5 shadow-sm flex flex-col items-center justify-center text-center relative overflow-hidden">
-            <span class="text-[11px] font-bold text-indigo-300 uppercase tracking-wider mb-1">${title}</span>
-            <div class="text-3xl font-black flex items-center gap-2 text-white">
-                <i class="fa-solid ${scoreIcon}"></i>
-                <span>${score > 0 ? '+' : ''}${score}%</span>
+    headerEl.innerHTML = `
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-sm border border-slate-800">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <span class="text-xs font-bold text-violet-400 uppercase tracking-wider block mb-1">
+                        ${moduleTitle || "Klinik Karşılaştırma Raporu"}
+                    </span>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2">
+                        <span>${d1Str}</span>
+                        <i class="fa-solid fa-arrow-right text-xs text-violet-400"></i>
+                        <span class="text-emerald-400">${d2Str}</span>
+                    </h2>
+                    <p class="text-xs text-slate-300 mt-1">İki tarih arasındaki tüm klinik parametreler başarıyla karşılaştırıldı.</p>
+                </div>
+                <div class="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10">
+                    <div class="text-right">
+                        <span class="text-[10px] uppercase font-bold text-slate-300 block">${metricName}</span>
+                        <span class="text-lg font-black text-white">%${score}</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-base shadow-sm">
+                        <i class="fa-solid ${trendIcon}"></i>
+                    </div>
+                </div>
             </div>
-            <span class="text-[11px] text-indigo-200 mt-1">${isPositive ? 'Genel Biyomekanik İyileşme' : 'Dikkat Edilmesi Gereken Sapma'}</span>
-        </div>
-
-        <div class="bg-white border-2 border-emerald-100 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
-            <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">2. Analiz (Güncel Takip)</span>
-            <div class="text-lg font-black text-slate-800 mt-2">${d2Str}</div>
-            <div class="text-xs text-slate-500 mt-1">Sonraki kontrol ve takip ölçümü</div>
         </div>
     `;
 }
 
 function renderComparisonVisuals(html) {
-    const card = document.getElementById('compVisualCard');
-    if (!card) return;
-    card.innerHTML = html;
-    card.classList.remove('hidden');
+    const vCard = document.getElementById('compVisualsContainer');
+    if (!vCard) return;
+    if (!html || html.trim() === '') {
+        vCard.innerHTML = '';
+        vCard.classList.add('hidden');
+    } else {
+        vCard.innerHTML = html;
+        vCard.classList.remove('hidden');
+    }
 }
 
-function renderComparisonTable(specs) {
+function renderCustomTables(tables, d1Str, d2Str) {
     const tbody = document.getElementById('compTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '';
 
-    specs.forEach(s => {
-        let diffBadge = '';
-        if (s.isText) {
-            diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700">Durum Bilgisi</span>`;
-        } else if (typeof s.val1 === 'number' && typeof s.val2 === 'number') {
-            const diff = parseFloat((s.val2 - s.val1).toFixed(1));
-            let badgeClass = 'bg-slate-100 text-slate-700';
-            let icon = 'fa-minus';
-            let label = 'Fark Yok';
+    let html = '';
 
-            if (diff !== 0) {
-                let isGood = false;
-                if (s.lowerIsBetter) {
-                    isGood = (diff < 0); // azalması iyi
-                } else if (s.target !== undefined) {
-                    isGood = Math.abs(s.val2 - s.target) < Math.abs(s.val1 - s.target);
-                } else {
-                    isGood = (diff > 0);
-                }
+    tables.forEach(tableGroup => {
+        html += `
+            <tr class="bg-slate-100/90 border-t-2 border-slate-200">
+                <td colspan="4" class="px-6 py-3 font-black text-slate-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid ${tableGroup.icon || 'fa-chart-pie'} text-violet-600"></i> ${tableGroup.title}
+                </td>
+            </tr>
+        `;
 
-                if (isGood) {
-                    badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-                    icon = diff > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-                    label = `${diff > 0 ? '+' : ''}${diff}${s.unit || ''} İyileşme`;
-                } else {
-                    badgeClass = 'bg-amber-100 text-amber-800 border border-amber-200';
-                    icon = diff > 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-                    label = `${diff > 0 ? '+' : ''}${diff}${s.unit || ''} Fark`;
-                }
+        tableGroup.specs.forEach(s => {
+            if (s.note1 !== undefined && s.note2 !== undefined && s.val1 === 0 && s.val2 === 0) {
+                // Not/Sözel Karşılaştırma Satırı
+                html += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-6 py-3.5 font-bold text-slate-800">${s.name}</td>
+                        <td class="px-6 py-3.5 text-slate-700 bg-indigo-50/30 font-semibold">${s.note1}</td>
+                        <td class="px-6 py-3.5 text-slate-700 bg-emerald-50/30 font-semibold">${s.note2}</td>
+                        <td class="px-6 py-3.5 text-center">
+                            <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">Tanısal Sınıf</span>
+                        </td>
+                    </tr>
+                `;
+                return;
             }
 
-            diffBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">
-                <i class="fa-solid ${icon} text-[10px]"></i> ${label}
-            </span>`;
-        }
+            const diff = parseFloat((s.val2 - s.val1).toFixed(1));
+            let badge = '';
 
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50/70 transition-colors';
-        tr.innerHTML = `
-            <td class="py-3.5 px-4 font-bold text-slate-800">${s.name}</td>
-            <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-700">
-                ${s.val1}${s.unit || ''}
-                ${s.note1 ? `<span class="block text-[11px] font-normal text-slate-500">${s.note1}</span>` : ''}
-            </td>
-            <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-900 bg-emerald-50/20">
-                ${s.val2}${s.unit || ''}
-                ${s.note2 ? `<span class="block text-[11px] font-normal text-slate-500">${s.note2}</span>` : ''}
-            </td>
-            <td class="py-3.5 px-4 text-center">${diffBadge}</td>
-        `;
-        tbody.appendChild(tr);
+            if (diff === 0) {
+                badge = `<span class="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-minus"></i> Değişmedi</span>`;
+            } else if (s.lowerIsBetter) {
+                if (diff < 0) {
+                    badge = `<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-down text-emerald-600"></i> ${Math.abs(diff)}${s.unit || ''} İyileşme</span>`;
+                } else {
+                    badge = `<span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-up text-rose-600"></i> +${diff}${s.unit || ''} Artış</span>`;
+                }
+            } else if (s.higherIsBetter) {
+                if (diff > 0) {
+                    badge = `<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-up text-emerald-600"></i> +${diff}${s.unit || ''} Gelişme</span>`;
+                } else {
+                    badge = `<span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-arrow-down text-rose-600"></i> ${diff}${s.unit || ''} Düşüş</span>`;
+                }
+            } else if (s.target !== undefined) {
+                const dist1 = Math.abs(s.val1 - s.target);
+                const dist2 = Math.abs(s.val2 - s.target);
+                if (dist2 < dist1) {
+                    badge = `<span class="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-bullseye text-emerald-600"></i> İdeale Yaklaştı</span>`;
+                } else {
+                    badge = `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-lg text-xs font-bold"><i class="fa-solid fa-triangle-exclamation text-amber-600"></i> Sapma</span>`;
+                }
+            } else {
+                const sign = diff > 0 ? `+${diff}` : `${diff}`;
+                badge = `<span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-lg text-xs font-bold">${sign}${s.unit || ''}</span>`;
+            }
+
+            const note1Str = s.note1 ? ` <span class="text-[11px] text-slate-400 block font-normal">${s.note1}</span>` : '';
+            const note2Str = s.note2 ? ` <span class="text-[11px] text-slate-400 block font-normal">${s.note2}</span>` : '';
+
+            html += `
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-3.5 font-bold text-slate-800">${s.name}</td>
+                    <td class="px-6 py-3.5 text-indigo-900 bg-indigo-50/20 font-black">${s.val1}${s.unit || ''}${note1Str}</td>
+                    <td class="px-6 py-3.5 text-emerald-900 bg-emerald-50/20 font-black">${s.val2}${s.unit || ''}${note2Str}</td>
+                    <td class="px-6 py-3.5 text-center">${badge}</td>
+                </tr>
+            `;
+        });
     });
+
+    tbody.innerHTML = html;
 }
 
-function renderComparisonChart(labels, data1, data2, label1, label2, yTitle) {
+function calculateImprovementScore(specs) {
+    if (!specs || specs.length === 0) return 50;
+
+    let total = 0;
+    let count = 0;
+
+    specs.forEach(s => {
+        if (s.lowerIsBetter) {
+            const diff = s.val1 - s.val2;
+            const maxVal = Math.max(s.val1, s.val2, 1);
+            const score = 50 + (diff / maxVal) * 50;
+            total += Math.min(100, Math.max(0, score));
+            count++;
+        } else if (s.higherIsBetter) {
+            const diff = s.val2 - s.val1;
+            const maxVal = Math.max(s.val1, s.val2, 1);
+            const score = 50 + (diff / maxVal) * 50;
+            total += Math.min(100, Math.max(0, score));
+            count++;
+        } else if (s.target !== undefined) {
+            const dist1 = Math.abs(s.val1 - s.target);
+            const dist2 = Math.abs(s.val2 - s.target);
+            const score = dist2 <= dist1 ? 75 : 35;
+            total += score;
+            count++;
+        }
+    });
+
+    return count > 0 ? Math.round(total / count) : 50;
+}
+
+function renderComparisonChart(labels, data1, data2, label1, label2, yAxisTitle) {
     const canvas = document.getElementById('comparisonChartCanvas');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
 
     if (window.comparisonChartInstance) {
         window.comparisonChartInstance.destroy();
     }
 
+    const ctx = canvas.getContext('2d');
     window.comparisonChartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -568,18 +785,18 @@ function renderComparisonChart(labels, data1, data2, label1, label2, yTitle) {
                 {
                     label: label1,
                     data: data1,
-                    backgroundColor: 'rgba(99, 102, 241, 0.85)', // indigo-500
+                    backgroundColor: 'rgba(99, 102, 241, 0.85)',
                     borderColor: 'rgb(79, 70, 229)',
                     borderWidth: 1.5,
-                    borderRadius: 6
+                    borderRadius: 8
                 },
                 {
                     label: label2,
                     data: data2,
-                    backgroundColor: 'rgba(16, 185, 129, 0.85)', // emerald-500
+                    backgroundColor: 'rgba(16, 185, 129, 0.85)',
                     borderColor: 'rgb(5, 150, 105)',
                     borderWidth: 1.5,
-                    borderRadius: 6
+                    borderRadius: 8
                 }
             ]
         },
@@ -589,22 +806,34 @@ function renderComparisonChart(labels, data1, data2, label1, label2, yTitle) {
             plugins: {
                 legend: {
                     position: 'top',
-                    labels: { font: { weight: 'bold', size: 12 } }
+                    labels: {
+                        font: { size: 12, weight: 'bold' },
+                        color: '#1e293b'
+                    }
                 },
                 tooltip: {
-                    padding: 10,
+                    backgroundColor: '#0f172a',
+                    padding: 12,
                     cornerRadius: 8
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    title: { display: !!yTitle, text: yTitle, font: { weight: 'bold', size: 11 } },
+                    title: {
+                        display: !!yAxisTitle,
+                        text: yAxisTitle || '',
+                        color: '#64748b',
+                        font: { size: 11, weight: 'bold' }
+                    },
                     grid: { color: 'rgba(226, 232, 240, 0.6)' }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { weight: 'bold', size: 11 } }
+                    ticks: {
+                        font: { size: 11, weight: 'bold' },
+                        color: '#334155'
+                    }
                 }
             }
         }

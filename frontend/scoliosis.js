@@ -321,6 +321,58 @@ function calculateCobbAngle() {
     }
 }
 
+window.resetScoliosisUI = function() {
+    scoliosisFile = null;
+    scoliosisPoints = [];
+    window.currentScoliosisId = null;
+    currentCobbAngle = 0;
+    currentCurveType = "";
+    isDraggingScoliosisPoint = false;
+    draggedScoliosisPointIndex = -1;
+    
+    // Görüntü ve canvas'ı temizle & gizle
+    const preview = document.getElementById('scoliosisPreview');
+    if (preview) {
+        preview.src = '';
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+    }
+    const canvas = document.getElementById('scoliosisCanvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        canvas.classList.add('hidden');
+    }
+    
+    // Placeholder'ı göster (Röntgen görüntüsü yükleyin ekranı)
+    const placeholder = document.getElementById('scoliosisPlaceholder');
+    if (placeholder) placeholder.classList.remove('hidden');
+    
+    // Butonları gizle
+    const btnSave = document.getElementById('btnSaveScoliosis');
+    if (btnSave) btnSave.classList.add('hidden');
+    const btnReset = document.getElementById('btnResetScoliosis');
+    if (btnReset) btnReset.classList.add('hidden');
+    
+    // Değerleri sıfırla
+    const cobbEl = document.getElementById('scoliosisCobbAngle');
+    if (cobbEl) cobbEl.innerText = "0";
+    const sevEl = document.getElementById('scoliosisSeverity');
+    if (sevEl) sevEl.innerText = "Bekleniyor...";
+    
+    // File input reset
+    const fileInput = document.getElementById('scoliosisImg');
+    if (fileInput) fileInput.value = '';
+
+    // AI Raporu alanını temizle
+    const aiReport = document.getElementById('scoliosisAiReport');
+    if (aiReport) aiReport.innerHTML = '';
+    
+    if (typeof hideScoliosisMagnifier === 'function') {
+        hideScoliosisMagnifier();
+    }
+};
+
 function resetScoliosisCanvas() {
     scoliosisPoints = [];
     currentCobbAngle = 0;
