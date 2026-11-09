@@ -293,19 +293,27 @@ function processGaitFrame(rawData) {
     }
 }
 
+// Tıbbi Standart Baropodometrik Renk Haritası (Bever Medikal Hassasiyetinde)
 const colorMapGait = [
-    [0,0,0],       // Black
-    [128,0,128],   // Purple
-    [0,0,255],     // Blue
-    [0,255,255],   // Cyan
-    [0,255,0],     // Lime
-    [255,255,0],   // Yellow
-    [255,0,0]      // Red
+    [0, 0, 0],         // Siyah (Zemin)
+    [120, 0, 180],     // Koyu Mor (En dış temas hattı)
+    [0, 80, 255],      // Canlı Mavi (Düşük basınç)
+    [0, 220, 240],     // Turkuaz / Cyan (Hafif-orta)
+    [0, 230, 40],      // Parlak Yeşil (Orta basınç / kavis)
+    [255, 235, 0],     // Parlak Limon Sarısı (Orta-yüksek basınç)
+    [255, 110, 0],     // Sıcak Turuncu (Yüksek basınç)
+    [255, 0, 0],       // Parlak Kırmızı (Tepe Basınç Odakları)
+    [220, 0, 0]        // Derin Ateş Kırmızısı (Maksimum Metatars & Topuk)
 ];
-function getGaitColor(value) {
-    if (value < 5) return [0, 0, 0];
-    let v = Math.min(255, value * 1.1);
-    let idx = (v / 255) * (colorMapGait.length - 1);
+
+function getGaitColor(value, maxVal = 255) {
+    if (value <= 3) return [0, 0, 0];
+    // Tepe noktalara dinamik kontrast vererek kırmızı basınç alanlarını netleştir
+    let norm = Math.min(1.0, Math.max(0, (value - 3) / Math.max(15, maxVal - 3)));
+    
+    // Non-linear gamma eğrisi: Tepe basınçları (metatars & topuk) kırmızıya hızla ulaştırır
+    let gammaNorm = Math.pow(norm, 0.88);
+    let idx = gammaNorm * (colorMapGait.length - 1);
     let i = Math.floor(idx);
     let f = idx - i;
     if (i >= colorMapGait.length - 1) return colorMapGait[colorMapGait.length - 1];
@@ -315,6 +323,7 @@ function getGaitColor(value) {
         Math.round(colorMapGait[i][2] + f * (colorMapGait[i+1][2] - colorMapGait[i][2]))
     ];
 }
+window.getGaitColor = getGaitColor;
 
 const gaitAlphaCanvas = document.createElement('canvas');
 gaitAlphaCanvas.width = 480; gaitAlphaCanvas.height = 480;
@@ -325,19 +334,28 @@ function drawGaitFrame(data) {
     if(!canvas) return;
     const ctx = canvas.getContext("2d");
     
+    // Maksimum değeri bul (dinamik kontrast için)
+    let maxVal = 0;
+    for(let i=0; i<2304; i++) {
+        if(data[i] > maxVal) maxVal = data[i];
+    }
+    if (maxVal < 20) maxVal = 20;
+
     gaitAlphaCtx.clearRect(0,0,480,480);
     for(let i=0; i<2304; i++) {
         let val = data[i];
-        if(val > 5) {
+        if(val > 4) {
             let r = Math.floor(i/48);
             let c = i%48;
             let cx = (48 - 1 - c) * 10 + 5;
             let cy = r * 10 + 5;
-            let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
-            grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
+            let normVal = Math.min(1.0, val / maxVal);
+            let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 18);
+            grad.addColorStop(0, `rgba(255,255,255,${normVal * 0.95})`);
+            grad.addColorStop(0.5, `rgba(255,255,255,${normVal * 0.5})`);
             grad.addColorStop(1, "rgba(255,255,255,0)");
             gaitAlphaCtx.fillStyle = grad;
-            gaitAlphaCtx.fillRect(cx-12, cy-12, 24, 24);
+            gaitAlphaCtx.fillRect(cx-18, cy-18, 36, 36);
         }
     }
     
@@ -348,8 +366,8 @@ function drawGaitFrame(data) {
     
     for(let i=0; i<pd.length; i+=4) {
         let alpha = pd[i+3];
-        if(alpha > 5) {
-            let col = getGaitColor(alpha);
+        if(alpha > 6) {
+            let col = getGaitColor(alpha, 255);
             od[i] = col[0]; od[i+1] = col[1]; od[i+2] = col[2]; od[i+3] = 255;
         } else {
             od[i] = 0; od[i+1] = 0; od[i+2] = 0; od[i+3] = 255;
@@ -406,45 +424,20 @@ function updateGaitUI() {
     
     recordedSteps.forEach((s, index) => {
         let c = document.createElement('canvas');
-        c.width = 480; c.height = 480;
-        let ctx = c.getContext('2d');
-        gaitAlphaCtx.clearRect(0,0,480,480);
-        for(let i=0; i<2304; i++) {
-            let val = s.aggregate[i];
-            if(val > 5) {
-                let r = Math.floor(i/48);
-                let col = i%48;
-                let cx = (48 - 1 - col) * 10 + 5;
-                let cy = r * 10 + 5;
-                let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
-                grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
-                grad.addColorStop(1, "rgba(255,255,255,0)");
-                gaitAlphaCtx.fillStyle = grad;
-                gaitAlphaCtx.fillRect(cx-12, cy-12, 24, 24);
-            }
-        }
-        let imgData = gaitAlphaCtx.getImageData(0,0,480,480);
-        let pd = imgData.data;
-        let outData = ctx.createImageData(480,480);
-        let od = outData.data;
-        for(let i=0; i<pd.length; i+=4) {
-            let alpha = pd[i+3];
-            if(alpha > 5) {
-                let colR = getGaitColor(alpha);
-                od[i] = colR[0]; od[i+1] = colR[1]; od[i+2] = colR[2]; od[i+3] = 255;
-            } else {
-                od[i] = 0; od[i+1] = 0; od[i+2] = 0; od[i+3] = 255;
-            }
-        }
-        ctx.putImageData(outData, 0, 0);
+        c.width = 160; c.height = 160;
+        c.id = `thumb_step_${s.id}_${Date.now()}_${index}`;
         
         let card = document.createElement('div');
         card.className = "bg-white border border-slate-200 p-3 rounded-xl shadow-sm flex gap-4 items-center shrink-0";
         const _stepLabel = _t(`Adım ${s.id}`);
         const _typeLabel = _t(s.type);
         const _frameLabel = _t(`${s.frameCount} Kare`);
+        
+        // Canvas'ı doğrudan DOM'a yerleştir
+        c.className = "w-16 h-16 bg-black rounded-lg object-contain border border-slate-800 shadow-xs";
+        
         card.innerHTML = `
-            <img src="${c.toDataURL()}" class="w-16 h-16 bg-black rounded-lg object-cover border border-slate-800">
+            <div id="thumb_container_${s.id}_${index}" class="w-16 h-16 flex items-center justify-center bg-black rounded-lg border border-slate-800 overflow-hidden"></div>
             <div class="flex-1">
                 <h4 class="font-bold text-sm text-slate-800">${_stepLabel}</h4>
                 <p class="text-xs font-semibold ${s.type === 'Sağ Ayak' ? 'text-blue-500' : 'text-red-500'} mb-1">${_typeLabel}</p>
@@ -456,6 +449,14 @@ function updateGaitUI() {
             </div>
         `;
         listEl.appendChild(card);
+
+        const thumbContainer = document.getElementById(`thumb_container_${s.id}_${index}`);
+        if (thumbContainer) {
+            thumbContainer.appendChild(c);
+            if (typeof renderMiniFrame === 'function') {
+                renderMiniFrame(c.id, s.aggregate, 160);
+            }
+        }
     });
 }
 

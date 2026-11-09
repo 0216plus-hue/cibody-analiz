@@ -266,47 +266,144 @@ function renderGaitResults() {
     }
 }
 
-function renderMiniFrame(canvasId, frameData, outSize=120) {
-    let canvas = document.getElementById(canvasId);
-    if(!canvas || !frameData) return;
+function renderMiniFrame(canvasId, frameData, outSize = 120) {
+    let canvas = typeof canvasId === 'string' ? document.getElementById(canvasId) : canvasId;
+    if (!canvas || !frameData) return;
     let ctx = canvas.getContext('2d');
     
-    // create a temp 480x480 to use existing radial logic, then scale down
-    let tempC = document.createElement('canvas');
-    tempC.width = 480; tempC.height = 480;
-    let tCtx = tempC.getContext('2d');
-    
-    gaitAlphaCtx.clearRect(0,0,480,480);
-    for(let i=0; i<2304; i++) {
-        let val = frameData[i];
-        if(val > 5) {
-            let r = Math.floor(i/48);
-            let col = i%48;
-            let cx = col * 10 + 5;
-            let cy = r * 10 + 5;
-            let grad = gaitAlphaCtx.createRadialGradient(cx, cy, 0, cx, cy, 12);
-            grad.addColorStop(0, `rgba(255,255,255,${val/255 * 0.7})`);
-            grad.addColorStop(1, "rgba(255,255,255,0)");
-            gaitAlphaCtx.fillStyle = grad;
-            gaitAlphaCtx.fillRect(cx-12, cy-12, 24, 24);
+    // Canvas boyutlarını ayarla ve arkaplanı tam siyah yap
+    canvas.width = outSize;
+    canvas.height = outSize;
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, outSize, outSize);
+
+    // 1. Adımın sınırlarını (Bounding Box) ve tepe basıncını (MaxVal) tespit et
+    let minR = 48, maxR = 0, minC = 48, maxC = 0, maxVal = 0, totalPts = 0;
+    for (let r = 0; r < 48; r++) {
+        for (let c = 0; c < 48; c++) {
+            let v = frameData[r * 48 + c];
+            if (v > 4) {
+                if (r < minR) minR = r;
+                if (r > maxR) maxR = r;
+                if (c < minC) minC = c;
+                if (c > maxC) maxC = c;
+                if (v > maxVal) maxVal = v;
+                totalPts++;
+            }
         }
     }
-    let imgData = gaitAlphaCtx.getImageData(0,0,480,480);
-    let pd = imgData.data;
-    let outData = tCtx.createImageData(480,480);
-    let od = outData.data;
-    for(let i=0; i<pd.length; i+=4) {
-        let alpha = pd[i+3];
-        if(alpha > 5) {
-            let colR = getGaitColor(alpha);
-            od[i] = colR[0]; od[i+1] = colR[1]; od[i+2] = colR[2]; od[i+3] = 255;
+
+    if (totalPts === 0 || maxVal <= 4) {
+        return; // Boş adım
+    }
+
+    // 2. 2D Bilinear & Scanline (Yatay Çizgi) Giderici Matris
+    let footH = Math.max(1, maxR - minR + 1);
+    let footW = Math.max(1, maxC - minC + 1);
+    let smoothFoot = new Float32Array(footH * footW);
+
+    for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+            let v = frameData[r * 48 + c];
+            let lr = r - minR;
+            let lc = c - minC;
+
+            if (v > 3) {
+                let sum = v * 2.8;
+                let wSum = 2.8;
+                if (r > 0 && frameData[(r - 1) * 48 + c] > 2) { sum += frameData[(r - 1) * 48 + c]; wSum += 1.0; }
+                if (r < 47 && frameData[(r + 1) * 48 + c] > 2) { sum += frameData[(r + 1) * 48 + c]; wSum += 1.0; }
+                if (c > 0 && frameData[r * 48 + (c - 1)] > 2) { sum += frameData[r * 48 + (c - 1)]; wSum += 1.0; }
+                if (c < 47 && frameData[r * 48 + (c + 1)] > 2) { sum += frameData[r * 48 + (c + 1)]; wSum += 1.0; }
+                smoothFoot[lr * footW + lc] = sum / wSum;
+            } else {
+                smoothFoot[lr * footW + lc] = 0;
+            }
+        }
+    }
+
+    // 3. Küçük Kaynak Katmanına Aynalayarak (X Flip - Tıbbi Standart Bakış Açısı) Çiz
+    // Bever Medikal standardı: Sol ayak solda (başparmak sağda), Sağ ayak sağda (başparmak solda)
+    let cropCanvas = document.createElement('canvas');
+    cropCanvas.width = footW;
+    cropCanvas.height = footH;
+    let cropCtx = cropCanvas.getContext('2d');
+    let cropImg = cropCtx.createImageData(footW, footH);
+    let cd = cropImg.data;
+
+    for (let lr = 0; lr < footH; lr++) {
+        for (let lc = 0; lc < footW; lc++) {
+            let val = smoothFoot[lr * footW + lc];
+            // X ekseninde aynalama
+            let mirroredLc = footW - 1 - lc;
+            let targetIdx = (lr * footW + mirroredLc) * 4;
+            let intensity = Math.min(255, Math.round(val));
+            cd[targetIdx]     = intensity;
+            cd[targetIdx + 1] = intensity;
+            cd[targetIdx + 2] = intensity;
+            cd[targetIdx + 3] = intensity > 3 ? 255 : 0;
+        }
+    }
+    cropCtx.putImageData(cropImg, 0, 0);
+
+    // 4. Hedef Boyutta Anatomik En-Boy Oranını Koruyarak Büyüt (High Quality Smoothing)
+    // Bever Medikal gibi dikey eksende zarif ve oranlı yerleştir
+    let targetH = Math.round(outSize * 0.88);
+    let scale = targetH / Math.max(footH, 20);
+    let targetW = Math.round(footW * scale);
+
+    if (targetW > Math.round(outSize * 0.78)) {
+        scale = (outSize * 0.78) / footW;
+        targetW = Math.round(footW * scale);
+        targetH = Math.round(footH * scale);
+    }
+
+    let offX = Math.round((outSize - targetW) / 2);
+    let offY = Math.round((outSize - targetH) / 2);
+
+    let upscaleCanvas = document.createElement('canvas');
+    upscaleCanvas.width = outSize;
+    upscaleCanvas.height = outSize;
+    let upCtx = upscaleCanvas.getContext('2d');
+    upCtx.imageSmoothingEnabled = true;
+    upCtx.imageSmoothingQuality = 'high';
+    upCtx.drawImage(cropCanvas, 0, 0, footW, footH, offX, offY, targetW, targetH);
+
+    // 5. Renklendirme ve Kırmızı Tepe Basınç Odaklama Katmanı
+    let upData = upCtx.getImageData(0, 0, outSize, outSize);
+    let upPixels = upData.data;
+    let finalImg = ctx.createImageData(outSize, outSize);
+    let fd = finalImg.data;
+
+    let upMax = 0;
+    for (let i = 0; i < upPixels.length; i += 4) {
+        if (upPixels[i + 3] > 0 && upPixels[i] > upMax) {
+            upMax = upPixels[i];
+        }
+    }
+    if (upMax < 25) upMax = 25;
+
+    let getColorFn = typeof getGaitColor === 'function' ? getGaitColor : (v, m) => [255, 0, 0];
+
+    for (let i = 0; i < upPixels.length; i += 4) {
+        let alpha = upPixels[i + 3];
+        let val = upPixels[i];
+
+        if (alpha > 10 && val > 3) {
+            let col = getColorFn(val, upMax);
+            fd[i]     = col[0];
+            fd[i + 1] = col[1];
+            fd[i + 2] = col[2];
+            fd[i + 3] = 255;
         } else {
-            od[i] = 0; od[i+1] = 0; od[i+2] = 0; od[i+3] = 255;
+            fd[i]     = 0;
+            fd[i + 1] = 0;
+            fd[i + 2] = 0;
+            fd[i + 3] = 255; // Tam siyah arkaplan
         }
     }
-    tCtx.putImageData(outData, 0, 0);
-    
-    ctx.drawImage(tempC, 0, 0, 480, 480, 0, 0, outSize, outSize);
+
+    ctx.putImageData(finalImg, 0, 0);
 }
 
 // CHARTS
