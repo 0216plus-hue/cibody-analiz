@@ -287,6 +287,31 @@ function calculateBalanceMetrics(data, testType) {
     // Gerçek test süresine göre Hız (Speed)
     let duration = testType.includes('tek') ? 15.0 : 30.0;
     let meanVelMm = pathLength / duration;
+
+    // 4. AP (Anteroposterior) ve ML (Mediolateral) Ayrık Dağılım ve RMS Analizi
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let sumSqX = 0, sumSqY = 0;
+    
+    for(let i = 0; i < n; i++) {
+        let x = smoothedData[i].x;
+        let y = smoothedData[i].y;
+        if(x < minX) minX = x;
+        if(x > maxX) maxX = x;
+        if(y < minY) minY = y;
+        if(y > maxY) maxY = y;
+        
+        let dx = x - meanX;
+        let dy = y - meanY;
+        sumSqX += dx * dx;
+        sumSqY += dy * dy;
+    }
+    
+    let rangeMlMm = (maxX > minX) ? (maxX - minX) : 0;
+    let rangeApMm = (maxY > minY) ? (maxY - minY) : 0;
+    let rmsMlMm = Math.sqrt(sumSqX / n);
+    let rmsApMm = Math.sqrt(sumSqY / n);
+    let samplingRateHz = n / duration;
     
     return {
         pathCm: pathLength / 10.0,
@@ -296,6 +321,11 @@ function calculateBalanceMetrics(data, testType) {
         nFrames: n,
         meanX: meanX,
         meanY: meanY,
+        rangeMlMm: rangeMlMm,
+        rangeApMm: rangeApMm,
+        rmsMlMm: rmsMlMm,
+        rmsApMm: rmsApMm,
+        samplingRateHz: samplingRateHz,
         // Düzeltilmiş veriyi grafikler için saklıyoruz
         smoothedData: smoothedData
     };
@@ -318,13 +348,96 @@ function viewBalanceReport() {
     document.getElementById('btnSaveBalance').classList.remove('hidden');
     document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
     
+    const btnCsv = document.getElementById('btnExportBalanceCsv');
+    if(btnCsv) btnCsv.classList.remove('hidden');
+    
     renderMasterTable();
     
     // Render detailed charts and reference tables for all completed tests
     renderAllTestDetails();
 }
 
+function renderRombergCard() {
+    let container = document.getElementById('balanceRombergCardContainer');
+    if(!container) return;
+    
+    let openTest = currentBalanceSession.cift_acik;
+    let closedTest = currentBalanceSession.cift_kapali;
+    
+    if(!openTest || !closedTest) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    let rqArea = (openTest.areaCm > 0) ? (closedTest.areaCm / openTest.areaCm) : 1.0;
+    let rqPath = (openTest.pathCm > 0) ? (closedTest.pathCm / openTest.pathCm) : 1.0;
+    
+    let statusText = "";
+    let statusClass = "";
+    let statusDesc = "";
+    let statusIcon = "";
+    
+    if(rqArea <= 1.0) {
+        statusText = _t("Mükemmel Postüral Stabilite");
+        statusClass = "bg-emerald-50 border-emerald-200 text-emerald-800";
+        statusIcon = "fa-circle-check text-emerald-600";
+        statusDesc = _t("Gözler kapalıyken salınım alanında artış gözlenmemiştir. Proprioseptif ve vestibüler sistem son derece etkindir.");
+    } else if(rqArea <= 2.5) {
+        statusText = _t("Normal Fizyolojik Denge");
+        statusClass = "bg-emerald-50 border-emerald-200 text-emerald-800";
+        statusIcon = "fa-circle-check text-emerald-600";
+        statusDesc = _t("Görsel girdi kesildiğinde salınım doğal fizyolojik sınırlar dahilinde hafif artış göstermiştir (Beklenen klinik aralık: 1.0 - 2.5).");
+    } else if(rqArea <= 3.5) {
+        statusText = _t("Hafif Görsel Bağımlılık (Dikkat)");
+        statusClass = "bg-amber-50 border-amber-200 text-amber-800";
+        statusIcon = "fa-triangle-exclamation text-amber-600";
+        statusDesc = _t("Gözlerin kapatılmasıyla salınım alanı 2.5 katın üzerine çıkmıştır. Somatosensöriyel / proprioseptif girdi desteğine ihtiyaç duyulabilir.");
+    } else {
+        statusText = _t("Yüksek Romberg Skoru (Duyusal Ataksi Riski)");
+        statusClass = "bg-rose-50 border-rose-200 text-rose-800";
+        statusIcon = "fa-circle-exclamation text-rose-600";
+        statusDesc = _t("Gözler kapatıldığında postüral salınım 3.5 katın üzerinde dramatik artış göstermiştir. Nörolojik veya derin duyu (proprioseptif/vestibüler) değerlendirmesi önerilir.");
+    }
+    
+    container.innerHTML = `
+    <div class="balance-romberg-card p-5 rounded-2xl border-2 shadow-sm mb-4 ${statusClass} transition-all">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-current/20 pb-3 mb-3">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid ${statusIcon} text-2xl"></i>
+                <div>
+                    <h3 class="text-base font-black tracking-wide uppercase flex items-center gap-2">
+                        <span>Romberg Endeksi (Romberg Quotient - RQ)</span>
+                        <button type="button" onclick="showInfoPopup('balance_romberg')" class="opacity-70 hover:opacity-100 transition-opacity cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h3>
+                    <p class="text-xs opacity-90">${_t('Göz Kapalı / Göz Açık postüral stabilite oranı analizi (Altın Standart)')}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="bg-white/80 backdrop-blur px-3 py-1.5 rounded-xl border border-current/20 text-center">
+                    <span class="block text-[10px] font-bold uppercase opacity-75">${_t('Alan Oranı (RQ Alan)')}</span>
+                    <span class="text-lg font-black font-mono">${rqArea.toFixed(2)}</span>
+                </div>
+                <div class="bg-white/80 backdrop-blur px-3 py-1.5 rounded-xl border border-current/20 text-center">
+                    <span class="block text-[10px] font-bold uppercase opacity-75">${_t('Yol Oranı (RQ Yol)')}</span>
+                    <span class="text-lg font-black font-mono">${rqPath.toFixed(2)}</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="font-bold underline">${statusText}:</span>
+                <span>${statusDesc}</span>
+            </div>
+            <span class="text-[11px] font-mono opacity-80 whitespace-nowrap bg-white/60 px-2 py-0.5 rounded">${_t('Normal Referans: 1.00 - 2.50')}</span>
+        </div>
+    </div>
+    `;
+}
+
 function renderMasterTable() {
+    renderRombergCard();
     let tbody = document.getElementById('masterResultsTableBody');
     if(!tbody) return;
     tbody.innerHTML = '';
@@ -474,6 +587,44 @@ function renderAllTestDetails() {
                                 <td class="px-4 py-2">${velGood.toFixed(1)}-${velMed.toFixed(1)}</td>
                                 <td class="px-4 py-2">>${velMed.toFixed(1)}</td>
                                 <td class="px-4 py-2 border-l font-bold ${velS.color}">${m.velCm.toFixed(2)} (${velS.text})</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('ML Salınım Genliği (mm)')}</span>
+                                    <span class="text-[10px] text-slate-400 ml-1">(${_t('Sağ-Sol Range')})</span>
+                                </td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 border-l font-bold font-mono text-slate-800">${m.rangeMlMm ? m.rangeMlMm.toFixed(1) : '-'} mm</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('AP Salınım Genliği (mm)')}</span>
+                                    <span class="text-[10px] text-slate-400 ml-1">(${_t('Ön-Arka Range')})</span>
+                                </td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 border-l font-bold font-mono text-slate-800">${m.rangeApMm ? m.rangeApMm.toFixed(1) : '-'} mm</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50">
+                                <td class="px-4 py-2 font-medium flex items-center">
+                                    <span>${_t('RMS Salınım (AP / ML)')}</span>
+                                    <span class="text-[10px] text-slate-400 ml-1">(${_t('Kök Ortalama Kare')})</span>
+                                </td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 text-slate-400">-</td>
+                                <td class="px-4 py-2 border-l font-bold font-mono text-indigo-700">${m.rmsApMm ? m.rmsApMm.toFixed(1) : '-'} / ${m.rmsMlMm ? m.rmsMlMm.toFixed(1) : '-'} mm</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 text-xs text-slate-500">
+                                <td class="px-4 py-2 font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-microchip text-slate-400"></i>
+                                    <span>${_t('Örnekleme Frekansı')}</span>
+                                </td>
+                                <td class="px-4 py-2" colspan="3">${_t('Aktif Sensör: 48x48 (480x480 mm)')}</td>
+                                <td class="px-4 py-2 border-l font-mono font-bold text-slate-800">${m.samplingRateHz ? m.samplingRateHz.toFixed(1) : '25.0'} Hz</td>
                             </tr>
                         </tbody>
                     </table>
@@ -944,4 +1095,84 @@ window.downloadBalancePdf = async function() {
             if(typeof showToast === 'function') showToast("PDF indirilirken hata oluştu.");
         });
     }
+};
+
+// Bilimsel Araştırma & Akademik Makale İçin Ham Veri (Raw CSV) Dışa Aktarma
+window.exportBalanceRawCsv = function() {
+    let hasAnyData = Object.values(currentBalanceSession).some(x => x !== null);
+    if (!hasAnyData) {
+        showToast(_t("Dışa aktarılacak tamamlanmış bir denge testi bulunamadı."));
+        return;
+    }
+    
+    let patientName = "Isimsiz_Hasta";
+    if (typeof activePatientName !== 'undefined' && activePatientName) {
+        patientName = activePatientName.replace(/[^a-zA-Z0-9_\u00C0-\u017F-]/g, '_');
+    }
+    
+    let now = new Date();
+    let dateStr = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    
+    let csvRows = [];
+    csvRows.push("# ===================================================================");
+    csvRows.push("# CIBODY AI BIOMECHANICAL POSTUROGRAPHY & STABILOMETRY RAW DATA EXPORT");
+    csvRows.push("# Subject: " + patientName);
+    csvRows.push("# Export Date: " + now.toLocaleString('tr-TR'));
+    csvRows.push("# Sensor Technology: 48x48 High-Density Resistive Matrix (2304 Sensors)");
+    csvRows.push("# Active Sensor Dimensions: 480 mm x 480 mm (10.0 mm Cell Pitch)");
+    csvRows.push("# Coordinate System: X=Mediolateral (ML, Right+ / Left-), Y=Anteroposterior (AP, Anterior+ / Posterior-)");
+    csvRows.push("# Digital Filter: 5-frame Moving Average Filter (Quantization Noise Reduction)");
+    csvRows.push("# Compliance: ISPGR Posturography Standard Norms");
+    csvRows.push("# Software: CIBODY AI Biomechanical Posture & Gait Analysis System");
+    csvRows.push("# ===================================================================");
+    csvRows.push("");
+    csvRows.push("Test_Type,Frame_Index,Time_Seconds,COP_X_Absolute_mm,COP_Y_Absolute_mm,COP_X_ZeroCentered_mm,COP_Y_ZeroCentered_mm");
+    
+    const testKeys = [
+        { key: 'cift_acik', label: 'Double_Leg_Eyes_Open' },
+        { key: 'cift_kapali', label: 'Double_Leg_Eyes_Closed' },
+        { key: 'tek_sol_acik', label: 'Single_Leg_Left_Eyes_Open' },
+        { key: 'tek_sag_acik', label: 'Single_Leg_Right_Eyes_Open' }
+    ];
+    
+    let totalExportedFrames = 0;
+    
+    testKeys.forEach(t => {
+        let m = currentBalanceSession[t.key];
+        if (!m || !m.smoothedData || m.smoothedData.length === 0) return;
+        
+        let frames = m.smoothedData;
+        let meanX = m.meanX || 0;
+        let meanY = m.meanY || 0;
+        let dt = m.duration / frames.length;
+        
+        for (let i = 0; i < frames.length; i++) {
+            let timeSec = (frames[i].t !== undefined) ? frames[i].t : (i * dt);
+            let rawX = frames[i].x;
+            let rawY = frames[i].y;
+            let zeroX = rawX - meanX;
+            let zeroY = rawY - meanY;
+            
+            csvRows.push(`${t.label},${i + 1},${timeSec.toFixed(3)},${rawX.toFixed(2)},${rawY.toFixed(2)},${zeroX.toFixed(2)},${zeroY.toFixed(2)}`);
+            totalExportedFrames++;
+        }
+    });
+    
+    if (totalExportedFrames === 0) {
+        showToast(_t("Dışa aktarılacak geçerli kare verisi bulunamadı."));
+        return;
+    }
+    
+    let csvContent = "\uFEFF" + csvRows.join("\r\n"); // UTF-8 BOM ile Excel ve SPSS uyumluluğu
+    let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = `CIBODY_Denge_Ham_Veri_${patientName}_${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast(_t("Ham araştırma verisi (CSV) başarıyla indirildi."));
 };

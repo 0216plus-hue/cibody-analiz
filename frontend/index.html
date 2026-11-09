@@ -3720,6 +3720,9 @@
             <button id="btnDownloadBalancePdf" onclick="downloadBalancePdf()" class="hidden bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-2.5 px-6 rounded-xl transition-all shadow-sm flex items-center gap-2">
                 <i class="fa-solid fa-file-pdf text-red-500"></i> PDF İndir
             </button>
+            <button id="btnExportBalanceCsv" onclick="exportBalanceRawCsv()" class="hidden bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold py-2.5 px-5 rounded-xl transition-all shadow-sm flex items-center gap-2" title="Bilimsel Araştırma ve Makaleler İçin Ham Veri (CSV) Çıktısı">
+                <i class="fa-solid fa-file-csv text-indigo-600 text-lg"></i> <span>Ham Veri (CSV)</span>
+            </button>
         </div>
     </div>
 
@@ -3816,6 +3819,9 @@
     <div id="balanceResultsSection" class="hidden flex flex-col gap-6 w-full py-2">
         <!-- Hasta Bilgi Kartı (Geçmiş / Sonuç İnceleme) -->
         <div id="balancePatientBanner" class="hidden w-full bg-gradient-to-r from-slate-50 via-indigo-50/40 to-slate-50 border border-indigo-100 rounded-2xl p-4 mb-2 shadow-sm avoid-break"></div>
+
+        <!-- Romberg Endeksi Kartı (Göz Açık / Kapalı Tamamlandığında Görünür) -->
+        <div id="balanceRombergCardContainer" class="avoid-break"></div>
 
         <!-- Üst Tablo (Master) -->
         <div id="balanceMasterCard" class="balance-master-card bg-white p-5 rounded-2xl border border-slate-200 shadow-sm avoid-break">
@@ -4460,7 +4466,7 @@
 <script src="gait.js?v=20.3"></script>
 <script src="gait_analysis.js?v=20.3"></script>
 <script src="gait_player.js?v=20.5"></script>
-    <script src="balance.js?v=22.2"></script>
+    <script src="balance.js?v=22.3"></script>
     <script src="comparison.js?v=1.0"></script>
 </body>
 </html>
