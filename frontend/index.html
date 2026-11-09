@@ -2174,6 +2174,9 @@
             <div id="footLiveStatus" class="absolute top-4 left-4 bg-slate-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 border border-slate-600">
                 <i class="fa-solid fa-bed text-slate-400"></i> Bekleniyor...
             </div>
+            <button type="button" onclick="showInfoPopup('foot_cop')" class="absolute top-4 right-4 bg-slate-800/80 hover:bg-slate-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 border border-slate-600 transition-colors shadow-sm cursor-pointer" data-html2canvas-ignore="true" title="Basınç Merkezi (COP) Bilgisi">
+                <i class="fa-solid fa-crosshairs text-orange-400"></i> <span>COP</span> <i class="fa-solid fa-circle-info text-[11px] text-slate-300"></i>
+            </button>
         </div>
         
         <!-- İstatistikler / 2 Rapor Paneli -->
@@ -2183,7 +2186,13 @@
             <div id="footLoadReportPanel" class="flex flex-col gap-4 w-full">
                 <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full opacity-50 pointer-events-none"></div>
-                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10"><i class="fa-solid fa-scale-balanced mr-2 text-blue-600"></i><span data-i18n="foot.lr_dist">Sol / Sağ Dağılımı</span></h4>
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-scale-balanced mr-1 text-blue-600"></i>
+                        <span data-i18n="foot.lr_dist">Sol / Sağ Dağılımı</span>
+                        <button type="button" onclick="showInfoPopup('foot_lr_dist')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h4>
                     <div class="h-8 bg-slate-200 rounded-xl overflow-hidden relative flex shadow-inner border border-slate-300 z-10">
                         <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/60 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.15)]"></div>
                         <div id="barL" class="bar-left h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-blue-600" style="width:0%">Sol %0</div>
@@ -2193,7 +2202,13 @@
 
                 <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden">
                     <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full opacity-50 pointer-events-none"></div>
-                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10"><i class="fa-solid fa-arrows-up-down mr-2 text-purple-600"></i><span data-i18n="foot.fr_dist">Ön / Arka Dağılımı</span></h4>
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-arrows-up-down mr-1 text-purple-600"></i>
+                        <span data-i18n="foot.fr_dist">Ön / Arka Dağılımı</span>
+                        <button type="button" onclick="showInfoPopup('foot_ap_dist')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h4>
                     <div class="h-8 bg-slate-200 rounded-xl overflow-hidden relative flex shadow-inner border border-slate-300 z-10">
                         <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/60 z-10 -translate-x-1/2 shadow-[0_0_5px_rgba(0,0,0,0.15)]"></div>
                         <div id="barT" class="bar-top h-full flex items-center pl-3 font-black text-white text-xs shadow-sm bg-purple-600" style="width:0%">Ön %0</div>
@@ -2209,16 +2224,32 @@
             <!-- Sağ Rapor: Biyomekanik Parametreler -->
             <div id="footBiomechanicalReportPanel" class="flex flex-col gap-4 w-full">
                 <div class="bg-white border-2 border-slate-200 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-between">
-                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10"><i class="fa-solid fa-ruler-combined mr-2 text-indigo-600"></i><span data-i18n="Biyomekanik Parametreler">Biyomekanik Parametreler</span></h4>
+                    <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-2.5 text-center relative z-10 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-ruler-combined mr-1 text-indigo-600"></i>
+                        <span data-i18n="Biyomekanik Parametreler">Biyomekanik Parametreler</span>
+                        <button type="button" onclick="showInfoPopup('foot_biomechanical_params')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                            <i class="fa-solid fa-circle-info text-xs"></i>
+                        </button>
+                    </h4>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
                             <span class="text-xs font-black text-blue-700 block mb-2 pb-1 border-b border-slate-200" data-i18n="foot.left_foot">Sol Ayak</span>
                             <div class="flex justify-between items-center mb-1 text-xs">
-                                <span class="text-slate-700 font-bold" data-i18n="foot.clarke">CLARKE</span>
+                                <span class="text-slate-700 font-bold flex items-center gap-1">
+                                    <span data-i18n="foot.clarke">CLARKE</span>
+                                    <button type="button" onclick="showInfoPopup('foot_clarke_angle')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[10px]"></i>
+                                    </button>
+                                </span>
                                 <span id="val_left_clarke" class="font-black text-slate-900 text-sm">-°</span>
                             </div>
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-slate-700 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
+                                <span class="text-slate-700 font-bold flex items-center gap-1">
+                                    <span data-i18n="foot.arch_idx">ARK İND.</span>
+                                    <button type="button" onclick="showInfoPopup('foot_arch_index')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[10px]"></i>
+                                    </button>
+                                </span>
                                 <span id="val_left_arch" class="font-black text-emerald-700 text-sm">-</span>
                             </div>
                         </div>
@@ -2226,11 +2257,21 @@
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
                             <span class="text-xs font-black text-cyan-700 block mb-2 pb-1 border-b border-slate-200" data-i18n="foot.right_foot">Sağ Ayak</span>
                             <div class="flex justify-between items-center mb-1 text-xs">
-                                <span class="text-slate-700 font-bold" data-i18n="foot.clarke">CLARKE</span>
+                                <span class="text-slate-700 font-bold flex items-center gap-1">
+                                    <span data-i18n="foot.clarke">CLARKE</span>
+                                    <button type="button" onclick="showInfoPopup('foot_clarke_angle')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[10px]"></i>
+                                    </button>
+                                </span>
                                 <span id="val_right_clarke" class="font-black text-slate-900 text-sm">-°</span>
                             </div>
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-slate-700 font-bold" data-i18n="foot.arch_idx">ARK İND.</span>
+                                <span class="text-slate-700 font-bold flex items-center gap-1">
+                                    <span data-i18n="foot.arch_idx">ARK İND.</span>
+                                    <button type="button" onclick="showInfoPopup('foot_arch_index')" class="text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-[10px]"></i>
+                                    </button>
+                                </span>
                                 <span id="val_right_arch" class="font-black text-emerald-700 text-sm">-</span>
                             </div>
                         </div>
@@ -3440,7 +3481,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.4"></script>
-    <script src="app.js?v=25.2"></script>
+    <script src="app.js?v=25.3"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->

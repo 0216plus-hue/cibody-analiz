@@ -3510,6 +3510,30 @@ const POSTURE_METRIC_INFO = {
     spine_pelvis_tilt: {
         title: "Pelvis Tilt / Obliklik (Pelvic Obliquity)",
         desc: "Pelvis Tilt (Pelvik Obliklik), koronal düzlemde leğen kemiğinin sağ ve sol krista iliaka tepe noktaları arasındaki dikey seviye farkını milimetre cinsinden ölçer. Horizontal zemin paraleline göre pelvik tabanın dikey sapması hesaplanır; 8 mm üzerindeki seviye farkları anatomik veya fonksiyonel bacak boyu eşitsizliği (LLD), sakroiliak eklem rotasyonu veya lumbal skolyoz kompansasyonu açısından önemli bir klinik biyomekanik belirteçtir."
+    },
+    foot_lr_dist: {
+        title: "Sol / Sağ Yük Dağılımı (Bilateral Simetri)",
+        desc: "Sol ve Sağ Yük Dağılımı, dik duruşta vücut ağırlığının sağ ve sol alt ekstremiteler arasındaki yüzdesel paylaşımını gösteren statik simetri parametresidir. Baropodometrik sensör platformu üzerindeki toplam dikey yer reaksiyon kuvvetinin (GRF) sagittal orta eksene göre sağ ve sol ayak sensör hücrelerine düşen basınç integrallerinin oranlanmasıyla hesaplanır. Sağlıklı bireylerde biyomekanik normatif aralık %50 - %50 (±%5 tolerans) kabul edilir; %5'in üzerindeki asimetriler antalgik kompansasyon, bacak boyu farkı veya tek taraflı kas-iskelet yüklenmelerine işaret eder."
+    },
+    foot_ap_dist: {
+        title: "Ön / Arka Yük Dağılımı (Anterior / Posterior Denge)",
+        desc: "Ön ve Arka Yük Dağılımı, ayak tabanında ön ayak (metatars başları ve parmaklar) ile arka ayak (kalkaneus / topuk) arasındaki ağırlık aktarım oranını değerlendirir. Sensör matrisinde ayağın anatomik transvers ekseni boyunca ön ve arka bölge hücrelerindeki kümülatif basınç değerlerinin toplam basınca oranlanmasıyla hesaplanır. İnsan anatomisinde yerçekimi çizgisinin topuğa daha yakın geçmesi nedeniyle fizyolojik denge normu %40 Ön - %60 Arka (±%5) şeklindedir; ön ayağa aşırı yük binmesi metatarsalji veya anterior postür eğilimini, topuğa aşırı yük ise aşil/kalkaneal aşırı yüklenmeyi gösterir."
+    },
+    foot_biomechanical_params: {
+        title: "Ayak Biyomekanik Parametreleri",
+        desc: "Ayak Biyomekanik Parametreleri paneli; ayak taban morfolojisini, medial longitudinal ark (iç kavis) stabilitesini ve taban temas paternini kantitatif olarak analiz eden Clarke Açısı ve Cavanagh & Rodgers Ark İndeksi ölçümlerini içerir. Platform üzerindeki basınç dağılımından ayak nirengi noktaları (topuk, 1. metatars ve ark zirvesi) belirlenerek açısal ve alansal oranlar otomatik olarak türetilir."
+    },
+    foot_clarke_angle: {
+        title: "Clarke Açısı (Ayak Medial Ark Açısı)",
+        desc: "Clarke Açısı, ayak tabanının iç boyuna kavisinin (medial longitudinal ark) morfolojik yüksekliğini ve çökme derecesini değerlendiren uluslararası kabul görmüş bir podometrik parametredir. Topuk iç sınırı (kalkaneus) ile 1. metatars başı iç sınırını birleştiren referans çizgisi ile topuktan medial arkın en derin noktasına çizilen teğet arasındaki trigonometrik açı hesaplanır. Klinik sınıflamada 42° ve üzeri normal ark, 30° altı Pes Planus (düz tabanlık), 45° üzeri ise Pes Cavus (yüksek kavis / çukur ayak) olarak tanımlanır."
+    },
+    foot_arch_index: {
+        title: "Ark İndeksi (Cavanagh & Rodgers Arch Index)",
+        desc: "Ark İndeksi (Arch Index), ayak taban temas alanının ve orta ayak bölgesine binen relatif yükün kantitatif bir biyomekanik ölçümüdür. Parmaklar hariç tutularak ayak tabanı uzunlamasına üç eşit bölgeye (ön, orta, arka ayak) ayrılır; orta ayak bölgesine (medial ark) düşen basınç/alan toplam taban basıncına oranlanarak hesaplanır. Normatif klinik referans aralığı 0.21 ile 0.26 arasıdır; 0.26'dan büyük değerler medial arkın çöktüğünü (Pes Planus / Düz Taban), 0.21'den küçük değerler ise temasın azaldığı yüksek kemerli yapıyı (Pes Cavus / Çukur Ayak) gösterir."
+    },
+    foot_cop: {
+        title: "Basınç Merkezi (Center of Pressure - COP)",
+        desc: "Basınç Merkezi (COP), dik duruş sırasında iki ayak tabanına dağılan tüm dikey yer tepki kuvvetlerinin anlık vektörel merkez noktasını (ağırlık merkezinin zemin projeksiyonunu) ifade eder. Sensör matrisindeki her bir aktif hücrenin koordinatları ve algıladığı basınç şiddeti kullanılarak ağırlıklı kütle merkezi formülüyle (weighted centroid) hesaplanır. COP koordinatlarının ideal geometrik merkezden sapması, hastanın duruş stabilitesi, postural salınımı ve gövdenin dengeyi korumak için hangi yöne kompansasyon uyguladığı hakkında doğrudan nesnel veri sağlar."
     }
 };
 
