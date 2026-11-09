@@ -31,61 +31,225 @@ function previewScoliosis(event) {
     preview.onload = () => {
         canvas.width = preview.clientWidth;
         canvas.height = preview.clientHeight;
+        canvas.style.touchAction = 'none';
         canvas.classList.remove('hidden');
         document.getElementById('btnResetScoliosis').classList.remove('hidden');
         document.getElementById('btnSaveScoliosis').classList.remove('hidden');
         
+        setupScoliosisEvents();
         drawScoliosisCanvas();
     }
 }
 
-const _scCanvas = document.getElementById('scoliosisCanvas');
-if (_scCanvas) {
-    _scCanvas.addEventListener('click', function(e) {
-        if (scoliosisPoints.length >= 4) return; // Zaten 4 nokta seçildi
-        
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        scoliosisPoints.push({x, y});
+// ─── Mercek (Magnifier / Loupe) & Sürükleme Mantığı ─────────────────────────
+let isDraggingScoliosisPoint = false;
+let draggedScoliosisPointIndex = -1;
+const SCOLIOSIS_HIT_RADIUS = 22; // Piksel cinsinden tıklama yakalama yarıçapı
+
+function findClosestScoliosisPoint(x, y, maxDist = SCOLIOSIS_HIT_RADIUS) {
+    let closestIndex = -1;
+    let minDist = maxDist;
+    for (let i = 0; i < scoliosisPoints.length; i++) {
+        const p = scoliosisPoints[i];
+        const dist = Math.hypot(p.x - x, p.y - y);
+        if (dist <= minDist) {
+            minDist = dist;
+            closestIndex = i;
+        }
+    }
+    return closestIndex;
+}
+
+function updateScoliosisMagnifier(canvasX, canvasY) {
+    const zPanel = document.getElementById('zoomPanel');
+    const zCanvas = document.getElementById('zoomCanvas');
+    const preview = document.getElementById('scoliosisPreview');
+    const canvas = document.getElementById('scoliosisCanvas');
+    if (!zPanel || !zCanvas || !preview || !preview.src || !canvas) return;
+
+    zPanel.classList.remove('hidden');
+    const zCtx = zCanvas.getContext('2d');
+    const zw = zCanvas.width;
+    const zh = zCanvas.height;
+
+    zCtx.clearRect(0, 0, zw, zh);
+    zCtx.save();
+    zCtx.fillStyle = '#0f172a';
+    zCtx.fillRect(0, 0, zw, zh);
+
+    // Merceğin merkezini (128, 128) noktaya taşı ve 3x zoom yap
+    zCtx.translate(zw / 2, zh / 2);
+    zCtx.scale(3, 3);
+
+    // Canvas ile preview aynı piksel boyutunda olduğundan tam merkeze oturur
+    zCtx.drawImage(preview, -canvasX, -canvasY, canvas.width, canvas.height);
+    zCtx.restore();
+}
+
+function hideScoliosisMagnifier() {
+    const zPanel = document.getElementById('zoomPanel');
+    if (zPanel) zPanel.classList.add('hidden');
+}
+
+function getCanvasCoords(canvas, e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+    };
+}
+
+let _scoliosisEventsAttached = false;
+function setupScoliosisEvents() {
+    const canvas = document.getElementById('scoliosisCanvas');
+    if (!canvas || _scoliosisEventsAttached) return;
+    _scoliosisEventsAttached = true;
+    canvas.style.touchAction = 'none';
+
+    canvas.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const { x, y } = getCanvasCoords(canvas, e);
+
+        // 1. Önce var olan bir noktaya tıklandı mı?
+        const hitIndex = findClosestScoliosisPoint(x, y);
+        if (hitIndex !== -1) {
+            isDraggingScoliosisPoint = true;
+            draggedScoliosisPointIndex = hitIndex;
+            try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+            canvas.style.cursor = 'grabbing';
+            updateScoliosisMagnifier(x, y);
+            drawScoliosisCanvas();
+            return;
+        }
+
+        // 2. Henüz 4 nokta tamamlanmadıysa yeni nokta ekle ve hemen ince ayar/sürükleme moduna al
+        if (scoliosisPoints.length < 4) {
+            scoliosisPoints.push({ x, y });
+            draggedScoliosisPointIndex = scoliosisPoints.length - 1;
+            isDraggingScoliosisPoint = true;
+            try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+            canvas.style.cursor = 'grabbing';
+            updateScoliosisMagnifier(x, y);
+            drawScoliosisCanvas();
+
+            if (scoliosisPoints.length === 4) {
+                calculateCobbAngle();
+            }
+        }
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+        e.preventDefault();
+        const { x, y } = getCanvasCoords(canvas, e);
+
+        if (isDraggingScoliosisPoint && draggedScoliosisPointIndex !== -1) {
+            const clampedX = Math.max(0, Math.min(canvas.width, x));
+            const clampedY = Math.max(0, Math.min(canvas.height, y));
+
+            scoliosisPoints[draggedScoliosisPointIndex] = { x: clampedX, y: clampedY };
+            updateScoliosisMagnifier(clampedX, clampedY);
+            drawScoliosisCanvas();
+
+            if (scoliosisPoints.length === 4) {
+                calculateCobbAngle();
+            }
+            return;
+        }
+
+        // Sürükleme yokken fare imleci ipucu
+        const hitIndex = findClosestScoliosisPoint(x, y);
+        if (hitIndex !== -1) {
+            canvas.style.cursor = 'grab';
+        } else {
+            canvas.style.cursor = (scoliosisPoints.length < 4) ? 'crosshair' : 'default';
+        }
+    });
+
+    const stopDrag = async (e) => {
+        if (!isDraggingScoliosisPoint) return;
+        isDraggingScoliosisPoint = false;
+        draggedScoliosisPointIndex = -1;
+        canvas.style.cursor = 'default';
+        hideScoliosisMagnifier();
         drawScoliosisCanvas();
-        
+
         if (scoliosisPoints.length === 4) {
             calculateCobbAngle();
+            if (window.currentScoliosisId) {
+                await saveScoliosisData();
+            }
+        }
+    };
+
+    canvas.addEventListener('pointerup', stopDrag);
+    canvas.addEventListener('pointercancel', stopDrag);
+    canvas.addEventListener('pointerleave', (e) => {
+        if (!isDraggingScoliosisPoint) {
+            canvas.style.cursor = 'default';
         }
     });
 }
 
+// Sayfa yüklendiğinde de event listener'ları kur
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupScoliosisEvents);
+} else {
+    setupScoliosisEvents();
+}
+
 function drawScoliosisCanvas() {
     const canvas = document.getElementById('scoliosisCanvas');
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    ctx.fillStyle = '#f43f5e'; // rose-500
-    ctx.strokeStyle = '#f43f5e';
-    ctx.lineWidth = 2;
-    
-    // Draw points
-    scoliosisPoints.forEach((p, i) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.fillStyle = "white";
-        ctx.font = "10px Arial";
-        ctx.fillText(i+1, p.x + 6, p.y - 6);
-        ctx.fillStyle = '#f43f5e';
-    });
-    
-    // Draw first line (Upper vertebra)
+    // Draw first line (Upper vertebra - Mavi)
     if (scoliosisPoints.length >= 2) {
-        drawLineWithExtrapolation(ctx, scoliosisPoints[0], scoliosisPoints[1], canvas.width, canvas.height, '#3b82f6'); // blue
+        drawLineWithExtrapolation(ctx, scoliosisPoints[0], scoliosisPoints[1], canvas.width, canvas.height, '#3b82f6');
     }
     
-    // Draw second line (Lower vertebra)
+    // Draw second line (Lower vertebra - Zümrüt Yeşili)
     if (scoliosisPoints.length >= 4) {
-        drawLineWithExtrapolation(ctx, scoliosisPoints[2], scoliosisPoints[3], canvas.width, canvas.height, '#10b981'); // emerald
+        drawLineWithExtrapolation(ctx, scoliosisPoints[2], scoliosisPoints[3], canvas.width, canvas.height, '#10b981');
     }
+
+    // Draw points with halo and numbers
+    scoliosisPoints.forEach((p, i) => {
+        const isDragged = (isDraggingScoliosisPoint && draggedScoliosisPointIndex === i);
+        const pointColor = (i < 2) ? '#3b82f6' : '#10b981';
+
+        // Dış halka (halo)
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, isDragged ? 13 : 8, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragged ? 'rgba(244, 63, 94, 0.4)' : 'rgba(255, 255, 255, 0.4)';
+        ctx.fill();
+        ctx.strokeStyle = isDragged ? '#f43f5e' : pointColor;
+        ctx.lineWidth = isDragged ? 2.5 : 1.5;
+        ctx.stroke();
+
+        // İç nokta
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, isDragged ? 5.5 : 4, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragged ? '#f43f5e' : pointColor;
+        ctx.fill();
+
+        // Etiket rozeti (1, 2, 3, 4)
+        ctx.beginPath();
+        ctx.arc(p.x + 13, p.y - 11, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(i + 1, p.x + 13, p.y - 11);
+    });
 }
 
 function drawLineWithExtrapolation(ctx, p1, p2, w, h, color) {
@@ -160,6 +324,9 @@ function calculateCobbAngle() {
 function resetScoliosisCanvas() {
     scoliosisPoints = [];
     currentCobbAngle = 0;
+    isDraggingScoliosisPoint = false;
+    draggedScoliosisPointIndex = -1;
+    hideScoliosisMagnifier();
     document.getElementById('scoliosisCobbAngle').innerText = "0";
     document.getElementById('scoliosisSeverity').innerText = "Bekleniyor...";
     drawScoliosisCanvas();
@@ -333,12 +500,14 @@ async function loadScoliosisAnalysis(id) {
             preview.onload = () => {
                 canvas.width = preview.clientWidth;
                 canvas.height = preview.clientHeight;
+                canvas.style.touchAction = 'none';
                 canvas.classList.remove('hidden');
                 
                 try {
                     scoliosisPoints = JSON.parse(data.points_data || "[]");
                 } catch(e) { scoliosisPoints = []; }
                 
+                setupScoliosisEvents();
                 drawScoliosisCanvas();
             };
             

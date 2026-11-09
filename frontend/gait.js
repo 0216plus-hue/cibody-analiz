@@ -117,6 +117,10 @@ function completeGaitAnalysis() {
     const btnPdf = document.getElementById('btnDownloadGaitPdf');
     if(btnPdf) btnPdf.classList.remove('hidden');
     
+    if(typeof window.updatePatientInfoBanner === 'function') {
+        window.updatePatientInfoBanner('gaitPatientBanner', new Date());
+    }
+
     // Yürüme Analizi AŞAMA 2 ve 3'ü tetikle
     if(typeof analyzeGaitData === 'function') {
         analyzeGaitData(recordedSteps);
@@ -176,7 +180,9 @@ async function saveGaitAnalysis() {
 }
 
 window.loadGaitHistory = function(recordId) {
+    const banner = document.getElementById('gaitPatientBanner');
     if(!recordId) {
+        if(banner) banner.classList.add('hidden');
         document.getElementById('gaitResultsSection').classList.add('hidden');
         document.getElementById('gaitRecordingSection').classList.remove('hidden');
         recordedSteps = [];
@@ -197,6 +203,9 @@ window.loadGaitHistory = function(recordId) {
     let record = window.cachedGaitHistory.find(r => r.id === recordId);
     if(record) {
         recordedSteps = record.steps;
+        if(typeof window.updatePatientInfoBanner === 'function') {
+            window.updatePatientInfoBanner('gaitPatientBanner', record.timestamp || record.date);
+        }
         document.getElementById('gaitRecordingSection').classList.add('hidden');
         document.getElementById('gaitResultsSection').classList.remove('hidden');
         const btnPdf3 = document.getElementById('btnDownloadGaitPdf');

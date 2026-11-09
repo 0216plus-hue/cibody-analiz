@@ -200,7 +200,16 @@
             const pName = (patientInfo.name || 'hasta').replace(/[ığşçöüİĞŞÇÖÜ]/g, m => ({'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'})[m]);
             const pAge = patientInfo.age || '-';
             const pWeight = patientInfo.weight || '-';
+            const pHeight = (patientInfo.height && patientInfo.height != 0 && patientInfo.height != '0') ? patientInfo.height : null;
+            const pShoe = (patientInfo.shoe_size && patientInfo.shoe_size != 0 && patientInfo.shoe_size != '0') ? patientInfo.shoe_size : null;
             const dateStr = new Date().toLocaleDateString('tr-TR');
+            
+            let metaArr = [`Yas: ${pAge}`];
+            if (pHeight) metaArr.push(`Boy: ${pHeight} cm`);
+            metaArr.push(`Kilo: ${pWeight} kg`);
+            if (pShoe) metaArr.push(`Ayak No: ${pShoe}`);
+            metaArr.push(`Tarih: ${dateStr}`);
+            const metaLine = metaArr.join(' | ');
             
             html2pdf().set({
                 margin: [0.75, 0.3, 0.5, 0.3],
@@ -237,7 +246,7 @@
                     
                     pdf.setFontSize(8);
                     pdf.setFont('helvetica', 'normal');
-                    pdf.text(`Yas: ${pAge} | Kilo: ${pWeight} kg | Tarih: ${dateStr}`, pageWidth - 0.3, 0.40, { align: 'right' });
+                    pdf.text(metaLine, pageWidth - 0.3, 0.40, { align: 'right' });
                     
                     // --- FOOTER ---
                     pdf.setDrawColor(200, 200, 200);

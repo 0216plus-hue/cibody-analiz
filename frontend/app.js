@@ -172,6 +172,7 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
             navP.innerText = patientName;
         }
         globalPatientInfo = { name: patientName, age: patientAge, weight: patientWeight, gender: patientGender, phone: patientPhone, height: patientHeight, shoeSize: patientShoeSize };
+        window.globalPatientInfo = globalPatientInfo;
         
         const dName = document.getElementById('detailName');
         if (dName) dName.innerText = patientName;
@@ -185,13 +186,6 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
         
         switchTab('postureTab');
         loadPatientData(patientId);
-        if (typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
-        if (typeof loadSimulationHistory === 'function') loadSimulationHistory();
-        if (typeof loadSpineHistory === 'function') loadSpineHistory(patientId, true);
-        // Tüm geçmiş dropdown'larını eş zamanlı yükle (tab tıklaması bekleme)
-        if (typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
-        if (typeof refreshGaitHistoryDropdown === 'function') refreshGaitHistoryDropdown();
-        if (typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
 
         if (typeof applyTranslations === 'function') {
             applyTranslations();
@@ -204,14 +198,14 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 function switchTab(tabId) {
     try {
         // Hide all tabs
-        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'];
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab', 'comparisonTab'];
         tabs.forEach(t => {
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden');
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab', 'btn_insoleTab', 'btn_footScanTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab', 'btn_insoleTab', 'btn_footScanTab', 'btn_comparisonTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
@@ -240,15 +234,29 @@ function switchTab(tabId) {
             applyTranslations(activeTab);
         }
 
-        // Tab-specific loading
+        // Tab-specific loading (İlgili sekmeye tıklandığında hafifçe geçmiş dropdown/listesi yüklenir)
+        if(tabId === 'postureTab' && currentPatientId) {
+            // Eğer dropdown boşsa doldur
+            const pH = document.getElementById('postureHistorySelect');
+            if(!pH || pH.options.length <= 1) loadPatientData(currentPatientId);
+        }
         if(tabId === 'footTab' && currentPatientId) {
             if(typeof refreshStaticFootHistoryDropdown === 'function') refreshStaticFootHistoryDropdown();
+        }
+        if(tabId === 'gaitTab' && currentPatientId) {
+            if(typeof refreshGaitHistoryDropdown === 'function') refreshGaitHistoryDropdown();
+        }
+        if(tabId === 'balanceTab' && currentPatientId) {
+            if(typeof refreshBalanceSessionDropdown === 'function') refreshBalanceSessionDropdown();
+        }
+        if(tabId === 'scoliosisTab' && currentPatientId) {
+            if(typeof loadScoliosisHistory === 'function') loadScoliosisHistory();
         }
         if(tabId === 'scoliometerTab' && currentPatientId) {
             if(typeof loadScoliometerHistory === 'function') loadScoliometerHistory(currentPatientId);
         }
         if(tabId === 'spineTab' && currentPatientId) {
-            if(typeof loadSpineHistory === 'function') loadSpineHistory(currentPatientId, true);
+            if(typeof loadSpineHistory === 'function') loadSpineHistory(currentPatientId, false);
         }
         if(tabId === 'simulationTab') {
             if(window.resizeSimulation) setTimeout(() => window.resizeSimulation(), 100);
@@ -268,6 +276,9 @@ function switchTab(tabId) {
             if(currentPatientId) {
                 if(typeof loadFootScanHistory === 'function') loadFootScanHistory(currentPatientId);
             }
+        }
+        if(tabId === 'comparisonTab' && currentPatientId) {
+            if(typeof initComparisonTab === 'function') initComparisonTab();
         }
     } catch(err) {
         console.error("switchTab error:", err);
@@ -417,17 +428,23 @@ async function createPatient(e) {
 }
 
 function updateAnalysisHistoryDropdown() {
-    const selectEl = document.getElementById('analysisHistorySelect');
-    if (!selectEl || !currentPatientAnalyses || currentPatientAnalyses.length === 0) return;
-    const currentVal = selectEl.value;
-    selectEl.innerHTML = '';
+    const selects = [
+        document.getElementById('analysisHistorySelect'),
+        document.getElementById('postureHistorySelect')
+    ];
     const _t = window.translateText || (s=>s);
-    currentPatientAnalyses.forEach((analysis, index) => {
-        const dateStr = formatAppDate(analysis.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-        const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
-        selectEl.innerHTML += `<option value="${index}">${label}</option>`;
+    
+    selects.forEach(selectEl => {
+        if (!selectEl) return;
+        selectEl.innerHTML = `<option value="">-- ${_t('Yeni Analiz / Fotoğraf Yükle')} --</option>`;
+        if (!currentPatientAnalyses || currentPatientAnalyses.length === 0) return;
+        currentPatientAnalyses.forEach((analysis, index) => {
+            const dateStr = formatAppDate(analysis.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+            const label = index === 0 ? `${_t('En Güncel')} (${dateStr})` : `${_t('Geçmiş:')} ${dateStr}`;
+            selectEl.innerHTML += `<option value="${index}">${label}</option>`;
+        });
+        selectEl.value = "";
     });
-    selectEl.value = currentVal || "0";
 }
 
 function updatePostureReportDate() {
@@ -440,7 +457,7 @@ function updatePostureReportDate() {
 }
 
 async function loadPatientData(id) {
-    // Reset Views
+    // Reset Views - Başlangıçta yeni analiz yükleme alanı hazır, geçmiş rapor gizli
     const postureResults = document.getElementById('postureResultsSection');
     const postureUpload = document.getElementById('postureUploadSection');
     const footResults = document.getElementById('footResultsSection');
@@ -448,8 +465,8 @@ async function loadPatientData(id) {
     if(postureUpload) postureUpload.classList.remove('hidden');
     if(footResults) footResults.classList.add('hidden');
     globalPostureState = { front: null, back: null, left: null, right: null };
+    currentAnalysisId = null;
 
-    
     // Clear old preview images
     ['front', 'back', 'left', 'right'].forEach(view => {
         const p = document.getElementById('preview_' + view);
@@ -477,110 +494,34 @@ async function loadPatientData(id) {
         const res = await authFetch(`/api/patients/${id}`);
         const data = await res.json();
         
-        // Load Posture (Latest & History)
+        // Load Posture (Latest & History listesi - otomatik indirme yapılmaz, kullanıcı seçince gelir)
         if(data.posture_analyses && data.posture_analyses.length > 0) {
             currentPatientAnalyses = data.posture_analyses.sort((a,b) => b.id - a.id);
-            
-            // Tarih Dropdown'unu doldur
             updateAnalysisHistoryDropdown();
-            
-            // İlk (en güncel) analizi ekrana bas
-            renderHistoricalAnalysis(0);
-        }
-        
-        // Load Foot (Latest)
-        if(data.foot_analyses && data.foot_analyses.length > 0) { data.foot_analyses.sort((a,b) => b.id - a.id);
-            const latestFoot = data.foot_analyses[0];
-            window.currentFootAnalysisId = latestFoot.id;
-            document.getElementById('footResultsSection').classList.remove('hidden');
-            
-            // Rapor Tarihini Güncelle
-            const footDateObj = new Date(latestFoot.created_at + 'Z');
-            const footDateStr = formatAppDate(footDateObj, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-            const footReportDateEl = document.getElementById('footReportDate');
-            const _t = window.translateText || (s=>s);
-            if(footReportDateEl) footReportDateEl.innerText = _t('Oluşturma Tarihi:') + " " + footDateStr;
-
-            // Markdown render
-            let aiText = latestFoot.ai_report_text;
-            
-            // HASTA BİLGİLERİ kısmını yan yana (flex) olacak şekilde formatla
-            const patientInfoRegex = /👤?\s*\**HASTA BİLGİLERİ\**\n([\s\S]*?)(?=1\.\s*KLİNİK ÖZET|### 1\. KLİNİK ÖZET)/i;
-            const match = aiText.match(patientInfoRegex);
-            if(match) {
-                let infoText = match[1];
-                infoText = infoText.replace(/\n+/g, ' <span class="text-indigo-300 mx-2">|</span> ').replace(/\*\*/g, '').replace(/\|\s*\|/g, '|').trim();
-                if(infoText.endsWith('|</span>')) infoText = infoText.substring(0, infoText.lastIndexOf('<span')).trim();
-                
-                const htmlReplacement = `<div class="bg-indigo-50 border border-indigo-100 text-indigo-900 px-4 py-3 rounded-xl flex flex-wrap items-center text-sm font-semibold mb-4 shadow-sm"><i class="fa-solid fa-user-injured mr-3 text-indigo-500"></i> ${infoText}</div>\n\n`;
-                aiText = aiText.replace(patientInfoRegex, htmlReplacement);
-            }
-            
-            // Replace "fizyoterapist için" with "uzman için" in AI text
-aiText = aiText.replace(/fizyoterapist için/gi, 'Uzman İçin');
-aiText = aiText.replace(/FİZYOTERAPİST İÇİN/g, 'UZMAN İÇİN');
-aiText = aiText.replace(/Fizyoterapist İçin/g, 'Uzman İçin');
-document.getElementById('footReportContent').innerHTML = marked.parse(aiText);
-            
-            // Show action buttons
-            const actionBtns = document.getElementById('footActionButtons');
-            if(actionBtns) actionBtns.classList.remove('hidden');
-            document.getElementById('btnDownloadPdf').href = "/" + latestFoot.original_pdf_path.replace(/\\/g, '/');
-            
-            // Extract Risk keywords from AI report
-            aiText = aiText.toLowerCase();
-            const foundFootRisks = [];
-            if (aiText.includes('pes planus') || aiText.includes('düz taban') || aiText.includes('flat foot') || aiText.includes('çökmüş ark')) foundFootRisks.push('Pes Planus');
-            if (aiText.includes('pes cavus') || aiText.includes('çukur taban') || aiText.includes('yüksek ark')) foundFootRisks.push('Pes Cavus');
-            if (aiText.includes('asimetri') || aiText.includes('dengesizliği') || aiText.includes('tek taraflı')) foundFootRisks.push('Yük Asimetrisi');
-            if (aiText.includes('posterior') || aiText.includes('geriye') || aiText.includes('topuklara') || aiText.includes('arka ayak') || aiText.includes('topuk yük')) foundFootRisks.push('Posterior Yüklenme');
-            if (aiText.includes('anterior') || aiText.includes('öne') || aiText.includes('metatars') || aiText.includes('ön ayak') || aiText.includes('parmaklara')) foundFootRisks.push('Anterior Yüklenme');
-            
-            const fRisksSection = document.getElementById('footRisksSection');
-            const fRisksContainer = document.getElementById('footRisksContainer');
-            
-            if (fRisksSection && fRisksContainer) {
-                fRisksContainer.innerHTML = '';
-                if (foundFootRisks.length > 0) {
-                    fRisksSection.classList.remove('hidden');
-                    
-                    foundFootRisks.forEach(f => {
-                        const rData = FOOT_RISK_DATA[f];
-                        if(rData) {
-                            let liHtml = rData.risks.map(r => `<li class="mb-2 text-slate-700">${(window.translateText||((s)=>s))(r)}</li>`).join('');
-                            let cardHtml = `
-                                <div class="bg-white border border-slate-200 rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-sm items-stretch avoid-break">
-                                    <div class="md:w-1/4 lg:w-1/5 bg-slate-50 border-r border-slate-100 flex flex-col items-center justify-center p-6">
-                                        <img src="/${rData.img}" alt="${f}" class="w-full max-h-40 object-contain rounded-xl mix-blend-multiply opacity-80">
-                                        <div class="w-full text-center text-[10px] font-bold mt-3 bg-white px-2 py-1.5 rounded-lg shadow-sm border border-slate-200">
-                                            <span class="text-slate-400">${(window.translateText||((s)=>s))('Şimdi')}</span> <i class="fa-solid fa-arrow-right text-slate-300 mx-1"></i> <span class="text-amber-600">${(window.translateText||((s)=>s))('Sonra')}</span>
-                                        </div>
-                                    </div>
-                                    <div class="md:w-3/4 lg:w-4/5 p-5 md:p-6">
-                                        <h4 class="text-lg font-bold text-slate-800 mb-1">${rData.title}</h4>
-                                        <p class="text-xs font-bold text-rose-500 tracking-wider uppercase mb-4">${(window.translateText||((s)=>s))('Zamanla Oluşabilecek Olası Riskler')}</p>
-                                        <ul class="list-disc pl-5 text-sm">
-                                            ${liHtml}
-                                        </ul>
-                                    </div>
-                                </div>
-                            `;
-                            fRisksContainer.innerHTML += cardHtml;
-                        }
-                    });
-                } else {
-                    fRisksSection.classList.add('hidden');
-                }
-            }
-        }
-        // Load Spine Analyses
-        if (typeof loadSpineHistory === 'function') {
-            loadSpineHistory(id, true);
+        } else {
+            currentPatientAnalyses = [];
+            updateAnalysisHistoryDropdown();
         }
     } catch(err) { console.error("Data load err:", err); }
 }
 
 function loadHistoricalAnalysis(indexStr) {
+    const sel1 = document.getElementById('analysisHistorySelect');
+    const sel2 = document.getElementById('postureHistorySelect');
+    if (sel1) sel1.value = indexStr;
+    if (sel2) sel2.value = indexStr;
+
+    if (indexStr === "" || indexStr === null || indexStr === undefined) {
+        // Yeni Analiz / Fotoğraf Yükleme Modu
+        const postureResults = document.getElementById('postureResultsSection');
+        const postureUpload = document.getElementById('postureUploadSection');
+        if (postureResults) postureResults.classList.add('hidden');
+        if (postureUpload) postureUpload.classList.remove('hidden');
+        globalPostureState = { front: null, back: null, left: null, right: null };
+        currentAnalysisId = null;
+        return;
+    }
+
     const index = parseInt(indexStr);
     renderHistoricalAnalysis(index);
 }
@@ -738,6 +679,7 @@ async function runPostureAnalysis() {
         }
         
         await loadPatientData(currentPatientId); // Yeniden yükle — await ile bekle
+        loadHistoricalAnalysis("0"); // Yeni tamamlanan analizi göster
     } catch(err) { 
         showToast("Analiz Hatası: " + err.message); 
         console.error("Analiz Hatası", err); 
@@ -1733,7 +1675,7 @@ function highlightSpineCard(id) {
     });
 }
 
-async function loadSpineHistory(patientId = null, autoSelectLatest = true) {
+async function loadSpineHistory(patientId = null, autoSelectLatest = false) {
     const pid = patientId || currentPatientId;
     if (!pid) return;
 
@@ -2225,6 +2167,112 @@ if (typeof window !== 'undefined') {
 
 // PDF & QR FUNCTIONS
 
+// ─── Ortak Hasta Bilgisi ve Bilgi Kartı Yardımcıları ────────────────────────
+window.getPatientDisplayData = function() {
+    let pInfo = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo) ? globalPatientInfo : null;
+    let found = null;
+    if (typeof allPatients !== 'undefined' && Array.isArray(allPatients) && typeof currentPatientId !== 'undefined' && currentPatientId) {
+        found = allPatients.find(p => p.id == currentPatientId);
+    }
+    
+    const pick = (k, sessK, foundK) => {
+        if (pInfo && pInfo[k] !== undefined && pInfo[k] !== null && pInfo[k] !== '' && pInfo[k] !== 0 && pInfo[k] !== '0') return pInfo[k];
+        try {
+            const sv = sessionStorage.getItem(sessK);
+            if (sv !== undefined && sv !== null && sv !== '' && sv !== 0 && sv !== '0') return sv;
+        } catch(e) {}
+        if (found && found[foundK] !== undefined && found[foundK] !== null && found[foundK] !== '' && found[foundK] !== 0 && found[foundK] !== '0') return found[foundK];
+        return null;
+    };
+
+    let pName = (pInfo && pInfo.name) ? pInfo.name : null;
+    if (!pName) {
+        try { pName = sessionStorage.getItem('cibody_active_patient_name'); } catch(e) {}
+    }
+    if (!pName && found) pName = found.name;
+    if (!pName) {
+        const el = document.getElementById('navPatientName');
+        if (el && el.innerText && el.innerText.trim()) pName = el.innerText.trim();
+    }
+    if (!pName) pName = 'Hasta';
+
+    return {
+        name: pName,
+        age: pick('age', 'cibody_active_patient_age', 'age') || '-',
+        height: pick('height', 'cibody_active_patient_height', 'height'),
+        weight: pick('weight', 'cibody_active_patient_weight', 'weight') || '-',
+        shoeSize: pick('shoeSize', 'cibody_active_patient_shoe_size', 'shoe_size'),
+        gender: pick('gender', 'cibody_active_patient_gender', 'gender') || '-'
+    };
+};
+
+window.updatePatientInfoBanner = function(containerId, recordDate) {
+    const banner = document.getElementById(containerId);
+    if (!banner) return;
+    
+    const data = window.getPatientDisplayData();
+    const _t = (window.translateText || (s => s));
+    
+    let dateStr = '';
+    if (recordDate) {
+        if (typeof formatAppDate === 'function') {
+            dateStr = formatAppDate(recordDate, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        } else {
+            try {
+                dateStr = new Date(recordDate).toLocaleString('tr-TR');
+            } catch(e) {
+                dateStr = String(recordDate);
+            }
+        }
+    }
+
+    const heightDisplay = (data.height && data.height !== '-' && data.height !== '0' && data.height !== 0) ? `${data.height} cm` : '-';
+    const weightDisplay = (data.weight && data.weight !== '-' && data.weight !== '0' && data.weight !== 0) ? `${data.weight} kg` : '-';
+    const shoeDisplay = (data.shoeSize && data.shoeSize !== '-' && data.shoeSize !== '0' && data.shoeSize !== 0) ? data.shoeSize : '-';
+
+    banner.innerHTML = `
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-indigo-100/70 pb-3 mb-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 to-indigo-500 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                    <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">${_t('Hasta Analiz Profili')}</div>
+                    <h3 class="text-base font-black text-slate-800 leading-tight">${data.name}</h3>
+                </div>
+            </div>
+            ${dateStr ? `
+            <div class="inline-flex items-center gap-2 bg-white/90 border border-slate-200 px-3 py-1.5 rounded-xl shadow-xs self-start md:self-auto">
+                <i class="fa-regular fa-calendar-check text-indigo-600 text-xs"></i>
+                <span class="text-xs font-bold text-slate-700">${dateStr}</span>
+            </div>` : ''}
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+            <div class="bg-white/90 border border-slate-200/80 rounded-xl p-2.5 text-center shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 block uppercase mb-0.5">${_t('Yaş')}</span>
+                <span class="text-sm font-black text-slate-800">${data.age}</span>
+            </div>
+            <div class="bg-white/90 border border-slate-200/80 rounded-xl p-2.5 text-center shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 block uppercase mb-0.5">${_t('Boy')}</span>
+                <span class="text-sm font-black text-slate-800">${heightDisplay}</span>
+            </div>
+            <div class="bg-white/90 border border-slate-200/80 rounded-xl p-2.5 text-center shadow-xs">
+                <span class="text-[11px] font-bold text-slate-500 block uppercase mb-0.5">${_t('Kilo')}</span>
+                <span class="text-sm font-black text-slate-800">${weightDisplay}</span>
+            </div>
+            <div class="bg-indigo-50/70 border border-indigo-200/80 rounded-xl p-2.5 text-center shadow-xs">
+                <span class="text-[11px] font-bold text-indigo-700 block uppercase mb-0.5">${_t('Ayak No')}</span>
+                <span class="text-sm font-black text-indigo-900">${shoeDisplay}</span>
+            </div>
+            <div class="bg-white/90 border border-slate-200/80 rounded-xl p-2.5 text-center shadow-xs col-span-2 sm:col-span-1">
+                <span class="text-[11px] font-bold text-slate-500 block uppercase mb-0.5">${_t('Cinsiyet')}</span>
+                <span class="text-sm font-black text-slate-800">${_t(data.gender)}</span>
+            </div>
+        </div>
+    `;
+    banner.classList.remove('hidden');
+};
+
 // ─── PDF Yardımcı: header/footer + blob indirme ───────────────────────────────
 /**
  * Verilen html2pdf instance'ını çalıştırır, header/footer ekler ve
@@ -2260,25 +2308,36 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
     
     // ASCII/Latin-safe labels for jsPDF helvetica
     const labelsByLang = {
-        tr: { age: 'Yas', weight: 'Kilo', date: 'Tarih', specialist: 'Uzman', page: 'Sayfa', defaultUser: 'Uzman', defaultPatient: 'Hasta' },
-        en: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
-        ru: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
-        ar: { age: 'Age', weight: 'Weight', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
-        de: { age: 'Alter', weight: 'Gewicht', date: 'Datum', specialist: 'Spezialist', page: 'Seite', defaultUser: 'Spezialist', defaultPatient: 'Patient' },
-        fr: { age: 'Age', weight: 'Poids', date: 'Date', specialist: 'Specialiste', page: 'Page', defaultUser: 'Specialiste', defaultPatient: 'Patient' },
-        es: { age: 'Edad', weight: 'Peso', date: 'Fecha', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' },
-        it: { age: 'Eta', weight: 'Peso', date: 'Data', specialist: 'Specialista', page: 'Pag.', defaultUser: 'Specialista', defaultPatient: 'Paziente' },
-        pt: { age: 'Idade', weight: 'Peso', date: 'Data', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' }
+        tr: { age: 'Yas', height: 'Boy', weight: 'Kilo', shoeSize: 'Ayak No', date: 'Tarih', specialist: 'Uzman', page: 'Sayfa', defaultUser: 'Uzman', defaultPatient: 'Hasta' },
+        en: { age: 'Age', height: 'Height', weight: 'Weight', shoeSize: 'Shoe Size', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        ru: { age: 'Age', height: 'Height', weight: 'Weight', shoeSize: 'Shoe Size', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        ar: { age: 'Age', height: 'Height', weight: 'Weight', shoeSize: 'Shoe Size', date: 'Date', specialist: 'Specialist', page: 'Page', defaultUser: 'Specialist', defaultPatient: 'Patient' },
+        de: { age: 'Alter', height: 'Grosse', weight: 'Gewicht', shoeSize: 'Schuhgr.', date: 'Datum', specialist: 'Spezialist', page: 'Seite', defaultUser: 'Spezialist', defaultPatient: 'Patient' },
+        fr: { age: 'Age', height: 'Taille', weight: 'Poids', shoeSize: 'Pointure', date: 'Date', specialist: 'Specialiste', page: 'Page', defaultUser: 'Specialiste', defaultPatient: 'Patient' },
+        es: { age: 'Edad', height: 'Altura', weight: 'Peso', shoeSize: 'Talla', date: 'Fecha', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' },
+        it: { age: 'Eta', height: 'Altezza', weight: 'Peso', shoeSize: 'Misura', date: 'Data', specialist: 'Specialista', page: 'Pag.', defaultUser: 'Specialista', defaultPatient: 'Paziente' },
+        pt: { age: 'Idade', height: 'Altura', weight: 'Peso', shoeSize: 'Calcado', date: 'Data', specialist: 'Especialista', page: 'Pag.', defaultUser: 'Especialista', defaultPatient: 'Paciente' }
     };
     const lbl = labelsByLang[lang] || labelsByLang.tr;
 
-    let pName = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.name) 
-        ? globalPatientInfo.name 
-        : (document.getElementById('navPatientName') ? document.getElementById('navPatientName').innerText : lbl.defaultPatient);
+    const pData = (typeof window.getPatientDisplayData === 'function') 
+        ? window.getPatientDisplayData() 
+        : {
+            name: (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.name) ? globalPatientInfo.name : lbl.defaultPatient,
+            age: (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-',
+            weight: (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-',
+            height: (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.height) ? globalPatientInfo.height : null,
+            shoeSize: (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.shoeSize) ? globalPatientInfo.shoeSize : null
+        };
+
+    let pName = pData.name || lbl.defaultPatient;
     const trMap = {'ı':'i','ğ':'g','ş':'s','ç':'c','ö':'o','ü':'u','İ':'I','Ğ':'G','Ş':'S','Ç':'C','Ö':'O','Ü':'U'};
     if (pName) pName = pName.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
-    const patientAge = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.age) ? globalPatientInfo.age : '-';
-    const patientWeight = (typeof globalPatientInfo !== 'undefined' && globalPatientInfo && globalPatientInfo.weight) ? globalPatientInfo.weight : '-';
+    
+    const patientAge = pData.age || '-';
+    const patientWeight = pData.weight || '-';
+    const patientHeight = pData.height;
+    const patientShoeSize = pData.shoeSize;
     
     // Numeric formatted date (ASCII safe)
     const now = new Date();
@@ -2314,6 +2373,19 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
         cleanSubtitle = cleanSubtitle.replace(/[ığşçöüİĞŞÇÖÜ]/g, m => trMap[m]);
     }
 
+    // Bilgi satırı: Yaş, Boy, Kilo, Ayak No, Tarih
+    let metaParts = [];
+    metaParts.push(`${lbl.age}: ${patientAge}`);
+    if (patientHeight && patientHeight !== '-' && patientHeight !== '0' && patientHeight !== 0) {
+        metaParts.push(`${lbl.height}: ${patientHeight} cm`);
+    }
+    metaParts.push(`${lbl.weight}: ${patientWeight} kg`);
+    if (patientShoeSize && patientShoeSize !== '-' && patientShoeSize !== '0' && patientShoeSize !== 0) {
+        metaParts.push(`${lbl.shoeSize}: ${patientShoeSize}`);
+    }
+    metaParts.push(`${lbl.date}: ${dateStr}`);
+    const metaLine = metaParts.join('  |  ');
+
     for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         
@@ -2337,10 +2409,10 @@ function applyCibodyPdfHeaderFooter(pdf, reportSubtitle = "Klinik Biyomekanik An
         pdf.setFont('helvetica', 'bold');
         pdf.text(pName, pageWidth - 0.3, 0.25, { align: 'right' });
         
-        pdf.setFontSize(9);
+        pdf.setFontSize(8);
         pdf.setFont('helvetica', 'normal');
         pdf.setTextColor(199, 210, 254); // indigo-200
-        pdf.text(`${lbl.age}: ${patientAge}  |  ${lbl.weight}: ${patientWeight} kg  |  ${lbl.date}: ${dateStr}`, pageWidth - 0.3, 0.42, { align: 'right' });
+        pdf.text(metaLine, pageWidth - 0.3, 0.42, { align: 'right' });
         
         // --- FOOTER ---
         pdf.setFillColor(248, 250, 252); // slate-50

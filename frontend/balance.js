@@ -311,6 +311,10 @@ function viewBalanceReport() {
     document.getElementById('balanceRecordingSection').classList.add('hidden');
     document.getElementById('balanceResultsSection').classList.remove('hidden');
     
+    if(typeof window.updatePatientInfoBanner === 'function') {
+        window.updatePatientInfoBanner('balancePatientBanner', new Date());
+    }
+
     document.getElementById('btnSaveBalance').classList.remove('hidden');
     document.getElementById('btnDownloadBalancePdf').classList.remove('hidden');
     
@@ -676,7 +680,9 @@ async function saveBalanceSession() {
 }
 
 function loadBalanceSessionHistory(recordId) {
+    const banner = document.getElementById('balancePatientBanner');
     if(!recordId) {
+        if(banner) banner.classList.add('hidden');
         // Reset to new session
         currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
         document.getElementById('balanceResultsSection').classList.add('hidden');
@@ -711,6 +717,10 @@ function loadBalanceSessionHistory(recordId) {
     // Load from history
     let record = window.cachedBalanceHistory.find(r => r.id === recordId);
     if(record) {
+        if(typeof window.updatePatientInfoBanner === 'function') {
+            window.updatePatientInfoBanner('balancePatientBanner', record.created_at || record.date);
+        }
+
         // Support old history records
         if(record.data) {
             currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
