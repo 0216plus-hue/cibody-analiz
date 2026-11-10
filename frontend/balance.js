@@ -867,7 +867,12 @@ async function saveBalanceSession() {
 
 function loadBalanceSessionHistory(recordId) {
     const banner = document.getElementById('balancePatientBanner');
+    const historySelect = document.getElementById('balanceHistorySelect');
+
     if(!recordId) {
+        if(historySelect && historySelect.options.length > 0) {
+            historySelect.options[0].text = _t('📜 Geçmiş Analizler');
+        }
         if(banner) banner.classList.add('hidden');
         // Reset to new session
         currentBalanceSession = {cift_acik: null, cift_kapali: null, tek_sol_acik: null, tek_sag_acik: null};
@@ -898,6 +903,11 @@ function loadBalanceSessionHistory(recordId) {
             ctx.clearRect(0,0,480,480);
         }
         return;
+    }
+
+    // Geçmiş bir test oturumu seçildiğinde ilk seçenek "+ Yeni Analiz Başlat" olur
+    if(historySelect && historySelect.options.length > 0) {
+        historySelect.options[0].text = _t('✨ + Yeni Analiz Başlat');
     }
     
     // Load from history
@@ -935,7 +945,10 @@ function renderBalanceHistorySelect() {
     const historySelect = document.getElementById('balanceHistorySelect');
     if(!historySelect) return;
     
-    historySelect.innerHTML = `<option value="">${_t('-- Yeni Test Oturumu --')}</option>`;
+    const isHistorySelected = (historySelect.value && historySelect.value !== "");
+    const defaultText = isHistorySelected ? _t('✨ + Yeni Analiz Başlat') : _t('📜 Geçmiş Analizler');
+    
+    historySelect.innerHTML = `<option value="">${defaultText}</option>`;
     
     if(!window.cachedBalanceHistory || !Array.isArray(window.cachedBalanceHistory)) return;
 

@@ -1010,8 +1010,8 @@
                 <button onclick="switchTab('scoliometerTab')" id="btn_scoliometerTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.scoliometer">
                     <i class="fa-solid fa-mobile-screen mr-2 text-indigo-500"></i> <span>Skolyometre</span>
                 </button>
-                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" style="display: none !important;" data-i18n="tabs.simulation">
-                    <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> <span>3D Simülasyon</span>
+                <button onclick="switchTab('simulationTab')" id="btn_simulationTab" class="tab-btn pb-3 text-slate-600 font-medium px-2 whitespace-nowrap border-b-2 border-transparent focus:outline-none" data-i18n="tabs.simulation">
+                    <i class="fa-solid fa-cube mr-2 text-emerald-500"></i> <span>3D Omurga Simülasyon</span>
                 </button>
             </div>
             
@@ -2147,7 +2147,7 @@
                 <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
             </div>
             <select id="staticFootHistorySelect" onchange="loadStaticFootHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                <option value="">-- Canlı Akışa Dön --</option>
+                <option value="">📜 Geçmiş Analizler</option>
             </select>
         </div>
 
@@ -2699,9 +2699,13 @@
             const select = document.getElementById('staticFootHistorySelect');
             if(!select) return;
 
-            const returnLiveText = window.translateText ? window.translateText('-- Canlı Akışa Dön --') : '-- Canlı Akışa Dön --';
+            const isHistorySelected = (select.value && select.value !== "");
+            const defaultText = isHistorySelected
+                ? (window.translateText ? window.translateText('✨ + Yeni Analiz (Canlı Akış)') : '✨ + Yeni Analiz (Canlı Akış)')
+                : (window.translateText ? window.translateText('📜 Geçmiş Analizler') : '📜 Geçmiş Analizler');
+
             if (!currentPatientId) {
-                select.innerHTML = `<option value="">${returnLiveText}</option>`;
+                select.innerHTML = `<option value="">${defaultText}</option>`;
                 return;
             }
 
@@ -2725,9 +2729,9 @@
                 console.warn("[CIBODY] Static foot history fetch hatası:", e);
             } finally {
                 // Hata veya timeout durumunda bile Yükleniyor'da asılı kalmayı %100 önle
-                select.innerHTML = `<option value="">${returnLiveText}</option>`;
+                select.innerHTML = `<option value="">${defaultText}</option>`;
                 
-                if (Array.isArray(window.cachedStaticFootHistory)) {
+                if (Array.isArray(window.cachedStaticFootHistory) && window.cachedStaticFootHistory.length > 0) {
                     window.cachedStaticFootHistory.forEach(record => {
                         if (!record) return;
                         let dateVal = record.date || record.timestamp;
@@ -2746,6 +2750,13 @@
         window.resetStaticFootUI = function() {
             window.isFootLive = false;
             const _t = (window.translateText || (s => s));
+            
+            // Dropdown ilk seçeneğini normal Geçmiş Analizler durumuna döndür
+            const select = document.getElementById('staticFootHistorySelect');
+            if (select && select.options.length > 0) {
+                select.value = "";
+                select.options[0].text = _t('📜 Geçmiş Analizler');
+            }
             
             // Barları ve yüzdeleri sıfırla
             const bL = document.getElementById('barL');
@@ -2798,10 +2809,16 @@
             let statusBadge = document.getElementById('footLiveStatus');
             let btnSave = document.getElementById('btnSaveFootAnalysis');
             let patientBanner = document.getElementById('staticFootPatientBanner');
+            let select = document.getElementById('staticFootHistorySelect');
             
             if (!recordId) {
                 window.resetStaticFootUI();
                 return;
+            }
+
+            // Geçmiş bir analiz seçildiğinde ilk seçenek "+ Yeni Analiz (Canlı Akış)" olarak değişir
+            if (select && select.options.length > 0) {
+                select.options[0].text = window.translateText ? window.translateText('✨ + Yeni Analiz (Canlı Akış)') : '✨ + Yeni Analiz (Canlı Akış)';
             }
             
             let record = window.cachedStaticFootHistory.find(r => r.id == recordId);
@@ -3104,7 +3121,7 @@
                 <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
             </div>
             <select id="gaitHistorySelect" onchange="loadGaitHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                <option value="">-- Yeni Analiz --</option>
+                <option value="">📜 Geçmiş Analizler</option>
             </select>
         </div>
         
@@ -3584,7 +3601,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="auth.js?v=19.5"></script>
-    <script src="app.js?v=25.6"></script>
+    <script src="app.js?v=25.7"></script>
 
     
     <!-- ─── Profil Düzenleme Modal ─── -->
@@ -3703,7 +3720,7 @@
                 <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
             </div>
             <select id="balanceHistorySelect" onchange="loadBalanceSessionHistory(this.value)" class="flex-1 md:w-auto text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-bold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                <option value="">-- Yeni Test Oturumu --</option>
+                <option value="">📜 Geçmiş Analizler</option>
             </select>
         </div>
 
@@ -4463,10 +4480,10 @@
     <script src="foot_simulation.js?v=8.0"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="gait.js?v=20.3"></script>
+<script src="gait.js?v=20.4"></script>
 <script src="gait_analysis.js?v=20.3"></script>
 <script src="gait_player.js?v=20.5"></script>
-    <script src="balance.js?v=22.3"></script>
+    <script src="balance.js?v=22.4"></script>
     <script src="comparison.js?v=1.0"></script>
 </body>
 </html>

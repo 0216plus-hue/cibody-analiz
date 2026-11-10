@@ -17,7 +17,12 @@ function startGaitAnalysis() {
     document.getElementById('gaitRecordingSection').classList.remove('hidden');
     
     const historySelect = document.getElementById('gaitHistorySelect');
-    if(historySelect) historySelect.value = "";
+    if(historySelect) {
+        historySelect.value = "";
+        if(historySelect.options.length > 0) {
+            historySelect.options[0].text = (window.translateText ? window.translateText('📜 Geçmiş Analizler') : '📜 Geçmiş Analizler');
+        }
+    }
     
     const listEl = document.getElementById('gaitStepsList');
     if(listEl) {
@@ -181,7 +186,12 @@ async function saveGaitAnalysis() {
 
 window.loadGaitHistory = function(recordId) {
     const banner = document.getElementById('gaitPatientBanner');
+    const sel = document.getElementById('gaitHistorySelect');
+
     if(!recordId) {
+        if(sel && sel.options.length > 0) {
+            sel.options[0].text = (window.translateText ? window.translateText('📜 Geçmiş Analizler') : '📜 Geçmiş Analizler');
+        }
         if(banner) banner.classList.add('hidden');
         const vCard = document.getElementById('gaitVideoPlayerCard');
         if(vCard) vCard.classList.add('hidden');
@@ -200,6 +210,11 @@ window.loadGaitHistory = function(recordId) {
         const emptyState = document.getElementById('gaitEmptyState');
         if(emptyState) emptyState.classList.remove('hidden');
         return;
+    }
+
+    // Geçmiş analiz seçildiğinde listenin ilk seçeneği "+ Yeni Analiz" olur
+    if(sel && sel.options.length > 0) {
+        sel.options[0].text = (window.translateText ? window.translateText('✨ + Yeni Analiz') : '✨ + Yeni Analiz');
     }
 
     let record = window.cachedGaitHistory.find(r => r.id === recordId);
@@ -221,8 +236,14 @@ window.loadGaitHistory = function(recordId) {
 window.refreshGaitHistoryDropdown = async function() {
     const sel = document.getElementById('gaitHistorySelect');
     if(!sel) return;
+
+    const isHistorySelected = (sel.value && sel.value !== "");
+    const defaultText = isHistorySelected
+        ? (window.translateText ? window.translateText('✨ + Yeni Analiz') : '✨ + Yeni Analiz')
+        : (window.translateText ? window.translateText('📜 Geçmiş Analizler') : '📜 Geçmiş Analizler');
+
     if(!currentPatientId) {
-        sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
+        sel.innerHTML = `<option value="">${defaultText}</option>`;
         return;
     }
 
@@ -238,8 +259,8 @@ window.refreshGaitHistoryDropdown = async function() {
     } catch(e) {
         console.warn("[CIBODY] Gait history fetch hatası:", e);
     } finally {
-        sel.innerHTML = '<option value="">-- Yeni Analiz --</option>';
-        if (Array.isArray(window.cachedGaitHistory)) {
+        sel.innerHTML = `<option value="">${defaultText}</option>`;
+        if (Array.isArray(window.cachedGaitHistory) && window.cachedGaitHistory.length > 0) {
             window.cachedGaitHistory.forEach(r => {
                 if(!r) return;
                 let opt = document.createElement('option');
