@@ -3594,6 +3594,26 @@ const POSTURE_METRIC_INFO = {
     balance_stabilogram: {
         title: "Stabilogram (ML ve AP Zaman Dalgaları)",
         desc: "Stabilogram, Mediolateral (ML / Sağ-Sol) ve Anteroposterior (AP / Ön-Arka) düzlemlerdeki salınımların zaman ekseni üzerindeki frekans ve genlik dalgalarını ayrı ayrı inceler. AP yönündeki salınımlar temel olarak ayak bileği stratejisi (triceps surae ve tibialis anterior) ile kontrol edilirken, ML yönündeki salınımlar kalça abdüktör/addüktör stratejisiyle yönetilir; dalgaların genlik artışı hangi eklem motor stratejisinin yetersiz kaldığını ayırt eder."
+    },
+    balance_ref_table: {
+        title: "Referans Aralıkları ile Klinik Karşılaştırma",
+        desc: "Bu tablo, hastanın statik postürografi (denge) testi sırasında kaydedilen Basınç Merkezi (COP) salınım parametrelerini uluslararası klinik stabilometri normlarıyla karşılaştırır. Çift ayak ve tek ayak duruş testleri için ayrı eşik değerleri kullanılarak her bir parametre İyi (optimal nöromüsküler kontrol), Orta (hafif kompansasyon) ve Yüksek Risk (belirgin postüral instabilite / düşme riski) olarak sınıflandırılır."
+    },
+    balance_ml_range: {
+        title: "ML Salınım Genliği (Mediolateral Sway Range - mm)",
+        desc: "ML Salınım Genliği, test süresince Basınç Merkezinin (COP) sağ-sol (frontal/mediolateral) eksende ulaştığı en uç iki nokta arasındaki maksimum mesafeyi milimetre (mm) cinsinden ifade eder. Mediolateral denge ağırlıklı olarak kalça abdüktör/addüktör kas grubu (kalça stratejisi) ve subtalar eklem stabilizatörleri tarafından kontrol edilir. Yüksek ML genliği; kalça çevresi kas zayıflığını, ayak bileği kronik instabilitesini veya tek taraflı yük aktarım asimetrisini işaret eder."
+    },
+    balance_ap_range: {
+        title: "AP Salınım Genliği (Anteroposterior Sway Range - mm)",
+        desc: "AP Salınım Genliği, test süresince Basınç Merkezinin (COP) ön-arka (sagittal/anteroposterior) eksende ulaştığı en ileri ve en geri noktalar arasındaki maksimum mesafeyi milimetre (mm) cinsinden ölçer. Anteroposterior stabilite temel olarak ayak bileği stratejisi (gastrocnemius-soleus ve tibialis anterior kaslarının resiprokal aktivasyonu) ile sağlanır. Artmış AP salınımı; ayak bileği propriyosepsiyon kaybını, plantar fleksör/dorsifleksör kas yorgunluğunu veya sagittal postür bozukluklarını gösterir."
+    },
+    balance_rms_sway: {
+        title: "RMS Salınım (Kök Ortalama Kare / Root Mean Square - mm)",
+        desc: "RMS Salınım, Basınç Merkezinin (COP) ortalama denge noktasından olan anlık sapmalarının karekök ortalamasını (standart sapma eşdeğeri) AP ve ML yönlerinde ayrı ayrı milimetre (mm) olarak hesaplar. Tek bir ani sıçramadan etkilenebilen maksimum genlikten (Range) farklı olarak, tüm test süresi boyunca salınımın gerçek enerjisini ve ortalama kararsızlık şiddetini yansıtan en güvenilir biyomekanik istatistiktir."
+    },
+    balance_sampling_rate: {
+        title: "Örnekleme Frekansı (Sampling Rate - Hz)",
+        desc: "Örnekleme Frekansı, basınç platformunun saniyede kaç kez (Hz) tüm sensör matrisini tarayarak COP koordinatı hesapladığını gösterir. Postüral mikro-salınımların ve nöromüsküler düzeltici reflekslerin yüksek doğrulukla yakalanabilmesi için zaman çözünürlüğünün stabil olması gerekir."
     }
 };
 

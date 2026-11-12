@@ -551,7 +551,13 @@ function renderAllTestDetails() {
             
             let refHTML = `
             <div class="balance-ref-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2"><i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>${_t('Referans Aralıkları ile Karşılaştırma')}</h3>
+                <h3 class="text-sm font-bold text-slate-700 mb-3 border-b pb-2 flex items-center">
+                    <i class="fa-solid fa-table-list mr-2 text-indigo-500"></i>
+                    <span>${_t('Referans Aralıkları ile Karşılaştırma')}</span>
+                    <button type="button" onclick="showInfoPopup('balance_ref_table')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                        <i class="fa-solid fa-circle-info text-xs"></i>
+                    </button>
+                </h3>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="bg-slate-50 text-slate-700 uppercase text-xs font-bold border-b">
@@ -604,6 +610,9 @@ function renderAllTestDetails() {
                                 <td class="px-4 py-2 font-medium flex items-center">
                                     <span>${_t('ML Salınım Genliği (mm)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Sağ-Sol Range')})</span>
+                                    <button type="button" onclick="showInfoPopup('balance_ml_range')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
                                 </td>
                                 <td class="px-4 py-2">&lt;${mlGood}</td>
                                 <td class="px-4 py-2">${mlGood}-${mlMed}</td>
@@ -614,6 +623,9 @@ function renderAllTestDetails() {
                                 <td class="px-4 py-2 font-medium flex items-center">
                                     <span>${_t('AP Salınım Genliği (mm)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Ön-Arka Range')})</span>
+                                    <button type="button" onclick="showInfoPopup('balance_ap_range')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
                                 </td>
                                 <td class="px-4 py-2">&lt;${apGood}</td>
                                 <td class="px-4 py-2">${apGood}-${apMed}</td>
@@ -624,6 +636,9 @@ function renderAllTestDetails() {
                                 <td class="px-4 py-2 font-medium flex items-center">
                                     <span>${_t('RMS Salınım (AP / ML)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Kök Ortalama Kare')})</span>
+                                    <button type="button" onclick="showInfoPopup('balance_rms_sway')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
                                 </td>
                                 <td class="px-4 py-2">&lt;${rmsGood}</td>
                                 <td class="px-4 py-2">${rmsGood}-${rmsMed}</td>
@@ -634,6 +649,9 @@ function renderAllTestDetails() {
                                 <td class="px-4 py-2 font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-microchip text-slate-400"></i>
                                     <span>${_t('Örnekleme Frekansı')}</span>
+                                    <button type="button" onclick="showInfoPopup('balance_sampling_rate')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1 cursor-pointer" data-html2canvas-ignore="true" title="Bilgi">
+                                        <i class="fa-solid fa-circle-info text-xs"></i>
+                                    </button>
                                 </td>
                                 <td class="px-4 py-2" colspan="3">${_t('Aktif Sensör: 48x48 (480x480 mm)')}</td>
                                 <td class="px-4 py-2 border-l font-mono font-bold text-slate-800">${m.samplingRateHz ? m.samplingRateHz.toFixed(1) : '25.0'} Hz</td>
