@@ -526,6 +526,12 @@ function renderAllTestDetails() {
             let areaMed = isSingle ? 40 : 8;
             let velGood = isSingle ? 5.0 : 1.2;
             let velMed = isSingle ? 8.0 : 2.0;
+            let mlGood = isSingle ? 25 : 15;
+            let mlMed = isSingle ? 40 : 25;
+            let apGood = isSingle ? 30 : 20;
+            let apMed = isSingle ? 50 : 35;
+            let rmsGood = isSingle ? 8 : 5;
+            let rmsMed = isSingle ? 15 : 10;
             
             const getStatus = (val, good, med) => {
                 if(val < good) return { text: _t("İyi"), color: "bg-emerald-100 text-emerald-800" };
@@ -536,6 +542,12 @@ function renderAllTestDetails() {
             let pathS = getStatus(m.pathCm, pathGood, pathMed);
             let areaS = getStatus(m.areaCm, areaGood, areaMed);
             let velS = getStatus(m.velCm, velGood, velMed);
+            let mlVal = m.rangeMlMm || 0;
+            let apVal = m.rangeApMm || 0;
+            let rmsMaxVal = Math.max(m.rmsApMm || 0, m.rmsMlMm || 0);
+            let mlS = getStatus(mlVal, mlGood, mlMed);
+            let apS = getStatus(apVal, apGood, apMed);
+            let rmsS = getStatus(rmsMaxVal, rmsGood, rmsMed);
             
             let refHTML = `
             <div class="balance-ref-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
@@ -593,30 +605,30 @@ function renderAllTestDetails() {
                                     <span>${_t('ML Salınım Genliği (mm)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Sağ-Sol Range')})</span>
                                 </td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 border-l font-bold font-mono text-slate-800">${m.rangeMlMm ? m.rangeMlMm.toFixed(1) : '-'} mm</td>
+                                <td class="px-4 py-2">&lt;${mlGood}</td>
+                                <td class="px-4 py-2">${mlGood}-${mlMed}</td>
+                                <td class="px-4 py-2">&gt;${mlMed}</td>
+                                <td class="px-4 py-2 border-l font-bold ${m.rangeMlMm != null ? mlS.color : 'text-slate-800'}">${m.rangeMlMm != null ? `${m.rangeMlMm.toFixed(1)} mm (${mlS.text})` : '-'}</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
                                 <td class="px-4 py-2 font-medium flex items-center">
                                     <span>${_t('AP Salınım Genliği (mm)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Ön-Arka Range')})</span>
                                 </td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 border-l font-bold font-mono text-slate-800">${m.rangeApMm ? m.rangeApMm.toFixed(1) : '-'} mm</td>
+                                <td class="px-4 py-2">&lt;${apGood}</td>
+                                <td class="px-4 py-2">${apGood}-${apMed}</td>
+                                <td class="px-4 py-2">&gt;${apMed}</td>
+                                <td class="px-4 py-2 border-l font-bold ${m.rangeApMm != null ? apS.color : 'text-slate-800'}">${m.rangeApMm != null ? `${m.rangeApMm.toFixed(1)} mm (${apS.text})` : '-'}</td>
                             </tr>
                             <tr class="hover:bg-slate-50">
                                 <td class="px-4 py-2 font-medium flex items-center">
                                     <span>${_t('RMS Salınım (AP / ML)')}</span>
                                     <span class="text-[10px] text-slate-400 ml-1">(${_t('Kök Ortalama Kare')})</span>
                                 </td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 text-slate-400">-</td>
-                                <td class="px-4 py-2 border-l font-bold font-mono text-indigo-700">${m.rmsApMm ? m.rmsApMm.toFixed(1) : '-'} / ${m.rmsMlMm ? m.rmsMlMm.toFixed(1) : '-'} mm</td>
+                                <td class="px-4 py-2">&lt;${rmsGood}</td>
+                                <td class="px-4 py-2">${rmsGood}-${rmsMed}</td>
+                                <td class="px-4 py-2">&gt;${rmsMed}</td>
+                                <td class="px-4 py-2 border-l font-bold ${(m.rmsApMm != null || m.rmsMlMm != null) ? rmsS.color : 'text-indigo-700'}">${m.rmsApMm != null ? m.rmsApMm.toFixed(1) : '-'} / ${m.rmsMlMm != null ? m.rmsMlMm.toFixed(1) : '-'} mm ${(m.rmsApMm != null || m.rmsMlMm != null) ? `(${rmsS.text})` : ''}</td>
                             </tr>
                             <tr class="hover:bg-slate-50 text-xs text-slate-500">
                                 <td class="px-4 py-2 font-medium flex items-center gap-1">
