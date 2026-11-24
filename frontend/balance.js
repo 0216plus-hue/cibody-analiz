@@ -79,6 +79,19 @@ function startBalanceTest() {
     window.lastBalanceStableRow = undefined;
     balanceTimeLeft = activeTestType.includes('tek') ? 15 : 30;
     
+    // Rapor ekranındaysak, canlı test/kayıt ekranına geri dön
+    const resultsSec = document.getElementById('balanceResultsSection');
+    const recordingSec = document.getElementById('balanceRecordingSection');
+    if (resultsSec) resultsSec.classList.add('hidden');
+    if (recordingSec) recordingSec.classList.remove('hidden');
+
+    const btnSave = document.getElementById('btnSaveBalance');
+    if (btnSave) btnSave.classList.add('hidden');
+    const btnPdf = document.getElementById('btnDownloadBalancePdf');
+    if (btnPdf) btnPdf.classList.add('hidden');
+    const btnCsv = document.getElementById('btnExportBalanceCsv');
+    if (btnCsv) btnCsv.classList.add('hidden');
+    
     document.getElementById('btnStartBalance').classList.add('hidden');
     document.getElementById('btnStopBalance').classList.remove('hidden');
     
@@ -972,7 +985,18 @@ window.resizeBalanceCharts = function() {
 window.cachedBalanceHistory = [];
 
 async function saveBalanceSession() {
-    if(!currentPatientId) return showToast("Hasta seçili değil");
+    if(!currentPatientId) {
+        if(typeof showToast === 'function') showToast("Hasta seçili değil");
+        else alert("Hasta seçili değil");
+        return;
+    }
+    
+    const btnSave = document.getElementById('btnSaveBalance');
+    const originalHtml = btnSave ? btnSave.innerHTML : '';
+    if(btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${_t('Kaydediliyor...')}</span>`;
+    }
     
     let record = {
         id: Date.now().toString(),
@@ -991,18 +1015,48 @@ async function saveBalanceSession() {
             // Hemen local cache'e ekle — proxy GET önbelleğini beklemeden görünsün
             if(!Array.isArray(window.cachedBalanceHistory)) window.cachedBalanceHistory = [];
             window.cachedBalanceHistory.unshift(record);
-            showToast("Denge testi oturumu kaydedildi.");
+            
+            // Buton üzerinde belirgin onay
+            if(btnSave) {
+                btnSave.className = "bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center gap-2";
+                btnSave.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${_t('Kaydedildi!')}</span>`;
+            }
+            
+            if(typeof showToast === 'function') {
+                showToast("✓ Denge testi başarıyla kaydedildi.");
+            }
+            
+            await refreshBalanceSessionDropdown();
+            
+            // Dropdown'da yeni kaydedilen oturumu seçili yap
+            const historySelect = document.getElementById('balanceHistorySelect');
+            if(historySelect) {
+                historySelect.value = record.id;
+            }
+            
+            setTimeout(() => {
+                if(btnSave) {
+                    btnSave.disabled = false;
+                    btnSave.className = "bg-amber-500 hover:bg-amber-400 text-white font-bold py-2.5 px-6 rounded-xl transition-all shadow-md flex items-center gap-2";
+                    btnSave.innerHTML = originalHtml;
+                }
+            }, 3000);
         } else {
             const err = await res.text();
             alert("Sunucu hatası (Balance): " + res.status + " - " + err);
+            if(btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerHTML = originalHtml;
+            }
         }
     } catch(e) {
-        showToast("Kaydedilirken hata oluştu.");
         console.error(e);
         alert("Bağlantı hatası: " + e.message);
+        if(btnSave) {
+            btnSave.disabled = false;
+            btnSave.innerHTML = originalHtml;
+        }
     }
-    
-    await refreshBalanceSessionDropdown();
 }
 
 function loadBalanceSessionHistory(recordId) {
