@@ -50,10 +50,21 @@ function selectBalanceTest(type) {
     });
 }
 
+const BALANCE_FRAME_SIZE = 2304;
+let balanceBuffer = new Uint8Array(BALANCE_FRAME_SIZE * 4);
+let balanceWriteIdx = 0;
+let balanceLastProcessIdx = 0;
+
 function startBalanceTest() {
-    if (balanceWs) balanceWs.close();
+    if (balanceWs) {
+        try { balanceWs.close(); } catch(e) {}
+        balanceWs = null;
+    }
     
     balanceCopData = [];
+    balanceWriteIdx = 0;
+    balanceLastProcessIdx = 0;
+    balanceBuffer.fill(0);
     balanceTimeLeft = activeTestType.includes('tek') ? 15 : 30;
     
     document.getElementById('btnStartBalance').classList.add('hidden');
@@ -69,39 +80,100 @@ function startBalanceTest() {
     const timerDisplay = document.getElementById('balanceTimerDisplay');
     timerDisplay.innerText = balanceTimeLeft;
     
+    const balanceWsUrls = ["ws://127.0.0.1:8765", "ws://localhost:8765"];
+    let balanceWsUrlIdx = 0;
     let isConnected = false;
-    balanceWs = new WebSocket('ws://localhost:8765');
-    balanceWs.binaryType = 'arraybuffer';
-    
-    balanceWs.onopen = () => { 
-        isConnected = true;
-        isBalanceRecording = true; 
-        balanceTimerInterval = setInterval(() => {
-            balanceTimeLeft--;
-            timerDisplay.innerText = balanceTimeLeft;
-            if(balanceTimeLeft <= 0) {
-                completeBalanceTest();
+
+    function connectBalanceSocket() {
+        if (balanceWs) {
+            try { balanceWs.close(); } catch(e) {}
+            balanceWs = null;
+        }
+        let targetUrl = balanceWsUrls[balanceWsUrlIdx % balanceWsUrls.length];
+        try {
+            balanceWs = new WebSocket(targetUrl);
+            balanceWs.binaryType = 'arraybuffer';
+
+            balanceWs.onopen = () => { 
+                isConnected = true;
+                isBalanceRecording = true; 
+                balanceTimerInterval = setInterval(() => {
+                    balanceTimeLeft--;
+                    timerDisplay.innerText = balanceTimeLeft;
+                    if(balanceTimeLeft <= 0) {
+                        completeBalanceTest();
+                    }
+                }, 1000);
+            };
+            
+            balanceWs.onmessage = (event) => {
+                if (!isBalanceRecording) return;
+                let data = new Uint8Array(event.data);
+                
+                // 1) 3 plakalı (6912 bayt) doğrudan çerçeve
+                if (data.length === 6912) {
+                    let frame = data.slice(2304, 4608);
+                    processBalanceFrame(frame);
+                    return;
+                }
+                
+                // 2) Tam 2304 baytlık tek kare geldiyse doğrudan işle
+                if (data.length === BALANCE_FRAME_SIZE && balanceWriteIdx === balanceLastProcessIdx) {
+                    processBalanceFrame(data);
+                    return;
+                }
+                
+                // 3) Bever Medical (192 bayt) veya parçalı/farklı boyutlu akış: Buffer'a ekle ve 2304 bayt doldukça işle
+                for (let i = 0; i < data.length; i++) {
+                    balanceBuffer[balanceWriteIdx % balanceBuffer.length] = data[i];
+                    balanceWriteIdx++;
+                }
+
+                if (balanceWriteIdx - balanceLastProcessIdx > balanceBuffer.length) {
+                    balanceLastProcessIdx = balanceWriteIdx - BALANCE_FRAME_SIZE;
+                }
+
+                while (balanceWriteIdx - balanceLastProcessIdx >= BALANCE_FRAME_SIZE) {
+                    let frame = new Uint8Array(BALANCE_FRAME_SIZE);
+                    let start = balanceLastProcessIdx % balanceBuffer.length;
+                    for (let i = 0; i < BALANCE_FRAME_SIZE; i++) {
+                        frame[i] = balanceBuffer[(start + i) % balanceBuffer.length];
+                    }
+                    processBalanceFrame(frame);
+                    balanceLastProcessIdx += BALANCE_FRAME_SIZE;
+                }
+            };
+            
+            balanceWs.onerror = () => {
+                if (!isConnected && balanceWsUrlIdx < balanceWsUrls.length - 1) {
+                    balanceWsUrlIdx++;
+                    connectBalanceSocket();
+                }
+            };
+
+            balanceWs.onclose = () => {
+                if (!isConnected) {
+                    if (balanceWsUrlIdx < balanceWsUrls.length - 1) {
+                        balanceWsUrlIdx++;
+                        connectBalanceSocket();
+                    } else {
+                        showToast("Sensör bağlantısı kurulamadı!");
+                        stopBalanceTest();
+                    }
+                }
+            };
+        } catch(e) {
+            if (balanceWsUrlIdx < balanceWsUrls.length - 1) {
+                balanceWsUrlIdx++;
+                connectBalanceSocket();
+            } else {
+                showToast("Sensör bağlantısı kurulamadı!");
+                stopBalanceTest();
             }
-        }, 1000);
-    };
-    
-    balanceWs.onmessage = (event) => {
-        if (!isBalanceRecording) return;
-        let data = new Uint8Array(event.data);
-        if (data.length === 2304) {
-            processBalanceFrame(data);
-        } else if (data.length === 6912) {
-            let frame = data.slice(2304, 4608);
-            processBalanceFrame(frame);
         }
-    };
-    
-    balanceWs.onclose = () => {
-        if(!isConnected) {
-            showToast("Sensör bağlantısı kurulamadı!");
-            stopBalanceTest();
-        }
-    };
+    }
+
+    connectBalanceSocket();
 }
 
 function stopBalanceTest() {
@@ -160,7 +232,7 @@ function processBalanceFrame(frameData) {
         }
     }
     
-    if (totalP > 200) {
+    if (totalP > 100) {
         let copX = wX / totalP;
         let copY = wY / totalP;
         
