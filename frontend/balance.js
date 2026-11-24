@@ -20,6 +20,17 @@ let currentBalanceSession = {
 // Temp array during live recording
 let balanceCopData = [];
 
+function checkBalanceReportReady() {
+    let btnRep = document.getElementById('btnViewBalanceReport');
+    if (!btnRep) return;
+    let hasAnyData = Object.values(currentBalanceSession).some(x => x !== null);
+    if (hasAnyData) {
+        btnRep.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        btnRep.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+}
+
 function selectBalanceTest(type) {
     if (isBalanceRecording) return;
     activeTestType = type;
@@ -65,6 +76,7 @@ function startBalanceTest() {
     balanceWriteIdx = 0;
     balanceLastProcessIdx = 0;
     balanceBuffer.fill(0);
+    window.lastBalanceStableRow = undefined;
     balanceTimeLeft = activeTestType.includes('tek') ? 15 : 30;
     
     document.getElementById('btnStartBalance').classList.add('hidden');
@@ -123,24 +135,50 @@ function startBalanceTest() {
                     return;
                 }
                 
-                // 3) Bever Medical (192 bayt) veya parçalı/farklı boyutlu akış: Buffer'a ekle ve 2304 bayt doldukça işle
+                // 3) Bever Medical (192 bayt) veya parçalı akış: Buffer'a ekle ve akıllı satır kilitleme (Phase Lock) ile işle
                 for (let i = 0; i < data.length; i++) {
                     balanceBuffer[balanceWriteIdx % balanceBuffer.length] = data[i];
                     balanceWriteIdx++;
                 }
 
-                if (balanceWriteIdx - balanceLastProcessIdx > balanceBuffer.length) {
-                    balanceLastProcessIdx = balanceWriteIdx - BALANCE_FRAME_SIZE;
-                }
+                if (balanceWriteIdx - balanceLastProcessIdx >= BALANCE_FRAME_SIZE) {
+                    if (balanceWriteIdx >= BALANCE_FRAME_SIZE * 2) {
+                        let tempFrame = new Uint8Array(BALANCE_FRAME_SIZE * 2);
+                        let start = (balanceWriteIdx - (BALANCE_FRAME_SIZE * 2) + balanceBuffer.length) % balanceBuffer.length;
+                        for (let j = 0; j < BALANCE_FRAME_SIZE * 2; j++) {
+                            tempFrame[j] = balanceBuffer[(start + j) % balanceBuffer.length];
+                        }
 
-                while (balanceWriteIdx - balanceLastProcessIdx >= BALANCE_FRAME_SIZE) {
-                    let frame = new Uint8Array(BALANCE_FRAME_SIZE);
-                    let start = balanceLastProcessIdx % balanceBuffer.length;
-                    for (let i = 0; i < BALANCE_FRAME_SIZE; i++) {
-                        frame[i] = balanceBuffer[(start + i) % balanceBuffer.length];
+                        let rowSums = new Array(96).fill(0);
+                        for(let r = 0; r < 96; r++) {
+                            let sum = 0;
+                            for(let c = 0; c < 48; c++) { sum += tempFrame[r * 48 + c]; }
+                            rowSums[r] = sum;
+                        }
+                        let bestStartRow = 0;
+                        let maxSum = -1;
+                        for(let r = 0; r < 48; r++) {
+                            let centerSum = 0;
+                            for(let k = 14; k < 34; k++) { centerSum += rowSums[r + k]; }
+                            if(centerSum > maxSum) { maxSum = centerSum; bestStartRow = r; }
+                        }
+                        if (typeof window.lastBalanceStableRow === 'undefined') window.lastBalanceStableRow = bestStartRow;
+                        if (Math.abs(bestStartRow - window.lastBalanceStableRow) > 3 && Math.abs(bestStartRow - window.lastBalanceStableRow) < 45) {
+                            window.lastBalanceStableRow = bestStartRow;
+                        }
+
+                        let readStart = window.lastBalanceStableRow * 48;
+                        let alignedFrame = tempFrame.slice(readStart, readStart + BALANCE_FRAME_SIZE);
+                        processBalanceFrame(alignedFrame);
+                    } else {
+                        let frame = new Uint8Array(BALANCE_FRAME_SIZE);
+                        let start = (balanceWriteIdx - BALANCE_FRAME_SIZE + balanceBuffer.length) % balanceBuffer.length;
+                        for (let j = 0; j < BALANCE_FRAME_SIZE; j++) {
+                            frame[j] = balanceBuffer[(start + j) % balanceBuffer.length];
+                        }
+                        processBalanceFrame(frame);
                     }
-                    processBalanceFrame(frame);
-                    balanceLastProcessIdx += BALANCE_FRAME_SIZE;
+                    balanceLastProcessIdx = balanceWriteIdx;
                 }
             };
             
