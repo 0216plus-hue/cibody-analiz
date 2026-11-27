@@ -987,6 +987,9 @@ function refreshAllCanvases() {
             else if (m !== 'trunk' && M.earEstimated[view]) h += missRow(_t(label), info, _t('Kulak noktası bulunamadı – turuncu noktayı taramada kulağın üzerine sürükleyin'));
             else h += missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
         }
+        const ns = (globalPostureState[view] || {})._nearSide;
+        if (ns && ns !== view)
+            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t(view === 'left' ? 'Bu taramada hastanın sağ tarafı kameraya dönük; Sol Yan taramasında sol taraf kameraya dönük olmalı' : 'Bu taramada hastanın sol tarafı kameraya dönük; Sağ Yan taramasında sağ taraf kameraya dönük olmalı')}</div>`;
         if (M.facingUnsure[view])
             h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t('Hastanın baktığı yön taramadan belirlenemedi; öne/geriye yönünü kontrol edin')}</div>`;
         return h + rollLine(M.roll.sagittal);
@@ -1395,17 +1398,23 @@ function drawCanvas(canvasId, imgId, analysisData, viewType) {
         if (f != null) { analysisData._facing = f; analysisData._facingSure = true; }
         else analysisData._facingSure = false;
     }
-    if (viewType === 'left') {
-        for (let key in kpts) if (key.startsWith('right_')) kpts[key] = null;
-        kpts.left_eye = null; kpts.nose = null; kpts.left_elbow = null; kpts.left_wrist = null;
-    } else if (viewType === 'right') {
-        for (let key in kpts) if (key.startsWith('left_')) kpts[key] = null;
-        kpts.right_eye = null; kpts.nose = null; kpts.right_elbow = null; kpts.right_wrist = null;
+    if (viewType === 'left' || viewType === 'right') {
+        // Kameraya dönük taraf: güven puanı yüksek olan taraf (taramanın adından bağımsız).
+        // Arkada kalan taraf kapalı olduğu için onun noktaları daha az güvenilirdir ve silinir.
+        if (analysisData._nearSide == null) {
+            const sc = side => ['ear', 'shoulder', 'elbow', 'wrist', 'hip', 'knee', 'ankle']
+                .reduce((a, n) => a + ((kpts[side + '_' + n] || {}).confidence || 0), 0);
+            analysisData._nearSide = sc('left') >= sc('right') ? 'left' : 'right';
+        }
+        const near = analysisData._nearSide, far = near === 'left' ? 'right_' : 'left_';
+        for (let key in kpts) if (key.startsWith(far)) kpts[key] = null;
+        kpts[near + '_eye'] = null; kpts.nose = null; kpts[near + '_elbow'] = null; kpts[near + '_wrist'] = null;
     }
     // Yan görünümde kulak bulunamadıysa tahmini bir nokta koy; terapist sürükleyerek doğru yere taşır.
     // Tahmini nokta ölçüme girmez; taşındığında gerçek nokta olur.
     if (viewType === 'left' || viewType === 'right') {
-        const ek = viewType + '_ear', sh = kpts[viewType + '_shoulder'], hp = kpts[viewType + '_hip'];
+        const ns = analysisData._nearSide || viewType;
+        const ek = ns + '_ear', sh = kpts[ns + '_shoulder'], hp = kpts[ns + '_hip'];
         const ear = kpts[ek], okp = p => p && (p.confidence == null || p.confidence >= 0.3);
         if (!okp(ear) && okp(sh) && okp(hp)) {
             const L = Math.hypot(sh.x - hp.x, sh.y - hp.y);
