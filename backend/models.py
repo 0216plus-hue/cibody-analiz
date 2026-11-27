@@ -34,6 +34,9 @@ class Patient(Base):
     gender = Column(String)
     phone = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    # KVKK: hekimin hastadan aydınlatma + açık rıza aldığını onayladığı an ve metin sürümü
+    kvkk_consent_at = Column(DateTime, nullable=True)
+    kvkk_text_version = Column(String, nullable=True)
 
     owner = relationship("User", back_populates="patients")
     analyses = relationship("PostureAnalysis", back_populates="patient", cascade="all, delete-orphan")
@@ -255,3 +258,29 @@ class BalanceSession(Base):
     patient_id = Column(Integer, ForeignKey("patients.id"))
     session_data = Column(Text, nullable=False) # JSON data
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AuditLog(Base):
+    """KVKK erişim kaydı: hangi kullanıcı, hangi adrese, ne zaman, hangi sonuçla erişti."""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    method = Column(String(8))
+    path = Column(String(300), index=True)
+    status = Column(Integer)
+    ip = Column(String(64))
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class XRaySession(Base):
+    """X-Ray (kamera) ölçüm seansı: test sonuçları hastanın kaydına bağlı saklanır (görüntüler saklanmaz)."""
+    __tablename__ = "xray_sessions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.id"), index=True)
+    user_id = Column(Integer, nullable=True)
+    height = Column(Float, nullable=True)
+    notes = Column(Text, nullable=True)
+    results = Column(Text)          # JSON: test sonuçları (görüntü içermez)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)

@@ -599,62 +599,11 @@ function showScoliosisQr() {
         else alert(_trans("Lütfen geçerli bir analiz seçin.")); 
         return; 
     }
-    const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : 'tr');
-    const langParam = lang !== 'tr' ? `&lang=${encodeURIComponent(lang)}` : '';
-    const publicUrl = window.location.origin + '/skolyoz_rapor.html?id=' + currentScoliosisId + langParam;
-    
-    let modal = document.getElementById('qrModal');
-    if(!modal) {
-        modal = document.createElement('div');
-        modal.id = 'qrModal';
-        modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden';
-        document.body.appendChild(modal);
-    }
-    
-    modal.innerHTML = `
-        <div class="bg-white rounded-2xl p-6 shadow-xl w-full max-w-sm mx-4 transform transition-all scale-100 opacity-100" ${lang === 'ar' ? 'dir="rtl"' : ''}>
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800" data-i18n="Skolyoz Raporu Paylaş"><i class="fa-solid fa-qrcode text-indigo-600 mr-2"></i>${_trans("Skolyoz Raporu Paylaş")}</h3>
-                <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            
-            <div class="flex justify-center mb-4 bg-white p-2 rounded-xl border border-slate-200 shadow-sm" id="qrcode_scoliosis"></div>
-            
-            <p class="text-xs text-center text-slate-500 mb-4" data-i18n="Hastanız telefonunun kamerasıyla bu karekodu okutarak tüm raporu (resim, açı, yapay zeka yorumu) ve tavsiyeleri indirebilir.">${_trans("Hastanız telefonunun kamerasıyla bu karekodu okutarak tüm raporu (resim, açı, yapay zeka yorumu) ve tavsiyeleri indirebilir.")}</p>
-            
-            <div class="flex gap-2">
-                <button onclick="copyToClipboard('${publicUrl}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-sm transition-colors">
-                    <i class="fa-solid fa-link mr-1"></i> <span data-i18n="Link Kopyala">${_trans("Link Kopyala")}</span>
-                </button>
-                <button onclick="window.open('${publicUrl}', '_blank')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 rounded-xl text-sm transition-colors border border-indigo-200">
-                    <i class="fa-solid fa-eye mr-1"></i> <span data-i18n="Raporu Aç">${_trans("Raporu Aç")}</span>
-                </button>
-            </div>
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    if (window.applyTranslations) {
-        window.applyTranslations(modal);
-    }
-    
-    // Generate QR
-    setTimeout(() => {
-        document.getElementById('qrcode_scoliosis').innerHTML = "";
-        new QRCode(document.getElementById('qrcode_scoliosis'), {
-            text: publicUrl,
-            width: 200,
-            height: 200,
-            colorDark : "#1e1b4b",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    }, 100);
+    if (typeof showToast === 'function') showToast(_trans("Karekod hazırlanıyor…"));
+    downloadScoliosisPdf({ qr: true });   // PDF tarayıcıda üretilir, şifrelenip tek kullanımlık karekodla teslim edilir
 }
 
-function downloadScoliosisPdf() {
+function downloadScoliosisPdf(opts = {}) {
     const _trans = (window.translateText || (s => s));
     const lang = (window.getCurrentLanguage ? window.getCurrentLanguage() : "tr");
 
@@ -773,7 +722,7 @@ function downloadScoliosisPdf() {
                 <i class="fa-solid fa-person-running text-emerald-600"></i> <span data-i18n="CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri">${_trans("CIBODY AI Skolyoz Klinik Değerlendirmesi & Egzersiz Önerileri")}</span>
             </h4>
             <div class="text-xs text-slate-700 leading-relaxed space-y-2">
-                ${typeof marked !== 'undefined' ? marked.parse(aiText) : '<pre class="whitespace-pre-wrap">' + aiText + '</pre>'}
+                ${typeof marked !== 'undefined' ? safeMarkdown(aiText) : '<pre class="whitespace-pre-wrap">' + aiText + '</pre>'}
             </div>
         </div>
         ` : ''}
@@ -830,9 +779,9 @@ function downloadScoliosisPdf() {
         }).save(fname);
     };
 
-    runFn(instance, pdfFilename, reportSubtitle).then(() => {
+    runFn(instance, pdfFilename, reportSubtitle, opts).then(() => {
         printContainer.remove();
-        if (typeof showToast === 'function') showToast(_trans("Skolyoz Cobb PDF raporu indirildi."));
+        if (!opts.qr && typeof showToast === 'function') showToast(_trans("Skolyoz Cobb PDF raporu indirildi."));
     }).catch(err => {
         console.error(err);
         printContainer.remove();
@@ -894,8 +843,8 @@ function renderAiReports(fullText) {
         egzersiz = marker + "\n" + (parts[1] ? parts[1].trim() : "");
     }
     
-    aiReportDiv.innerHTML = typeof marked !== 'undefined' && klinik ? marked.parse(klinik) : (klinik || "Henüz klinik rapor üretilmedi.");
-    exerciseReportDiv.innerHTML = typeof marked !== 'undefined' && egzersiz ? marked.parse(egzersiz) : (egzersiz || "Henüz egzersiz programı üretilmedi.");
+    aiReportDiv.innerHTML = klinik ? safeMarkdown(klinik) : escapeHtml("Henüz klinik rapor üretilmedi.");
+    exerciseReportDiv.innerHTML = egzersiz ? safeMarkdown(egzersiz) : escapeHtml("Henüz egzersiz programı üretilmedi.");
 }
 
 

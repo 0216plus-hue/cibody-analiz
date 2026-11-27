@@ -1,4 +1,6 @@
-import os, uuid, base64, requests, json, io, concurrent.futures
+import os, uuid, base64, requests, json, io, concurrent.futures, secrets, logging, re as _re
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+log = logging.getLogger("cibody")
 from datetime import datetime, timedelta
 from typing import Optional
 from PIL import Image, ImageOps
@@ -19,6 +21,9 @@ from pydantic import BaseModel
 import models
 from database import engine, get_db, SessionLocal
 from yolo_service import analyze_image
+from security import (read_limited, safe_ext, RateLimiter, client_ip, user_id_from_request,
+                      make_audit_middleware, handoff_store, handoff_take,
+                      LIMIT_IMAGE, LIMIT_PDF, LIMIT_SCAN, SCAN_EXTS)
 
 def optimize_image_to_webp(image_bytes: bytes, max_dim: int = 1600, quality: int = 85) -> bytes:
     """
@@ -81,28 +86,25 @@ def startup_event():
     try:
         db = SessionLocal()
         if db.query(models.User).count() == 0:
-            hashed = hash_password("cibody2024!")
-            superadmin = models.User(
-                name="CIBODY Admin",
-                email="admin@cibody.tr",
-                hashed_password=hashed,
-                role="superadmin",
-                is_active=True,
-                monthly_limit=9999
-            )
-            db.add(superadmin)
-            
-            dijimo_hashed = hash_password("dijimo2024!")
-            dijimo = models.User(
-                name="Dijimo",
-                email="info@dijimo.com.tr",
-                hashed_password=dijimo_hashed,
-                role="therapist",
-                is_active=True,
-                monthly_limit=9999
-            )
-            db.add(dijimo)
-            db.commit()
+            # İlk yönetici yalnızca ortam değişkenleriyle oluşturulur (kodda parola tutulmaz)
+            admin_email = (os.getenv("INITIAL_ADMIN_EMAIL") or "").strip().lower()
+            admin_pass = os.getenv("INITIAL_ADMIN_PASSWORD") or ""
+            if admin_email and len(admin_pass) >= 12:
+                db.add(models.User(name="CIBODY Admin", email=admin_email, hashed_password=hash_password(admin_pass),
+                                   role="superadmin", is_active=True, monthly_limit=9999))
+                db.commit()
+                log.warning("İlk yönetici hesabı oluşturuldu: %s – INITIAL_ADMIN_PASSWORD değişkenini şimdi kaldırın.", admin_email)
+            else:
+                log.warning("Kullanıcı yok. İlk yönetici için INITIAL_ADMIN_EMAIL ve INITIAL_ADMIN_PASSWORD (en az 12 karakter) tanımlayın.")
+
+        # KVKK rıza alanları (mevcut veritabanına ekle)
+        for col, typ in (("kvkk_consent_at", "DATETIME"), ("kvkk_text_version", "VARCHAR")):
+            try:
+                from sqlalchemy import text as _text
+                db.execute(_text(f"ALTER TABLE patients ADD COLUMN {col} {typ}"))
+                db.commit()
+            except Exception:
+                db.rollback()
 
         # ALTER TABLE to add scoliosis_analysis_id if not exists
         try:
@@ -215,7 +217,7 @@ def startup_event():
                     db.commit()
                     print(f"Başarıyla {len(seed_rows)} egzersiz çevirisi eklendi.")
         except Exception as e:
-            print("exercise_translations startup init error:", e)
+            log.exception("exercise_translations startup init error:")
 
 
         if db.query(models.Exercise).count() == 0:
@@ -239,14 +241,17 @@ def startup_event():
                 db.commit()
                 print("Egzersizler başarıyla içeri aktarıldı.")
             except Exception as e:
-                print("Egzersiz içe aktarma hatası:", e)
+                log.exception("Egzersiz içe aktarma hatası:")
 
         db.close()
     except Exception as e:
-        print("STARTUP EVENT ERROR:", e)
+        log.exception("STARTUP EVENT ERROR:")
 
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=False,
-                   allow_methods=["*"], allow_headers=["*"])
+# Panel ve API aynı adresten sunulduğu için başka sitelere izin verilmez.
+# Gerekirse ALLOWED_ORIGINS="https://a.com,https://b.com" ile eklenebilir.
+_allowed = [o.strip() for o in (os.getenv("ALLOWED_ORIGINS") or "").split(",") if o.strip()]
+app.add_middleware(CORSMiddleware, allow_origins=_allowed, allow_credentials=False,
+                   allow_methods=["GET", "POST", "PUT", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 
 # API yanıtlarına her zaman no-cache header ekle (Fortinet gibi proxy önbelleklerini engelle)
 @app.middleware("http")
@@ -267,10 +272,9 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 import secrets
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not SECRET_KEY:
-    # Guvenlik: Kod icinde statik fallback yerine kriptografik tek seferlik anahtar
-    SECRET_KEY = secrets.token_urlsafe(64)
-    print("\n[SECURITY NOTICE] 'JWT_SECRET_KEY' env degiskeni bulunamadi. Calisma zamani guvenli kripto anahtar uretildi.\n")
+if not SECRET_KEY or len(SECRET_KEY) < 32:
+    raise RuntimeError("JWT_SECRET_KEY ortam değişkeni tanımlı değil veya 32 karakterden kısa. "
+                       "Üretmek için: python -c \"import secrets; print(secrets.token_urlsafe(64))\"")
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 8
@@ -281,6 +285,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=Fals
 LOGIN_ATTEMPTS = {}
 MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_MINUTES = 5
+LOGIN_IP_LIMIT = RateLimiter(limit=30, window_sec=15 * 60)
+
+def set_session_cookie(response: Response, token: str):
+    """Hasta dosyalarını (<img>, PDF) güvenle göstermek için HttpOnly oturum çerezi."""
+    response.set_cookie("cb_session", token, max_age=ACCESS_TOKEN_EXPIRE_HOURS * 3600, httponly=True,
+                        secure=os.getenv("COOKIE_INSECURE") != "1", samesite="lax", path="/")
 
 def check_login_rate_limit(key: str):
     now = datetime.utcnow()
@@ -358,6 +368,39 @@ def _verify_patient_access(patient_id: int, current_user: models.User, db: Sessi
     if patient.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Bu hastanın verilerine erişim yetkiniz yok")
 
+def _verify_record_access(model, record_id: int, current_user: models.User, db: Session):
+    """Analiz/kayıt numarasından hastayı bulur ve kullanıcının o hastaya erişimini doğrular."""
+    rec = db.query(model).filter(model.id == record_id).first()
+    if not rec:
+        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+    _verify_patient_access(rec.patient_id, current_user, db)
+    return rec
+
+# KVKK erişim kaydı: oturum açmış kullanıcıların tüm API ve dosya erişimleri
+app.middleware("http")(make_audit_middleware(SessionLocal, models.AuditLog, SECRET_KEY, ALGORITHM))
+
+@app.post("/api/auth/session-cookie")
+def refresh_session_cookie(response: Response, request: Request, current_user: models.User = Depends(get_current_user)):
+    """Zaten giriş yapmış kullanıcılar için dosya erişim çerezini yeniler."""
+    auth = request.headers.get("authorization", "")
+    set_session_cookie(response, auth[7:].strip())
+    return {"status": "ok"}
+
+@app.post("/api/auth/logout")
+def logout(response: Response):
+    response.delete_cookie("cb_session", path="/")
+    return {"status": "ok"}
+
+@app.get("/api/admin/audit")
+def admin_audit(limit: int = 200, user_id: Optional[int] = None, db: Session = Depends(get_db),
+                _: models.User = Depends(require_superadmin)):
+    q = db.query(models.AuditLog)
+    if user_id is not None:
+        q = q.filter(models.AuditLog.user_id == user_id)
+    rows = q.order_by(models.AuditLog.id.desc()).limit(min(max(limit, 1), 2000)).all()
+    return [{"time": r.created_at.isoformat(), "user_id": r.user_id, "method": r.method,
+             "path": r.path, "status": r.status, "ip": r.ip} for r in rows]
+
 # ────────────────────────────────
 #  Pydantic Şemaları
 # ────────────────────────────────
@@ -388,10 +431,11 @@ class AnalysisDataUpdate(BaseModel):
 #  AUTH ENDPOINTLERİ
 # ────────────────────────────────
 @app.post("/api/auth/login")
-def login(req: LoginRequest, request: Request, db: Session = Depends(get_db)):
+def login(req: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db)):
     req_email = req.email.strip().lower()
-    client_ip = request.client.host if request.client else "unknown"
-    rate_key = f"{client_ip}:{req_email}"
+    ip = client_ip(request)            # Cloudflare / proxy arkasındaki gerçek adres
+    LOGIN_IP_LIMIT.check(ip)           # aynı adresten tüm hesaplara toplam deneme sınırı
+    rate_key = f"{ip}:{req_email}"
     
     # 1. Kaba kuvvet (Brute-force) koruması
     check_login_rate_limit(rate_key)
@@ -408,6 +452,7 @@ def login(req: LoginRequest, request: Request, db: Session = Depends(get_db)):
     record_successful_login(rate_key)
     
     token = create_token({"sub": str(user.id), "role": user.role})
+    set_session_cookie(response, token)
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -560,13 +605,17 @@ async def create_patient(
     name: str = Form(...), age: int = Form(0), weight: float = Form(0.0),
     height: float = Form(0.0), shoe_size: float = Form(0.0),
     gender: str = Form("Erkek"), phone: str = Form(None),
+    kvkk_consent: bool = Form(False), kvkk_text_version: str = Form(""),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    if not kvkk_consent:
+        raise HTTPException(status_code=400, detail="Hasta kaydı için KVKK aydınlatma ve açık rıza onayı gereklidir.")
     new_patient = models.Patient(
         name=name, age=age, weight=weight,
         height=height, shoe_size=shoe_size,
-        gender=gender, phone=phone, user_id=current_user.id
+        gender=gender, phone=phone, user_id=current_user.id,
+        kvkk_consent_at=datetime.utcnow(), kvkk_text_version=(kvkk_text_version or "kvkk-2026-11")[:40]
     )
     db.add(new_patient); db.commit(); db.refresh(new_patient)
     return {"status": "success", "patient_id": new_patient.id}
@@ -608,7 +657,28 @@ async def delete_patient(patient_id: int, db: Session = Depends(get_db),
     ).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Hasta bulunamadı")
+    # Hastaya bağlı tüm tablolardaki kayıtları ve diskteki dosyaları sil (KVKK: silme hakkı)
+    from sqlalchemy import text as _text
+    removed_files = 0
+    for table in models.Base.metadata.sorted_tables:
+        if "patient_id" not in table.c or table.name == "patients":
+            continue
+        rows = db.execute(table.select().where(table.c.patient_id == patient_id)).mappings().all()
+        for row in rows:
+            for val in row.values():
+                if isinstance(val, str) and ("uploads/" in val) and len(val) < 400:
+                    p_ = os.path.realpath(val.lstrip("/"))
+                    if p_.startswith(_UPLOAD_ROOT + os.sep) and os.path.isfile(p_):
+                        try:
+                            os.remove(p_); removed_files += 1
+                        except OSError:
+                            log.warning("Dosya silinemedi (hasta silme)")
+        db.execute(table.delete().where(table.c.patient_id == patient_id))
+    for folder in (f"uploads/foot_scans/ios/{patient_id}", f"uploads/foot_scans/{patient_id}"):
+        if os.path.isdir(folder):
+            import shutil; shutil.rmtree(folder, ignore_errors=True)
     db.delete(patient); db.commit()
+    log.info("Hasta silindi: kayıt=%s, dosya=%s", patient_id, removed_files)
     return {"status": "success"}
 
 # ────────────────────────────────
@@ -670,11 +740,12 @@ async def analyze_pdf(
         raise HTTPException(status_code=404, detail="Hasta bulunamadı")
 
     os.makedirs("uploads/pdfs", exist_ok=True)
-    pdf_filename = f"{uuid.uuid4()}_{file.filename}"
+    _base = _re.sub(r"[^A-Za-z0-9._-]+", "_", os.path.basename(file.filename or "rapor.pdf"))[:60]
+    pdf_filename = f"{uuid.uuid4()}_{_base}"
     pdf_path = os.path.join("uploads", "pdfs", pdf_filename)
 
     try:
-        file_bytes = await file.read()
+        file_bytes = await read_limited(file, LIMIT_PDF)
         # 1. Önce Gemini'ye orijinal yüksek kaliteli PDF gönderilir (AI okuma riski %0)
         encoded_pdf = base64.b64encode(file_bytes).decode('utf-8')
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key={API_KEY}"
@@ -705,7 +776,7 @@ async def analyze_pdf(
             db.commit()
         return {"status": "success", "report": report_text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 @app.post("/api/posture/analyze")
 async def analyze_posture(
@@ -731,7 +802,7 @@ async def analyze_posture(
             ext = img_file.filename.split('.')[-1].lower()
             if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
                 raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
-            bytes_data = await img_file.read()
+            bytes_data = await read_limited(img_file, LIMIT_IMAGE)
             # Yüksek kaliteli WebP (%85) formatında optimize et
             webp_bytes = optimize_image_to_webp(bytes_data, max_dim=1600, quality=85)
             img_path = os.path.join("uploads", "posture", f"{uuid.uuid4()}_{view_name}.webp")
@@ -761,6 +832,7 @@ async def analyze_posture(
 def update_analysis_notes(analysis_id: int, payload: NoteUpdate,
                           db: Session = Depends(get_db),
                           current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
     analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
     if not analysis:
         raise HTTPException(status_code=404, detail="Analiz bulunamadı")
@@ -783,21 +855,6 @@ def update_analysis_data(analysis_id: int, payload: AnalysisDataUpdate,
     analysis.analysis_data = payload.data
     db.commit()
     return {"status": "success"}
-
-@app.post("/api/posture/{analysis_id}/pdf")
-def upload_posture_pdf(analysis_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
-    if not analysis: raise HTTPException(status_code=404)
-    # Hastanın uzmana ait olduğunu doğrula
-    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id, models.Patient.user_id == current_user.id).first()
-    if not patient: raise HTTPException(status_code=403)
-    
-    os.makedirs("uploads/generated_pdfs", exist_ok=True)
-    pdf_path = f"uploads/generated_pdfs/posture_{analysis_id}.pdf"
-    with open(pdf_path, "wb") as f:
-        f.write(file.file.read())
-    
-    return {"status": "success", "url": f"/{pdf_path}"}
 
 # ────────────────────────────────
 #  KLİNİK OMURGA & SKOLYOZ ANALİZİ
@@ -924,7 +981,7 @@ async def analyze_spine(
         ext = back_image.filename.split('.')[-1].lower()
         if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
             raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
-        raw_back = await back_image.read()
+        raw_back = await read_limited(back_image, LIMIT_IMAGE)
         back_bytes = compress_spine_image(raw_back)
         back_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_back.webp")
         with open(back_path, "wb") as f: f.write(back_bytes)
@@ -933,7 +990,7 @@ async def analyze_spine(
         ext = side_image.filename.split('.')[-1].lower()
         if ext not in ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']:
             raise HTTPException(status_code=400, detail="Geçersiz dosya formatı. Sadece JPG, PNG veya WEBP yüklenebilir.")
-        raw_side = await side_image.read()
+        raw_side = await read_limited(side_image, LIMIT_IMAGE)
         side_bytes = compress_spine_image(raw_side)
         side_path = os.path.join("uploads", "spine", f"{uuid.uuid4()}_side.webp")
         with open(side_path, "wb") as f: f.write(side_bytes)
@@ -1066,7 +1123,7 @@ ANALYSIS DATA:
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analiz hatası: {str(e)}")
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
     # Veritabanına kaydet
     spine_rec = models.SpineAnalysis(
@@ -1092,6 +1149,7 @@ ANALYSIS DATA:
 @app.get("/api/spine/{analysis_id}")
 def get_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
                        current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.SpineAnalysis, analysis_id, current_user, db)
     rec = db.query(models.SpineAnalysis).filter(models.SpineAnalysis.id == analysis_id).first()
     if not rec:
         raise HTTPException(status_code=404, detail="Bulunamadı")
@@ -1109,6 +1167,7 @@ def get_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
 @app.get("/api/spine/patient/{patient_id}")
 def get_patient_spine_analyses(patient_id: int, db: Session = Depends(get_db),
                                current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     analyses = db.query(models.SpineAnalysis).filter(
         models.SpineAnalysis.patient_id == patient_id
     ).order_by(models.SpineAnalysis.created_at.desc()).all()
@@ -1142,6 +1201,7 @@ def get_patient_spine_analyses(patient_id: int, db: Session = Depends(get_db),
 @app.delete("/api/spine/{analysis_id}")
 def delete_spine_analysis(analysis_id: int, db: Session = Depends(get_db),
                           current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.SpineAnalysis, analysis_id, current_user, db)
     analysis = db.query(models.SpineAnalysis).filter(models.SpineAnalysis.id == analysis_id).first()
     if not analysis:
         raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
@@ -1322,7 +1382,7 @@ def get_all_exercises(lang: Optional[str] = "tr", category: Optional[str] = None
             for r in rows:
                 translations_map[r[0]] = {"name": r[1], "description": r[2]}
         except Exception as e:
-            print("Exercise library translations lookup error:", e)
+            log.exception("Exercise library translations lookup error:")
 
     results = []
     q_lower = q.lower().strip() if q else None
@@ -1380,7 +1440,7 @@ def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: S
                 for r in rows:
                     translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
         except Exception as e:
-            print("Translation lookup error:", e)
+            log.exception("Translation lookup error:")
 
     for a in assigned:
         ex = db.query(models.Exercise).filter(models.Exercise.id == a.exercise_id).first()
@@ -1405,6 +1465,7 @@ def get_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: S
 
 @app.post("/api/posture/{analysis_id}/exercises")
 def add_prescribed_exercise(analysis_id: int, payload: ExerciseAssign, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
     new_assign = models.PrescribedExercise(
         posture_analysis_id=analysis_id,
         exercise_id=payload.exercise_id,
@@ -1418,6 +1479,7 @@ def add_prescribed_exercise(analysis_id: int, payload: ExerciseAssign, db: Sessi
 
 @app.put("/api/posture/{analysis_id}/exercises/{assign_id}")
 def update_prescribed_exercise(analysis_id: int, assign_id: int, payload: ExerciseUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
     assign = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.id == assign_id).first()
     if assign:
         assign.sets = payload.sets
@@ -1427,6 +1489,7 @@ def update_prescribed_exercise(analysis_id: int, assign_id: int, payload: Exerci
 
 @app.delete("/api/posture/{analysis_id}/exercises/{assign_id}")
 def delete_prescribed_exercise(analysis_id: int, assign_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
     assign = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.id == assign_id).first()
     if assign:
         db.delete(assign)
@@ -1435,6 +1498,7 @@ def delete_prescribed_exercise(analysis_id: int, assign_id: int, db: Session = D
 
 @app.post("/api/posture/{analysis_id}/exercises/suggest")
 def suggest_exercises(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
     try:
         analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
         if not analysis: raise HTTPException(status_code=404)
@@ -1506,103 +1570,38 @@ def suggest_exercises(analysis_id: int, db: Session = Depends(get_db), current_u
         import traceback
         return {"status": "error", "message": f"Global Error: {str(super_err)}", "traceback": traceback.format_exc()}
 
-@app.get("/api/public/report/{analysis_id}")
-def get_public_report(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db)):
-    analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
-    if not analysis: raise HTTPException(status_code=404)
-    
-    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id).first()
-    doctor = db.query(models.User).filter(models.User.id == patient.user_id).first() if patient else None
-    
-    assigned = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.posture_analysis_id == analysis_id).all()
-    target_lang = (lang or "tr").lower().strip()
-
-    translations_map = {}
-    if target_lang != "tr":
-        try:
-            ex_ids = [a.exercise_id for a in assigned]
-            if ex_ids:
-                from sqlalchemy import text
-                placeholders = ",".join(str(int(i)) for i in ex_ids)
-                rows = db.execute(text(f"SELECT exercise_id, name, category, description FROM exercise_translations WHERE lang = :lang AND exercise_id IN ({placeholders})"), {"lang": target_lang}).fetchall()
-                for r in rows:
-                    translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
-        except Exception as e:
-            print("Public report translations lookup error:", e)
-
-    ex_list = []
-    for ex in assigned:
-        ex_def = db.query(models.Exercise).filter(models.Exercise.id == ex.exercise_id).first()
-        if ex_def:
-            trans = translations_map.get(ex_def.id)
-            name = trans["name"] if trans else ex_def.name
-            category = trans["category"] if trans and trans.get("category") else get_translated_category(ex_def.category, target_lang)
-            description = trans["description"] if trans else ex_def.description
-
-            ex_list.append({
-                "name": name,
-                "category": category,
-                "raw_category": ex_def.category,
-                "description": description,
-                "video_url": ex_def.video_url,
-                "image_path": ex_def.image_path,
-                "sets": ex.sets,
-                "reps": ex.reps
-            })
-            
-    return {
-        "analysis_data": analysis.analysis_data,
-        "front_image": analysis.front_image_path,
-        "back_image": analysis.back_image_path,
-        "left_image": analysis.left_image_path,
-        "right_image": analysis.right_image_path,
-        "clinical_notes": analysis.clinical_notes,
-        "ai_report_text": analysis.ai_report_text,
-        "created_at": analysis.created_at,
-        "patient": {
-            "age": patient.age if patient else "-",
-            "gender": patient.gender if patient else "-",
-            "weight": patient.weight if patient else "-"
-        },
-        "doctor": {
-            "name": doctor.name if doctor else "",
-            "email": doctor.email if doctor else "",
-            "phone": doctor.phone if doctor else ""
-        },
-        "exercises": ex_list
-    }
-
-@app.get("/api/public/foot_report/{analysis_id}")
-def get_public_foot_report(analysis_id: int, db: Session = Depends(get_db)):
-    analysis = db.query(models.FootAnalysis).filter(models.FootAnalysis.id == analysis_id).first()
-    if not analysis: raise HTTPException(status_code=404)
-    
-    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id).first()
-    doctor = db.query(models.User).filter(models.User.id == patient.user_id).first() if patient else None
-    
-    return {
-        "patient": {
-            "name": patient.name,
-            "age": patient.age,
-            "weight": patient.weight,
-            "gender": patient.gender
-        },
-        "doctor": {
-            "name": doctor.name if doctor else "",
-            "email": doctor.email if doctor else "",
-            "phone": doctor.phone if doctor else ""
-        },
-        "analysis": {
-            "id": analysis.id,
-            "created_at": analysis.created_at,
-            "ai_report_text": analysis.ai_report_text,
-            "original_pdf_path": analysis.original_pdf_path
-        }
-    }
-
 # Static files — EN SONA
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+# ── QR ile PDF teslimi: PDF hekimin tarayıcısında şifrelenir, sunucuda en fazla 15 dk ve tek indirme kadar durur ──
+@app.post("/api/handoff")
+async def create_handoff(file: UploadFile = File(...), current_user: models.User = Depends(get_current_user)):
+    data = await read_limited(file, LIMIT_PDF)
+    if len(data) < 32:
+        raise HTTPException(status_code=400, detail="Geçersiz dosya.")
+    return {"id": handoff_store(data), "expires_in_min": 15}
+
+@app.get("/api/handoff/{hid}")
+def get_handoff(hid: str):
+    return Response(content=handoff_take(hid), media_type="application/octet-stream",
+                    headers={"Cache-Control": "no-store", "X-Robots-Tag": "noindex"})
+
+_UPLOAD_ROOT = os.path.realpath("uploads")
+
+@app.get("/uploads/{file_path:path}")
+def serve_upload(file_path: str, request: Request, db: Session = Depends(get_db)):
+    """Hasta dosyaları yalnızca oturum açmış, aktif kullanıcılara verilir (herkese açık değil)."""
+    uid = user_id_from_request(request, SECRET_KEY, ALGORITHM)
+    user = db.query(models.User).filter(models.User.id == uid).first() if uid else None
+    if not user or not user.is_active:
+        raise HTTPException(status_code=401, detail="Bu dosyayı görmek için giriş yapın.")
+    full = os.path.realpath(os.path.join(_UPLOAD_ROOT, file_path))
+    if not full.startswith(_UPLOAD_ROOT + os.sep) or not os.path.isfile(full):
+        raise HTTPException(status_code=404)
+    resp = FileResponse(full)
+    resp.headers["Cache-Control"] = "private, no-store"
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    resp.headers["Content-Security-Policy"] = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
+    return resp
 app.mount("/egzersiz-gorsel", StaticFiles(directory="../egzersiz-gorsel"), name="egzersiz-gorsel")
 
 
@@ -1617,11 +1616,12 @@ async def create_scoliosis_analysis(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    _verify_patient_access(patient_id, current_user, db)
     import uuid
     import os
     
     # Save Image (WebP formatında optimize ederek)
-    raw_bytes = await image.read()
+    raw_bytes = await read_limited(image, LIMIT_IMAGE)
     webp_bytes = optimize_image_to_webp(raw_bytes, max_dim=1600, quality=85)
     filename = f"{uuid.uuid4().hex}.webp"
     os.makedirs("uploads/scoliosis", exist_ok=True)
@@ -1643,6 +1643,7 @@ async def create_scoliosis_analysis(
 
 @app.get("/api/scoliosis/patient/{patient_id}")
 def get_patient_scoliosis(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     analyses = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.patient_id == patient_id).order_by(models.ScoliosisAnalysis.created_at.desc()).all()
     return analyses
 
@@ -1653,6 +1654,7 @@ def update_scoliosis(
     db: Session = Depends(get_db), 
     current_user: models.User = Depends(get_current_user)
 ):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     analysis = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.id == analysis_id).first()
     if not analysis:
         raise HTTPException(status_code=404, detail="Scoliosis analysis not found")
@@ -1671,6 +1673,7 @@ def update_scoliosis(
 
 @app.delete("/api/scoliosis/{analysis_id}")
 def delete_scoliosis(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     analysis = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.id == analysis_id).first()
     if analysis:
         db.delete(analysis)
@@ -1679,6 +1682,7 @@ def delete_scoliosis(analysis_id: int, db: Session = Depends(get_db), current_us
 
 @app.post("/api/scoliosis/{analysis_id}/generate-report")
 def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     analysis = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.id == analysis_id).first()
     if not analysis: raise HTTPException(status_code=404)
     
@@ -1718,7 +1722,7 @@ def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), c
         return {"status": "success", "report": analysis.ai_report_text}
     except Exception as e:
         import traceback
-        print("Gemini Scoliosis Error:", e)
+        log.exception("Gemini Scoliosis Error:")
         if hasattr(e, 'response') and e.response is not None:
             print("Response Body:", e.response.text)
         traceback.print_exc()
@@ -1728,6 +1732,7 @@ def generate_scoliosis_report(analysis_id: int, db: Session = Depends(get_db), c
 
 @app.get("/api/scoliosis/{analysis_id}/exercises")
 def get_scoliosis_prescribed_exercises(analysis_id: int, lang: Optional[str] = "tr", db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     exercises = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.scoliosis_analysis_id == analysis_id).all()
     target_lang = (lang or "tr").lower().strip()
     translations_map = {}
@@ -1741,7 +1746,7 @@ def get_scoliosis_prescribed_exercises(analysis_id: int, lang: Optional[str] = "
                 for r in rows:
                     translations_map[r[0]] = {"name": r[1], "category": r[2], "description": r[3]}
         except Exception as e:
-            print("Scoliosis exercise translation lookup error:", e)
+            log.exception("Scoliosis exercise translation lookup error:")
 
     res = []
     for ex in exercises:
@@ -1767,6 +1772,7 @@ def get_scoliosis_prescribed_exercises(analysis_id: int, lang: Optional[str] = "
 
 @app.post("/api/scoliosis/{analysis_id}/exercises")
 def add_scoliosis_prescribed_exercise(analysis_id: int, payload: ExerciseAssign, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     try:
         ne = models.PrescribedExercise(
             scoliosis_analysis_id=analysis_id,
@@ -1779,12 +1785,13 @@ def add_scoliosis_prescribed_exercise(analysis_id: int, payload: ExerciseAssign,
         return {"status": "success"}
     except Exception as e:
         import traceback
-        print("ADD EXERCISE ERROR:", e)
+        log.exception("ADD EXERCISE ERROR:")
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 @app.put("/api/scoliosis/{analysis_id}/exercises/{assign_id}")
 def update_scoliosis_prescribed_exercise(analysis_id: int, assign_id: int, payload: ExerciseUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     assign = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.id == assign_id).first()
     if assign:
         assign.sets = payload.sets
@@ -1794,6 +1801,7 @@ def update_scoliosis_prescribed_exercise(analysis_id: int, assign_id: int, paylo
 
 @app.delete("/api/scoliosis/{analysis_id}/exercises/{assign_id}")
 def delete_scoliosis_prescribed_exercise(analysis_id: int, assign_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     assign = db.query(models.PrescribedExercise).filter(models.PrescribedExercise.id == assign_id).first()
     if assign:
         db.delete(assign)
@@ -1802,6 +1810,7 @@ def delete_scoliosis_prescribed_exercise(analysis_id: int, assign_id: int, db: S
 
 @app.post("/api/scoliosis/{analysis_id}/exercises/suggest")
 def suggest_scoliosis_exercises(analysis_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_record_access(models.ScoliosisAnalysis, analysis_id, current_user, db)
     try:
         analysis = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.id == analysis_id).first()
         if not analysis: raise HTTPException(status_code=404)
@@ -1836,56 +1845,9 @@ def suggest_scoliosis_exercises(analysis_id: int, db: Session = Depends(get_db),
         return {"status": "error", "message": str(e)}
 
 
-@app.get("/api/public/scoliosis_report/{analysis_id}")
-def get_public_scoliosis_report(analysis_id: int, db: Session = Depends(get_db)):
-    analysis = db.query(models.ScoliosisAnalysis).filter(models.ScoliosisAnalysis.id == analysis_id).first()
-    if not analysis: raise HTTPException(status_code=404)
-    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id).first()
-    doctor = db.query(models.User).filter(models.User.id == patient.user_id).first() if patient else None
-    
-    return {
-        "image_path": analysis.image_path,
-        "cobb_angle": analysis.cobb_angle,
-        "curve_type": analysis.curve_type,
-        "points_data": analysis.points_data,
-        "clinical_notes": analysis.clinical_notes,
-        "ai_report_text": analysis.ai_report_text,
-        "created_at": analysis.created_at,
-        "patient": {
-            "age": patient.age,
-            "gender": patient.gender,
-            "weight": patient.weight
-        } if patient else {},
-        "doctor": {
-            "name": doctor.name if doctor else "",
-            "email": doctor.email if doctor else "",
-            "phone": doctor.phone if doctor else ""
-        } if doctor else {}
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class ScoliometerSaveRequest(BaseModel):
-    thoracic_angle: float = None
-    lumbar_angle: float = None
-
 @app.post("/api/scoliometer/token/{patient_id}")
 def generate_scoliometer_token(patient_id: int, request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient: raise HTTPException(status_code=404, detail="Patient not found")
     
@@ -1906,6 +1868,10 @@ def generate_scoliometer_token(patient_id: int, request: Request, db: Session = 
     base_url = f"{proto}://{host}"
     url = f"{base_url}/scoliometer.html?token={token_str}"
     return {"url": url}
+
+class ScoliometerSaveRequest(BaseModel):
+    thoracic_angle: float = None
+    lumbar_angle: float = None
 
 @app.get("/scoliometer")
 def serve_scoliometer():
@@ -1938,6 +1904,7 @@ def save_scoliometer_data(token: str, req: ScoliometerSaveRequest, db: Session =
 
 @app.get("/api/scoliometer/patient/{patient_id}")
 def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     history = db.query(models.ScoliometerMeasurement).filter(models.ScoliometerMeasurement.patient_id == patient_id).order_by(models.ScoliometerMeasurement.created_at.desc()).all()
     return {"history": [{"id": h.id, "thoracic": h.thoracic_angle, "lumbar": h.lumbar_angle, "date": h.created_at.isoformat()} for h in history]}
 
@@ -1947,6 +1914,7 @@ def get_scoliometer_history(patient_id: int, db: Session = Depends(get_db), curr
 
 @app.post("/api/foot_scan/token/{patient_id}")
 def generate_foot_scan_token(patient_id: int, request: Request, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     patient = db.query(models.Patient).filter(models.Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Hasta bulunamadı")
@@ -2018,19 +1986,19 @@ async def upload_foot_scan(
     l_file = left_foot_file or left_foot_stl
     
     if r_file and r_file.filename:
-        ext = os.path.splitext(r_file.filename.lower())[1] or ".ply"
+        ext = safe_ext(r_file.filename, SCAN_EXTS, default=".ply")
         filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_right = os.path.join(save_dir, filename_right)
-        content = await r_file.read()
+        content = await read_limited(r_file, LIMIT_SCAN)
         with open(dest_right, "wb") as f:
             f.write(content)
         right_path = f"/uploads/foot_scans/{patient_id}/{filename_right}"
         
     if l_file and l_file.filename:
-        ext = os.path.splitext(l_file.filename.lower())[1] or ".ply"
+        ext = safe_ext(l_file.filename, SCAN_EXTS, default=".ply")
         filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_left = os.path.join(save_dir, filename_left)
-        content = await l_file.read()
+        content = await read_limited(l_file, LIMIT_SCAN)
         with open(dest_left, "wb") as f:
             f.write(content)
         left_path = f"/uploads/foot_scans/{patient_id}/{filename_left}"
@@ -2100,6 +2068,7 @@ def get_foot_scan_status(token: str, db: Session = Depends(get_db)):
 
 @app.get("/api/foot_scan/patient/{patient_id}")
 def get_foot_scan_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     scans = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.patient_id == patient_id).order_by(models.FootScanMeasurement.created_at.desc()).all()
     return {
         "scans": [
@@ -2120,10 +2089,8 @@ def get_foot_scan_history(patient_id: int, db: Session = Depends(get_db), curren
     }
 
 @app.get("/api/foot_scan/download/{measurement_id}/{side}")
-def download_foot_scan_stl(measurement_id: int, side: str, db: Session = Depends(get_db)):
-    m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.id == measurement_id).first()
-    if not m:
-        raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+def download_foot_scan_stl(measurement_id: int, side: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    m = _verify_record_access(models.FootScanMeasurement, measurement_id, current_user, db)
     
     file_rel_path = m.right_foot_stl if side.lower() == "right" else m.left_foot_stl
     if not file_rel_path:
@@ -2137,11 +2104,9 @@ def download_foot_scan_stl(measurement_id: int, side: str, db: Session = Depends
     return FileResponse(local_path, media_type="application/sla", filename=filename)
 
 @app.delete("/api/foot_scan/{measurement_id}")
-def delete_foot_scan(measurement_id: int, db: Session = Depends(get_db)):
+def delete_foot_scan(measurement_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     try:
-        m = db.query(models.FootScanMeasurement).filter(models.FootScanMeasurement.id == measurement_id).first()
-        if not m:
-            raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+        m = _verify_record_access(models.FootScanMeasurement, measurement_id, current_user, db)
         
         # Dosyaları diskten de temizle
         try:
@@ -2161,7 +2126,7 @@ def delete_foot_scan(measurement_id: int, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 # =============================================================================
 # iOS NATIVE APP API ENDPOINTS
@@ -2250,7 +2215,7 @@ async def ios_upload_scan(
             raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
         filename_right = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_right = os.path.join(save_dir, filename_right)
-        content = await r_file.read()
+        content = await read_limited(r_file, LIMIT_SCAN)
         with open(dest_right, "wb") as f:
             f.write(content)
         right_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_right}"
@@ -2261,7 +2226,7 @@ async def ios_upload_scan(
             raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}. Kabul edilenler: STL, OBJ, USDZ, PLY")
         filename_left = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
         dest_left = os.path.join(save_dir, filename_left)
-        content = await l_file.read()
+        content = await read_limited(l_file, LIMIT_SCAN)
         with open(dest_left, "wb") as f:
             f.write(content)
         left_path = f"/uploads/foot_scans/ios/{patient_id}/{filename_left}"
@@ -2345,122 +2310,6 @@ def ios_scan_ready(token: str, db: Session = Depends(get_db)):
 class OrderScanRequest(BaseModel):
     order_number: str   # Örn: "CBY-2026-00123"
 
-@app.post("/api/ios/verify_order")
-def ios_verify_order(body: OrderScanRequest, db: Session = Depends(get_db)):
-    """
-    iOS uygulamasının bireysel kullanıcı modunda sipariş numarasının
-    geçerli olup olmadığını kontrol eder.
-    Şimdilik format kontrolü yapılıyor; e-ticaret entegrasyonunda DB'ye bağlanacak.
-    """
-    order_no = body.order_number.strip().upper()
-
-    # Temel format kontrolü: CBY- ile başlamalı
-    import re
-    pattern = re.compile(r'^CBY-\d{4}-\d+$')
-    if not pattern.match(order_no):
-        raise HTTPException(
-            status_code=400,
-            detail="Geçersiz sipariş numarası formatı. Örnek: CBY-2026-00123"
-        )
-
-    # TODO (Faz 2): InsoleOrder tablosunu veya e-ticaret API'sini burada sorgula
-    # Şimdilik: format uygunsa kabul et, ileride DB sorgusu eklenecek
-    return {
-        "valid": True,
-        "order_number": order_no,
-        "mode": "individual",
-        "message": "Sipariş numarası doğrulandı. Taramaya devam edebilirsiniz.",
-        "note": "Taramanız bu sipariş numarasına bağlanacak."
-    }
-
-
-@app.post("/api/ios/upload_order_scan/{order_number}")
-async def ios_upload_order_scan(
-    order_number: str,
-    right_foot_file: Optional[UploadFile] = File(None),
-    left_foot_file: Optional[UploadFile] = File(None),
-    arch_height_right: Optional[float] = Form(None),
-    arch_height_left: Optional[float] = Form(None),
-    foot_length_right: Optional[float] = Form(None),
-    foot_length_left: Optional[float] = Form(None),
-    device_model: Optional[str] = Form(None),
-    scanner_type: Optional[str] = Form(None),
-    db: Session = Depends(get_db)
-):
-    """
-    Bireysel kullanıcının sipariş numarasıyla eşleştirilmiş 3D taramasını alır.
-    Dosyalar /uploads/foot_scans/orders/{order_number}/ klasörüne kaydedilir.
-    """
-    order_no = order_number.strip().upper()
-    import re
-    if not re.match(r'^CBY-\d{4}-\d+$', order_no):
-        raise HTTPException(status_code=400, detail="Geçersiz sipariş numarası. Örnek: CBY-2026-00123")
-    save_dir = os.path.join("uploads", "foot_scans", "orders", order_no)
-    os.makedirs(save_dir, exist_ok=True)
-
-    right_path = None
-    left_path = None
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-    ALLOWED_EXTENSIONS = {".stl", ".obj", ".usdz", ".ply"}
-
-    if right_foot_file and right_foot_file.filename:
-        ext = os.path.splitext(right_foot_file.filename.lower())[1]
-        if ext not in ALLOWED_EXTENSIONS:
-            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}")
-        fname = f"right_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
-        dest = os.path.join(save_dir, fname)
-        content = await right_foot_file.read()
-        with open(dest, "wb") as f:
-            f.write(content)
-        right_path = f"/uploads/foot_scans/orders/{order_no}/{fname}"
-
-    if left_foot_file and left_foot_file.filename:
-        ext = os.path.splitext(left_foot_file.filename.lower())[1]
-        if ext not in ALLOWED_EXTENSIONS:
-            raise HTTPException(status_code=400, detail=f"Desteklenmeyen format: {ext}")
-        fname = f"left_{timestamp}_{uuid.uuid4().hex[:6]}{ext}"
-        dest = os.path.join(save_dir, fname)
-        content = await left_foot_file.read()
-        with open(dest, "wb") as f:
-            f.write(content)
-        left_path = f"/uploads/foot_scans/orders/{order_no}/{fname}"
-
-    if not right_path and not left_path:
-        raise HTTPException(status_code=400, detail="En az bir ayak dosyası gönderilmelidir.")
-
-    notes = f"Bireysel Sipariş Taraması | Sipariş: {order_no}"
-    if device_model:
-        notes += f" | Cihaz: {device_model}"
-    if scanner_type:
-        notes += f" | Sensör: {scanner_type}"
-
-    # Hasta bağlantısı olmadan (bireysel) kayıt — patient_id=None
-    m = models.FootScanMeasurement(
-        patient_id=None,
-        token=None,
-        order_number=order_no,
-        right_foot_stl=right_path,
-        left_foot_stl=left_path,
-        arch_height_right=arch_height_right,
-        arch_height_left=arch_height_left,
-        foot_length_right=foot_length_right,
-        foot_length_left=foot_length_left,
-        notes=notes
-    )
-    db.add(m)
-    db.commit()
-    db.refresh(m)
-
-    return {
-        "status": "success",
-        "message": f"Sipariş {order_no} için 3D tarama başarıyla alındı.",
-        "measurement_id": m.id,
-        "order_number": order_no,
-        "right_foot_file": right_path,
-        "left_foot_file": left_path
-    }
-
-
 class SimulationCreate(BaseModel):
     patient_id: int
     cobb_angle: float
@@ -2471,8 +2320,53 @@ class SimulationCreate(BaseModel):
     end_vertebra: str
     measurement_method: str
 
+# ── X-RAY (kamera) seansları: hastanın kaydına bağlı ──
+class XRaySessionIn(BaseModel):
+    results: list
+    notes: Optional[str] = ""
+    height: Optional[float] = None
+
+@app.post("/api/xray/patient/{patient_id}")
+def save_xray_session(patient_id: int, body: XRaySessionIn, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
+    # Görüntüler (snapshot) sunucuda saklanmaz; yalnızca ölçüm değerleri
+    clean = [{k: v for k, v in r.items() if k != "snapshot"} for r in body.results if isinstance(r, dict)][:100]
+    data = json.dumps(clean, ensure_ascii=False)
+    if len(data) > 200_000:
+        raise HTTPException(status_code=413, detail="Seans verisi çok büyük.")
+    rec = models.XRaySession(patient_id=patient_id, user_id=current_user.id, results=data,
+                             notes=(body.notes or "")[:5000], height=body.height)
+    db.add(rec); db.commit(); db.refresh(rec)
+    return {"status": "success", "id": rec.id, "created_at": rec.created_at.isoformat()}
+
+@app.get("/api/xray/patient/{patient_id}")
+def list_xray_sessions(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
+    rows = (db.query(models.XRaySession).filter(models.XRaySession.patient_id == patient_id)
+            .order_by(models.XRaySession.created_at.desc()).limit(30).all())
+    return [{"id": r.id, "created_at": r.created_at.isoformat(), "height": r.height, "notes": r.notes,
+             "results": json.loads(r.results or "[]")} for r in rows]
+
+@app.put("/api/xray/{session_id}")
+def update_xray_session(session_id: int, body: XRaySessionIn, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    rec = _verify_record_access(models.XRaySession, session_id, current_user, db)
+    clean = [{k: v for k, v in r.items() if k != "snapshot"} for r in body.results if isinstance(r, dict)][:100]
+    data = json.dumps(clean, ensure_ascii=False)
+    if len(data) > 200_000:
+        raise HTTPException(status_code=413, detail="Seans verisi çok büyük.")
+    rec.results = data; rec.notes = (body.notes or "")[:5000]; rec.height = body.height
+    db.commit()
+    return {"status": "success", "id": rec.id, "created_at": rec.created_at.isoformat()}
+
+@app.delete("/api/xray/{session_id}")
+def delete_xray_session(session_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    rec = _verify_record_access(models.XRaySession, session_id, current_user, db)
+    db.delete(rec); db.commit()
+    return {"status": "success"}
+
 @app.post("/api/simulation")
-def save_simulation(sim: SimulationCreate, db: Session = Depends(get_db)):
+def save_simulation(sim: SimulationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(sim.patient_id, current_user, db)
     try:
         db_sim = models.SimulationAnalysis(**sim.dict())
         db.add(db_sim)
@@ -2481,24 +2375,23 @@ def save_simulation(sim: SimulationCreate, db: Session = Depends(get_db)):
         return {"status": "success", "id": db_sim.id}
     except Exception as e:
         db.rollback()
-        print("SIMULATION SAVE ERROR:", str(e))
-        raise HTTPException(status_code=500, detail=f"Kayıt hatası: {str(e)}")
+        log.exception("SIMULATION SAVE ERROR:")
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 @app.get("/api/simulation/patient/{patient_id}")
-def get_simulation_history(patient_id: int, db: Session = Depends(get_db)):
+def get_simulation_history(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     try:
         history = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.patient_id == patient_id).order_by(models.SimulationAnalysis.created_at.desc()).all()
         return {"history": history}
     except Exception as e:
-        print("SIMULATION HISTORY FETCH ERROR:", str(e))
+        log.exception("SIMULATION HISTORY FETCH ERROR:")
         return {"history": []}
 
 @app.delete("/api/simulation/{simulation_id}")
-def delete_simulation(simulation_id: int, db: Session = Depends(get_db)):
+def delete_simulation(simulation_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     try:
-        record = db.query(models.SimulationAnalysis).filter(models.SimulationAnalysis.id == simulation_id).first()
-        if not record:
-            raise HTTPException(status_code=404, detail="Kayıt bulunamadı")
+        record = _verify_record_access(models.SimulationAnalysis, simulation_id, current_user, db)
         db.delete(record)
         db.commit()
         return {"status": "success"}
@@ -2506,8 +2399,8 @@ def delete_simulation(simulation_id: int, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         db.rollback()
-        print("SIMULATION DELETE ERROR:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        log.exception("SIMULATION DELETE ERROR:")
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 
 class AIFootReportRequest(BaseModel):
@@ -2595,8 +2488,8 @@ Denge Testi Verisi: {req.balance_data}
         else:
             return {"error": "API boş yanıt döndürdü."}
     except Exception as e:
-        print("AI Foot Report Error:", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        log.exception("AI Foot Report Error:")
+        log.exception("İşlem hatası"); raise HTTPException(status_code=500, detail="İşlem sırasında bir hata oluştu. Lütfen tekrar deneyin.")
 
 # app.mount("/", StaticFiles(directory="../frontend", html=True), name="frontend")
 
@@ -2615,10 +2508,8 @@ class InsoleOrderStatusUpdate(BaseModel):
 
 @app.post("/api/orders")
 def create_insole_order(req: InsoleOrderCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    patient = db.query(models.Patient).filter(models.Patient.id == req.patient_id).first()
-    if not patient:
-        raise HTTPException(status_code=404, detail="Hasta bulunamadı")
-        
+    _verify_patient_access(req.patient_id, current_user, db)
+
     new_order = models.InsoleOrder(
         patient_id=req.patient_id,
         therapist_id=current_user.id,
@@ -2649,6 +2540,7 @@ def get_therapist_orders(db: Session = Depends(get_db), current_user: models.Use
 
 @app.get("/api/orders/patient/{patient_id}")
 def get_patient_orders(patient_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    _verify_patient_access(patient_id, current_user, db)
     orders = db.query(models.InsoleOrder).filter(models.InsoleOrder.patient_id == patient_id).order_by(models.InsoleOrder.created_at.desc()).all()
     res = []
     for o in orders:

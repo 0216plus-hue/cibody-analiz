@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>X-Ray · CIBODY</title>
+<script>if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embed');</script>
+<style>
+:root{--bg:#05070b;--panel:#0b111a;--line:#1a2532;--text:#d9e4f0;--muted:#7d8da0;--accent:#7cc4ff;--accent-ink:#04121f}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;flex-wrap:wrap}
+h1{font-weight:200;font-size:30px;letter-spacing:.04em;margin:0}
+h1 small{display:block;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-top:2px}
+.btns{display:flex;gap:8px}
+button{font:inherit;color:var(--text);background:#111a26;border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer}
+button:hover{border-color:#2c3d52}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding:0 16px 16px}
+.app.nopanel{grid-template-columns:1fr}.app.nopanel .side{display:none}
+@media (max-width:980px){.app{grid-template-columns:1fr}}
+.stage{position:relative;background:#000;border-radius:14px;overflow:hidden;align-self:start}
+.stage canvas{width:100%;height:auto;display:block;aspect-ratio:16/9;touch-action:none}
+.stage:fullscreen{display:flex;align-items:center;border-radius:0}
+.stage:fullscreen canvas{max-height:100vh;object-fit:contain}
+video{display:none}
+.hud{position:absolute;left:12px;top:10px;font:11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#9fd3ff;text-shadow:0 0 6px #000;pointer-events:none}
+.start{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(circle at 50% 45%,#0d1a2a,#020406 70%);text-align:center;padding:16px}
+.start button{background:var(--accent);color:var(--accent-ink);border:0;font-weight:600;padding:12px 22px;border-radius:999px;font-size:15px}
+.start p{color:var(--muted);max-width:440px;margin:0;font-size:13px}
+.start .err{color:#ff9a9a}
+.side{display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 90px);overflow:auto;padding-right:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.card h3{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chips button{padding:5px 10px;font-size:12.5px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+label.ck{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px}
+label.ck input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#070b11;border-radius:9px;padding:3px;margin-bottom:10px}
+.seg button{border:0;background:transparent;padding:7px 0;font-size:13px}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.row{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:8px;margin:7px 0;font-size:13px}
+.row span.v{color:var(--muted);font-size:11px;margin-left:4px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{width:100%;font:inherit;font-size:13px;color:var(--text);background:#070b11;border:1px solid var(--line);border-radius:8px;padding:6px}
+pre{margin:8px 0 0;padding:10px;background:#070b11;border-radius:8px;font:11.5px/1.6 ui-monospace,Menlo,monospace;color:#bcd0e4;white-space:pre-wrap;min-height:120px}
+.hint{color:var(--muted);font-size:11.5px;margin:8px 0 0}
+/* ── CIBODY paneli içinde (embed) görünüm: 3D Omurga Simülasyonu kartıyla aynı renkler ── */
+html.embed{--bg:#0f172a;--panel:#1e293b;--line:#334155;--text:#e2e8f0;--muted:#94a3b8;--accent:#34d399;--accent-ink:#052e2b}
+html.embed body{background:var(--bg)}
+html.embed header{padding:18px 20px 12px}
+html.embed h1{font-size:22px;font-weight:800;letter-spacing:0;color:#fff}
+html.embed h1::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--accent);margin-right:10px;vertical-align:middle;box-shadow:0 0 10px var(--accent)}
+html.embed h1 small{font-size:11px;letter-spacing:.12em;margin-top:4px;color:var(--muted)}
+html.embed .app{padding:0 20px 20px}
+html.embed .stage{border:1px solid var(--line);border-radius:18px;height:calc(100vh - 92px);min-height:640px;display:flex;align-items:center;justify-content:center}
+html.embed .stage canvas{width:100%;height:100%;aspect-ratio:auto!important;object-fit:contain}
+html.embed .app{grid-template-columns:minmax(0,1fr) 360px}
+html.embed .card{border-radius:14px}
+html.embed button{background:#0f172a;border-color:var(--line)}
+html.embed .start button,html.embed #cl-btns button:not(.ghost),html.embed .seg button.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+html.embed .seg button:not(.on){background:transparent}
+html.embed #cl-card-live{display:none}
+html.embed .cl-locked input[readonly]{background:transparent;border-color:transparent;padding-left:0;font-weight:700;color:#fff;cursor:default}
+html.embed .side{max-height:calc(100vh - 92px)}
+html.embed .hud{color:#6ee7b7}
+html.embed .start{background:radial-gradient(circle at 50% 45%,#13233b,#0b1222 70%)}
+html.embed select,html.embed pre,html.embed .seg{background:#0f172a}
+</style>
+</head>
+<body>
+<header>
+  <h1><span id="appTitle">X-Ray Mirror</span><small>Vücut tarayıcı · omuzdan aşağısı</small></h1>
+  <div class="btns">
+    <button id="fs">⛶ Tam ekran</button>
+    <button id="toggleSide" title="H">Paneli gizle</button>
+  </div>
+</header>
+
+<div class="app" id="app">
+  <div class="stage" id="stage">
+    <canvas id="view" width="1280" height="720"></canvas>
+    <video id="video" playsinline muted></video>
+    <div class="hud" id="hud"></div>
+    <div class="start" id="start">
+      <button id="go">Taramayı başlat</button>
+      <p>Omuzdan aşağısı taranır: boyun ve sırt omurları, kalça, kollar, el ve bilek kemikleri, bacaklar ve ayak bilekleri. Yüz gösterilmez.</p>
+      <p>Görüntü bilgisayarından çıkmaz; tüm takip tarayıcının içinde çalışır. Tam vücut için kameradan 2–3 m uzak dur.</p>
+      <p class="err" id="err"></p>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="card" id="camCard">
+      <h3>Kamera</h3>
+      <div class="row"><label>Kamera</label><select id="camSelect"><option value="">Varsayılan kamera</option></select></div>
+      <div class="row"><label>Görüntü yönü</label>
+        <select id="camRot">
+          <option value="0">Döndürme yok (0°)</option>
+          <option value="90">Saat yönünde 90°</option>
+          <option value="180">180° (baş aşağı)</option>
+          <option value="270">Saat yönü tersine 90°</option>
+        </select>
+      </div>
+      <p class="hint">Postür analizindeki kamera ve döndürme ayarıyla aynıdır; birinde değiştirince diğerinde de geçerli olur.</p>
+    </div>
+    <div class="card">
+      <h3>Katmanlar</h3>
+      <div class="chips">
+        <button data-preset="skeleton">İskelet</button>
+        <button data-preset="spine">Omurga</button>
+        <button data-preset="limbs">Uzuvlar</button>
+        <button data-preset="all">Hepsi</button>
+      </div>
+      <div class="checks">
+        <label class="ck"><input type="checkbox" data-layer="spine"><span class="dot" style="background:#7cc4ff"></span>Omurga</label>
+        <label class="ck"><input type="checkbox" data-layer="shoulders"><span class="dot" style="background:#a6f0ff"></span>Köprücük/kürek</label>
+        <label class="ck"><input type="checkbox" data-layer="pelvis"><span class="dot" style="background:#c7b8ff"></span>Kalça</label>
+        <label class="ck"><input type="checkbox" data-layer="arms"><span class="dot" style="background:#8fe3c8"></span>Kollar</label>
+        <label class="ck"><input type="checkbox" data-layer="hands"><span class="dot" style="background:#f5e08a"></span>El ve bilek</label>
+        <label class="ck"><input type="checkbox" data-layer="legs"><span class="dot" style="background:#ffb38a"></span>Bacaklar</label>
+        <label class="ck"><input type="checkbox" data-layer="feet"><span class="dot" style="background:#ff9ab0"></span>Ayak bileği</label>
+        <label class="ck"><input type="checkbox" data-layer="joints"><span class="dot" style="background:#ffffff"></span>Eklemler</label>
+        <label class="ck"><input type="checkbox" data-layer="labels"><span class="dot" style="background:#5b6b7d"></span>Etiketler</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Görünüm</h3>
+      <div class="seg" id="look">
+        <button data-look="film">Film</button><button data-look="xray">X-ray</button><button data-look="neon">Neon</button><button data-look="solid">Solid</button>
+      </div>
+      <div class="row"><label>Projeksiyon</label>
+        <select id="proj">
+          <option value="auto">Otomatik (önden / yandan)</option>
+          <option value="front">Hep önden</option>
+          <option value="side">Hep yandan</option>
+        </select>
+      </div>
+      <div class="row"><label>Parlaklık<span class="v" data-out="brightness"></span></label><input type="range" data-key="brightness" min="0.3" max="2" step="0.05"></div>
+      <div class="row"><label>Parıltı<span class="v" data-out="glow"></span></label><input type="range" data-key="glow" min="0" max="1.5" step="0.05"></div>
+      <div class="row"><label>Kemik dokusu<span class="v" data-out="trab"></span></label><input type="range" data-key="trab" min="0" max="1" step="0.05"></div>
+      <div class="row"><label>Film greni<span class="v" data-out="grain"></span></label><input type="range" data-key="grain" min="0" max="1" step="0.05"></div>
+    </div>
+
+    <div class="card">
+      <h3>Karma gerçeklik</h3>
+      <div class="row"><label>Gerçek ben görünsün<span class="v" data-out="realMe"></span></label><input type="range" data-key="realMe" min="0" max="1" step="0.05"></div>
+      <div class="row"><label>Kenar yumuşatma<span class="v" data-out="feather"></span></label><input type="range" data-key="feather" min="0" max="30" step="1"></div>
+      <div class="row"><label>Gösterim</label>
+        <select id="reveal">
+          <option value="full">Tüm vücut</option>
+          <option value="lens">X-ray lens (parmağı izler)</option>
+          <option value="scan">Tarama (yukarıdan aşağı)</option>
+          <option value="split">Bölünmüş (sürükle)</option>
+        </select>
+      </div>
+      <div class="row"><label>Lens boyutu<span class="v" data-out="lens"></span></label><input type="range" data-key="lens" min="0.12" max="0.6" step="0.01"></div>
+    </div>
+
+    <div class="card">
+      <h3>Vücuda oturt</h3>
+      <div class="row"><label>Kemik kalınlığı<span class="v" data-out="thickness"></span></label><input type="range" data-key="thickness" min="0.6" max="1.6" step="0.02"></div>
+      <div class="row"><label>Sol / sağ<span class="v" data-out="shiftX"></span></label><input type="range" data-key="shiftX" min="-5" max="5" step="0.1"></div>
+      <div class="row"><label>Yukarı / aşağı<span class="v" data-out="shiftY"></span></label><input type="range" data-key="shiftY" min="-5" max="5" step="0.1"></div>
+      <div class="row"><label>Titreme azaltma<span class="v" data-out="smooth"></span></label><input type="range" data-key="smooth" min="0" max="0.9" step="0.05"></div>
+      <label class="ck"><input type="checkbox" id="mirror">Ayna görüntüsü</label>
+    </div>
+
+    <div class="card">
+      <label class="ck"><input type="checkbox" id="showData">Takip verisini göster</label>
+      <pre id="data">—</pre>
+      <p class="hint">Vücut oranların, kameraya önden baktığın sırada öğrenilip hafızaya kaydedilir; yana döndüğünde bu ölçülerle yan görünüm çizilir. <button id="resetMem" style="padding:2px 8px;font-size:11px">Hafızayı sıfırla</button></p>
+      <p class="hint">Kısayollar: 1–4 gösterim modu · H panel</p>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+import { FilesetResolver, PoseLandmarker, HandLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+import { createClinic } from "./clinic.js";
+
+const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+const POSE_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task";
+const HAND_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+
+const $ = s => document.querySelector(s);
+const video = $('#video'), view = $('#view'), ctx = view.getContext('2d');
+const mk = () => document.createElement('canvas');
+const Tc = mk(), Bc = mk(), Cc = mk(), Mc = mk(), Gc = mk(), Fc = mk();
+const tctx = Tc.getContext('2d'), bctx = Bc.getContext('2d'), cctx = Cc.getContext('2d'),
+      mctx = Mc.getContext('2d'), gctx = Gc.getContext('2d'), fctx = Fc.getContext('2d');
+const HAS_FILTER = 'filter' in ctx;
+
+// ---------- settings ----------
+const S = {
+  layers: {spine:true, ribs:false, shoulders:true, pelvis:true, arms:true, hands:true, legs:true, feet:true, organs:false, joints:true, labels:true},
+  look:'xray', brightness:1, glow:0.55, trab:0.5, grain:0.4, realMe:0.35, feather:10, reveal:'full', lens:0.3,
+  thickness:1, shiftX:0, shiftY:0, smooth:0.5, mirror:true, showData:true, split:0.5, proj:'auto'
+};
+const PRESETS = {
+  skeleton:{spine:1,ribs:0,shoulders:1,pelvis:1,arms:1,hands:1,legs:1,feet:1,organs:0,joints:1,labels:1},
+  spine:{spine:1,ribs:0,shoulders:1,pelvis:1,arms:0,hands:0,legs:0,feet:0,organs:0,joints:0,labels:1},
+  limbs:{spine:0,ribs:0,shoulders:0,pelvis:0,arms:1,hands:1,legs:1,feet:1,organs:0,joints:1,labels:1},
+  all:{spine:1,ribs:0,shoulders:1,pelvis:1,arms:1,hands:1,legs:1,feet:1,organs:0,joints:1,labels:1},
+};
+const fmt = {brightness:v=>Math.round(v*100)+'%', glow:v=>Math.round(v*100)+'%', realMe:v=>Math.round(v*100)+'%',
+  feather:v=>v+'px', trab:v=>Math.round(v*100)+'%', grain:v=>Math.round(v*100)+'%', lens:v=>Math.round(v*100)+'%', thickness:v=>Math.round(v*100)+'%',
+  shiftX:v=>v.toFixed(1)+'%', shiftY:v=>v.toFixed(1)+'%', smooth:v=>Math.round(v*100)+'%'};
+
+function syncUI(){
+  document.querySelectorAll('[data-layer]').forEach(el => el.checked = !!S.layers[el.dataset.layer]);
+  document.querySelectorAll('[data-key]').forEach(el => { el.value = S[el.dataset.key]; });
+  document.querySelectorAll('[data-out]').forEach(el => el.textContent = fmt[el.dataset.out](S[el.dataset.out]));
+  document.querySelectorAll('[data-look]').forEach(el => el.classList.toggle('on', el.dataset.look === S.look));
+  $('#reveal').value = S.reveal; $('#proj').value = S.proj;$('#mirror').checked = S.mirror; $('#showData').checked = S.showData;
+  $('#data').style.display = S.showData ? '' : 'none';
+}
+document.querySelectorAll('[data-layer]').forEach(el => el.onchange = () => { S.layers[el.dataset.layer] = el.checked; });
+document.querySelectorAll('[data-key]').forEach(el => el.oninput = () => { S[el.dataset.key] = parseFloat(el.value); syncUI(); });
+document.querySelectorAll('[data-look]').forEach(el => el.onclick = () => { S.look = el.dataset.look; syncUI(); });
+document.querySelectorAll('[data-preset]').forEach(el => el.onclick = () => {
+  const p = PRESETS[el.dataset.preset]; for (const k in p) S.layers[k] = !!p[k]; syncUI(); });
+$('#reveal').onchange = e => { S.reveal = e.target.value; };
+$('#proj').onchange = e => { S.proj = e.target.value; };
+$('#resetMem').onclick = () => { memRatio = 0.8; memCount = 0; try { localStorage.removeItem('xray-mem'); } catch {} };
+$('#mirror').onchange = e => { S.mirror = e.target.checked; poseLm = null; handsData = []; };
+$('#showData').onchange = e => { S.showData = e.target.checked; syncUI(); };
+syncUI();
+
+// ---------- vector helpers ----------
+const add=(a,b)=>({x:a.x+b.x,y:a.y+b.y}), sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y}), mul=(a,k)=>({x:a.x*k,y:a.y*k});
+const len=a=>Math.hypot(a.x,a.y), dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y), dot=(a,b)=>a.x*b.x+a.y*b.y;
+const norm=a=>{const l=len(a)||1;return{x:a.x/l,y:a.y/l}}, lerp=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
+const mid=(a,b)=>lerp(a,b,.5), perp=a=>({x:-a.y,y:a.x}), V=(x,y)=>({x,y});
+const angleAt=(a,b,c)=>{const u=norm(sub(a,b)),w=norm(sub(c,b));return Math.acos(Math.max(-1,Math.min(1,dot(u,w))))*180/Math.PI};
+function bez(p0,c1,c2,p3,n=10){const out=[];for(let i=0;i<=n;i++){const t=i/n,m=1-t;out.push(V(m*m*m*p0.x+3*m*m*t*c1.x+3*m*t*t*c2.x+t*t*t*p3.x,m*m*m*p0.y+3*m*m*t*c1.y+3*m*t*t*c2.y+t*t*t*p3.y))}return out}
+
+// ---------- state ----------
+let pose, hands, lastTs = -1, lastVideoTime = -1;
+let poseWorld = null, poseLm = null, poseMiss = 0, hasMask = false, maskImg = null;
+let handsData = [];           // [{key, pts:[{x,y}] normalized}]
+let lensPos = null, labels = [], dataT = 0, frames = 0, fps = 0, fpsT = performance.now();
+let metrics = {};
+const MASK_DS = 3;
+// body turn: frontness 1 = facing camera, 0 = side profile. memRatio = remembered shoulder width / torso length
+let frontness = 1, frontRaw = 1, facing = 1, uSign = 1, AM = 1, sideState = false, viewMix = 1;
+let memRatio = 0.8, memCount = 0;
+try { const m = JSON.parse(localStorage.getItem('xray-mem') || 'null'); if (m && m.r > 0.4 && m.r < 1.3) { memRatio = m.r; memCount = 60; } } catch {}
+const saveMem = () => { try { localStorage.setItem('xray-mem', JSON.stringify({r: memRatio})); } catch {} };
+const clamp01 = x => Math.min(1, Math.max(0, x));
+const smoothstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+function updateTurn(world){
+  const L = poseLm; if (!L) return;
+  const p = i => P(L[i]);
+  const shW = dist(p(11), p(12)), T = Math.max(1, dist(mid(p(11), p(12)), mid(p(23), p(24))));
+  let worldF = null;
+  if (world) {
+    const dx = (world[11].x - world[12].x) + (world[23].x - world[24].x);
+    const dz = (world[11].z - world[12].z) + (world[23].z - world[24].z);
+    worldF = Math.abs(dx) / (Math.hypot(dx, dz) || 1);
+  }
+  const ratioF = clamp01(shW / (memRatio * T));
+  frontRaw = worldF == null ? ratioF : memCount > 20 ? 0.55 * worldF + 0.45 * ratioF : worldF;
+  frontness += (frontRaw - frontness) * 0.1;
+  // hysteresis: go to side view only below 0.38, back to front only above 0.62 -> no flip-flopping
+  if (!sideState && frontness < 0.38) sideState = true;
+  else if (sideState && frontness > 0.62) sideState = false;
+  // learn proportions only while clearly facing the camera
+  if (worldF != null && worldF > 0.92 && ratioF > 0.75 && shW / T > 0.45 && shW / T < 1.3) {
+    memRatio += (shW / T - memRatio) * (memCount < 60 ? 0.08 : 0.01);
+    if (++memCount % 90 === 0) saveMem();
+  }
+}
+
+function smoothPts(prev, next, key){
+  if (!prev || prev.length !== next.length) return next.map(p => ({x:p.x, y:p.y, v:p.visibility ?? 1}));
+  return next.map((p,i) => {
+    const q = prev[i], d = Math.hypot(p.x-q.x, p.y-q.y);
+    const a = Math.min(1, Math.max(0.12, (1 - S.smooth) + d * 10));
+    // visibility is smoothed too, otherwise bones blink on/off around the threshold
+    return {x:q.x+(p.x-q.x)*a, y:q.y+(p.y-q.y)*a, v:q.v + ((p.visibility ?? 1) - q.v) * 0.2};
+  });
+}
+
+function onPose(res){
+  const lm = res.landmarks && res.landmarks[0];
+  const wl = res.worldLandmarks && res.worldLandmarks[0];
+  if (lm) {
+    poseLm = smoothPts(poseLm, lm); poseMiss = 0; updateTurn(wl);
+    poseWorld = wl ? wl.map((q, i) => poseWorld ? {x: poseWorld[i].x + (q.x - poseWorld[i].x) * 0.4, y: poseWorld[i].y + (q.y - poseWorld[i].y) * 0.4, z: poseWorld[i].z + (q.z - poseWorld[i].z) * 0.4} : {x:q.x, y:q.y, z:q.z}) : null;
+  }
+  else if (++poseMiss > 20) poseLm = null;     // keep the skeleton through short tracking dropouts
+  const m = res.segmentationMasks && res.segmentationMasks[0];
+  if (m && lm) {
+    const w = m.width, h = m.height, sw = Math.ceil(w / MASK_DS), sh = Math.ceil(h / MASK_DS);
+    if (Mc.width !== sw || Mc.height !== sh || !maskImg) { Mc.width = sw; Mc.height = sh; maskImg = mctx.createImageData(sw, sh); }
+    const f = m.getAsFloat32Array(), d = maskImg.data;
+    for (let y = 0, j = 0; y < sh; y++) {
+      const row = Math.min(h - 1, y * MASK_DS) * w;
+      for (let x = 0; x < sw; x++, j += 4) {
+        d[j] = d[j+1] = d[j+2] = 255; d[j+3] = f[row + Math.min(w - 1, x * MASK_DS)] * 255;
+      }
+    }
+    mctx.putImageData(maskImg, 0, 0); hasMask = true;
+  } else if (!lm) hasMask = false;
+}
+
+function onHands(res){
+  const next = [];
+  (res.landmarks || []).forEach((lm, i) => {
+    let key = (res.handedness?.[i]?.[0]?.categoryName) || 'H';
+    if (next.some(h => h.key === key)) key += i;
+    const prev = handsData.find(h => h.key === key);
+    next.push({key, pts: smoothPts(prev && prev.pts, lm)});
+  });
+  handsData = next;
+}
+
+// ---------- coordinate mapping ----------
+function P(p){
+  const w = view.width, h = view.height;
+  return {x:(S.mirror ? 1 - p.x : p.x) * w + S.shiftX / 100 * w, y:p.y * h + S.shiftY / 100 * h};
+}
+
+// ---------- look ----------
+let G;
+function setLook(scale){
+  if (S.look === 'solid') G = {mode:'source-over', fill:'rgba(236,226,204,0.96)', edge:'rgba(110,92,64,0.9)', edgeW:1.3*scale, canal:false, glow:false, tissue:'rgb(26,32,40)', joint:'rgba(40,120,200,0.95)'};
+  else if (S.look === 'neon') G = {mode:'lighter', fill:'rgba(40,170,255,0.10)', edge:'rgba(110,240,255,0.95)', edgeW:2.2*scale, canal:false, glow:true, tissue:'rgb(2,7,14)', joint:'rgba(255,120,220,0.95)', rim:'rgb(110,240,255)'};
+  else if (S.look === 'film') G = {mode:'lighter', fill:'rgba(205,205,205,0.40)', edge:'rgba(250,250,250,0.78)', edgeW:1.3*scale, canal:true, glow:true, tissue:'rgb(46,46,48)', joint:'rgba(235,235,235,0.9)', film:true, trab:true, rim:'rgb(225,225,225)'};
+  else G = {mode:'lighter', fill:'rgba(150,185,230,0.40)', edge:'rgba(235,245,255,0.72)', edgeW:1.4*scale, canal:true, glow:true, tissue:'rgb(6,14,28)', joint:'rgba(124,214,255,0.95)', trab:true, rim:'rgb(170,210,255)'};
+}
+
+// ---------- primitives ----------
+function paint(c, path, {alpha=1, rule='nonzero', fill=null, edge=null, edgeW=null}={}){
+  c.save(); c.globalAlpha = alpha * AM; c.globalCompositeOperation = G.mode;
+  c.fillStyle = fill || G.fill; c.fill(path, rule);
+  c.strokeStyle = edge || G.edge; c.lineWidth = edgeW ?? G.edgeW; c.lineJoin = 'round'; c.stroke(path);
+  c.restore();
+}
+function canal(c, a, b, w){
+  if (!G.canal) return;
+  c.save(); c.globalCompositeOperation = 'destination-out'; c.strokeStyle = 'rgba(0,0,0,0.32)';
+  c.lineWidth = w; c.lineCap = 'round'; c.beginPath(); c.moveTo(a.x,a.y); c.lineTo(b.x,b.y); c.stroke(); c.restore();
+}
+// long bone with knobby ends, fitted between a and b
+function bone(c, a, b, w, e1, e2, {alpha=1, medullary=true}={}){
+  let d = sub(b,a), L = len(d); if (L < 3) return;
+  const u = mul(d, 1/L), n = perp(u);
+  const ca = e1*0.5, cb = e2*0.5;
+  const A = add(a, mul(u, ca*0.75)); L -= 0.75*(ca+cb); if (L < 2) L = 2;
+  const Pt = (t,s) => [A.x+u.x*t+n.x*s, A.y+u.y*t+n.y*s];
+  const t1 = Math.min(L*0.32, e1*1.3), t2 = L - Math.min(L*0.32, e2*1.3);
+  const p = new Path2D();
+  p.moveTo(...Pt(0,e1/2));
+  p.bezierCurveTo(...Pt(t1*0.45,e1/2), ...Pt(t1*0.6,w/2), ...Pt(t1,w/2));
+  p.lineTo(...Pt(t2,w/2));
+  p.bezierCurveTo(...Pt(t2+(L-t2)*0.4,w/2), ...Pt(t2+(L-t2)*0.55,e2/2), ...Pt(L,e2/2));
+  p.bezierCurveTo(...Pt(L+cb,e2/2), ...Pt(L+cb,-e2/2), ...Pt(L,-e2/2));
+  p.bezierCurveTo(...Pt(t2+(L-t2)*0.55,-e2/2), ...Pt(t2+(L-t2)*0.4,-w/2), ...Pt(t2,-w/2));
+  p.lineTo(...Pt(t1,-w/2));
+  p.bezierCurveTo(...Pt(t1*0.6,-w/2), ...Pt(t1*0.45,-e1/2), ...Pt(0,-e1/2));
+  p.bezierCurveTo(...Pt(-ca,-e1/2), ...Pt(-ca,e1/2), ...Pt(0,e1/2));
+  p.closePath();
+  paint(c, p, {alpha});
+  if (medullary && L > w*3) { const q1 = Pt(t1,0), q2 = Pt(t2,0); canal(c, V(q1[0],q1[1]), V(q2[0],q2[1]), w*0.38); }
+}
+// tube along a polyline (ribs, clavicles)
+function tube(c, pts, w0, w1, opts){
+  const n = pts.length; if (n < 2) return;
+  const Lp = [], Rp = [];
+  for (let i = 0; i < n; i++) {
+    const t = norm(sub(pts[Math.min(n-1,i+1)], pts[Math.max(0,i-1)])), nn = perp(t), w = (w0 + (w1-w0)*i/(n-1)) / 2;
+    Lp.push(add(pts[i], mul(nn,w))); Rp.push(sub(pts[i], mul(nn,w)));
+  }
+  const p = new Path2D(); p.moveTo(Lp[0].x, Lp[0].y);
+  for (let i = 1; i < n; i++) p.lineTo(Lp[i].x, Lp[i].y);
+  const ce = add(pts[n-1], mul(norm(sub(pts[n-1], pts[n-2])), w1*0.6));
+  p.quadraticCurveTo(ce.x, ce.y, Rp[n-1].x, Rp[n-1].y);
+  for (let i = n-2; i >= 0; i--) p.lineTo(Rp[i].x, Rp[i].y);
+  const cs = add(pts[0], mul(norm(sub(pts[0], pts[1])), w0*0.6));
+  p.quadraticCurveTo(cs.x, cs.y, Lp[0].x, Lp[0].y); p.closePath();
+  paint(c, p, opts);
+}
+function ellipse(c, p, rx, ry, rot, opts){ const e = new Path2D(); e.ellipse(p.x, p.y, Math.max(.5,rx), Math.max(.5,ry), rot, 0, Math.PI*2); paint(c, e, opts); }
+function ring(c, p, r, color, w){ c.save(); c.globalAlpha = AM; c.globalCompositeOperation = G.mode; c.strokeStyle = color; c.lineWidth = w; c.beginPath(); c.ellipse(p.x, p.y, r.x ?? r, r.y ?? r, r.rot ?? 0, 0, Math.PI*2); c.stroke(); c.restore(); }
+const label = (p, t) => { if (AM >= 0.5) labels.push({p, t}); };
+
+// ---------- body ----------
+const TH = 0.4;
+function drawBody(c){
+  const L = poseLm, p = i => P(L[i]), vis = i => L[i].v ?? 1, k = S.thickness;
+  const Ls = p(11), Rs = p(12), Lh = p(23), Rh = p(24);
+  const neck = mid(Ls, Rs), pel = mid(Lh, Rh), shW = dist(Ls, Rs);
+  // torso length does not shrink when turning, shoulder width does -> scale from torso + memory
+  let T = Math.max(dist(neck, pel), shW * 0.95, view.height * 0.08);
+  const v = norm(sub(pel, neck));
+  // stable horizontal axis: perpendicular to the spine, only the sign comes from the shoulders
+  const up = perp(v), sRaw = dot(up, sub(Ls, Rs));
+  if (Math.abs(sRaw) > T * 0.12) uSign = Math.sign(sRaw);
+  const u = mul(up, uSign);
+  const F = S.proj === 'front' ? 1 : S.proj === 'side' ? 0 : frontness;
+  // weight of the frontal drawing: snaps to one view, short crossfade only while switching
+  const target = S.proj === 'front' ? 1 : S.proj === 'side' ? 0 : (sideState ? 0 : 1);
+  viewMix += (target - viewMix) * 0.2;
+  if (Math.abs(target - viewMix) < 0.01) viewMix = target;
+  const fw = smoothstep(0, 1, viewMix);
+  const halfW = Math.max(shW / 2, memRatio * T / 2 * Math.max(F, 0.15), T * 0.08);
+  // which way is the face pointing (for the side view): nose + feet
+  {
+    let sc = 0;
+    if (vis(0) > 0.5) sc += dot(sub(p(0), neck), up) / T * 4;
+    for (const [h, t] of [[29, 31], [30, 32]]) if (vis(h) > 0.5 && vis(t) > 0.5) sc += dot(sub(p(t), p(h)), up) / T * 2;
+    if (Math.abs(sc) > 0.25) facing = Math.sign(sc);
+  }
+  const fd = mul(up, facing);                      // anterior direction in the image
+  const toLocal = q => { const d = sub(q, neck); return V(dot(d, u), dot(d, v)); };
+  const toGlobal = q => add(neck, add(mul(u, q.x), mul(v, q.y)));
+  const shL = toLocal(Ls), shR = toLocal(Rs), hipL = toLocal(Lh), hipR = toLocal(Rh);
+  const W = x => x * T * k;     // anatomical width
+  const ctxScale = view.width / 1280;
+  metrics = {T, shW, v, u, fd, F, fw, neck, Ls, Rs, Lh, Rh, toGlobal};
+
+  // ---- side (lateral) torso ----
+  if (fw < 0.99) {
+    AM = 1 - fw;
+    c.save(); c.setTransform(fd.x, fd.y, v.x, v.y, neck.x, neck.y);
+    drawTorsoSide(c, T, W, q => add(neck, add(mul(fd, q.x), mul(v, q.y))), ctxScale);
+    c.restore();
+  }
+
+  // ---- frontal torso in local frame ----
+  AM = fw;
+  c.save(); c.setTransform(u.x, u.y, v.x, v.y, neck.x, neck.y);
+  if (fw > 0.01) {
+
+  if (S.layers.organs) {
+    for (const s of [1, -1]) {
+      const lung = new Path2D();
+      lung.moveTo(s*halfW*0.26, -0.02*T);
+      lung.bezierCurveTo(s*halfW*0.55, -0.03*T, s*halfW*0.74, 0.18*T, s*halfW*0.76, 0.52*T);
+      lung.quadraticCurveTo(s*halfW*0.5, 0.36*T, s*0.09*T, 0.44*T);
+      lung.quadraticCurveTo(s*0.05*T, 0.15*T, s*halfW*0.26, -0.02*T);
+      paint(c, lung, {fill:'rgba(70,150,255,0.09)', edge:'rgba(120,190,255,0.35)'});
+    }
+    const beat = 1 + 0.05 * Math.pow(Math.max(0, Math.sin(performance.now() / 1000 * Math.PI * 2 * 1.2)), 8);
+    const heart = new Path2D(); heart.ellipse(0.06*T, 0.34*T, 0.12*T*beat, 0.09*T*beat, 0.55, 0, Math.PI*2);
+    paint(c, heart, {fill:'rgba(255,80,120,0.20)', edge:'rgba(255,140,170,0.6)'});
+    const dia = new Path2D(); dia.moveTo(-halfW*0.76, 0.52*T); dia.quadraticCurveTo(-halfW*0.4, 0.34*T, 0, 0.44*T); dia.quadraticCurveTo(halfW*0.4, 0.32*T, halfW*0.76, 0.52*T);
+    c.save(); c.globalCompositeOperation = G.mode; c.strokeStyle = 'rgba(150,200,255,0.25)'; c.lineWidth = 2*ctxScale; c.stroke(dia); c.restore();
+  }
+
+  if (S.layers.shoulders) {
+    for (const [s, sh] of [[1, shL], [-1, shR]]) {
+      const sc = new Path2D();
+      sc.moveTo(s*halfW*0.42, 0.02*T);
+      sc.lineTo(sh.x - s*0.07*T, sh.y + 0.0*T);
+      sc.quadraticCurveTo(sh.x - s*0.03*T, sh.y + 0.04*T, sh.x - s*0.06*T, sh.y + 0.09*T);
+      sc.quadraticCurveTo(s*halfW*0.62, 0.26*T, s*halfW*0.5, 0.40*T);
+      sc.quadraticCurveTo(s*halfW*0.38, 0.2*T, s*halfW*0.42, 0.02*T);
+      paint(c, sc, {alpha:0.35});
+      tube(c, bez(V(s*halfW*0.42, 0.10*T), V(s*halfW*0.6, 0.06*T), V(sh.x - s*0.1*T, sh.y - 0.02*T), V(sh.x - s*0.01*T, sh.y - 0.04*T), 8), W(0.02), W(0.035), {alpha:0.5});
+      // clavicle (S-curve)
+      const a = V(s*0.035*T, 0.04*T), b = V(sh.x - s*0.03*T, sh.y - 0.045*T);
+      tube(c, bez(a, add(lerp(a,b,0.33), V(0,-0.035*T)), add(lerp(a,b,0.7), V(0,0.02*T)), b, 12), W(0.034), W(0.03));
+    }
+    if (S.layers.labels) label(toGlobal(V(shL.x*0.5, shL.y - 0.06*T)), 'Klavikula');
+  }
+
+  if (S.layers.ribs) {
+    const f = [0.38,0.52,0.6,0.66,0.7,0.72,0.73,0.72,0.69,0.64,0.55,0.45];
+    for (let i = 0; i < 12; i++) {
+      const y = (i + 0.5) * (0.52*T/12) - 0.01*T, rh = halfW * f[i] * 1.06;
+      for (const s of [1, -1]) {
+        const p0 = V(s*0.035*T, y), lat = V(s*rh, y + 0.05*T);
+        const post = bez(p0, V(s*rh*0.45, y - 0.035*T), V(s*rh*0.9, y - 0.02*T), lat, 9);
+        const floating = i >= 10;
+        const end = floating ? V(s*rh*0.88, y + 0.12*T) : V(s*rh*0.42, y + 0.16*T + i*0.004*T);
+        const ant = bez(lat, V(s*rh*1.06, y + 0.10*T), V(s*rh*(floating ? 1.0 : 0.85), y + 0.15*T), end, 8).slice(1);
+        tube(c, post.concat(ant), W(0.024), W(0.015));
+        if (!floating) {
+          const st = i < 7 ? V(s*0.03*T, 0.07*T + i*0.045*T) : V(s*0.045*T, 0.40*T);
+          tube(c, bez(end, lerp(end, st, 0.4), add(lerp(end, st, 0.8), V(0, 0.01*T)), st, 6), W(0.012), W(0.012), {alpha:0.35});
+        }
+      }
+    }
+    // sternum
+    const st = new Path2D();
+    st.moveTo(-0.045*T, 0.04*T); st.lineTo(0.045*T, 0.04*T); st.lineTo(0.032*T, 0.12*T);
+    st.lineTo(0.03*T, 0.37*T); st.quadraticCurveTo(0.015*T, 0.43*T, 0, 0.45*T); st.quadraticCurveTo(-0.015*T, 0.43*T, -0.03*T, 0.37*T);
+    st.lineTo(-0.032*T, 0.12*T); st.closePath();
+    paint(c, st, {alpha:0.7});
+    if (S.layers.labels) { label(toGlobal(V(halfW*0.75, 0.22*T)), 'Kaburgalar'); label(toGlobal(V(0, 0.3*T)), 'Sternum'); }
+  }
+
+  if (S.layers.spine) {
+    const vert = (y, w, h, tp, lumbar) => {
+      const p = new Path2D();
+      p.roundRect(-w/2, y - h/2, w, h, h*0.3);
+      p.roundRect(-w*tp/2, y - h*0.2, w*tp, h*0.4, h*0.18);
+      paint(c, p);
+      for (const s of [1,-1]) ring(c, V(s*w*0.28, y - h*0.05), {x:w*0.09, y:h*0.22}, G.edge, G.edgeW*0.8);
+      const sp = new Path2D(); sp.ellipse(0, y + h*(lumbar ? 0.05 : 0.25), w*0.07, h*0.45, 0, 0, Math.PI*2); paint(c, sp, {alpha:0.8});
+    };
+    for (let i = 0; i < 12; i++) vert((i + 0.5)*(0.52*T/12), W(0.064 + i*0.0035), 0.52*T/12*0.76, 1.9, false);
+    for (let i = 0; i < 5; i++) vert(0.52*T + (i + 0.5)*(0.28*T/5), W(0.11 + i*0.006), 0.28*T/5*0.78, 1.55, true);
+    if (S.layers.labels) { label(toGlobal(V(-0.08*T, 0.26*T)), 'Torakal omurga'); label(toGlobal(V(-0.12*T, 0.66*T)), 'Lomber (bel)'); }
+  }
+
+  if (S.layers.pelvis || S.layers.spine) {
+    // sacrum + coccyx
+    const sa = new Path2D();
+    sa.moveTo(-W(0.075), 0.8*T); sa.quadraticCurveTo(0, 0.78*T, W(0.075), 0.8*T);
+    sa.quadraticCurveTo(W(0.07), 0.95*T, W(0.012), 1.03*T); sa.lineTo(-W(0.012), 1.03*T);
+    sa.quadraticCurveTo(-W(0.07), 0.95*T, -W(0.075), 0.8*T);
+    paint(c, sa);
+    for (let j = 0; j < 4; j++) for (const s of [1,-1]) ring(c, V(s*W(0.035)*(1 - j*0.15), (0.84 + j*0.047)*T), W(0.009), G.edge, G.edgeW*0.7);
+    for (let j = 0; j < 3; j++) { const e = new Path2D(); e.ellipse(0, (1.05 + j*0.025)*T, W(0.012)*(1 - j*0.2), 0.01*T, 0, 0, Math.PI*2); paint(c, e); }
+  }
+
+  if (S.layers.pelvis) {
+    const pc = mid(hipL, hipR);
+    for (const [s, J] of [[1, hipL], [-1, hipR]]) {
+      const X = (dx, dy) => [J.x + s*dx*T, J.y + dy*T];
+      const pv = new Path2D();
+      pv.moveTo(pc.x + s*0.06*T, pc.y - 0.2*T);
+      pv.bezierCurveTo(pc.x + s*0.08*T, pc.y - 0.33*T, ...X(-0.02, -0.38), ...X(0.04, -0.34));
+      pv.quadraticCurveTo(...X(0.12, -0.31), ...X(0.12, -0.22));
+      pv.quadraticCurveTo(...X(0.12, -0.15), ...X(0.10, -0.13));
+      pv.lineTo(...X(0.07, -0.08));
+      pv.quadraticCurveTo(...X(0.08, -0.03), ...X(0.07, 0.0));
+      pv.quadraticCurveTo(...X(0.08, 0.10), ...X(0.01, 0.16));
+      pv.quadraticCurveTo(...X(-0.04, 0.19), ...X(-0.08, 0.17));
+      pv.quadraticCurveTo(pc.x + s*0.03*T, pc.y + 0.14*T, pc.x + s*0.012*T, pc.y + 0.12*T);
+      pv.lineTo(pc.x + s*0.012*T, pc.y + 0.06*T);
+      pv.quadraticCurveTo(...X(-0.03, 0.02), ...X(-0.06, -0.01));
+      pv.quadraticCurveTo(pc.x + s*0.09*T, pc.y - 0.06*T, pc.x + s*0.06*T, pc.y - 0.2*T);
+      pv.closePath();
+      pv.ellipse(...X(-0.065, 0.09), 0.038*T, 0.045*T, 0.3*s, 0, Math.PI*2);
+      paint(c, pv, {rule:'evenodd'});
+      ring(c, V(J.x, J.y), 0.062*T, G.edge, G.edgeW);
+    }
+    if (S.layers.labels) label(toGlobal(V(hipL.x + 0.12*T, hipL.y - 0.28*T)), 'Pelvis (kalça)');
+  }
+  }
+  c.restore();
+  AM = 1;
+  const latK = Math.max(F, 0.3);
+
+  // ---- arms ----
+  const handFor = (wr) => {
+    let best = null, bd = 0.35*T;
+    for (const h of handsData) { const d = dist(P(h.pts[0]), wr); if (d < bd) { bd = d; best = h; } }
+    return best;
+  };
+  const usedHands = new Set();
+  for (const [sh, el, wr, pk, ix, th, side] of [[11,13,15,17,19,21,'L'],[12,14,16,18,20,22,'R']]) {
+    const S0 = p(sh), E = p(el), Wr = p(wr);
+    if (S.layers.arms && vis(sh) > TH && vis(el) > TH) {
+      ellipse(c, S0, W(0.05), W(0.05), 0);
+      bone(c, lerp(S0, E, 0.04), E, W(0.045), W(0.07), W(0.10));
+      if (S.layers.labels && side === 'L') label(lerp(S0, E, 0.5), 'Humerus');
+    }
+    const hand = vis(wr) > TH ? handFor(Wr) : null;
+    if (hand) usedHands.add(hand);
+    if (S.layers.arms && vis(el) > TH && vis(wr) > TH) {
+      const d = norm(sub(Wr, E)), n = perp(d);
+      const thumbP = hand ? P(hand.pts[1]) : p(th);
+      const sg = Math.sign(dot(sub(thumbP, Wr), n)) || 1;
+      // ulna (pinky side, big at elbow) and radius (thumb side, big at wrist)
+      bone(c, add(add(E, mul(n, -sg*0.012*T)), mul(d, -0.01*T)), add(add(Wr, mul(n, -sg*0.022*T)), mul(d, -0.03*T)), W(0.022), W(0.05), W(0.03));
+      bone(c, add(add(E, mul(n, sg*0.014*T)), mul(d, 0.03*T)), add(add(Wr, mul(n, sg*0.022*T)), mul(d, -0.02*T)), W(0.022), W(0.034), W(0.052));
+      if (S.layers.labels && side === 'L') label(lerp(E, Wr, 0.5), 'Radius / Ulna');
+    }
+    if (S.layers.hands && !hand && vis(wr) > TH && vis(ix) > TH) {
+      for (const f of [ix, pk, th]) bone(c, lerp(Wr, p(f), 0.2), p(f), W(0.016), W(0.024), W(0.022), {medullary:false});
+    }
+    if (S.layers.joints) {
+      for (const [i, a, b] of [[el, sh, wr]]) if (vis(i) > TH) {
+        ring(c, p(i), W(0.03), G.joint, 1.6*ctxScale);
+        if (S.layers.labels && vis(a) > TH && vis(b) > TH) label(add(p(i), V(0, -0.05*T)), `Dirsek ${Math.round(angleAt(p(a), p(i), p(b)))}°`);
+      }
+      for (const i of [sh, wr]) if (vis(i) > TH) ring(c, p(i), W(0.028), G.joint, 1.6*ctxScale);
+    }
+  }
+
+  // ---- legs & feet ----
+  const uh = u;
+  for (const [hp, kn, an, he, to, s, side] of [[23,25,27,29,31,1,'L'],[24,26,28,30,32,-1,'R']]) {
+    const Hp = p(hp), K = p(kn), A = p(an), lat = mul(uh, s);
+    if (S.layers.legs && vis(hp) > TH && vis(kn) > TH) {
+      const d = norm(sub(K, Hp));
+      ellipse(c, Hp, W(0.048), W(0.048), 0);
+      const troch = add(add(Hp, mul(lat, 0.075*T*latK)), mul(d, 0.05*T));
+      tube(c, [Hp, lerp(Hp, troch, 0.5), troch], W(0.05), W(0.06));
+      bone(c, add(add(Hp, mul(lat, 0.055*T*latK)), mul(d, 0.03*T)), add(K, mul(d, -0.02*T)), W(0.05), W(0.085), W(0.125));
+      ellipse(c, add(K, mul(d, -0.012*T)), W(0.036), W(0.044), Math.atan2(d.y, d.x) - Math.PI/2, {alpha:0.9});
+      if (S.layers.labels && side === 'L') { label(lerp(Hp, K, 0.5), 'Femur'); label(add(K, mul(lat, 0.08*T)), 'Patella'); }
+    }
+    if (S.layers.legs && vis(kn) > TH && vis(an) > TH) {
+      // fibula sits lateral (front view) or behind the tibia (side view)
+      const d = norm(sub(A, K)); let n = perp(d); if (dot(n, F < 0.5 ? mul(fd, -1) : lat) < 0) n = mul(n, -1);
+      bone(c, add(K, mul(d, 0.025*T)), add(A, mul(n, -0.01*T)), W(0.046), W(0.12), W(0.062));
+      bone(c, add(add(K, mul(n, 0.05*T)), mul(d, 0.06*T)), add(add(A, mul(n, 0.04*T)), mul(d, 0.015*T)), W(0.017), W(0.03), W(0.032));
+      if (S.layers.labels && side === 'L') label(lerp(K, A, 0.5), 'Tibia / Fibula');
+    }
+    if (S.layers.feet && vis(an) > TH) {
+      const Hl = p(he), To = p(to);
+      const fl = Math.max(dist(Hl, To), 0.12*T), f = norm(sub(To, Hl));
+      let n = perp(f); if (dot(n, lat) > 0) n = mul(n, -1);     // n points medial
+      const rot = Math.atan2(f.y, f.x);
+      ellipse(c, lerp(A, To, 0.08), W(0.04), W(0.032), rot);          // talus
+      bone(c, Hl, lerp(Hl, To, 0.38), W(0.045), W(0.06), W(0.05), {medullary:false});   // calcaneus
+      ellipse(c, add(lerp(Hl, To, 0.46), mul(n, 0.015*T)), W(0.022), W(0.026), rot);
+      ellipse(c, add(lerp(Hl, To, 0.46), mul(n, -0.017*T)), W(0.022), W(0.024), rot);
+      for (let i = 0; i < 5; i++) {
+        const o = 2 - i, base = add(lerp(Hl, To, 0.54), mul(n, o*0.014*T)), head = add(lerp(Hl, To, 0.8), mul(n, o*0.022*T));
+        const ww = i === 0 ? 1.35 : 1;
+        bone(c, base, head, W(0.011*ww), W(0.018*ww), W(0.02*ww), {medullary:false});
+        const tip = add(head, mul(f, fl*(i === 0 ? 0.2 : 0.16 - i*0.012)));
+        bone(c, head, lerp(head, tip, 0.55), W(0.009*ww), W(0.014*ww), W(0.013*ww), {medullary:false});
+        bone(c, lerp(head, tip, 0.58), tip, W(0.008*ww), W(0.012*ww), W(0.011*ww), {medullary:false});
+      }
+      if (S.layers.labels && side === 'L') label(add(Hl, mul(lat, 0.08*T)), 'Kalkaneus');
+    }
+    if (S.layers.joints) {
+      for (const [i, a, b, name] of [[kn, hp, an, 'Diz'], [hp, 11 + (s < 0 ? 1 : 0), kn, 'Kalça']]) if (vis(i) > TH) {
+        ring(c, p(i), W(0.032), G.joint, 1.6*ctxScale);
+        if (S.layers.labels && vis(a) > TH && vis(b) > TH) label(add(p(i), mul(lat, 0.09*T)), `${name} ${Math.round(angleAt(p(a), p(i), p(b)))}°`);
+      }
+      if (vis(an) > TH) ring(c, A, W(0.026), G.joint, 1.6*ctxScale);
+    }
+  }
+  return usedHands;
+}
+
+// ---------- lateral view: local coords x = anterior (towards the face), y = down the spine ----------
+function drawTorsoSide(c, T, W, toG, sc){
+  const D = T * 0.44 * Math.min(1.15, Math.max(0.85, memRatio / 0.8));   // chest depth from memory
+  const dk = D / (0.44 * T);
+  // spine centre line with natural S-curve: cervical lordosis, thoracic kyphosis, lumbar lordosis
+  const sa = y => {
+    let a = -0.03*T - 0.02*y;
+    if (y <= 0) a += 0.025*T*Math.sin(Math.PI*Math.max(0, y + 0.18*T)/(0.18*T));
+    else if (y < 0.52*T) a -= 0.06*T*dk*Math.sin(Math.PI*y/(0.52*T));
+    else if (y < 0.8*T) a += 0.04*T*Math.sin(Math.PI*(y - 0.52*T)/(0.28*T));
+    return a;
+  };
+  const sternA = y => (0.13*T + (0.22*T - 0.13*T) * clamp01((y - 0.05*T)/(0.37*T))) * dk;
+
+  if (S.layers.organs) {
+    const lung = new Path2D();
+    lung.moveTo(sa(0.05*T) + 0.03*T, -0.03*T);
+    lung.quadraticCurveTo(sternA(0.1*T) - 0.01*T, 0.0, sternA(0.12*T) - 0.03*T, 0.12*T);
+    lung.lineTo(sternA(0.36*T) - 0.04*T, 0.38*T);
+    lung.quadraticCurveTo(0.05*T, 0.28*T, sa(0.56*T) + 0.01*T, 0.6*T);
+    lung.quadraticCurveTo(sa(0.3*T) - 0.02*T, 0.3*T, sa(0.05*T) + 0.03*T, -0.03*T);
+    paint(c, lung, {fill:'rgba(70,150,255,0.09)', edge:'rgba(120,190,255,0.35)'});
+    const beat = 1 + 0.05 * Math.pow(Math.max(0, Math.sin(performance.now()/1000*Math.PI*2*1.2)), 8);
+    const heart = new Path2D(); heart.ellipse(sternA(0.33*T) - 0.08*T, 0.34*T, 0.085*T*beat, 0.07*T*beat, -0.5, 0, Math.PI*2);
+    paint(c, heart, {fill:'rgba(255,80,120,0.20)', edge:'rgba(255,140,170,0.6)'});
+  }
+
+  if (S.layers.shoulders) {
+    const scap = new Path2D();
+    scap.moveTo(0.02*T, 0.0); scap.lineTo(-0.05*T, -0.04*T); scap.lineTo(-0.12*T, 0.0);
+    scap.quadraticCurveTo(-0.16*T, 0.18*T, -0.15*T, 0.36*T); scap.lineTo(-0.11*T, 0.31*T);
+    scap.quadraticCurveTo(-0.05*T, 0.15*T, 0.0, 0.07*T); scap.closePath();
+    paint(c, scap, {alpha:0.35});
+    tube(c, bez(V(sternA(0.04*T) - 0.01*T, 0.04*T), V(0.08*T, 0.0), V(0.02*T, -0.04*T), V(-0.03*T, -0.04*T), 8), W(0.03), W(0.026));
+  }
+
+  if (S.layers.ribs) {
+    for (let i = 0; i < 12; i++) {
+      const y = (i + 0.5) * (0.52*T/12) - 0.01*T, drop = 0.1*T + i*0.01*T;
+      const p0 = V(sa(y) - 0.01*T, y);
+      let end;
+      if (i < 7) end = V(sternA(y + drop) - 0.02*T, y + drop);
+      else if (i < 10) end = V(sternA(0.42*T) * (1 - (i - 6)*0.12), Math.min(y + drop, 0.64*T));
+      else end = V(sa(y) + 0.13*T, y + 0.1*T);
+      const ribPts = bez(p0, V(p0.x - 0.07*T, y + 0.01*T), V(lerp(p0, end, 0.75).x, y + drop*0.15 - 0.02*T), end, 14);
+      tube(c, ribPts, W(0.02), W(0.014));
+      // far-side rib: slightly magnified and offset, fainter (as on a real lateral film)
+      tube(c, ribPts.map(q => V(q.x*1.04 - 0.012*T, q.y + 0.008*T)), W(0.02), W(0.014), {alpha:0.45});
+      if (i >= 7 && i < 10) tube(c, bez(end, lerp(end, V(sternA(0.42*T), 0.42*T), 0.4), lerp(end, V(sternA(0.42*T), 0.42*T), 0.8), V(sternA(0.42*T), 0.42*T), 5), W(0.012), W(0.012), {alpha:0.35});
+    }
+    tube(c, [V(sternA(0.04*T), 0.04*T), V(sternA(0.12*T), 0.12*T), V(sternA(0.42*T), 0.42*T), V(sternA(0.42*T) - 0.005*T, 0.47*T)], W(0.045), W(0.018), {alpha:0.75});
+    if (S.layers.labels) { label(toG(V(sternA(0.25*T) + 0.03*T, 0.25*T)), 'Sternum'); label(toG(V(0.05*T, 0.5*T)), 'Kaburgalar'); }
+  }
+
+  if (S.layers.spine) {
+    const vert = (y, h, bd, spLen, spDrop, w0) => {
+      const t = norm(V(sa(y + 2) - sa(y - 2), 4)), ant = V(t.y, -t.x);   // anterior normal
+      const ang = Math.atan2(ant.y, ant.x), x0 = sa(y);
+      c.save(); c.translate(x0, y); c.rotate(ang);
+      const b = new Path2D(); b.roundRect(0, -h/2, bd, h, h*0.25);
+      b.roundRect(-0.03*T, -h*0.25, 0.035*T, h*0.5, h*0.15);           // pedicle
+      paint(c, b);
+      tube(c, [V(-0.025*T, 0), V(-spLen*0.6, spDrop*0.5), V(-spLen, spDrop)], w0, w0*0.6);   // spinous process
+      for (const s of [-1, 1]) ring(c, V(-0.025*T, s*h*0.42), {x:0.009*T, y:0.007*T}, G.edge, G.edgeW*0.8);
+      c.restore();
+    };
+    for (let i = 0; i < 12; i++) vert((i + 0.5)*(0.52*T/12), 0.52*T/12*0.76, W(0.05 + i*0.0014), 0.07*T, 0.05*T, W(0.014));
+    for (let i = 0; i < 5; i++) vert(0.52*T + (i + 0.5)*(0.28*T/5), 0.28*T/5*0.78, W(0.08 + i*0.002), 0.065*T, 0.012*T, W(0.02));
+    if (S.layers.labels) { label(toG(V(sa(0.26*T) - 0.12*T, 0.26*T)), 'Kifoz (sırt eğrisi)'); label(toG(V(sa(0.66*T) - 0.1*T, 0.66*T)), 'Lordoz (bel eğrisi)'); }
+  }
+
+  const s0 = sa(0.8*T);
+  if (S.layers.spine || S.layers.pelvis) {
+    const sa1 = new Path2D();
+    sa1.moveTo(s0 + W(0.085), 0.81*T);
+    sa1.quadraticCurveTo(s0 + 0.06*T, 0.95*T, s0 - 0.02*T, 1.04*T);
+    sa1.lineTo(s0 - 0.05*T, 1.03*T);
+    sa1.quadraticCurveTo(s0 - 0.09*T, 0.9*T, s0 - 0.03*T, 0.81*T);
+    sa1.closePath(); paint(c, sa1);
+    for (let j = 0; j < 3; j++) { const e = new Path2D(); e.ellipse(s0 - 0.03*T + j*0.012*T, (1.06 + j*0.022)*T, 0.012*T, 0.009*T, 0.6, 0, Math.PI*2); paint(c, e); }
+    if (S.layers.labels) label(toG(V(s0 - 0.08*T, 0.95*T)), 'Sakrum');
+  }
+
+  if (S.layers.pelvis) {
+    const J = V(0, T);
+    const X = (dx, dy) => [J.x + dx*T, J.y + dy*T];
+    for (const [off, al] of [[0, 1], [0.012, 0.45]]) {
+      const pv = new Path2D();
+      pv.moveTo(s0 - 0.06*T, 0.83*T);
+      pv.bezierCurveTo(s0 - 0.07*T, 0.7*T, ...X(-0.06, -0.32), ...X(0.0, -0.31));
+      pv.quadraticCurveTo(...X(0.08, -0.3), ...X(0.11, -0.2));
+      pv.quadraticCurveTo(...X(0.1, -0.15), ...X(0.08, -0.11));
+      pv.quadraticCurveTo(...X(0.07, -0.05), ...X(0.07, -0.01));
+      pv.quadraticCurveTo(...X(0.1, 0.03), ...X(0.13, 0.07));
+      pv.quadraticCurveTo(...X(0.13, 0.11), ...X(0.1, 0.12));
+      pv.quadraticCurveTo(...X(0.02, 0.17), ...X(-0.06, 0.15));
+      pv.quadraticCurveTo(...X(-0.09, 0.1), ...X(-0.07, 0.04));
+      pv.quadraticCurveTo(...X(-0.04, -0.1), s0 - 0.055*T, 0.9*T);
+      pv.closePath();
+      pv.ellipse(...X(0.055, 0.085), 0.035*T, 0.03*T, -0.3, 0, Math.PI*2);
+      c.save(); c.translate(off*T, off*T);
+      paint(c, pv, {rule:'evenodd', alpha:al});
+      c.restore();
+    }
+    ring(c, J, 0.06*T, G.edge, G.edgeW);
+    if (S.layers.labels) label(toG(V(0.02*T, 0.72*T)), 'İlium (kalça kanadı)');
+  }
+}
+
+// ---------- neck: cervical spine C1–C7, drawn after the head cut so it is never erased ----------
+function drawNeck(c){
+  if (!poseLm || !metrics.T || !S.layers.spine) return;
+  const L = poseLm, vis = i => L[i].v ?? 1, {T, u, fd, fw, neck, v} = metrics;
+  const k = S.thickness, W = x => x * T * k;
+  // top of the neck = ear level (the atlas C1 sits right below the skull, beside the ears)
+  let top;
+  const e7 = vis(7), e8 = vis(8);
+  if (e7 > 0.3 && e8 > 0.3 && Math.abs(e7 - e8) < 0.3) top = mid(P(L[7]), P(L[8]));
+  else if (Math.max(e7, e8) > 0.3) top = P(L[e7 > e8 ? 7 : 8]);
+  else if (vis(0) > 0.3) top = add(P(L[0]), mul(v, 0.08 * T));
+  else return;
+  // keep the neck length anatomically sane
+  let up = sub(top, neck); const nl = Math.min(Math.max(len(up), 0.14 * T), 0.36 * T);
+  up = mul(norm(up), nl);
+  const sideBase = add(neck, mul(fd, -0.03 * T));
+  const ax = norm(mul(up, -1));                         // points down the neck
+  const level = (i) => (i + 0.5) / 7;                   // 0 = C1 (top) ... 1 = C7
+  const sizes = [[0.10,0.024],[0.062,0.04],[0.055,0.03],[0.056,0.03],[0.058,0.031],[0.062,0.032],[0.068,0.033]];
+  const names = ['C1','C2','C3','C4','C5','C6','C7'];
+
+  for (const [mode, alpha] of [['front', fw], ['side', 1 - fw]]) {
+    if (alpha < 0.01) continue;
+    AM = alpha;
+    const base = mode === 'front' ? neck : sideBase;
+    const X0 = mode === 'front' ? u : fd;
+    let X = perp(ax); if (dot(X, X0) < 0) X = mul(X, -1);
+    const topP = sub(base, mul(ax, nl));
+    for (let i = 0; i < 7; i++) {
+      const t = level(i), [wv, hv] = sizes[i];
+      let cpt = lerp(topP, base, t);
+      if (mode === 'side') cpt = add(cpt, mul(X, 0.03 * T * Math.sin(Math.PI * t)));   // cervical lordosis
+      const h = Math.min(hv * T, nl / 7 * 0.78);
+      c.save(); c.setTransform(X.x, X.y, ax.x, ax.y, cpt.x, cpt.y);
+      const b = new Path2D();
+      if (mode === 'front') {
+        if (i === 0) { b.ellipse(0, 0, W(wv) / 2, h * 0.45, 0, 0, Math.PI * 2); }          // atlas ring
+        else {
+          b.roundRect(-W(wv) / 2, -h / 2, W(wv), h, h * 0.3);
+          b.roundRect(-W(wv) * 0.8, -h * 0.18, W(wv) * 1.6, h * 0.36, h * 0.15);           // transverse processes
+          if (i === 1) b.roundRect(-W(0.012), -h * 1.1, W(0.024), h * 0.7, W(0.012));    // dens of C2
+        }
+        paint(c, b, {rule: i === 0 ? 'evenodd' : 'nonzero'});
+        if (i === 0) ring(c, V(0, 0), {x: W(wv) * 0.25, y: h * 0.25}, G.edge, G.edgeW * 0.8);
+        else for (const s of [1, -1]) ring(c, V(s * W(wv) * 0.26, 0), {x: W(wv) * 0.08, y: h * 0.2}, G.edge, G.edgeW * 0.8);
+      } else {
+        const bd = W(i === 0 ? 0.02 : 0.04 + i * 0.002);
+        b.roundRect(0, -h / 2, bd, h, h * 0.25);
+        b.roundRect(-0.03 * T, -h * 0.25, 0.032 * T, h * 0.5, h * 0.15);
+        paint(c, b);
+        const sp = i === 6 ? 0.065 : i === 1 ? 0.05 : i === 0 ? 0.025 : 0.035 + i * 0.002;   // C7 = "vertebra prominens"
+        tube(c, [V(-0.025 * T, 0), V(-sp * 0.6 * T, h * 0.15), V(-sp * T, h * 0.35)], W(0.014), W(0.01));
+      }
+      c.restore();
+    }
+    if (S.layers.labels && alpha >= 0.5) {
+      label(add(lerp(topP, base, 0.5), mul(X, -0.09 * T)), 'Boyun omurları C1–C7');
+      label(add(lerp(topP, base, level(6)), mul(X, 0.08 * T)), 'C7');
+    }
+  }
+  AM = 1;
+}
+
+function drawHand(c, h){
+  const hp = h.pts.map(P), k = S.thickness;
+  const hs = Math.max(dist(hp[0], hp[9]), 8);
+  const d = norm(sub(mid(hp[5], hp[17]), hp[0])), ac = norm(sub(hp[5], hp[17])), hw = dist(hp[5], hp[17]);
+  const rot = Math.atan2(d.y, d.x);
+  const W = x => x * hs * k;
+  // carpals: two rows of four
+  [-0.42,-0.14,0.14,0.42].forEach(o => ellipse(c, add(add(hp[0], mul(d, 0.12*hs)), mul(ac, o*hw*0.75)), W(0.075), W(0.06), rot));
+  [-0.45,-0.16,0.12,0.4].forEach(o => ellipse(c, add(add(hp[0], mul(d, 0.25*hs)), mul(ac, o*hw*0.85)), W(0.07), W(0.065), rot));
+  // metacarpals
+  for (const f of [5, 9, 13, 17]) {
+    const base = add(add(hp[0], mul(d, 0.34*hs)), mul(ac, dot(sub(hp[f], hp[0]), ac) * 0.8));
+    const sc = f === 17 ? 0.85 : 1;
+    bone(c, base, hp[f], W(0.07*sc), W(0.1*sc), W(0.11*sc));
+  }
+  bone(c, hp[1], hp[2], W(0.08), W(0.1), W(0.11));
+  // phalanges
+  const chains = [[2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]];
+  chains.forEach((ch, ci) => {
+    const sc = ci === 4 ? 0.85 : ci === 0 ? 1.1 : 1;
+    for (let j = 0; j < ch.length - 1; j++) {
+      const last = j === ch.length - 2;
+      const a = hp[ch[j]], b = last ? lerp(hp[ch[j]], hp[ch[j+1]], 0.88) : hp[ch[j+1]];
+      const w = [0.062, 0.054, 0.046][ci === 0 ? j + 1 : j] * sc;
+      bone(c, a, b, W(w), W(w*1.45), W(w*(last ? 1.15 : 1.35)), {medullary: j === 0});
+    }
+  });
+  if (S.layers.joints) ring(c, hp[0], W(0.09), G.joint, 1.5 * view.width/1280);
+  if (S.layers.labels) { label(add(hp[0], mul(d, 0.2*hs)), 'Karpal (bilek)'); label(mid(hp[9], hp[0]), 'Metakarpal'); }
+}
+
+// remove the head (no face) — feathered ellipse around the ears/nose
+function headCut(c){
+  if (!poseLm || !metrics.T) return;
+  const L = poseLm, e1 = P(L[7]), e2 = P(L[8]), nose = P(L[0]), {v, T} = metrics;
+  const hc = lerp(mid(e1, e2), nose, 0.3);
+  const r = Math.max(dist(e1, e2) * 0.95, T * 0.22);
+  c.save(); c.setTransform(1,0,0,1,0,0);
+  c.globalCompositeOperation = 'destination-out';
+  c.translate(hc.x - v.x*r*0.15, hc.y - v.y*r*0.15); c.rotate(Math.atan2(-v.x, v.y)); c.scale(1, 1.3);
+  const g = c.createRadialGradient(0,0,r*0.72,0,0,r); g.addColorStop(0,'rgba(0,0,0,1)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle = g; c.beginPath(); c.arc(0,0,r,0,Math.PI*2); c.fill(); c.restore();
+}
+
+// ---------- reveal ----------
+function lensTarget(){
+  if (handsData.length) return P(handsData[0].pts[8]);
+  if (poseLm) {
+    const l = poseLm[15], r = poseLm[16];
+    if ((l.v ?? 0) > TH || (r.v ?? 0) > TH) return P((l.v ?? 0) >= (r.v ?? 0) ? l : r);
+    if (metrics.neck) return lerp(metrics.neck, mid(metrics.Lh, metrics.Rh), 0.4);
+  }
+  return V(view.width/2, view.height/2);
+}
+function scanY(now){ const per = 4200; return (((now % per) / per) * 1.15 - 0.05) * view.height; }
+function inReveal(p, now){
+  const w = view.width, h = view.height;
+  if (S.reveal === 'lens') return lensPos && dist(p, lensPos) < S.lens * h;
+  if (S.reveal === 'scan') return p.y < scanY(now);
+  if (S.reveal === 'split') return p.x > S.split * w;
+  return true;
+}
+function applyReveal(c, now){
+  const w = view.width, h = view.height;
+  if (S.reveal === 'full') return;
+  c.save(); c.globalCompositeOperation = 'destination-in';
+  let g;
+  if (S.reveal === 'lens') {
+    const R = S.lens * h; g = c.createRadialGradient(lensPos.x, lensPos.y, R*0.9, lensPos.x, lensPos.y, R);
+    g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  } else if (S.reveal === 'scan') {
+    const y = scanY(now); g = c.createLinearGradient(0, y - h*0.55, 0, y + h*0.008);
+    g.addColorStop(0, 'rgba(0,0,0,0.22)'); g.addColorStop(0.9, '#000'); g.addColorStop(0.985, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+  } else {
+    const x = S.split * w; g = c.createLinearGradient(x - 6, 0, x + 6, 0);
+    g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, '#000');
+  }
+  c.fillStyle = g; c.fillRect(0, 0, w, h); c.restore();
+}
+function drawRevealChrome(now){
+  const w = view.width, h = view.height, sc = w / 1280;
+  ctx.save();
+  if (S.reveal === 'lens' && lensPos) {
+    ctx.strokeStyle = 'rgba(220,235,255,0.55)'; ctx.lineWidth = 1.5*sc;
+    ctx.beginPath(); ctx.arc(lensPos.x, lensPos.y, S.lens*h, 0, Math.PI*2); ctx.stroke();
+    for (let i = 0; i < 24; i++) { const a = i/24*Math.PI*2, r = S.lens*h;
+      ctx.beginPath(); ctx.moveTo(lensPos.x + Math.cos(a)*r, lensPos.y + Math.sin(a)*r); ctx.lineTo(lensPos.x + Math.cos(a)*(r - (i%6 ? 5 : 11)*sc), lensPos.y + Math.sin(a)*(r - (i%6 ? 5 : 11)*sc)); ctx.stroke(); }
+  } else if (S.reveal === 'scan') {
+    const y = scanY(now), g = ctx.createLinearGradient(0, y - 18*sc, 0, y + 4*sc);
+    g.addColorStop(0, 'rgba(124,214,255,0)'); g.addColorStop(0.8, 'rgba(124,214,255,0.35)'); g.addColorStop(1, 'rgba(220,245,255,0.95)');
+    ctx.fillStyle = g; ctx.fillRect(0, y - 18*sc, w, 22*sc);
+    ctx.fillStyle = '#bfe8ff'; ctx.font = `${12*sc}px ui-monospace,Menlo,monospace`;
+    ctx.fillText(`TARAMA ${Math.max(0, Math.min(100, Math.round(y / h * 100)))}%`, 14*sc, Math.max(16*sc, y - 8*sc));
+  } else if (S.reveal === 'split') {
+    const x = S.split * w; ctx.strokeStyle = 'rgba(220,235,255,0.8)'; ctx.lineWidth = 2*sc;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    ctx.fillStyle = 'rgba(220,235,255,0.9)'; ctx.beginPath(); ctx.arc(x, h/2, 9*sc, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+function drawLabels(now){
+  const sc = view.width / 1280;
+  ctx.save(); ctx.font = `500 ${12*sc}px -apple-system,Inter,sans-serif`; ctx.textBaseline = 'middle';
+  for (const {p, t} of labels) {
+    if (!inReveal(p, now)) continue;
+    const tw = ctx.measureText(t).width, x = p.x + 14*sc, y = p.y - 10*sc;
+    ctx.strokeStyle = 'rgba(160,210,255,0.6)'; ctx.lineWidth = 1*sc;
+    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(x, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(4,12,22,0.75)'; ctx.beginPath(); ctx.roundRect(x, y - 9*sc, tw + 12*sc, 18*sc, 9*sc); ctx.fill();
+    ctx.fillStyle = '#cfe8ff'; ctx.fillText(t, x + 6*sc, y);
+    ctx.fillStyle = '#7cd6ff'; ctx.beginPath(); ctx.arc(p.x, p.y, 2.2*sc, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ---------- render ----------
+function fit(cv, w, h){ if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; } }
+// ---- radiograph textures, generated once ----
+const rand = (a, b) => a + Math.random() * (b - a);
+// trabecular (spongy bone) pattern: small irregular pores in a mesh
+const trabTile = (() => {
+  const c = mk(); c.width = c.height = 220; const g = c.getContext('2d');
+  for (let i = 0; i < 1100; i++) {
+    g.fillStyle = `rgba(0,0,0,${rand(0.35, 0.9)})`;
+    g.beginPath(); g.ellipse(rand(0, 220), rand(0, 220), rand(1.2, 3.8), rand(1, 2.6), rand(0, Math.PI), 0, Math.PI * 2); g.fill();
+  }
+  g.strokeStyle = 'rgba(0,0,0,0.5)'; g.lineWidth = 0.8;
+  for (let i = 0; i < 160; i++) { const x = rand(0, 220), y = rand(0, 220), a = rand(0, Math.PI);
+    g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + rand(-6, 6), y + rand(-6, 6), x + Math.cos(a) * 12, y + Math.sin(a) * 12); g.stroke(); }
+  return c;
+})();
+const trabPat = ctx.createPattern(trabTile, 'repeat');
+// film grain: a few frames of random dots, cycled
+const grainTiles = Array.from({length: 4}, () => {
+  const c = mk(); c.width = c.height = 160; const g = c.getContext('2d'), im = g.createImageData(160, 160);
+  for (let i = 0; i < im.data.length; i += 4) { const v = Math.random() < 0.5 ? 0 : 255; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = Math.random() * 90; }
+  g.putImageData(im, 0, 0); return ctx.createPattern(c, 'repeat');
+});
+const Rc = mk(), rctx = Rc.getContext('2d');   // skin-line (rim) buffer at mask resolution
+const snapC = mk();
+function snapshotURL(){ const w = 560, h = Math.round(view.height * w / view.width); fit(snapC, w, h); snapC.getContext('2d').drawImage(view, 0, 0, w, h); return snapC.toDataURL('image/jpeg', 0.75); }
+// CIBODY içinde: seanslar hastanın sunucudaki kaydına yazılır (oturum anahtarı panelden okunur)
+const remote = (() => {
+  const qs = new URLSearchParams(location.search), hp = qs.get('hasta');
+  let tok = null; try { tok = localStorage.getItem('cibody_token'); } catch (e) {}
+  if (!qs.has('embed') || !hp || !/^\d+$/.test(hp) || !tok) return null;
+  const H = {Authorization: 'Bearer ' + tok};
+  const ok = async r => { if (!r.ok) { let m = r.status; try { m = (await r.json()).detail || m; } catch (e) {} throw new Error(m); } return r.json(); };
+  return {
+    save: body => fetch(`/api/xray/patient/${hp}`, {method: 'POST', headers: {...H, 'Content-Type': 'application/json'}, body: JSON.stringify(body)}).then(ok),
+    list: () => fetch(`/api/xray/patient/${hp}`, {headers: H, cache: 'no-store'}).then(ok),
+    del: id => fetch(`/api/xray/${id}`, {method: 'DELETE', headers: H}).then(ok),
+    update: (id, body) => fetch(`/api/xray/${id}`, {method: 'PUT', headers: {...H, 'Content-Type': 'application/json'}, body: JSON.stringify(body)}).then(ok),
+  };
+})();
+const clinic = createClinic({pose: () => poseLm, world: () => poseWorld, P: q => P(q), metrics: () => metrics, snapshot: snapshotURL, remote});
+// CIBODY paneli içinde açıldıysa: başlık ve hasta kodu (yalnızca numara, isim değil)
+{
+  const qs = new URLSearchParams(location.search);
+  if (qs.has('embed')) document.getElementById('appTitle').textContent = 'X-Ray';
+  const hp = qs.get('hasta');
+  if (hp && /^\d+$/.test(hp)) {
+    const code = document.getElementById('cl-code'), hgt = document.getElementById('cl-height');
+    code.value = 'H-' + hp; code.dispatchEvent(new Event('input'));
+    // Hasta bilgileri CIBODY panelindeki açık hasta kartından okunur (adrese veya dosyaya yazılmaz)
+    let name = '', height = 0;
+    try {
+      if (sessionStorage.getItem('cibody_active_patient_id') === hp) {
+        name = sessionStorage.getItem('cibody_active_patient_name') || '';
+        height = parseFloat(sessionStorage.getItem('cibody_active_patient_height')) || 0;
+      }
+    } catch (e) {}
+    window.__cbPatientName = name;
+    const box = code.closest('.cl-in');
+    code.readOnly = true;
+    code.closest('label').firstChild.textContent = 'Hasta';
+    if (name) { code.value = name + '  (#' + hp + ')'; code.title = 'Kayıt kodu: H-' + hp; }
+    if (height >= 100 && height <= 230) {
+      hgt.value = height; hgt.dispatchEvent(new Event('input')); hgt.readOnly = true;
+      hgt.closest('label').firstChild.textContent = 'Boy (kayıttan)';
+    } else {
+      hgt.closest('label').firstChild.textContent = 'Boy (cm) – kayıtta yok';
+    }
+    box.classList.add('cl-locked');
+  }
+}
+// Kamera kaynağı: postür analiziyle aynı kamera ve döndürme ayarı (yan yatırılmış kamera → dikey görüntü)
+const SRC = mk(), sctx = SRC.getContext('2d');
+const IS_EMBED = new URLSearchParams(location.search).has('embed');
+const CAM = {rot: 0, deviceId: '', live: false};
+try {
+  CAM.rot = parseInt(localStorage.getItem('cibody_cam_rotation') ?? (IS_EMBED ? '90' : '0'), 10) || 0;
+  CAM.deviceId = localStorage.getItem('cibody_cam_id') || '';
+} catch (e) {}
+function updateSource(){
+  const vw = video.videoWidth, vh = video.videoHeight; if (!vw) return false;
+  const side = CAM.rot % 180 !== 0, w = side ? vh : vw, h = side ? vw : vh;
+  if (SRC.width !== w || SRC.height !== h) { SRC.width = w; SRC.height = h; }
+  sctx.setTransform(1, 0, 0, 1, 0, 0); sctx.translate(w / 2, h / 2); sctx.rotate(CAM.rot * Math.PI / 180);
+  sctx.drawImage(video, -vw / 2, -vh / 2, vw, vh); sctx.setTransform(1, 0, 0, 1, 0, 0);
+  return true;
+}
+function drawVideo(c, w, h){ if (!CAM.live) return; c.save(); c.setTransform(S.mirror ? -1 : 1, 0, 0, 1, S.mirror ? w : 0, 0); c.drawImage(SRC, 0, 0, w, h); c.restore(); }
+
+function render(now){
+  const w = view.width, h = view.height, sc = w / 1280;
+  setLook(sc); labels = [];
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, w, h);
+  drawVideo(ctx, w, h);
+  if (G.film) { ctx.fillStyle = `rgba(0,0,0,${0.9 - 0.5 * S.realMe})`; ctx.fillRect(0, 0, w, h); }
+  if (!poseLm && !handsData.length) { metrics = {}; clinic.draw(ctx, now); updateData(now); return; }
+
+  fit(Tc, w >> 1, h >> 1); fit(Bc, w, h); fit(Cc, w, h); fit(Gc, w >> 2, h >> 2); fit(Fc, Mc.width || 1, Mc.height || 1);
+
+  // soft tissue
+  tctx.setTransform(1,0,0,1,0,0); tctx.globalCompositeOperation = 'source-over'; tctx.globalAlpha = 1; tctx.clearRect(0, 0, Tc.width, Tc.height);
+  if (poseLm && hasMask) {
+    tctx.fillStyle = G.tissue; tctx.fillRect(0, 0, Tc.width, Tc.height);
+    if (HAS_FILTER && S.look !== 'solid') {
+      tctx.save(); tctx.filter = 'grayscale(1) invert(1) contrast(1.5) brightness(0.6)'; tctx.globalAlpha = 0.3; tctx.globalCompositeOperation = 'screen';
+      drawVideo(tctx, Tc.width, Tc.height); tctx.restore();
+      if (G.film) { tctx.save(); tctx.filter = 'grayscale(1) invert(1) contrast(1.3) brightness(0.9)'; tctx.globalAlpha = 0.18; tctx.globalCompositeOperation = 'screen'; drawVideo(tctx, Tc.width, Tc.height); tctx.restore(); }
+      if (S.look === 'xray') { tctx.save(); tctx.globalCompositeOperation = 'multiply'; tctx.fillStyle = 'rgb(140,190,255)'; tctx.fillRect(0, 0, Tc.width, Tc.height); tctx.restore(); }
+    }
+    // feathered silhouette from the segmentation mask
+    fctx.clearRect(0, 0, Fc.width, Fc.height);
+    if (HAS_FILTER) fctx.filter = `blur(${S.feather / MASK_DS / 2}px)`;
+    fctx.drawImage(Mc, 0, 0); fctx.filter = 'none';
+    tctx.save(); tctx.globalCompositeOperation = 'destination-in';
+    tctx.setTransform(S.mirror ? -1 : 1, 0, 0, 1, S.mirror ? Tc.width : 0, 0);
+    tctx.drawImage(Fc, 0, 0, Tc.width, Tc.height); tctx.restore();
+    // skin line: thin bright band along the body outline (narrow blur minus wide blur of the mask)
+    if (G.rim && HAS_FILTER) {
+      fit(Rc, Mc.width, Mc.height);
+      rctx.globalCompositeOperation = 'source-over'; rctx.clearRect(0, 0, Rc.width, Rc.height);
+      rctx.filter = 'blur(0.6px)'; rctx.drawImage(Mc, 0, 0);
+      rctx.globalCompositeOperation = 'destination-out'; rctx.filter = 'blur(3px)'; rctx.drawImage(Mc, 0, 0);
+      rctx.filter = 'none'; rctx.globalCompositeOperation = 'source-in'; rctx.fillStyle = G.rim; rctx.fillRect(0, 0, Rc.width, Rc.height);
+      tctx.save(); tctx.globalCompositeOperation = 'lighter'; tctx.globalAlpha = 0.85;
+      tctx.setTransform(S.mirror ? -1 : 1, 0, 0, 1, S.mirror ? Tc.width : 0, 0);
+      tctx.drawImage(Rc, 0, 0, Tc.width, Tc.height); tctx.restore();
+    }
+    tctx.save(); tctx.scale(0.5, 0.5); headCut(tctx); tctx.restore();
+  }
+
+  // bones
+  bctx.setTransform(1,0,0,1,0,0); bctx.globalCompositeOperation = 'source-over'; bctx.clearRect(0, 0, w, h);
+  let used = new Set();
+  if (poseLm) { used = drawBody(bctx); headCut(bctx); drawNeck(bctx); }
+  if (S.layers.hands) for (const hd of handsData) drawHand(bctx, hd);
+  if (G.trab && S.trab > 0) {
+    const anchor = metrics.neck || V(0, 0), k = Math.min(2, Math.max(0.5, (metrics.T || 300) / 300)) * sc;
+    trabPat.setTransform(new DOMMatrix().translate(anchor.x, anchor.y).scale(k));
+    bctx.save(); bctx.globalCompositeOperation = 'destination-out'; bctx.globalAlpha = 0.65 * S.trab;
+    bctx.fillStyle = trabPat; bctx.fillRect(0, 0, w, h); bctx.restore();
+  }
+
+  // composite
+  cctx.globalCompositeOperation = 'source-over'; cctx.globalAlpha = 1; cctx.filter = 'none'; cctx.clearRect(0, 0, w, h);
+  cctx.globalAlpha = 1 - S.realMe; cctx.drawImage(Tc, 0, 0, w, h); cctx.globalAlpha = 1;
+  if (G.glow && S.glow > 0) {
+    gctx.clearRect(0, 0, Gc.width, Gc.height);
+    if (HAS_FILTER) gctx.filter = 'blur(2px)';
+    gctx.drawImage(Bc, 0, 0, Gc.width, Gc.height); gctx.filter = 'none';
+    cctx.globalCompositeOperation = 'lighter'; cctx.globalAlpha = Math.min(1, S.glow);
+    cctx.drawImage(Gc, 0, 0, w, h);
+    if (S.glow > 1) { cctx.globalAlpha = S.glow - 1; cctx.drawImage(Gc, 0, 0, w, h); }
+  }
+  cctx.globalCompositeOperation = G.mode;
+  let b = S.brightness; while (b > 0.01) { cctx.globalAlpha = Math.min(1, b); cctx.drawImage(Bc, 0, 0); b -= 1; }
+  cctx.globalAlpha = 1; cctx.globalCompositeOperation = 'source-over';
+
+  if (S.grain > 0 && S.look !== 'solid') {
+    const gp = grainTiles[Math.floor(now / 70) % grainTiles.length];
+    gp.setTransform(new DOMMatrix().scale(sc));
+    cctx.save(); cctx.globalCompositeOperation = 'source-atop'; cctx.globalAlpha = 0.55 * S.grain;
+    cctx.fillStyle = gp; cctx.fillRect(0, 0, w, h); cctx.restore();
+  }
+  lensPos = lensPos ? lerp(lensPos, lensTarget(), 0.35) : lensTarget();
+  applyReveal(cctx, now);
+  ctx.drawImage(Cc, 0, 0);
+  if (S.look !== 'solid') {
+    const vg = ctx.createRadialGradient(w/2, h/2, Math.min(w, h) * 0.35, w/2, h/2, Math.hypot(w, h) * 0.62);
+    vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${G.film ? 0.6 : 0.35})`);
+    ctx.fillStyle = vg; ctx.fillRect(0, 0, w, h);
+  }
+  drawRevealChrome(now);
+  if (S.layers.labels) drawLabels(now);
+  clinic.draw(ctx, now);
+  updateData(now);
+}
+
+function updateData(now){
+  frames++;
+  if (now - fpsT > 1000) { fps = Math.round(frames * 1000 / (now - fpsT)); frames = 0; fpsT = now; }
+  $('#hud').style.display = clinic.running() ? 'none' : '';
+  $('#hud').textContent = `● CANLI · ${poseLm ? 'vücut' : 'vücut yok'} · ${handsData.length} el · ${fps} fps`;
+  if (!S.showData || now - dataT < 200) return; dataT = now;
+  if (!poseLm) { $('#data').textContent = 'vücut     aranıyor…\nipucu     kameradan biraz uzaklaş'; return; }
+  const L = poseLm, p = i => P(L[i]), vis = i => L[i].v ?? 1, {T, shW, v, Ls, Rs, Lh, Rh} = metrics;
+  const ang = (a,b,c) => (vis(a) > TH && vis(b) > TH && vis(c) > TH) ? Math.round(angleAt(p(a), p(b), p(c))) + '°' : '—';
+  const f = view.width * 0.87, distCm = clinic.height() ? Math.round(f * 0.30 * clinic.height() / Math.max(T, 1)) : Math.round(f * 39 / Math.max(shW, 1));
+  const lean = Math.round(Math.atan2(v.x, v.y) * 180 / Math.PI * (S.mirror ? 1 : -1));
+  const tilt = (a, b) => Math.round(Math.atan2(a.y - b.y, Math.abs(a.x - b.x)) * 180 / Math.PI);
+  const fw = metrics.fw;
+  const viewTxt = fw > 0.95 ? 'ÖNDEN' : fw < 0.05 ? `YANDAN (yüz ekranda ${metrics.fd.x > 0 ? 'sağa' : 'sola'} bakıyor)` : `geçiş (önden %${Math.round(fw*100)})`;
+  const memTxt = memCount >= 60 ? `kayıtlı · omuz/gövde ${memRatio.toFixed(2)}` : `öğreniyor %${Math.round(memCount/60*100)} — önden dur`;
+  // posture in side view: how far the ear is in front of the shoulder
+  const ear = vis(7) > vis(8) ? 7 : 8;
+  const headFwd = fw < 0.3 && vis(ear) > 0.5 ? Math.round(dot(sub(p(ear), metrics.neck), metrics.fd) / T * 50) + ' cm (tahmini)' : '—';
+  const seen =['omuz', 'dirsek', 'bilek', 'kalça', 'diz', 'ayak bileği'].filter((n, i) => vis([11,13,15,23,25,27][i]) > TH || vis([12,14,16,24,26,28][i]) > TH);
+  $('#data').textContent =
+`vücut          takipte, 33 nokta
+görünüm        ${viewTxt}
+dönüş          ${Math.round(Math.acos(clamp01(frontness)) * 180 / Math.PI)}°
+hafıza         ${memTxt}
+baş öne        ${headFwd}
+mesafe        ~${distCm} cm (tahmini)
+gövde eğimi    ${lean}°
+omuz / kalça   ${tilt(Ls, Rs)}° / ${tilt(Lh, Rh)}°
+dirsek  S / Sğ ${ang(11,13,15)} / ${ang(12,14,16)}
+diz     S / Sğ ${ang(23,25,27)} / ${ang(24,26,28)}
+kalça   S / Sğ ${ang(11,23,25)} / ${ang(12,24,26)}
+eller          ${handsData.length ? handsData.length + ' (21 nokta/el)' : 'yok'}
+görünen        ${seen.join(', ') || '—'}
+hız            ${fps} kare/sn`;
+}
+
+// ---------- loop ----------
+function loop(){
+  if (video.readyState >= 2 && pose) {
+    const now = performance.now();
+    if (video.currentTime !== lastVideoTime && updateSource()) {
+      lastVideoTime = video.currentTime;
+      if (view.width !== SRC.width || view.height !== SRC.height) { view.width = SRC.width; view.height = SRC.height; view.style.aspectRatio = `${SRC.width}/${SRC.height}`; }
+      const ts = Math.max(now, lastTs + 1); lastTs = ts;
+      try {
+        pose.detectForVideo(SRC, ts, onPose);                      // analiz, döndürülmüş (dik) görüntü üzerinde
+        if (hands) onHands(hands.detectForVideo(SRC, ts));
+      } catch (e) { console.error(e); }
+    }
+    render(now);
+  }
+  requestAnimationFrame(loop);
+}
+
+async function createTask(Cls, fs, url, extra){
+  const base = {runningMode:'VIDEO', ...extra};
+  try { return await Cls.createFromOptions(fs, {...base, baseOptions:{modelAssetPath:url, delegate:'GPU'}}); }
+  catch (e) { console.warn('GPU yok, CPU kullanılıyor', e); return await Cls.createFromOptions(fs, {...base, baseOptions:{modelAssetPath:url, delegate:'CPU'}}); }
+}
+
+async function openCamera(){
+  if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+  const size = {width: {ideal: 1920}, height: {ideal: 1080}};
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video: CAM.deviceId ? {deviceId: {exact: CAM.deviceId}, ...size} : {facingMode: 'user', ...size}, audio: false});
+  } catch (e) {
+    if (!CAM.deviceId) throw e;                                  // kayıtlı kamera bulunamadıysa varsayılanla dene
+    stream = await navigator.mediaDevices.getUserMedia({video: size, audio: false});
+  }
+  video.srcObject = stream; await video.play(); CAM.live = true;
+  await fillCameraList();
+}
+async function fillCameraList(){
+  const sel = $('#camSelect'); if (!sel) return;
+  try {
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+    const cur = video.srcObject && video.srcObject.getVideoTracks()[0] && video.srcObject.getVideoTracks()[0].getSettings().deviceId;
+    sel.innerHTML = devs.map((d, i) => `<option value="${d.deviceId}" ${d.deviceId === cur ? 'selected' : ''}>${(d.label || 'Kamera ' + (i + 1)).replace(/[<>&"]/g, '')}</option>`).join('');
+  } catch (e) {}
+}
+$('#camRot').value = String(CAM.rot);
+$('#camRot').onchange = e => { CAM.rot = parseInt(e.target.value, 10) || 0; try { localStorage.setItem('cibody_cam_rotation', String(CAM.rot)); } catch (er) {} poseLm = null; handsData = []; };
+$('#camSelect').onchange = async e => { CAM.deviceId = e.target.value; try { localStorage.setItem('cibody_cam_id', CAM.deviceId); } catch (er) {} if (CAM.live) { try { await openCamera(); } catch (er) { console.error(er); } } };
+
+$('#go').onclick = async () => {
+  const btn = $('#go'), err = $('#err'); btn.disabled = true; err.textContent = '';
+  try {
+    btn.textContent = 'Kamera açılıyor…';
+    await openCamera();
+    btn.textContent = 'Modeller yükleniyor…';
+    const fs = await FilesetResolver.forVisionTasks(WASM);
+    [pose, hands] = await Promise.all([
+      createTask(PoseLandmarker, fs, POSE_URL, {numPoses:1, outputSegmentationMasks:true, minPoseDetectionConfidence:0.5, minPosePresenceConfidence:0.5, minTrackingConfidence:0.5}),
+      createTask(HandLandmarker, fs, HAND_URL, {numHands:2, minHandDetectionConfidence:0.5, minHandPresenceConfidence:0.5, minTrackingConfidence:0.5}),
+    ]);
+    $('#start').style.display = 'none';
+    requestAnimationFrame(loop);
+  } catch (e) {
+    console.error(e); btn.disabled = false; btn.textContent = 'Taramayı tekrar dene';
+    err.textContent = e.name === 'NotAllowedError' ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kameraya izin ver.' : 'Hata: ' + (e.message || e);
+  }
+};
+
+// ---------- demo (no camera): ?demo ----------
+if (new URLSearchParams(location.search).has('demo')) {
+  $('#start').style.display = 'none';
+  const base = {11:[.42,.30],12:[.58,.30],13:[.38,.45],14:[.62,.45],15:[.36,.58],16:[.64,.58],17:[.355,.62],18:[.645,.62],19:[.36,.63],20:[.64,.63],21:[.37,.61],22:[.63,.61],
+    23:[.45,.58],24:[.55,.58],25:[.45,.75],26:[.55,.75],27:[.45,.92],28:[.55,.92],29:[.45,.94],30:[.55,.94],31:[.44,.97],32:[.56,.97],0:[.5,.18],7:[.53,.18],8:[.47,.18]};
+  const demo = t => {
+    const lm = Array.from({length:33}, (_, i) => { const b = base[i] || [.5,.2]; return {x:b[0], y:b[1], visibility:1}; });
+    const a = Math.sin(t / 600) * 0.6;
+    lm[14] = {x:.62 + Math.sin(a)*0.02, y:.45, visibility:1};
+    lm[16] = {x:.66 + Math.sin(a)*0.06, y:.33 + Math.cos(a)*0.02, visibility:1};
+    for (const [i, dx, dy] of [[18,.012,-.04],[20,-.002,-.05],[22,-.02,-.03]]) lm[i] = {x:lm[16].x + dx, y:lm[16].y + dy, visibility:1};
+    return lm;
+  };
+  // the demo body slowly turns from front to side and back
+  const turn = (lm, t) => {
+    const th = (Math.sin(t / 2500) * 0.5 + 0.5) * Math.PI / 2, c = Math.cos(th), s = Math.sin(th);
+    const world = Array.from({length:33}, () => ({x:0, y:0, z:0}));
+    for (const [l, r, hw] of [[11,12,.08],[13,14,.12],[15,16,.14],[17,18,.14],[19,20,.14],[21,22,.14],[23,24,.05],[25,26,.05],[27,28,.05],[29,30,.05],[31,32,.06]]) {
+      lm[l].x = .5 - hw*c; lm[r].x = .5 + hw*c; world[l] = {x:hw*c, y:0, z:hw*s}; world[r] = {x:-hw*c, y:0, z:-hw*s};
+    }
+    for (const [i, f] of [[0,.05],[29,-.015],[30,-.015],[31,.035],[32,.035]]) lm[i].x += f*s;
+    lm[7].x = .5 - .03*c + .0*s; lm[8].x = .5 + .03*c;
+    return world;
+  };
+  const sideDemo = new URLSearchParams(location.search).get('demo') === 'turn';
+  const dl = () => { const now = performance.now(); const lm = demo(now), world = sideDemo ? turn(lm, now) : null;
+    onPose({landmarks:[lm], worldLandmarks: world ? [world] : undefined}); demoMask(lm); render(now); requestAnimationFrame(dl); };
+  const demoMask = lm => {
+    const mw = Math.ceil(1280 / MASK_DS), mh = Math.ceil(720 / MASK_DS); fit(Mc, mw, mh);
+    mctx.clearRect(0, 0, mw, mh); mctx.strokeStyle = mctx.fillStyle = '#fff'; mctx.lineCap = 'round'; mctx.lineJoin = 'round';
+    const q = i => [lm[i].x * mw, lm[i].y * mh];
+    mctx.beginPath(); [11, 12, 24, 23].forEach((i, k) => mctx[k ? 'lineTo' : 'moveTo'](...q(i))); mctx.closePath();
+    mctx.lineWidth = mw * 0.06; mctx.stroke(); mctx.fill();
+    for (const [a, b, wd] of [[11,13,.045],[13,15,.035],[12,14,.045],[14,16,.035],[23,25,.06],[25,27,.045],[24,26,.06],[26,28,.045],[27,31,.03],[28,32,.03],[15,19,.03],[16,20,.03]]) {
+      mctx.lineWidth = mw * wd; mctx.beginPath(); mctx.moveTo(...q(a)); mctx.lineTo(...q(b)); mctx.stroke(); }
+    const nk = [(lm[11].x + lm[12].x) / 2 * mw, (lm[11].y + lm[12].y) / 2 * mh];
+    mctx.lineWidth = mw * 0.04; mctx.beginPath(); mctx.moveTo(...nk); mctx.lineTo(nk[0], lm[0].y * mh); mctx.stroke();
+    mctx.beginPath(); mctx.ellipse(lm[0].x * mw, lm[0].y * mh, mw * 0.03, mh * 0.07, 0, 0, Math.PI * 2); mctx.fill();
+    hasMask = true;
+  };
+  requestAnimationFrame(dl);
+}
+
+// ---------- extras ----------
+function snapshot(){ view.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `xray-${Date.now()}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }); }
+$('#fs').onclick = () => document.fullscreenElement ? document.exitFullscreen() : $('#stage').requestFullscreen?.();
+const toggleSide = () => { $('#app').classList.toggle('nopanel'); $('#toggleSide').textContent = $('#app').classList.contains('nopanel') ? 'Paneli göster' : 'Paneli gizle'; };
+$('#toggleSide').onclick = toggleSide;
+const setSplit = e => { const r = view.getBoundingClientRect(); S.split = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)); };
+view.addEventListener('pointerdown', e => { if (S.reveal === 'split') { setSplit(e); view.setPointerCapture(e.pointerId); } });
+view.addEventListener('pointermove', e => { if (S.reveal === 'split' && e.buttons) setSplit(e); });
+addEventListener('keydown', e => {
+  if (e.target.closest('input,select,textarea')) return;
+  const modes = {'1':'full','2':'lens','3':'scan','4':'split'};
+  if (modes[e.key]) { S.reveal = modes[e.key]; syncUI(); }
+  else if (e.key === 'h' || e.key === 'H') toggleSide();
+});
+</script>
+</body>
+</html>

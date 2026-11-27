@@ -47,3 +47,14 @@ backend/*.db
 *.db
 backend/*.db
 *.db
+
+# Arşivlenmiş tek kullanımlık betikler ve eski yedekler (depoya girmez)
+_arsiv/
+*.bak
+
+# Veritabanı yan dosyaları (hasta verisi içerir) ve hasta yüklemeleri – asla depoya girmez
+*.db-shm
+*.db-wal
+*.db-journal
+backend/uploads/
+backend/data/

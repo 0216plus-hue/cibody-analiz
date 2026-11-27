@@ -679,7 +679,7 @@ function renderCustomTables(tables, d1Str, d2Str) {
                 // Not/Sözel Karşılaştırma Satırı
                 html += `
                     <tr class="hover:bg-slate-50/80 transition-colors">
-                        <td class="px-6 py-3.5 font-bold text-slate-800">${s.name}</td>
+                        <td class="px-6 py-3.5 font-bold text-slate-800">${escapeHtml(s.name)}</td>
                         <td class="px-6 py-3.5 text-slate-700 bg-indigo-50/30 font-semibold">${s.note1}</td>
                         <td class="px-6 py-3.5 text-slate-700 bg-emerald-50/30 font-semibold">${s.note2}</td>
                         <td class="px-6 py-3.5 text-center">
@@ -725,7 +725,7 @@ function renderCustomTables(tables, d1Str, d2Str) {
 
             html += `
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-6 py-3.5 font-bold text-slate-800">${s.name}</td>
+                    <td class="px-6 py-3.5 font-bold text-slate-800">${escapeHtml(s.name)}</td>
                     <td class="px-6 py-3.5 text-indigo-900 bg-indigo-50/20 font-black">${s.val1}${s.unit || ''}${note1Str}</td>
                     <td class="px-6 py-3.5 text-emerald-900 bg-emerald-50/20 font-black">${s.val2}${s.unit || ''}${note2Str}</td>
                     <td class="px-6 py-3.5 text-center">${badge}</td>

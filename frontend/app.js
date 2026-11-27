@@ -118,7 +118,7 @@ function showDashboard(clearActive = false) {
 
         
         // Hide all extra tabs
-        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'xrayTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
             const el = document.getElementById(t); 
             if(el) el.classList.add('hidden'); 
         });
@@ -200,14 +200,14 @@ function showPatient(patientId, patientName, patientAge, patientWeight, patientG
 function switchTab(tabId) {
     try {
         // Hide all tabs
-        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab', 'comparisonTab'];
+        const tabs = ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'xrayTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab', 'comparisonTab'];
         tabs.forEach(t => {
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden');
         });
         
         // Remove active styles from ALL buttons
-        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab', 'btn_insoleTab', 'btn_footScanTab', 'btn_comparisonTab'];
+        const btns = ['btn_postureTab', 'btn_spineTab', 'btn_scoliosisTab', 'btn_scoliometerTab', 'btn_xrayTab', 'btn_simulationTab', 'btn_footTab', 'btn_gaitTab', 'btn_balanceTab', 'btn_aiReportTab', 'btn_insoleTab', 'btn_footScanTab', 'btn_comparisonTab'];
         btns.forEach(b => {
             const el = document.getElementById(b);
             if (el) {
@@ -230,6 +230,17 @@ function switchTab(tabId) {
 
         if (tabId !== 'gaitTab' && typeof stopGaitAnalysis === 'function') {
             stopGaitAnalysis();
+        }
+
+        // X-Ray Ayna: sekme açılınca yüklenir, başka sekmeye geçince tamamen kapatılır (kamera durur)
+        const xrayFrame = document.getElementById('xrayFrame');
+        if (xrayFrame) {
+            if (tabId === 'xrayTab') {
+                const want = '/xray/index.html?embed=1' + (currentPatientId ? '&hasta=' + encodeURIComponent(currentPatientId) : '');
+                if (xrayFrame.dataset.src !== want) { xrayFrame.dataset.src = want; xrayFrame.src = want; }
+            } else if (xrayFrame.dataset.src) {
+                xrayFrame.dataset.src = ''; xrayFrame.src = 'about:blank';
+            }
         }
 
         if (typeof applyTranslations === 'function' && activeTab) {
@@ -382,17 +393,23 @@ function renderPatients() {
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </td>
-            <td class="py-4 text-slate-500 px-2 align-middle font-medium">#${p.id}</td>
-            <td class="py-4 font-bold text-slate-800 px-2 align-middle">${p.name}</td>
-            <td class="py-4 text-slate-600 px-2 align-middle">${p.age} ${ageUnit}, ${p.height || 0}cm, ${p.weight}kg</td>
-            <td class="py-4 text-slate-600 px-2 align-middle font-medium">${p.phone || '-'}</td>
+            <td onclick="openPatientRow(this)" class="cursor-pointer py-4 text-slate-500 px-2 align-middle font-medium">#${Number(p.id)}</td>
+            <td onclick="openPatientRow(this)" class="cursor-pointer py-4 font-bold text-slate-800 px-2 align-middle hover:text-indigo-700">${escapeHtml(p.name)}</td>
+            <td onclick="openPatientRow(this)" class="cursor-pointer py-4 text-slate-600 px-2 align-middle">${Number(p.age)||0} ${ageUnit}, ${Number(p.height)||0}cm, ${Number(p.weight)||0}kg</td>
+            <td onclick="openPatientRow(this)" class="cursor-pointer py-4 text-slate-600 px-2 align-middle font-medium">${escapeHtml(p.phone || '-')}</td>
             <td class="py-4 text-right px-2 align-middle">
-                <button onclick="showPatient(${p.id}, '${p.name}', ${p.age}, ${p.weight}, '${p.gender}', '${p.phone || ''}', ${p.height || 0}, ${p.shoe_size || 0})" class="bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-lg font-bold transition-colors text-sm inline-flex items-center justify-center shadow-sm">
+                <button data-open-patient onclick="showPatient(${Number(p.id)}, '${jsAttr(p.name)}', ${Number(p.age)||0}, ${Number(p.weight)||0}, '${jsAttr(p.gender)}', '${jsAttr(p.phone || '')}', ${Number(p.height)||0}, ${Number(p.shoe_size)||0})" class="bg-indigo-900 hover:bg-indigo-800 text-white px-5 py-2 rounded-lg font-bold transition-colors text-sm inline-flex items-center justify-center shadow-sm">
                     ${openCardText} <i class="fa-solid fa-arrow-right ml-2"></i>
                 </button>
             </td>
         </tr>
     `).join('');
+}
+
+// Hasta satırında ID, ad, kayıt bilgisi veya telefona tıklanınca hasta kartını aç
+function openPatientRow(cell) {
+    const btn = cell.closest('tr') && cell.closest('tr').querySelector('[data-open-patient]');
+    if (btn) btn.click();
 }
 
 function loadMorePatients() {
@@ -410,6 +427,10 @@ async function createPatient(e) {
     formData.append('shoe_size', document.getElementById('p_shoe_size').value || 0);
     formData.append('gender', document.getElementById('p_gender').value || 'Erkek');
     formData.append('phone', document.getElementById('p_phone').value || '');
+    const kvkkBox = document.getElementById('kvkk_consent');
+    if (!kvkkBox || !kvkkBox.checked) { alert('Hasta kaydı için KVKK aydınlatma ve açık rıza onayını işaretleyin.'); return; }
+    formData.append('kvkk_consent', 'true');
+    formData.append('kvkk_text_version', 'kvkk-2026-11');
 
     try {
         const res = await authFetch('/api/patients', { method: 'POST', body: formData });
@@ -769,6 +790,89 @@ function calcVerticalAngle(p1, p2) {
     return theta.toFixed(1);
 }
 
+
+// ═══════════════════ POSTÜR ÖLÇÜM MOTORU v2 ═══════════════════
+// [ENGINE-START]
+// Genel kamera eğimi düzeltmesi: karşılıklı görünümler (önden↔arkadan, sol yan↔sağ yan) birleştirilir.
+// Kamera eğimi bu iki fotoğrafta ters işaretle yansır, ortalamada birbirini götürür; hastadaki gerçek sapma kalır.
+// Cihaza özel kalibrasyon gerekmez. Ayrıca her açının ölçüm belirsizliği (±) hesaplanır.
+const POSTURE_PX_ERR_640 = 3;   // 640 px model girişinde tahmini nokta hatası (yolov8n-pose)
+function _ptErr(p, dims){
+    const base = POSTURE_PX_ERR_640 * Math.max(dims.w, dims.h) / 640;
+    const c = (p && p.confidence != null) ? p.confidence : 1;
+    return base * (c >= 0.8 ? 1 : c >= 0.5 ? 1.5 : 2.5);
+}
+function _angSigma(p1, p2, dims){
+    const L = Math.hypot(p2.x - p1.x, p2.y - p1.y) || 1;
+    return Math.atan(Math.hypot(_ptErr(p1, dims), _ptErr(p2, dims)) / L) * 180 / Math.PI;
+}
+// Önden/arkadan: hastanın sağı/solu modelin etiketinden değil, çekim yönünden belirlenir
+function _anatPair(kpts, part, view){
+    const p = kpts['left_' + part], q = kpts['right_' + part];
+    if (!p || !q) return null;
+    const right = p.x >= q.x ? p : q, left = p.x >= q.x ? q : p;   // görüntüde sağdaki / soldaki
+    return view === 'front' ? { L: right, R: left } : { L: left, R: right };
+}
+function _frontalTilt(kpts, part, view, dims){
+    const pr = _anatPair(kpts, part, view); if (!pr) return null;
+    const v = Math.atan2(pr.R.y - pr.L.y, Math.abs(pr.L.x - pr.R.x)) * 180 / Math.PI;   // + = hastanın SOLU yüksek
+    return { v, s: _angSigma(pr.L, pr.R, dims), len: Math.hypot(pr.L.x - pr.R.x, pr.L.y - pr.R.y) };
+}
+// Yan görünüm: alt noktadan üst noktaya çizginin dikeyden sapması; + = üst nokta hastanın önünde
+function _sideAngle(lo, up, facing, dims){
+    if (!lo || !up) return null;
+    const v = Math.atan2((up.x - lo.x) * facing, lo.y - up.y) * 180 / Math.PI;
+    return { v, s: _angSigma(lo, up, dims) };
+}
+// Hastanın baktığı yön (görüntüde): burun/göz ile görünen kulak arasındaki fark; yoksa çekim yönünden varsayılan
+function _detectFacing(kpts, view){
+    const ear = view === 'left' ? kpts.left_ear : kpts.right_ear;
+    if (ear) for (const n of ['nose', 'left_eye', 'right_eye']) {
+        const p = kpts[n];
+        if (p && p.confidence >= 0.5 && Math.abs(p.x - ear.x) > 5) return Math.sign(p.x - ear.x);
+    }
+    return view === 'left' ? -1 : 1;
+}
+// Yan görünümde kameraya dönük taraf: güven değeri yüksek olan taraf (iki taraf asla karıştırılmaz)
+function _sideSet(kpts){
+    const score = side => ['ear', 'shoulder', 'hip'].reduce((a, n) => a + ((kpts[side + '_' + n] || {}).confidence || 0), 0);
+    const side = score('left') >= score('right') ? 'left' : 'right';
+    const g = n => { const p = kpts[side + '_' + n]; return (p && (p.confidence == null || p.confidence >= 0.3)) ? p : null; };
+    return { ear: g('ear'), shoulder: g('shoulder'), hip: g('hip') };
+}
+function _mergePair(a, b){
+    if (a && b) return { v: (a.v + b.v) / 2, s: Math.hypot(a.s, b.s) / 2, raw: [a.v, b.v], corrected: true };
+    const x = a || b;
+    return x ? { v: x.v, s: x.s, raw: a ? [a.v, null] : [null, b.v], corrected: false } : null;
+}
+function computePostureMetrics(state){
+    const ok = v => state[v] && !state[v].error && state[v].keypoints;
+    const dims = v => ({ w: state[v].width || 1000, h: state[v].height || 1000 });
+    const out = { frontal: {}, sagittal: {}, roll: {} };
+    const fr = {};
+    for (const view of ['front', 'back']) if (ok(view)) {
+        const k = state[view].keypoints, d = dims(view);
+        fr[view] = { shoulder: _frontalTilt(k, 'shoulder', view, d), hip: _frontalTilt(k, 'hip', view, d), knee: _frontalTilt(k, 'knee', view, d) };
+    }
+    for (const m of ['shoulder', 'hip', 'knee']) out.frontal[m] = _mergePair(fr.front && fr.front[m], fr.back && fr.back[m]);
+    if (fr.front && fr.back) {               // kamera eğimi (bilgi amaçlı): omuz ve kalçadan, uzunlukla ağırlıklı
+        let s = 0, w = 0;
+        for (const m of ['shoulder', 'hip']) { const a = fr.front[m], b = fr.back[m]; if (a && b) { const ww = a.len + b.len; s += ww * (b.v - a.v) / 2; w += ww; } }
+        if (w) out.roll.frontal = Math.abs(s / w);
+    }
+    const sd = {};
+    for (const view of ['left', 'right']) if (ok(view)) {
+        const k = state[view].keypoints, d = dims(view);
+        const f = state[view]._facing || (view === 'left' ? -1 : 1);
+        const P = _sideSet(k);
+        sd[view] = { head: _sideAngle(P.shoulder, P.ear, f, d), trunk: _sideAngle(P.hip, P.shoulder, f, d), body: _sideAngle(P.hip, P.ear, f, d) };
+    }
+    for (const m of ['head', 'trunk', 'body']) out.sagittal[m] = _mergePair(sd.left && sd.left[m], sd.right && sd.right[m]);
+    if (sd.left && sd.right && sd.left.body && sd.right.body) out.roll.sagittal = Math.abs(sd.right.body.v - sd.left.body.v) / 2;
+    return out;
+}
+// [ENGINE-END]
+
 function calcHorizontalAngle(pLeft, pRight) {
     if(!pLeft || !pRight) return null;
     const dy = Math.abs(pRight.y - pLeft.y);
@@ -779,85 +883,89 @@ function calcHorizontalAngle(pLeft, pRight) {
 }
 
 function refreshAllCanvases() {
-    let resFront=null, resBack=null, resLeft=null, resRight=null;
+    const _t = window.translateText || (s=>s);
     const infoBtn = (type) => `<button type="button" onclick="showInfoPopup('${type}')" class="text-slate-400 hover:text-indigo-600 transition-colors ml-1.5 inline-flex items-center cursor-pointer align-middle" data-html2canvas-ignore="true" title="Bilgi"><i class="fa-solid fa-circle-info text-xs"></i></button>`;
+    const VIEWS = ['front', 'back', 'left', 'right'];
+    const usable = {};
+    // 1) Her görünümü çiz (iskelet + çizgiler); hatalı görünümde hata mesajı
+    VIEWS.forEach(v => {
+        const st = globalPostureState[v], el = document.getElementById('table_' + v);
+        if (!st) return;
+        if (st.error) { if (el) el.innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + escapeHtml(st.error) + '</div>'; return; }
+        drawCanvas('canvas_' + v, 'preview_' + v, st, v);
+        usable[v] = true;
+    });
 
-    if(globalPostureState.front) { if(globalPostureState.front.error) { document.getElementById('table_front').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.front.error + '</div>'; } else {
-        const res = drawCanvas('canvas_front', 'preview_front', globalPostureState.front, 'front');
-        const _t = window.translateText || (s=>s);
-        let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Omuz Simetrisi')}${infoBtn('shoulder_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Kalça Simetrisi')}${infoBtn('hip_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Diz Simetrisi')}${infoBtn('knee_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        document.getElementById('table_front').innerHTML = html; resFront = res; } }
-    
-    if(globalPostureState.back) { if(globalPostureState.back.error) { document.getElementById('table_back').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.back.error + '</div>'; } else {
-        const res = drawCanvas('canvas_back', 'preview_back', globalPostureState.back, 'back');
-        const _t = window.translateText || (s=>s);
-        let html = '';
-        if(res.shoulderSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Omuz Simetrisi')}${infoBtn('shoulder_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.shoulderSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.shoulderSym.val}° ${Math.abs(res.shoulderSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Skolyoz Riski')+' - '+_t(res.shoulderSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.hipSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Kalça Simetrisi')}${infoBtn('hip_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.hipSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.hipSym.val}° ${Math.abs(res.hipSym.val)<2 ? '('+_t('Normal')+')' : '('+_t('Pelvik Asimetri')+' - '+_t(res.hipSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        if(res.kneeSym) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Diz Simetrisi')}${infoBtn('knee_symmetry')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.kneeSym.val)<2 ? 'text-green-600' : 'text-red-600'}">${res.kneeSym.val}° ${Math.abs(res.kneeSym.val)<2 ? '('+_t('Normal')+')' : '('+ _t(res.kneeSym.higher)+' '+_t('Yüksek')+')'}</span></div>`;
-        document.getElementById('table_back').innerHTML = html; resBack = res; } }
-    
-    if(globalPostureState.left) { if(globalPostureState.left.error) { document.getElementById('table_left').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.left.error + '</div>'; } else {
-        const res = drawCanvas('canvas_left', 'preview_left', globalPostureState.left, 'left');
-        const _t = window.translateText || (s=>s);
-        let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Baş Öne Eğikliği')}${infoBtn('forward_head')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Torakal Eğiklik')}${infoBtn('thoracic_kyphosis')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Pelvik Eğim')}${infoBtn('pelvic_tilt')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
-        document.getElementById('table_left').innerHTML = html; resLeft = res; } }
-    
-    if(globalPostureState.right) { if(globalPostureState.right.error) { document.getElementById('table_right').innerHTML = '<div class="text-red-500 font-bold py-4"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Hata: ' + globalPostureState.right.error + '</div>'; } else {
-        const res = drawCanvas('canvas_right', 'preview_right', globalPostureState.right, 'right');
-        const _t = window.translateText || (s=>s);
-        let html = '';
-        if(res.cervical) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Baş Öne Eğikliği')}${infoBtn('forward_head')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.cervical)<5 ? 'text-green-600' : 'text-red-600'}">${res.cervical}° ${Math.abs(res.cervical)<5 ? '('+_t('Normal')+')' : '('+_t('Forward Head')+')'}</span></div>`;
-        if(res.thoracic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Torakal Eğiklik')}${infoBtn('thoracic_kyphosis')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.thoracic)<5 ? 'text-green-600' : 'text-red-600'}">${res.thoracic}° ${Math.abs(res.thoracic)<5 ? '('+_t('Normal')+')' : '('+_t('Torakal Kifoz Artışı')+')'}</span></div>`;
-        if(res.pelvic) html += `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${_t('Pelvik Eğim')}${infoBtn('pelvic_tilt')}</span> <span class="font-bold text-sm leading-tight ${Math.abs(res.pelvic)<5 ? 'text-green-600' : 'text-red-600'}">${res.pelvic}° ${Math.abs(res.pelvic)<5 ? '('+_t('Normal')+')' : '('+_t('Anterior/Posterior Tilt')+')'}</span></div>`;
-        document.getElementById('table_right').innerHTML = html; resRight = res; } }
+    // 2) Ölçümler: karşılıklı görünümler birleştirilir, kamera eğimi otomatik düzeltilir (motor v2)
+    const M = computePostureMetrics(globalPostureState);
+    const row = (label, info, text, cls, note) => `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${label}${infoBtn(info)}</span> <span class="font-bold text-sm leading-tight ${cls}">${text}</span>${note ? `<span class="text-[11px] text-slate-400 leading-tight">${note}</span>` : ''}</div>`;
+    const deg = x => Math.abs(x).toFixed(1) + '°';
+    const sideWord = v => v > 0 ? 'sol' : 'sağ';
 
-    // Skor ve Bulgu Hesaplamaları
+    // Önden/arkadan: + = hastanın solu yüksek
+    const frontal = (r) => {
+        if (!r) return null;
+        const a = Math.abs(r.v), side = r.v > 0 ? 'Sol' : 'Sağ';
+        let cls = 'text-green-600', label, finding = false;
+        if (a < r.s) label = _t('Simetrik') + ' – ' + _t('ölçüm hassasiyeti içinde');
+        else if (a >= 2 && a >= 1.5 * r.s) { cls = 'text-red-600'; label = _t(side) + ' ' + _t('Yüksek'); finding = true; }
+        else label = _t('Normal') + ' – ' + _t(side.toLowerCase()) + ' ' + _t('hafif yüksek');
+        const note = r.corrected
+            ? `${_t('ham')}: ${_t('ön')} ${deg(r.raw[0])} ${_t(sideWord(r.raw[0]))} · ${_t('arka')} ${deg(r.raw[1])} ${_t(sideWord(r.raw[1]))} → ${_t('kamera eğimi düzeltildi')}`
+            : _t('Tek görünüm: kamera eğimi düzeltilemedi (önden ve arkadan fotoğraf birlikte gerekir)');
+        return { text: `${deg(r.v)} ±${r.s.toFixed(1)}° (${label})`, cls, note, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
+    };
+    // Yandan: + = öne
+    const sagittal = (r, posWord, negWord, threshold, onlyForward) => {
+        if (!r) return null;
+        const a = Math.abs(r.v), dir = r.v >= 0 ? posWord : negWord;
+        const strong = a > threshold && a >= 1.5 * r.s && (!onlyForward || r.v > 0);
+        const note = r.corrected
+            ? `${_t('ham')}: ${_t('sol yan')} ${r.raw[0] >= 0 ? '+' : '−'}${deg(r.raw[0])} · ${_t('sağ yan')} ${r.raw[1] >= 0 ? '+' : '−'}${deg(r.raw[1])} → ${_t('kamera eğimi düzeltildi')}`
+            : _t('Tek görünüm: kamera eğimi düzeltilemedi (sol ve sağ yan fotoğraf birlikte gerekir)');
+        return { text: `${deg(r.v)} ${_t(dir)} ±${r.s.toFixed(1)}°`, cls: strong ? 'text-red-600' : 'text-green-600', note, finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
+    };
+    const F = { shoulder: frontal(M.frontal.shoulder), hip: frontal(M.frontal.hip), knee: frontal(M.frontal.knee) };
+    const S = {
+        head:  sagittal(M.sagittal.head,  'önde', 'geride', 5, true),
+        trunk: sagittal(M.sagittal.trunk, 'öne eğik', 'geriye eğik', 5, false),
+        body:  sagittal(M.sagittal.body,  'öne', 'geriye', 5, false),
+    };
+    const rollLine = (r) => {
+        if (r == null) return '';
+        const warn = r > 3;
+        return `<div class="py-2 text-[11px] leading-tight ${warn ? 'text-red-600 font-bold' : 'text-slate-400'}"><i class="fa-solid fa-camera mr-1"></i>${_t('Kamera eğimi otomatik düzeltildi')}: ${r.toFixed(1)}°${warn ? ' – ' + _t('kamera belirgin eğik, kontrol edin') : ''}</div>`;
+    };
+    const frontalHtml = () => {
+        let h = '';
+        if (F.shoulder) h += row(_t('Omuz Simetrisi'), 'shoulder_symmetry', F.shoulder.text, F.shoulder.cls, F.shoulder.note);
+        if (F.hip) h += row(_t('Kalça Simetrisi'), 'hip_symmetry', F.hip.text, F.hip.cls, F.hip.note);
+        if (F.knee) h += row(_t('Diz Simetrisi'), 'knee_symmetry', F.knee.text, F.knee.cls, F.knee.note);
+        return h + rollLine(M.roll.frontal);
+    };
+    const sagittalHtml = () => {
+        let h = '';
+        if (S.head) h += row(_t('Baş Öne Eğikliği'), 'forward_head', S.head.text, S.head.cls, S.head.note);
+        if (S.trunk) h += row(_t('Gövde Eğimi'), 'thoracic_kyphosis', S.trunk.text, S.trunk.cls, S.trunk.note);
+        if (S.body) h += row(_t('Vücut Dikey Hizası'), 'pelvic_tilt', S.body.text, S.body.cls, S.body.note);
+        return h + rollLine(M.roll.sagittal);
+    };
+    if (usable.front) document.getElementById('table_front').innerHTML = frontalHtml();
+    if (usable.back) document.getElementById('table_back').innerHTML = frontalHtml();
+    if (usable.left) document.getElementById('table_left').innerHTML = sagittalHtml();
+    if (usable.right) document.getElementById('table_right').innerHTML = sagittalHtml();
+
+    // 3) Bulgular: her ölçüm tek kez (birleşik değerden); üstüne yazma ve çift sayma yok
     let findings = new Map();
     let totalDev = 0;
-    
-    // Front and Back
-    const _t = window.translateText || (s=>s);
-    [resFront, resBack].forEach(res => {
-        if(res) {
-            if(res.shoulderSym && Math.abs(res.shoulderSym.val) > 2.0) { 
-                findings.set("Omuz Asimetrisi", res.shoulderSym.val + "° (" + _t(res.shoulderSym.higher) + " " + _t("Yüksek") + ")"); 
-                totalDev += Math.abs(res.shoulderSym.val); 
-            }
-            if(res.hipSym && Math.abs(res.hipSym.val) > 2.0) { 
-                findings.set("Pelvik Asimetri", res.hipSym.val + "° (" + _t(res.hipSym.higher) + " " + _t("Yüksek") + ")"); 
-                totalDev += Math.abs(res.hipSym.val); 
-            }
-            if(res.kneeSym && Math.abs(res.kneeSym.val) > 2.0) { 
-                findings.set("Diz Asimetrisi", res.kneeSym.val + "° (" + _t(res.kneeSym.higher) + " " + _t("Yüksek") + ")"); 
-                totalDev += Math.abs(res.kneeSym.val); 
-            }
-        }
-    });
-
-    // Left and Right
-    [resLeft, resRight].forEach(res => {
-        if(res) {
-            if(res.cervical && Math.abs(res.cervical) > 5.0) { 
-                findings.set("Baş Öne Eğikliği", res.cervical + "° (" + _t("Forward Head") + ")"); 
-                totalDev += Math.abs(res.cervical); 
-            }
-            if(res.thoracic && Math.abs(res.thoracic) > 5.0) { 
-                findings.set("Torakal Eğiklik", res.thoracic + "° (" + _t("Torakal Kifoz Artışı") + ")"); 
-                totalDev += Math.abs(res.thoracic); 
-            }
-            if(res.pelvic && Math.abs(res.pelvic) > 5.0) { 
-                findings.set("Pelvik Eğim", res.pelvic + "° (" + _t("Anterior/Posterior Tilt") + ")"); 
-                totalDev += Math.abs(res.pelvic); 
-            }
-        }
-    });
+    const add = (name, r, src) => { if (r && r.finding) { findings.set(name, r.measure); totalDev += Math.abs(src.v); } };
+    add("Omuz Asimetrisi", F.shoulder, M.frontal.shoulder);
+    add("Pelvik Asimetri", F.hip, M.frontal.hip);
+    add("Diz Asimetrisi", F.knee, M.frontal.knee);
+    add("Baş Öne Eğikliği", S.head, M.sagittal.head);
+    add("Gövde Eğimi", S.trunk, M.sagittal.trunk);
+    add("Vücut Dikey Hizası", S.body, M.sagittal.body);
+    window.lastPostureMetrics = M;
 
     // Skoru Hesapla (100 üzerinden, toplam sapma açısının 0.7 katını düşürür)
     let generalScore = Math.max(0, Math.round(100 - (totalDev * 0.7)));
@@ -904,13 +1012,13 @@ function refreshAllCanvases() {
             oneriler: ["Chin tuck (Çene çekme) egzersizi", "Pektoral germe (kapı arası)", "Servikal ekstansör güçlendirme"],
             halk_dili: "Başınız gövdenize göre öne doğru kaymış. Telefona veya bilgisayara uzun süre eğilerek bakmaktan olur; boynunuz kafanızı taşımakta zorlanıp ağrı yapar."
         },
-        "Torakal Eğiklik": {
+        "Gövde Eğimi": {
             risk: "Orta",
-            klinik_anlam: "Sırt bölgesindeki omurga eğriliğinin (kifoz) normal sınırların üzerine çıkmasıdır.",
-            biyomekanik: ["Omuz eklemi hareket açıklığında azalma", "Solunum kapasitesinde kısıtlanma", "Anterior ağırlık merkezine kayma"],
-            kaslar: { kisa: "Pektoralis majör/minör, Anterior deltoid", zayif: "Torakal erektör spina, Orta/Alt trapez" },
-            oneriler: ["Torakal ekstansiyon (köpük rulo ile)", "Prone Cobra egzersizi", "Scapular squeeze"],
-            halk_dili: "Sırtınızda normalden fazla bir yuvarlaklık (kamburumsu duruş) var. Masa başında çok fazla öne eğilerek çalışmaktan kaynaklanır ve sırt ağrısı yapar."
+            klinik_anlam: "Yandan bakıldığında omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır; gövdenin bütün olarak öne veya geriye eğik durduğunu gösterir. Not: Bu ölçüm sırt eğriliğini (torakal kifozu) doğrudan ölçmez.",
+            biyomekanik: ["Ağırlık merkezinin öne veya arkaya kayması", "Öne eğimde bel ve kalça ekstansörlerinde yük artışı", "Ayakta durma ve denge stratejisinde değişiklik"],
+            kaslar: { kisa: "Kalça fleksörleri, Pektoraller (öne eğimde)", zayif: "Gluteus maximus, Sırt ekstansörleri" },
+            oneriler: ["Duvara yaslanarak postür farkındalığı", "Kalça fleksör (psoas) germe", "Glute bridge (köprü kurma)"],
+            halk_dili: "Yandan bakıldığında gövdeniz hafifçe öne (veya geriye) eğik duruyor. Uzun süre aynı pozisyonda oturmak ve kalça önü kaslarının kısalması buna yol açabilir."
         },
         "Diz Asimetrisi": {
             risk: "Orta",
@@ -920,14 +1028,14 @@ function refreshAllCanvases() {
             oneriler: ["Kalça dış rotator güçlendirme", "IT Band ve adduktör esnetme", "Propriyosepsiyon (denge) çalışmaları"],
             halk_dili: "Dizlerinizin duruş açısında içe veya dışa doğru bir asimetri var. Ayak basış bozuklukları veya zayıf kalça kaslarından kaynaklanır."
         },
-        "Pelvik Eğim": {
-            risk: "Yüksek",
-            klinik_anlam: "Leğen kemiğinin öne (anterior) veya arkaya (posterior) doğru aşırı dönmesi durumudur.",
-            biyomekanik: ["Lomber lordozda artış/azalış (bel çukuru değişimi)", "Alt bel disklerinde kronik kompresyon", "Diz ekstansiyon mekanizmasında bozulma"],
-            kaslar: { kisa: "Kalça fleksörleri (İliopsoas), Lomber ekstansörler", zayif: "Abdominal kaslar, Gluteus maximus, Hamstringler" },
-            oneriler: ["Pelvik tilt egzersizleri", "Glute bridge (köprü kurma)", "Psoas (kalça önü) germe"],
-            halk_dili: "Leğen kemiğiniz öne (veya arkaya) doğru fazla devrilmiş. Bel çukurunuzun çok artmasına veya düzleşmesine sebep olur. Çok fazla oturmaktan kalça kaslarının zayıflamasıyla oluşur."
-        }
+        "Vücut Dikey Hizası": {
+            risk: "Orta",
+            klinik_anlam: "Yandan bakıldığında kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır; vücudun bütün olarak öne ya da geriye yaslandığını (sway) gösterir. Not: Leğen kemiğinin öne/arkaya dönmesini (pelvik tilt) ölçmez; pelvik tilt için SIAS–SIPS noktaları gerekir.",
+            biyomekanik: ["Yerçekimi hattının ayak bileğine göre öne/arkaya kayması", "Bel ve kalça çevresi kaslarında sürekli kasılma", "Ayakta uzun süre durmada çabuk yorulma"],
+            kaslar: { kisa: "Kalça fleksörleri, Baldır kasları", zayif: "Gluteus maximus, Derin karın kasları" },
+            oneriler: ["Ayna karşısında dik duruş farkındalığı", "Glute bridge (köprü kurma)", "Karın içi basınç / core aktivasyonu"],
+            halk_dili: "Yandan bakıldığında vücudunuz bütün olarak hafifçe öne (veya geriye) yaslanmış duruyor. Ayakta dururken ağırlığınızı parmak uçlarına ya da topuklara vermekten kaynaklanabilir."
+        },
     };
 
     const RISK_DATA = {
@@ -946,9 +1054,9 @@ function refreshAllCanvases() {
             risks: ["Kronik boyun ve üst sırt ağrısı", "Gerilim tipi baş ağrıları", "Zamanla üst sırtta kamburlaşma (dowager hump)", "Omuz sıkışması ve kolu yukarı kaldırmada zorlanma"],
             img: "assets/risks/bas.jpg"
         },
-        "Torakal Eğiklik": {
-            title: "Torakal Kifoz (Sırt Kamburluğu) Artışı",
-            risks: ["Sırt ağrısı ve kas gerginliği", "Nefes kapasitesinde azalma", "Omuz hareketlerinde kısıtlılık"],
+        "Gövde Eğimi": {
+            title: "Gövde Öne/Geri Eğimi",
+            risks: ["Bel ve sırt kaslarında çabuk yorulma", "Ağırlık merkezinin kayması", "Uzun süre ayakta durmada ağrı"],
             img: "assets/risks/bas.jpg"
         },
         "Diz Asimetrisi": {
@@ -956,11 +1064,11 @@ function refreshAllCanvases() {
             risks: ["Menisküs ve bağlarda asimetrik yıpranma", "Erken diz kireçlenmesi (gonartroz)", "Ayak bileği ve kalçaya yansıyan ağrılar"],
             img: "assets/risks/kalca.jpg"
         },
-        "Pelvik Eğim": {
-            title: "Pelvik Tilt (Gövde Salınımı)",
-            risks: ["Kronik bel ağrısı", "Bel fıtığı riski artışı", "Yürüyüş biyomekaniğinin bozulması"],
+        "Vücut Dikey Hizası": {
+            title: "Vücut Dikey Hizasında Sapma (Öne/Geri Yaslanma)",
+            risks: ["Bel ve kalça çevresinde zorlanma", "Denge ve duruş dayanıklılığında azalma", "Uzun süre ayakta durmada yorgunluk"],
             img: "assets/risks/kalca.jpg"
-        }
+        },
     };
 
 
@@ -1229,6 +1337,9 @@ function drawCanvas(canvasId, imgId, analysisData, viewType) {
     const kpts = analysisData.keypoints;
     let results = {};
 
+    if ((viewType === 'left' || viewType === 'right') && analysisData._facing == null) {
+        analysisData._facing = _detectFacing(kpts, viewType);   // burun/göz silinmeden önce bakış yönünü kaydet
+    }
     if (viewType === 'left') {
         for (let key in kpts) if (key.startsWith('right_')) kpts[key] = null;
         kpts.left_eye = null; kpts.nose = null; kpts.left_elbow = null; kpts.left_wrist = null;
@@ -1651,7 +1762,7 @@ function renderSpineResults(data, selectedId = null) {
     if (repText) {
         const translatedMd = (window.translateSpineReportMarkdown ? window.translateSpineReportMarkdown(repText, lang) : repText);
         if (typeof marked !== 'undefined') {
-            reportEl.innerHTML = marked.parse(translatedMd);
+            reportEl.innerHTML = safeMarkdown(translatedMd);
         } else {
             reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + translatedMd + '</pre>';
         }
@@ -1700,7 +1811,7 @@ function applyTranslatedSpineReport(data) {
     const reportEl = document.getElementById('spineAiReport');
     if (reportEl && data.report) {
         if (typeof marked !== 'undefined') {
-            reportEl.innerHTML = marked.parse(data.report);
+            reportEl.innerHTML = safeMarkdown(data.report);
         } else {
             reportEl.innerHTML = '<pre class="whitespace-pre-wrap text-sm">' + data.report + '</pre>';
         }
@@ -1913,7 +2024,7 @@ function renderPrescribedTable(data) {
                 ${item.video_url ? `
                 <div class="flex flex-col items-center justify-center gap-1.5">
                     <div class="w-14 h-14 bg-white p-1 border border-slate-200 rounded-xl shadow-sm shrink-0">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(item.video_url)}" alt="QR" class="w-full h-full object-contain">
+                        <img src="${qrDataUrl(item.video_url, 150)}" alt="QR" class="w-full h-full object-contain">
                     </div>
                     <a href="${item.video_url}" target="_blank" class="text-[11px] text-rose-600 hover:text-rose-700 font-bold inline-flex items-center gap-1 whitespace-nowrap bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded transition-colors">
                         <i class="fa-brands fa-youtube"></i> ${_t('Video İzle')}
@@ -2307,7 +2418,7 @@ window.updatePatientInfoBanner = function(containerId, recordDate) {
                 </div>
                 <div>
                     <div class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">${_t('Hasta Analiz Profili')}</div>
-                    <h3 class="text-base font-black text-slate-800 leading-tight">${data.name}</h3>
+                    <h3 class="text-base font-black text-slate-800 leading-tight">${escapeHtml(data.name)}</h3>
                 </div>
             </div>
             ${dateStr ? `
@@ -2347,11 +2458,12 @@ window.updatePatientInfoBanner = function(containerId, recordDate) {
  * Verilen html2pdf instance'ını çalıştırır, header/footer ekler ve
  * tarayıcı proxy'lerini atlayan blob indirme yöntemiyle kaydeder.
  */
-function runPdf(instance, filename, reportSubtitle) {
+function runPdf(instance, filename, reportSubtitle, opts = {}) {
     return new Promise((resolve, reject) => {
         instance.toPdf().get('pdf').then(function(pdfObj) {
             applyCibodyPdfHeaderFooter(pdfObj, reportSubtitle);
         }).output('blob').then(function(blob) {
+            if (opts.qr) { qrDeliverPdf(blob, filename).then(resolve, reject); return; }
             try {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -2973,48 +3085,8 @@ async function showPatientQr() {
                 if(notesDiv) notesDiv.remove();
             }
             
-            // Upload PDF
-            const formData = new FormData();
-            formData.append("file", pdfBlob, "postur.pdf");
-            
-            const res = await authFetch(`/api/posture/${currentAnalysisId}/pdf`, {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            
-            if(data.status === 'success') {
-                const publicUrl = window.location.origin + data.url;
-                
-                let modal = document.getElementById('qrModal');
-                if(!modal) {
-                    modal = document.createElement('div');
-                    modal.id = 'qrModal';
-                    modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden';
-                    modal.innerHTML = `
-                        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl relative">
-                            <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                                <i class="fa-solid fa-xmark text-xl"></i>
-                            </button>
-                            <h3 class="text-xl font-bold text-indigo-900 mb-2">Hasta Karekodu</h3>
-                            <p class="text-sm text-slate-500 mb-6">Hastanız bu karekodu telefonuna okutunca PDF raporu otomatik olarak indirilir.</p>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4 inline-block">
-                                <img id="patientQrImg" src="" alt="Hasta QR" class="w-48 h-48 object-contain mx-auto">
-                            </div>
-                            <p class="text-xs text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-file-pdf text-red-400"></i> PDF otomatik indirilir</p>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-                }
-                
-                const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(publicUrl);
-                document.getElementById('patientQrImg').src = qrUrl;
-                modal.classList.remove('hidden');
-                
-                // Kaldırıldı showToast("Karekod hazır."); // Modal is self-explanatory
-            } else {
-                showToast("Karekod oluşturulamadı.");
-            }
+            // PDF sunucuda saklanmaz: şifrelenip tek kullanımlık karekodla hastanın telefonuna teslim edilir
+            await qrDeliverPdf(pdfBlob, "postur_raporu.pdf");
         } catch (err) {
             console.error(err);
             showToast("Karekod işlemi sırasında hata oluştu.");
@@ -3023,7 +3095,7 @@ async function showPatientQr() {
 }
 
 
-function downloadFootPdf() {
+function downloadFootPdf(opts = {}) {
     const element = document.getElementById('footResultsSection');
     if(!element) return;
     
@@ -3040,45 +3112,18 @@ function downloadFootPdf() {
     };
 
     const instance = html2pdf().set(opt).from(element);
-    runPdf(instance, `ayak_raporu_${currentPatientId}.pdf`, "Klinik Ayak Basinc & Biyomekanik Raporu").then(() => {
-        showToast("Statik Ayak PDF raporu indirildi.");
-    });
+    runPdf(instance, `ayak_raporu_${currentPatientId}.pdf`, "Klinik Ayak Basinc & Biyomekanik Raporu", opts).then(() => {
+        if (!opts.qr) showToast("Statik Ayak PDF raporu indirildi.");
+    }).catch(err => { console.error(err); showToast("PDF / karekod oluşturulamadı."); });
 }
 
 function showFootQr() {
-    let latestFootId = window.currentFootAnalysisId;
-    if (!latestFootId) {
+    if (!window.currentFootAnalysisId) {
          showToast("QR oluşturulacak bir ayak analizi bulunamadı.");
          return;
     }
-    
-    const publicUrl = window.location.origin + "/ayak_rapor.html?id=" + latestFootId;
-    
-    // Reuse qrModal if exists, or create new
-    let modal = document.getElementById('qrModal');
-    if(!modal) {
-        modal = document.createElement('div');
-        modal.id = 'qrModal';
-        modal.className = 'fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden';
-        modal.innerHTML = `
-            <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl relative">
-                <button onclick="document.getElementById('qrModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-                <h3 class="text-xl font-bold text-indigo-900 mb-2">Hasta Karekodu</h3>
-                <p class="text-sm text-slate-500 mb-6">Hastanız bu karekodu telefonuna okutunca PDF raporu otomatik olarak indirilir.</p>
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4 inline-block">
-                    <img id="patientQrImg" src="" alt="Hasta QR" class="w-48 h-48 object-contain mx-auto">
-                </div>
-                <p class="text-xs text-slate-400 flex items-center justify-center gap-1"><i class="fa-solid fa-file-pdf text-red-400"></i> PDF otomatik indirilir</p>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-    
-    const qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(publicUrl);
-    document.getElementById('patientQrImg').src = qrUrl;
-    modal.classList.remove('hidden');
+    showToast("Karekod hazırlanıyor…");
+    downloadFootPdf({ qr: true });   // PDF tarayıcıda üretilir, şifrelenip tek kullanımlık karekodla teslim edilir
 }
 
 
@@ -3447,6 +3492,48 @@ function showRefGuide(view) {
 
 // --- INFO POPUP LOGIC ---
 const POSTURE_METRIC_INFO = {
+    // ── X-Ray standart testleri (kamera ile 2B ölçüm) ──
+    xray_postureFront: {
+        title: "Duruş Analizi – Önden (Koronal Düzlem)",
+        desc: "Hasta kameraya önden, kollar yanda, rahat ve dik durur; 4 saniye kıpırdamadan durduğu süredeki ortalama alınır. Ölçülenler: (1) Omuz yükseklik farkı – iki omuz noktasını birleştiren çizginin yatayla yaptığı açı; (2) Pelvis yükseklik farkı – iki kalça noktası arasındaki eğim; (3) Gövdenin yana eğimi – omuz ortası ile kalça ortası çizgisinin dikeyden sapması; (4) Ayakta diz hizası (FPPA) – her bacakta kalça–diz–ayak bileği açısı, + değer valgus (diz içe), − değer varus (diz dışa). Klinik yorum: Omuz veya pelvis farkının yaklaşık 3°'nin üzerinde olması skolyoz, fonksiyonel bacak uzunluk farkı ya da kas dengesizliği açısından ileri değerlendirme gerektirebilir; tek başına tanı koydurmaz. Doğru ölçüm için kamera göğüs hizasında ve düz olmalı, bol kıyafet giyilmemelidir."
+    },
+    xray_postureSide: {
+        title: "Duruş Analizi – Yandan (Sagital Düzlem)",
+        desc: "Hasta kameraya tam yan döner, rahat ve dik durur; 4 saniyelik ortalama alınır. Ölçülenler: (1) Baş–omuz açısı (yaklaşık kraniovertebral açı, CVA) – kulak ile omuz noktasını birleştiren çizginin yatayla yaptığı açı; yaklaşık 50°'nin altı ileri baş postürü (forward head posture) ile ilişkilendirilir. (2) Gövdenin öne/geriye eğimi – omuz ile kalça noktası çizgisinin dikeyden sapması. (3) Diz – kalça–ayak bileği çizgisine göre dizin konumu; geride kalması hiperekstansiyon (genu recurvatum), önde olması fleksiyon postürü anlamına gelir. Not: Klinik CVA tragus ile C7 spinöz çıkıntısı arasından ölçülür; burada omuz noktası kullanıldığı için değer yaklaşıktır ve takip amaçlı kullanılmalıdır."
+    },
+    xray_shoulderFlex: {
+        title: "Omuz Fleksiyonu (Sagital Düzlem)",
+        desc: "Hasta kameraya yan döner, test edilen kol kameraya yakın taraftadır. Kol dirsek düz, başparmak yukarı bakacak şekilde önden yukarı kaldırılır; en üstte 1 saniye beklenir. Ölçülen açı kol (humerus) ile gövde çizgisi arasıdır: kol yanda 0°, tam yukarıda 180°. Normal değer (AAOS): 180°. Kısıtlılık; donuk omuz (adeziv kapsülit), subakromiyal sıkışma, rotator manşet patolojileri ve torakal kifozda görülür. Dikkat: Hasta gövdesini geriye atarak (lomber ekstansiyon) açıyı olduğundan büyük gösterebilir; gövdenin dik tutulması istenmelidir. Sol ve sağ ayrı ayrı ölçülür; 10° ve üzeri fark klinik açıdan anlamlı kabul edilir."
+    },
+    xray_shoulderAbd: {
+        title: "Omuz Abdüksiyonu (Koronal Düzlem)",
+        desc: "Hasta kameraya önden döner; iki kol dirsek düz, avuç içi öne bakacak şekilde yandan yukarı kaldırılır. İki taraf aynı anda ölçülür. Ölçülen açı kol ile gövde çizgisi arasıdır. Normal değer (AAOS): 180°. 60°–120° arasında ağrı (ağrılı ark) subakromiyal sıkışmayı düşündürür. Dikkat: Gövdenin yana eğilmesi veya omzun kulağa doğru kalkması (skapular elevasyon) telafi hareketidir; ölçüm bu durumda olduğundan iyi çıkabilir. Sağ–sol karşılaştırması asimetrinin takibi için özellikle değerlidir."
+    },
+    xray_elbowFlex: {
+        title: "Dirsek Fleksiyonu",
+        desc: "Hasta kameraya yan döner, kol gövdenin yanında, avuç içi yukarı bakar; dirsek sonuna kadar bükülür. Ölçülen değer, kol ile önkol arasındaki açının 180°'den farkıdır: düz kolda 0°, tam bükülü kolda yaklaşık 150°. Normal değer (AAOS): 150°. Dirsek düzken 0°'ye ulaşılamaması ekstansiyon kaybı (fleksiyon kontraktürü) anlamına gelir; kırık ve cerrahi sonrası takipte önemlidir. Bileğin kameraya görünür olması ölçüm güvenilirliğini artırır."
+    },
+    xray_hipFlex: {
+        title: "Kalça Fleksiyonu (Ayakta, Diz Bükülü)",
+        desc: "Hasta kameraya yan döner ve dengesi için bir yere tutunur; diz bükülü olarak kalça göğse doğru kaldırılır. Ölçülen değer gövde çizgisi ile uyluk arasındaki açının 180°'den farkıdır. Normal değer (AAOS, diz bükülü): 120°. Dikkat: Ayakta ölçümde pelvisin geriye devrilmesi ve belin bükülmesi (lomber fleksiyon) açıyı olduğundan büyük gösterir; değer, sırtüstü gonyometrik ölçümden farklı olabilir. Kalça osteoartriti, femoroasetabular sıkışma ve iliopsoas/hamstring kısalığında kısıtlılık görülür."
+    },
+    xray_kneeFlex: {
+        title: "Diz Fleksiyonu (Ayakta)",
+        desc: "Hasta kameraya yan döner ve bir yere tutunur; topuk kalçaya doğru getirilir, uyluk dik kalır. Ölçülen değer uyluk ile bacak (tibia) arasındaki açının 180°'den farkıdır: düz dizde 0°. Normal değer (AAOS): 135°. Ayakta aktif ölçüm, yüzüstü pasif ölçümden genellikle daha düşük çıkar; takipte aynı pozisyonun kullanılması önemlidir. Ön çapraz bağ ve menisküs cerrahisi sonrası rehabilitasyonun izlenmesinde, patellofemoral ağrı ve diz osteoartritinde kullanılır."
+    },
+    xray_ankleDF: {
+        title: "Ayak Bileği Dorsifleksiyonu (Yük Altında)",
+        desc: "Hasta kameraya yan döner; test edilen ayak önde, topuk yerden kalkmadan diz öne doğru itilir (lunge benzeri, ağırlık aktarımlı test). Ölçülen değer bacak ile ayak (topuk–parmak çizgisi) arasındaki açının 90°'den farkıdır. Normal değer (AAOS, pasif): 20°; yük altındaki değer genellikle daha yüksektir. Kısıtlılık; aşil ve baldır kası gerginliği, ayak bileği burkulması sonrası ve plantar fasiitte sık görülür; squat ve yürüme mekaniğini etkiler. Ayak noktaları küçük olduğu için kameranın ayak hizasına yakın olması ve ayakların net görünmesi gerekir."
+    },
+    xray_squat: {
+        title: "Squat – Diz Hizası (FPPA)",
+        desc: "Hasta kameraya önden döner, kollar önde, 5 kez yavaşça çömelip kalkar. FPPA (Frontal Plane Projection Angle), önden bakıldığında kalça–diz–ayak bileği arasındaki açıdır: + değer dizin içe kaçması (dinamik valgus), − değer dışa kaçması (varus). Test boyunca en büyük sapma kaydedilir. Yaklaşık 10°'nin üzerindeki valgus; kalça abduktör ve dış rotator zayıflığı, ayak pronasyonu ile ilişkilidir ve ön çapraz bağ yaralanması ile patellofemoral ağrı riskiyle bağlantılı bulunmuştur. FPPA'nın 2 boyutlu video ile ölçümünün literatürde güvenilir olduğu gösterilmiştir. Kesin eşik değerler çalışmalar arasında farklılık gösterir; değer takip ve karşılaştırma amacıyla yorumlanmalıdır."
+    },
+    xray_slSquat: {
+        title: "Tek Bacak Squat (FPPA)",
+        desc: "Hasta kameraya önden döner ve test edilen bacağın üzerinde durarak 5 kez yarım çömelir; diğer bacak hafifçe öne alınır. Ölçüm ve yorum çift bacak squat ile aynıdır (FPPA, + valgus), ancak tek bacak testi kalça abduktörleri ve gövde kontrolündeki zayıflığı çok daha belirgin ortaya çıkarır. Sol ve sağ ayrı ayrı ölçülür; iki taraf arasındaki belirgin fark, rehabilitasyonda hedef alınacak tarafı gösterir. Spor yaralanmalarının önlenmesi ve diz rehabilitasyonunda sık kullanılan bir tarama testidir."
+    },
+
     quality: {
         title: "Genel Ölçüm Kalitesi",
         desc: "Genel Ölçüm Kalitesi, hastanın frontal ve sagital düzlemdeki tüm anatomik referans noktalarının (omuz, pelvis, diz, servikal ve torakal omurga) ideal nötral dikey postür eksenine yakınlık derecesini gösteren genel biyomekanik uyum skorudur. Sistem, taranan görüntü üzerindeki temel anatomik nirengi noktalarının yerçekimi hattı ve horizontal referans eksenlerine göre oluşturduğu açısal sapmaları (angular deviation) trigonometrik olarak hesaplar; tespit edilen toplam açısal sapmalar 100 tam puan üzerinden ağırlıklı bir kümülatif formülle düşülerek normalize edilir ve sapma azaldıkça skor ideale (100) yaklaşır."
@@ -3472,16 +3559,16 @@ const POSTURE_METRIC_INFO = {
         desc: "Diz Simetrisi, frontal düzlemde her iki diz eklem merkezinin (patella / tibiofemoral eklem aralığı) transvers zemin paraleline göre seviye ve yükseklik dengesini gösterir. Sağ ve sol diz referans noktalarını birleştiren hattın yatay eksene göre oluşturduğu açısal sapma hesaplanır. 2° üzerindeki seviye farkları; alt ekstremite uzunluk farkları, tek taraflı ayak pronasyonu/supinasyonu veya dizdeki açısal deformiteler (genu valgum/varum asimetrisi) ile ilişkili kinetik zincir disfonksiyonlarını yansıtır."
     },
     forward_head: {
-        title: "Baş Öne Eğikliği (Forward Head Posture)",
-        desc: "Baş Öne Eğikliği, sagital (yan) düzlemde baş ağırlık merkezinin omuz hattına kıyasla öne doğru yer değiştirmesini (anterior protraksiyon) değerlendirir. Kulak tragus noktası ile servikotorakal bileşke (C7 vertebra spinöz çıkıntısı) arasındaki eksenin dikey referans hattıyla oluşturduğu kraniyoservikal açısal sapma trigonometrik olarak hesaplanır. 5° üzerindeki açısal sapmalar Forward Head olarak sınıflandırılır; bu durum servikal omurgaya binen kaldıraç yükünün, suboksipital kas gerginliğinin ve boyun düzleşmesi/fıtığı riskinin arttığını gösterir."
+        title: "Baş Öne Eğikliği (Kulak–Omuz Hizası)",
+        desc: "Yan fotoğrafta omuz ile kulağı birleştiren çizginin dikeyden sapmasıdır; + değer başın omuz hattının önünde, − değer gerisinde olduğunu gösterir. Sol ve sağ yan fotoğrafların değerleri birleştirilerek kamera eğimi otomatik düzeltilir. ±5°’nin üzerinde öne sapma ileri baş postürü (forward head) ile ilişkilendirilir. Not: Klinik kraniovertebral açı (CVA) tragus–C7 arasından ölçülür; bu değer yaklaşık bir göstergedir ve takip amaçlı yorumlanmalıdır."
     },
     thoracic_kyphosis: {
-        title: "Torakal Eğiklik (Thoracic Kyphosis)",
-        desc: "Torakal Eğiklik, sagital düzlemde sırt bölgesindeki torakal omurganın fizyolojik eğriliğini ve kifotik artış derecesini (kamburluk eğilimini) değerlendirir. Üst torakal omurga hattı (C7 seviyesi) ile torakolomber geçiş segmenti arasındaki anatomik profil eğriliği sagital dikey referans hattına göre oranlanarak hesaplanır. 5° üzerindeki artışlar torakal kifoz artışı (hiperkifoz), pektoral kas kısalığı ve göğüs kafesi solunum mobilitesindeki mekanik kısıtlılıkları işaret eder."
+        title: "Gövde Öne/Geri Eğimi",
+        desc: "Yan fotoğrafta omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Gövdenin bütün olarak öne ya da geriye eğik durduğunu gösterir. Sol ve sağ yan fotoğraflar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: İki noktadan sırt eğriliği (torakal kifoz) ölçülemez; bu değer kifoz yerine gövde eğimini gösterir. Normal duruşta değer 0°’a yakındır; ±5°’nin üzeri dikkat gerektirir."
     },
     pelvic_tilt: {
-        title: "Pelvik Eğim (Pelvic Tilt)",
-        desc: "Pelvik Eğim, sagital düzlemde pelvisin öne (anterior tilt) veya arkaya (posterior tilt) rotasyonel eğim açısını ifade eder. Anterior Superior Iliac Spine (ASIS) ve Posterior Superior Iliac Spine (PSIS) / trokanter majör referans noktaları arasındaki hattın yatay zemin eksenine göre oluşturduğu biyomekanik açı hesaplanır. 5° üzerindeki sapmalar aşırı anterior tilt (artan lumbal lordoz, zayıf karın ve gergin iliopsoas) ya da posterior tilt (düzleşmiş bel ve gergin hamstringler) gibi lumbo-pelvik disfonksiyonları ortaya koyar."
+        title: "Vücut Dikey Hizası (Kulak–Kalça)",
+        desc: "Yan fotoğrafta kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Vücudun bütün olarak öne veya geriye yaslanmasını (postüral sway) gösterir. Sol ve sağ yan fotoğraflar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: Bu değer pelvik tilt değildir; leğen kemiğinin öne/arkaya dönmesi SIAS ve SIPS noktaları gerektirir ve kullanılan modelde bu noktalar yoktur."
     },
     spine_kyphosis: {
         title: "Kifoz Açısı (Thoracic Kyphosis)",
@@ -4110,7 +4197,7 @@ async function generateAiFootReport() {
         if(data.error) throw new Error(data.error);
         
         // Parse markdown
-        document.getElementById('aiFootReportContent').innerHTML = marked.parse(data.report);
+        document.getElementById('aiFootReportContent').innerHTML = safeMarkdown(data.report);
         document.getElementById('aiFootLoadingState').classList.add('hidden');
         document.getElementById('aiFootResultSection').classList.remove('hidden');
         
@@ -4140,32 +4227,7 @@ function downloadAiFootPdf() {
 
 
 // DUMMY PATIENT GENERATOR
-(async function checkDummy() {
-    const urlParams = new URLSearchParams(window.location.search);
-    if(urlParams.get('add_dummy_patients') === 'true') {
-        const token = localStorage.getItem('token');
-        if(!token) return;
-        
-        let count = 0;
-        for(let i=1; i<=20; i++) {
-            let formData = new FormData();
-            formData.append('name', 'Test Hastası ' + i);
-            formData.append('age', Math.floor(Math.random() * 40) + 20);
-            formData.append('weight', Math.floor(Math.random() * 30) + 60);
-            formData.append('gender', i % 2 === 0 ? 'Erkek' : 'Kadın');
-            
-            try {
-                const res = await authFetch('/api/patients', {
-                    method: 'POST',
-                    body: formData
-                });
-                if(res.ok) count++;
-            } catch(e) {}
-        }
-        alert(count + " adet test hastası başarıyla eklendi!");
-        window.location.href = window.location.pathname; // Parametreyi temizle
-    }
-})();
+// (Kaldırıldı: URL parametresiyle test hastası ekleyen hata ayıklama kodu)
 
 // ORDERS LOGIC
 
@@ -4182,7 +4244,7 @@ function showTherapistOrders() {
     if(pat) pat.classList.add('hidden');
     
     // Hide all extra tabs just in case
-    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
+    ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'xrayTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
         const el = document.getElementById(t); 
         if(el) el.classList.add('hidden'); 
     });
@@ -4226,7 +4288,7 @@ async function fetchTherapistOrders() {
             const statusTrans = _t(o.status);
             tr.innerHTML = `
                 <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
-                <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
+                <td class="py-3 px-4 text-sm font-bold text-slate-800">${escapeHtml(o.patient_name)}</td>
                 <td class="py-3 px-4 text-sm text-slate-500">${dateStr}</td>
                 <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full text-xs font-bold ${getStatusStyle(o.status)}">${statusTrans}</span></td>
             `;
@@ -4260,8 +4322,8 @@ async function fetchAdminOrders() {
             const dateStr = formatAppDate(o.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
             tr.innerHTML = `
                 <td class="py-3 px-4 text-sm font-medium text-slate-700">#${o.id}</td>
-                <td class="py-3 px-4 text-sm text-slate-600">${o.therapist_name}</td>
-                <td class="py-3 px-4 text-sm font-bold text-slate-800">${o.patient_name}</td>
+                <td class="py-3 px-4 text-sm text-slate-600">${escapeHtml(o.therapist_name)}</td>
+                <td class="py-3 px-4 text-sm font-bold text-slate-800">${escapeHtml(o.patient_name)}</td>
                 <td class="py-3 px-4 text-sm text-slate-500">${dateStr}</td>
                 <td class="py-3 px-4">
                     <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-bold border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500">
@@ -4350,7 +4412,7 @@ function openOrderReport(orderId, type) {
         document.getElementById('patientView').classList.remove('hidden');
         
         // Hide all patient tabs, show target tab
-        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
+        ['postureTab', 'footTab', 'spineTab', 'scoliosisTab', 'scoliometerTab', 'xrayTab', 'simulationTab', 'gaitTab', 'balanceTab', 'aiReportTab', 'insoleTab', 'footScanTab'].forEach(t => { 
             const el = document.getElementById(t);
             if (el) el.classList.add('hidden'); 
         });
@@ -4639,3 +4701,9 @@ window.addEventListener('cibody:languageChanged', function(e) {
         fetchPatientInsoleOrders();
     }
 });
+
+// X-Ray Ayna güvencesi: sekme herhangi bir yoldan gizlenirse (ör. hasta listesine dönüş) çerçeveyi kapat, kamera dursun
+setInterval(() => {
+    const f = document.getElementById('xrayFrame');
+    if (f && f.dataset.src && f.offsetParent === null) { f.dataset.src = ''; f.src = 'about:blank'; }
+}, 1500);

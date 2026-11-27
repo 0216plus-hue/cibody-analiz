@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>CIBODY · Raporunuz</title>
+<style>
+  :root{--ink:#0f172a;--muted:#64748b;--brand:#4f46e5;--ok:#059669;--err:#b91c1c}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f1f5f9;color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px}
+  .card{background:#fff;border-radius:20px;box-shadow:0 10px 30px rgba(15,23,42,.08);padding:28px 22px;max-width:380px;width:100%;text-align:center}
+  h1{font-size:20px;margin:0 0 6px}
+  p{margin:6px 0;color:var(--muted);font-size:14.5px}
+  .btn{display:inline-block;margin-top:16px;background:var(--brand);color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;font-size:16px;border:0;width:100%}
+  .ok{color:var(--ok)}.err{color:var(--err)}
+  .spin{width:34px;height:34px;border:4px solid #e2e8f0;border-top-color:var(--brand);border-radius:50%;margin:6px auto 14px;animation:s 1s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  small{display:block;margin-top:14px;color:#94a3b8;font-size:12px}
+</style>
+</head>
+<body>
+<div class="card" id="box">
+  <div class="spin"></div>
+  <h1>Raporunuz hazırlanıyor…</h1>
+  <p>Lütfen bekleyin.</p>
+</div>
+<script>
+(async function () {
+  const box = document.getElementById('box');
+  const show = (html) => { box.innerHTML = html; };
+  const fromB64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
+  const parts = (location.hash || '').slice(1).split('.');
+  // Anahtarı adres çubuğundan ve tarayıcı geçmişinden hemen kaldır
+  history.replaceState(null, '', location.pathname);
+  if (parts.length < 2) {
+    show('<h1 class="err">Geçersiz karekod</h1><p>Lütfen hekiminizden yeni bir karekod isteyin.</p>');
+    return;
+  }
+  try {
+    const [id, keyB64, nameB64] = parts;
+    let name = 'cibody-rapor.pdf';
+    try { name = new TextDecoder().decode(fromB64u(nameB64 || '')) || name; } catch (e) {}
+    const res = await fetch('/api/handoff/' + encodeURIComponent(id), { cache: 'no-store' });
+    if (res.status === 410 || res.status === 404) {
+      show('<h1 class="err">Karekodun süresi doldu</h1><p>Bu karekod daha önce kullanılmış veya 15 dakikalık süresi dolmuş.</p><p>Hekiminizden yeni bir karekod isteyin.</p>');
+      return;
+    }
+    if (!res.ok) throw new Error('İndirme hatası');
+    const data = new Uint8Array(await res.arrayBuffer());
+    const key = await crypto.subtle.importKey('raw', fromB64u(keyB64), 'AES-GCM', false, ['decrypt']);
+    const pdf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: data.slice(0, 12) }, key, data.slice(12));
+    const url = URL.createObjectURL(new Blob([pdf], { type: 'application/pdf' }));
+    show('<h1 class="ok">Raporunuz hazır</h1><p>PDF raporunuz telefonunuza indiriliyor.</p>' +
+         '<a class="btn" id="dl">PDF raporunu aç / kaydet</a>' +
+         '<small>Bu bağlantı tek kullanımlıktır; rapor sunucuda saklanmaz. Sayfayı kapatmadan önce raporu kaydedin.</small>');
+    const a = document.getElementById('dl');
+    a.href = url; a.download = name;
+    setTimeout(() => { try { a.click(); } catch (e) {} }, 300);
+  } catch (e) {
+    show('<h1 class="err">Rapor açılamadı</h1><p>Karekod hatalı okunmuş olabilir. Lütfen tekrar okutun ya da hekiminizden yeni karekod isteyin.</p>');
+  }
+})();
+</script>
+</body>
+</html>

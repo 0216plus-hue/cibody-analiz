@@ -8,6 +8,7 @@ const USER_KEY  = 'cibody_user';
 function saveAuth(token, user) {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+    if (typeof refreshFileCookie === 'function') refreshFileCookie();
 }
 
 function getToken() { 
@@ -125,6 +126,7 @@ async function login(e) {
 }
 
 function logout() {
+    try { fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' }); } catch(e) {}
     clearAuth();
     showLoginView();
 }
@@ -207,8 +209,8 @@ function renderTherapistTable(users) {
     }
     tbody.innerHTML = users.map(u => `
         <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-            <td class="py-3 px-3 text-sm font-bold text-slate-800">${u.name}</td>
-            <td class="py-3 px-3 text-sm text-slate-500">${u.email}</td>
+            <td class="py-3 px-3 text-sm font-bold text-slate-800">${escapeHtml(u.name)}</td>
+            <td class="py-3 px-3 text-sm text-slate-500">${escapeHtml(u.email)}</td>
             <td class="py-3 px-3 text-center">
                 <span class="px-2 py-1 rounded-full text-xs font-bold ${u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-600'}">
                     ${u.is_active ? 'Aktif' : 'Pasif'}
@@ -223,7 +225,7 @@ function renderTherapistTable(users) {
             <td class="py-3 px-3 text-sm text-slate-400">${new Date(u.created_at).toLocaleDateString('tr-TR')}</td>
             <td class="py-3 px-3 text-right flex justify-end gap-2">
                 <button onclick="viewTherapistDetail(${u.id})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg text-xs font-bold transition">Detay</button>
-                <button onclick="openEditTherapist(${u.id}, '${u.name}', '${u.email}', ${u.monthly_limit}, ${u.is_active})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-900 px-3 py-1 rounded-lg text-xs font-bold transition">Düzenle</button>
+                <button onclick="openEditTherapist(${u.id}, '${jsAttr(u.name)}', '${jsAttr(u.email)}', ${Number(u.monthly_limit)||0}, ${u.is_active ? 'true' : 'false'})" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-900 px-3 py-1 rounded-lg text-xs font-bold transition">Düzenle</button>
                 <button onclick="deleteTherapist(${u.id})" class="text-slate-300 hover:text-red-500 hover:bg-red-50 w-7 h-7 rounded-lg flex items-center justify-center transition">
                     <i class="fa-solid fa-trash text-xs"></i>
                 </button>
@@ -244,7 +246,7 @@ async function viewTherapistDetail(userId) {
             ? '<tr><td colspan="4" class="text-center py-6 text-slate-400">Kayıtlı hasta yok.</td></tr>'
             : data.patients.map(p => `
                 <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="py-2 px-3 text-sm font-bold">${p.name}</td>
+                    <td class="py-2 px-3 text-sm font-bold">${escapeHtml(p.name)}</td>
                     <td class="py-2 px-3 text-sm text-slate-500">${p.age} Yaş, ${p.weight} kg</td>
                     <td class="py-2 px-3 text-sm text-slate-500">${p.phone || '-'}</td>
                     <td class="py-2 px-3 text-sm text-center">${p.posture_count} analiz</td>

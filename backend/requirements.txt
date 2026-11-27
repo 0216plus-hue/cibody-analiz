@@ -1,14 +1,19 @@
-fastapi
-uvicorn
-python-multipart
-python-dotenv
-requests
-sqlalchemy
-ultralytics
-opencv-python-headless
-python-jose[cryptography]
-bcrypt>=4.0.0
-pandas
-openpyxl
-Pillow
-pypdf
+# Sürümler sabitlendi (26.11.2026). Bunlar, sabitleme olmadan bugün kurulacak sürümlerin aynısıdır.
+# Güncellemeden önce: pip-audit -r requirements.txt  (veya https://osv.dev) ile bilinen açıkları kontrol edin.
+# Docker imajı Python 3.11 kullanır; bu sürümlerin bir kısmı 3.11 gerektirir.
+fastapi==0.165.0
+uvicorn==0.54.0
+python-multipart==0.0.34
+python-dotenv==1.2.4
+requests==2.34.2
+sqlalchemy==2.1.9
+ultralytics==8.4.220
+opencv-python-headless==5.1.0.95
+# Not: python-jose için GHSA-3qf3-8w2g-rqmx uyarısı yalnızca RSA/EC anahtarlarını etkiler; bu sistem
+# yalnızca HS256 kullanır ve algoritma listesi sabittir. Orta vadede bakımı süren PyJWT'ye geçilmesi önerilir.
+python-jose[cryptography]==3.5.0
+bcrypt==5.0.0
+pandas==3.1.1
+openpyxl==3.1.5
+Pillow==13.0.0
+pypdf==7.2.0
