@@ -939,59 +939,73 @@ function refreshAllCanvases() {
     const deg = x => Math.abs(x).toFixed(1) + '°';
     const sideWord = v => v > 0 ? 'sol' : 'sağ';
 
-    // Önden/arkadan: + = hastanın solu yüksek.  <1° simetrik · 1–2° normal (hafif) · ≥2° belirgin (bulgu)
-    const frontal = (r) => {
+    // Sınırlar: önden/arkadan seviye farkı 2°, yandan hiza 5°
+    const FT = 2, ST = 5;
+    const sideOf = v => v > 0 ? 'Sol' : 'Sağ';                       // önden/arkadan: + = hastanın solu yüksek
+    const SAG = { head: ['önde', 'geride', true], trunk: ['öne eğik', 'geriye eğik', false], body: ['öne', 'geriye', false] };
+    // Birleşik (iki taramanın ortak) sonuç: bulgular ve skor bundan hesaplanır
+    const isFrontalFinding = r => !!r && Math.abs(r.v) >= FT;
+    const isSagFinding = (r, onlyForward) => !!r && Math.abs(r.v) > ST && (!onlyForward || r.v > 0);
+    const F = {}, S = {};
+    for (const m of ['shoulder', 'hip', 'knee']) { const r = M.frontal[m]; F[m] = r ? { finding: isFrontalFinding(r), measure: `${deg(r.v)} (${_t(sideOf(r.v) + ' Yüksek')})`, ratio: Math.abs(r.v) / FT } : null; }
+    for (const m in SAG) { const r = M.sagittal[m], [pw, nw, of] = SAG[m]; S[m] = r ? { finding: isSagFinding(r, of), measure: `${deg(r.v)} ${_t(r.v >= 0 ? pw : nw)}`, ratio: Math.abs(r.v) / ST } : null; }
+
+    // Kart (tek tarama) etiketi. Belirgin sapma ancak karşı taramada da doğrulanırsa kırmızı gösterilir.
+    const frontalCard = (r, C, view) => {
         if (!r) return null;
-        const a = Math.abs(r.v), side = r.v > 0 ? 'Sol' : 'Sağ';
-        let cls = 'text-green-600', label, finding = false;
-        if (a < 1) label = _t('Simetrik');
-        else if (a < 2) label = _t('Normal') + ' – ' + _t(side.toLowerCase()) + ' ' + _t('hafif yüksek');
-        else { cls = 'text-red-600'; label = _t(side) + ' ' + _t('Yüksek'); finding = true; }
-        return { text: `${deg(r.v)} (${label})`, cls, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
+        const a = Math.abs(r.v), side = sideOf(r.v);
+        if (a < 1) return { text: `${deg(r.v)} (${_t('Simetrik')})`, cls: 'text-green-600' };
+        if (a < FT) return { text: `${deg(r.v)} (${_t('Normal')} – ${_t(side.toLowerCase() + ' hafif yüksek')})`, cls: 'text-green-600' };
+        const confirmed = !C || !C.corrected || (isFrontalFinding(C) && Math.sign(C.v) === Math.sign(r.v));
+        return confirmed ? { text: `${deg(r.v)} (${_t(side + ' Yüksek')})`, cls: 'text-red-600' }
+                         : { text: `${deg(r.v)} (${_t(side + ' Yüksek')} – ${_t(view === 'front' ? 'arka taramada doğrulanmadı' : 'ön taramada doğrulanmadı')})`, cls: 'text-amber-600' };
     };
-    // Yandan: + = öne.  Eşiğin üstü belirgin (bulgu)
-    const sagittal = (r, posWord, negWord, threshold, onlyForward) => {
+    const sagCard = (r, C, m) => {
         if (!r) return null;
-        const a = Math.abs(r.v), dir = r.v >= 0 ? posWord : negWord;
-        const strong = a > threshold && (!onlyForward || r.v > 0);
-        const label = a < 1 ? _t('Düz') : `${_t(dir)}${strong ? '' : ' – ' + _t('normal sınırda')}`;
-        return { text: `${deg(r.v)} (${label})`, cls: strong ? 'text-red-600' : 'text-green-600', finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
+        const [pw, nw, of] = SAG[m], a = Math.abs(r.v), dir = _t(r.v >= 0 ? pw : nw);
+        if (a < 1) return { text: `${deg(r.v)} (${_t('hizada')})`, cls: 'text-green-600' };
+        if (!isSagFinding(r, of)) return { text: `${deg(r.v)} ${dir} (${_t('normal')})`, cls: 'text-green-600' };
+        const confirmed = !C || !C.corrected || (isSagFinding(C, of) && Math.sign(C.v) === Math.sign(r.v));
+        return confirmed ? { text: `${deg(r.v)} ${dir}`, cls: 'text-red-600' }
+                         : { text: `${deg(r.v)} ${dir} – ${_t('diğer yan taramada doğrulanmadı')}`, cls: 'text-amber-600' };
     };
-    const SAG = { head: ['önde', 'geride', 5, true], trunk: ['öne eğik', 'geriye eğik', 5, false], body: ['öne', 'geriye', 5, false] };
-    // Birleşik sonuçlar (bulgular ve skor için)
-    const F = { shoulder: frontal(M.frontal.shoulder), hip: frontal(M.frontal.hip), knee: frontal(M.frontal.knee) };
-    const S = {};
-    for (const m in SAG) S[m] = sagittal(M.sagittal[m], ...SAG[m]);
     // Kamera yalnızca belirgin eğikse uyarı (normalde hiçbir şey yazmaz)
     const rollLine = (r) => (r == null || r <= 3) ? '' :
         `<div class="py-2 text-[11px] leading-tight text-red-600 font-bold"><i class="fa-solid fa-camera mr-1"></i>${_t('Kamera eğik olabilir')} (${r.toFixed(1)}°) – ${_t('kamera açısını kontrol edin')}</div>`;
     const missRow = (label, info, msg) => `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${label}${infoBtn(info)}</span> <span class="font-bold text-sm leading-tight text-amber-600">${msg}</span></div>`;
-    // Her kart kendi fotoğrafının (kamera eğimi düzeltilmiş) değerini gösterir
+    const note = (msg) => `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${msg}</div>`;
+    const FROWS = [['Omuz Simetrisi', 'shoulder_symmetry', 'shoulder'], ['Kalça Simetrisi', 'hip_symmetry', 'hip'], ['Diz Simetrisi', 'knee_symmetry', 'knee']];
+    const SROWS = [['Baş Öne Eğikliği', 'forward_head', 'head'], ['Gövde Eğimi', 'thoracic_kyphosis', 'trunk'], ['Vücut Dikey Hizası', 'pelvic_tilt', 'body']];
+    // Her kart kendi taramasının (kamera eğimi düzeltilmiş) değerini gösterir
     const frontalHtml = (view) => {
         const V = M.view[view] || {};
-        const rows = [['Omuz Simetrisi', 'shoulder_symmetry', 'shoulder'], ['Kalça Simetrisi', 'hip_symmetry', 'hip'], ['Diz Simetrisi', 'knee_symmetry', 'knee']];
         let h = '';
-        for (const [label, info, m] of rows) {
-            const r = frontal(V[m]);
+        for (const [label, info, m] of FROWS) {
+            const r = frontalCard(V[m], M.frontal[m], view);
             h += r ? row(_t(label), info, r.text, r.cls) : missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
         }
         return h + rollLine(M.roll.frontal);
     };
+    // Sol ve sağ yan arasındaki büyük farklar (güvenilirlik kontrolü)
+    const sideGap = () => {
+        const L = M.view.left || {}, R = M.view.right || {}, out = [];
+        for (const [label, , m] of SROWS) if (L[m] && R[m]) { const d = Math.abs(L[m].v - R[m].v); if (d > 6) out.push(`${_t(label)}: ${_t('sol ve sağ yan arasında {d}° fark var; noktaları kontrol edin veya taramayı tekrarlayın').replace('{d}', d.toFixed(1))}`); }
+        return out.map(note).join('');
+    };
     const sagittalHtml = (view) => {
         const V = M.view[view] || {};
-        const rows = [['Baş Öne Eğikliği', 'forward_head', 'head'], ['Gövde Eğimi', 'thoracic_kyphosis', 'trunk'], ['Vücut Dikey Hizası', 'pelvic_tilt', 'body']];
         let h = '';
-        for (const [label, info, m] of rows) {
-            const r = sagittal(V[m], ...SAG[m]);
+        for (const [label, info, m] of SROWS) {
+            const r = sagCard(V[m], M.sagittal[m], m);
             if (r) h += row(_t(label), info, r.text, r.cls);
             else if (m !== 'trunk' && M.earEstimated[view]) h += missRow(_t(label), info, _t('Kulak noktası bulunamadı – turuncu noktayı taramada kulağın üzerine sürükleyin'));
             else h += missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
         }
+        h += sideGap();
         const ns = (globalPostureState[view] || {})._nearSide;
         if (ns && ns !== view)
-            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t(view === 'left' ? 'Bu taramada hastanın sağ tarafı kameraya dönük; Sol Yan taramasında sol taraf kameraya dönük olmalı' : 'Bu taramada hastanın sol tarafı kameraya dönük; Sağ Yan taramasında sağ taraf kameraya dönük olmalı')}</div>`;
-        if (M.facingUnsure[view])
-            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t('Hastanın baktığı yön taramadan belirlenemedi; öne/geriye yönünü kontrol edin')}</div>`;
+            h += note(_t(view === 'left' ? 'Bu taramada hastanın sağ tarafı kameraya dönük; Sol Yan taramasında sol taraf kameraya dönük olmalı' : 'Bu taramada hastanın sol tarafı kameraya dönük; Sağ Yan taramasında sağ taraf kameraya dönük olmalı'));
+        if (M.facingUnsure[view]) h += note(_t('Hastanın baktığı yön taramadan belirlenemedi; öne/geriye yönünü kontrol edin'));
         return h + rollLine(M.roll.sagittal);
     };
     if (usable.front) document.getElementById('table_front').innerHTML = frontalHtml('front');
@@ -1002,7 +1016,7 @@ function refreshAllCanvases() {
     // 3) Bulgular: her ölçüm tek kez (birleşik değerden); üstüne yazma ve çift sayma yok
     let findings = new Map();
     let totalDev = 0;
-    const add = (name, r, src) => { if (r && r.finding) { findings.set(name, r.measure); totalDev += Math.abs(src.v); } };
+    const add = (name, r, src) => { if (r && r.finding) { findings.set(name, { measure: r.measure, ratio: r.ratio }); totalDev += Math.abs(src.v); } };
     add("Omuz Asimetrisi", F.shoulder, M.frontal.shoulder);
     add("Pelvik Asimetri", F.hip, M.frontal.hip);
     add("Diz Asimetrisi", F.knee, M.frontal.knee);
@@ -1011,11 +1025,16 @@ function refreshAllCanvases() {
     add("Vücut Dikey Hizası", S.body, M.sagittal.body);
     window.lastPostureMetrics = M;
 
-    // Skoru Hesapla (100 üzerinden, toplam sapma açısının 0.7 katını düşürür)
+    // Genel Postür Skoru (takip göstergesi): 100 − (normal sınırı aşan sapmaların toplamı × 0,7)
     let generalScore = Math.max(0, Math.round(100 - (totalDev * 0.7)));
-    
-    // Stabilize Endeksi (Bulgu sayısına göre yüzde, bulgu başı %6 düşer)
-    let stability = Math.max(0, Math.round(100 - (findings.size * 6)));
+
+    // Postür Hizalama Endeksi: ölçülen her parametre normal sınır içindeyse %100; sınırı aştıkça
+    // doğrusal azalır, sınırın 3 katında %0 olur. Endeks, ölçülebilen parametrelerin ortalamasıdır.
+    const alignPart = (v, T) => { const a = Math.abs(v); return a <= T ? 100 : Math.max(0, 100 * (1 - (a - T) / (2 * T))); };
+    const parts = [];
+    for (const m of ['shoulder', 'hip', 'knee']) if (M.frontal[m]) parts.push(alignPart(M.frontal[m].v, FT));
+    for (const m in SAG) if (M.sagittal[m]) parts.push(alignPart(SAG[m][2] ? Math.max(0, M.sagittal[m].v) : M.sagittal[m].v, ST));
+    let stability = parts.length ? Math.round(parts.reduce((x, y) => x + y, 0) / parts.length) : 0;
 
     // Ekrana Yazdır
     updatePostureReportDate();
@@ -1034,27 +1053,27 @@ function refreshAllCanvases() {
     const CLINICAL_DATA = {
         "Omuz Asimetrisi": {
             risk: "Yüksek",
-            klinik_anlam: "Omuz hattındaki yükseklik farkı; skapular kas dengesizliği, kısa/uzun ekstremite farkı veya postüral alışkanlıkla ilişkili olabilir.",
+            klinik_anlam: "Sağ ve sol omuz eklemleri arasındaki yükseklik farkıdır. Kas dengesizliği, postüral alışkanlıklar veya skolyoz gibi nedenlerle ilişkili olabilir; nedenin belirlenmesi için klinik muayene gerekir.",
             biyomekanik: ["Skapulotorasik ritimde asimetri", "Rotator manşet kaslarında tek taraflı yük artışı", "Servikal bölge asimetrik yüklenmesi"],
             kaslar: { kisa: "Üst trapez (yüksek taraf), Levator skapula", zayif: "Alt trapez, Serratus anterior" },
             oneriler: ["Skapular retraksiyon (band pull-apart)", "Wall angel", "Tek taraflı üst trapez germe"],
-            halk_dili: "Bir omzunuz diğerinden biraz daha yukarıda, yani omuzlar tam terazide değil. Genelde hep aynı omuza çanta asmak, tek yana yaslanarak oturmak gibi alışkanlıklardan olur."
+            halk_dili: "Bir omzunuz diğerinden biraz daha yukarıda duruyor. Hep aynı omuza çanta asmak veya tek yana yaslanarak oturmak gibi alışkanlıklarla ilişkili olabilir."
         },
         "Pelvik Asimetri": {
             risk: "Yüksek",
-            klinik_anlam: "Pelvisin (leğen kemiği) bir tarafının diğerine göre daha yüksekte konumlanmasıdır. Bacak boyu farkı veya kas dengesizliğine işaret edebilir.",
-            biyomekanik: ["Lomber omurgada (bel) asimetrik yüklenme", "Yürüyüş biyomekaniğinde bozulma", "Kalça ve diz ekleminde asimetrik basınç"],
+            klinik_anlam: "Sağ ve sol kalça eklemleri arasındaki yükseklik farkıdır; pelvisin bir tarafının daha yüksekte olabileceğini düşündürür. Bacak boyu farkı veya kas dengesizliğiyle ilişkili olabilir. Not: Krista iliaka, SIAS ve SIPS noktaları ölçülmez; kesin değerlendirme için palpasyon ve bacak boyu ölçümü gerekir.",
+            biyomekanik: ["Lomber omurgada (bel) asimetrik yüklenme", "Yürüyüşte asimetri olasılığı", "Kalça ve diz ekleminde asimetrik basınç"],
             kaslar: { kisa: "Quadratus lumborum (yüksek taraf), TFL", zayif: "Gluteus medius (düşük taraf), Adduktörler" },
             oneriler: ["Kalça abduktör güçlendirme (Clamshell)", "Tek bacak köprü (Single leg bridge)", "QL germe egzersizleri"],
             halk_dili: "Leğen kemiğinizin bir tarafı diğerinden daha yukarıda duruyor. Vücut ağırlığınızı sürekli tek bacağınıza vererek ayakta durmaktan veya bacak boyu farkından kaynaklanabilir."
         },
         "Baş Öne Eğikliği": {
             risk: "Yüksek",
-            klinik_anlam: "Servikal omurganın normal eğriliğini kaybederek başın omuz hizasından öne doğru yer değiştirmesidir.",
-            biyomekanik: ["Boyun kaslarına binen yükün her 2.5 cm sapmada 4.5 kg artması", "Faset eklem kompresyonu", "Temporomandibular (çene) eklem gerginliği"],
+            klinik_anlam: "Yandan bakıldığında kulağın omuz ekleminin önünde konumlanmasıdır (ileri baş postürü). Not: Bu ölçüm boyun eğriliğini (servikal lordoz) doğrudan ölçmez; klinik kraniovertebral açı (CVA) ile birebir aynı değildir.",
+            biyomekanik: ["Boyun arka kaslarında ve üst trapezde artan statik yük", "Suboksipital bölgede gerginlik", "Uzun süreli ekran kullanımıyla ilişkili boyun-omuz yakınmaları"],
             kaslar: { kisa: "Suboksipital kaslar, SCM, Pektoralis", zayif: "Derin servikal fleksörler, Rhomboidler" },
             oneriler: ["Chin tuck (Çene çekme) egzersizi", "Pektoral germe (kapı arası)", "Servikal ekstansör güçlendirme"],
-            halk_dili: "Başınız gövdenize göre öne doğru kaymış. Telefona veya bilgisayara uzun süre eğilerek bakmaktan olur; boynunuz kafanızı taşımakta zorlanıp ağrı yapar."
+            halk_dili: "Başınız omuz hizanızın biraz önünde duruyor. Telefona veya bilgisayara uzun süre eğilerek bakmak gibi alışkanlıklarla ilişkili olabilir ve boyun-omuz kaslarına ek yük bindirebilir."
         },
         "Gövde Eğimi": {
             risk: "Orta",
@@ -1066,11 +1085,11 @@ function refreshAllCanvases() {
         },
         "Diz Asimetrisi": {
             risk: "Orta",
-            klinik_anlam: "Diz eklemiiliminin (Q açısı) bozulması; genu valgum (içe) veya genu varum (dışa) eğilimidir.",
-            biyomekanik: ["Menisküs ve bağlarda asimetrik yıpranma", "Patellofemoral eklemde basınç artışı", "Ayak bileği biyomekaniğinde kompanzasyon"],
+            klinik_anlam: "Sağ ve sol diz eklemleri arasındaki yükseklik farkıdır; bacak uzunluk farkı, pelvik seviye farkı veya ayak basış asimetrisiyle ilişkili olabilir. Not: Bu ölçüm dizlerin içe/dışa açılanmasını (valgus/varus, Q açısı) değerlendirmez; dinamik diz hizası için Squat (FPPA) testi kullanılmalıdır.",
+            biyomekanik: ["Alt ekstremitede asimetrik yük dağılımı", "Pelvis ve bel bölgesinde telafi edici yüklenme", "Yürüyüşte adım asimetrisi olasılığı"],
             kaslar: { kisa: "TFL, Kalça adduktörleri", zayif: "Gluteus medius/maximus, VMO" },
             oneriler: ["Kalça dış rotator güçlendirme", "IT Band ve adduktör esnetme", "Propriyosepsiyon (denge) çalışmaları"],
-            halk_dili: "Dizlerinizin duruş açısında içe veya dışa doğru bir asimetri var. Ayak basış bozuklukları veya zayıf kalça kaslarından kaynaklanır."
+            halk_dili: "Dizlerinizin yüksekliği arasında küçük bir fark var. Bacak uzunluğu farkı, ayak basışı veya ağırlığı tek bacağa verme alışkanlığıyla ilişkili olabilir."
         },
         "Vücut Dikey Hizası": {
             risk: "Orta",
@@ -1085,17 +1104,17 @@ function refreshAllCanvases() {
     const RISK_DATA = {
         "Omuz Asimetrisi": {
             title: "Omuz Simetri Sapması",
-            risks: ["Tek tarafta omuz ve boyun ağrısı", "Kürek kemiği çevresinde çabuk yorulma", "Zamanla omuz sıkışma sorunları"],
+            risks: ["Tek tarafta omuz ve boyun ağrısı", "Kürek kemiği çevresinde çabuk yorulma", "Omuz hareketlerinde zorlanma"],
             img: "assets/risks/omuz.jpg"
         },
         "Pelvik Asimetri": {
             title: "Pelvik Simetri Sapması",
-            risks: ["Bel ağrısı ve tek tarafın sürekli zorlanması", "Kalça ve dize dengesiz yük binmesi", "Zamanla bir bacağı kısa hissetme / hafif topallama eğilimi"],
+            risks: ["Bel bölgesinde tek taraflı zorlanma", "Kalça ve dize dengesiz yük binmesi", "Bir bacağı kısa hissetme eğilimi"],
             img: "assets/risks/kalca.jpg"
         },
         "Baş Öne Eğikliği": {
             title: "Öne Baş Postürü (Forward Head) Bulgusu",
-            risks: ["Kronik boyun ve üst sırt ağrısı", "Gerilim tipi baş ağrıları", "Zamanla üst sırtta kamburlaşma (dowager hump)", "Omuz sıkışması ve kolu yukarı kaldırmada zorlanma"],
+            risks: ["Boyun ve üst sırt ağrısı", "Gerilim tipi baş ağrısı eğilimi", "Üst sırtta yuvarlaklaşma eğilimi", "Kolu yukarı kaldırırken omuzda zorlanma"],
             img: "assets/risks/bas.jpg"
         },
         "Gövde Eğimi": {
@@ -1104,8 +1123,8 @@ function refreshAllCanvases() {
             img: "assets/risks/bas.jpg"
         },
         "Diz Asimetrisi": {
-            title: "Dizilim Asimetrisi",
-            risks: ["Menisküs ve bağlarda asimetrik yıpranma", "Erken diz kireçlenmesi (gonartroz)", "Ayak bileği ve kalçaya yansıyan ağrılar"],
+            title: "Diz Seviye Farkı",
+            risks: ["Bir bacağa daha fazla yük binmesi", "Kalça ve bel bölgesinde telafi edici zorlanma", "Uzun süre ayakta durma ve yürümede yorgunluk"],
             img: "assets/risks/kalca.jpg"
         },
         "Vücut Dikey Hizası": {
@@ -1124,7 +1143,7 @@ function refreshAllCanvases() {
         risksContainer.innerHTML = '';
         if (findings.size > 0) {
             risksSection.classList.remove('hidden');
-            findings.forEach((measureValue, f) => {
+            findings.forEach((fd, f) => {
                 const data = RISK_DATA[f];
                 if (data) {
                     let liHtml = data.risks.map(r => `<li class="mb-2 text-slate-700">${(window.translateText||((s)=>s))(r)}</li>`).join('');
@@ -1160,11 +1179,14 @@ function refreshAllCanvases() {
         clinicalContainer.innerHTML = '';
         if (findings.size > 0) {
             clinicalSection.classList.remove('hidden');
-            findings.forEach((measureValue, f) => {
+            findings.forEach((fd, f) => {
                 const cData = CLINICAL_DATA[f];
                 if (cData) {
-                    const riskColor = cData.risk === 'Yüksek' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-orange-100 text-orange-600 border-orange-200';
-                    const riskDot = cData.risk === 'Yüksek' ? 'text-red-500' : 'text-orange-500';
+                    const measureValue = fd.measure;
+                    // Sapma derecesi ölçülen değere göre: sınırın 1,5 katına kadar hafif, 2,5 katına kadar orta, üstü belirgin
+                    const level = fd.ratio < 1.5 ? 'Hafif' : fd.ratio < 2.5 ? 'Orta' : 'Belirgin';
+                    const riskColor = level === 'Belirgin' ? 'bg-red-100 text-red-600 border-red-200' : level === 'Orta' ? 'bg-orange-100 text-orange-600 border-orange-200' : 'bg-amber-50 text-amber-700 border-amber-200';
+                    const riskDot = level === 'Belirgin' ? 'text-red-500' : level === 'Orta' ? 'text-orange-500' : 'text-amber-500';
                     
                     let biyoHtml = cData.biyomekanik.map(r => `<li class="mb-1">${(window.translateText||((s)=>s))(r)}</li>`).join('');
                     let onerilerHtml = cData.oneriler.map(r => `<li class="mb-1">${(window.translateText||((s)=>s))(r)}</li>`).join('');
@@ -1178,7 +1200,7 @@ function refreshAllCanvases() {
                                     <p class="text-sm text-slate-500 mt-1">${(window.translateText||((s)=>s))('Postür analizinde')} <strong>${(window.translateText||((s)=>s))(f)}</strong> ${(window.translateText||((s)=>s))('yönünde biyomekanik sapma gözlenmiştir.')} ${(window.translateText||((s)=>s))('Bulgular, kas dengesizliği örüntüleriyle uyumlu olabilir.')} ${(window.translateText||((s)=>s))('Bu bulgu bir hastalık tanısı değildir.')}</p>
                                 </div>
                                 <span class="${riskColor} border px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shadow-sm flex items-center gap-2">
-                                    <i class="fa-solid fa-circle text-[8px] ${riskDot}"></i> ${(window.translateText||((s)=>s))('Risk: ' + cData.risk)}
+                                    <i class="fa-solid fa-circle text-[8px] ${riskDot}"></i> ${(window.translateText||((s)=>s))('Sapma derecesi')}: ${(window.translateText||((s)=>s))(level)}
                                 </span>
                             </div>
                             
@@ -3609,28 +3631,28 @@ const POSTURE_METRIC_INFO = {
     },
 
     quality: {
-        title: "Genel Ölçüm Kalitesi",
-        desc: "Genel Ölçüm Kalitesi, hastanın frontal ve sagital düzlemdeki tüm anatomik referans noktalarının (omuz, pelvis, diz, servikal ve torakal omurga) ideal nötral dikey postür eksenine yakınlık derecesini gösteren genel biyomekanik uyum skorudur. Sistem, taranan görüntü üzerindeki temel anatomik nirengi noktalarının yerçekimi hattı ve horizontal referans eksenlerine göre oluşturduğu açısal sapmaları (angular deviation) trigonometrik olarak hesaplar; tespit edilen toplam açısal sapmalar 100 tam puan üzerinden ağırlıklı bir kümülatif formülle düşülerek normalize edilir ve sapma azaldıkça skor ideale (100) yaklaşır."
+        title: "Genel Postür Skoru",
+        desc: "Takip amaçlı bir göstergedir: 100 puandan, normal sınırı aşan her bulgunun sapma derecesinin 0,7 katı düşülür (önden/arkadan sınır 2°, yandan sınır 5°). Aynı kişinin zaman içindeki değişimini izlemek için kullanılır. Standart bir klinik ölçek değildir ve tek başına tanı amacıyla yorumlanmamalıdır."
     },
     findings: {
         title: "Tespit Edilen Bulgu",
-        desc: "Tespit Edilen Bulgu, hastanın duruşunda klinik normatif sınırların ve biyomekanik tolerans aralıklarının dışında kalan toplam segmental anomali ve postüral asimetri adedini ifade eder. Değerlendirmede; frontal düzlemde 2°'den büyük omuz, pelvis veya diz seviye farkları ile sagital düzlemde 5°'den büyük servikal (forward head), torakal (kifoz artışı) ve pelvik tilt sapmaları klinik eşik değeri aşan bağımsız patolojik bulgular olarak sınıflandırılır. Bu sayı, hastadaki kompanse edici kas-iskelet yüklenmelerinin ve düzeltici protokollere ihtiyaç duyan bölge sayısının nicel bir göstergesidir."
+        desc: "Normal sınırı aşan ölçüm sayısıdır. Önden/arkadan taramada omuz, kalça veya diz seviye farkının 2° ve üzeri olması; yandan taramada baş, gövde veya vücut hizasındaki sapmanın 5°'yi aşması bulgu sayılır. Ön ve arka (veya sol ve sağ yan) taramaların ortak sonucu kullanılır; yalnızca tek taramada görülüp diğerinde doğrulanmayan sapmalar bulgu sayılmaz. Bulgu bir tanı değildir; klinik muayene ile değerlendirilmelidir."
     },
     stability: {
-        title: "Postür Stabilize Endeksi",
-        desc: "Postür Stabilize Endeksi, vücut segmentlerinin yerçekimi merkezine göre genel statik dengesini ve kinetik zincirin stabilizasyon kapasitesini yansıtan yüzdesel bir değerlendirmedir. Sistem, tespit edilen her bir majör postüral sapmanın (omuz asimetrisi, pelvik eğiklik, boyun protraksiyonu vb.) kas-iskelet kinetik zincirinde yarattığı mekanik stres ve destabilize edici etkiyi baz alarak temel stabilite rezervinden belirli bir katsayıyla düşürür. Yüksek oran ağırlık merkezinin dengeli dağılımını, düşük oran ise telafi edici kas gerilimleri ve postüral instabilite riskini işaret eder."
+        title: "Postür Hizalama Endeksi",
+        desc: "Ölçülen altı parametrenin (omuz, kalça, diz seviyesi; baş, gövde ve vücut hizası) normal sınıra göre ne kadar hizalı olduğunun ortalamasıdır. Normal sınır içindeki her parametre %100 alır; sınırı aştıkça puanı doğrusal olarak düşer ve sınırın 3 katında %0 olur (önden/arkadan sınır 2°, yandan sınır 5°). Endeks, ölçülebilen parametrelerin ortalamasıdır. Statik duruş hizasını gösterir; denge veya hareket sırasındaki stabilite ölçümü değildir."
     },
     shoulder_symmetry: {
         title: "Omuz Simetrisi (Shoulder Symmetry)",
-        desc: "Omuz Simetrisi, frontal düzlemde sağ ve sol omuz tepe noktaları (akromionlar) arasındaki yatay seviye uyumunu ve omuz kuşağı dengesini ifade eder. İki akromion anatomik referans noktasını birleştiren biyomekanik vektörün zemin paraleli olan transvers (yatay) eksene göre oluşturduğu açısal sapma trigonometrik olarak (atan2) hesaplanır. 2° altındaki değerler fizyolojik/normal kabul edilirken, 2° üzerindeki sapmalar omuz elevasyonunu, tek taraflı trapezius/levator scapulae hiperaktivitesini veya olası skolyotik kompansasyonları derecesi ve yönüyle (sağ/sol yüksek) ortaya koyar."
+        desc: "Önden ve arkadan taramada sağ ve sol omuz eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. Ön ve arka taramalar birlikte değerlendirilerek kamera eğimi düzeltilir. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin omuz seviye farkı olarak raporlanır ve yüksek olan taraf belirtilir. Kas dengesizliği, postüral alışkanlık veya skolyoz gibi nedenlerle ilişkili olabilir; ayırıcı tanı için klinik muayene gerekir. Not: Model omuz eklem merkezini tahmin eder; akromiyon palpasyonuyla yapılan ölçümle birebir aynı değildir."
     },
     hip_symmetry: {
         title: "Kalça Simetrisi (Pelvic Symmetry)",
-        desc: "Kalça Simetrisi, frontal düzlemde pelvisin sağ ve sol tarafları arasındaki seviye farkını ve pelvik oblikliği (lateral pelvik tilt) değerlendirir. Sağ ve sol spina iliaca (ASIS/PSIS) veya krista iliaka referans noktalarını birleştiren transvers eksenin zemin paraleline göre açısal eğimi trigonometrik olarak hesaplanır. 2° üzerindeki sapmalar pelvik asimetriyi gösterir; bu durum anatomik veya fonksiyonel bacak boyu eşitsizliği (LLD), sakroiliak eklem disfonksiyonu ve lumbal omurganın kompansatuar eğrilikleri hakkında doğrudan klinik bilgi sağlar."
+        desc: "Önden ve arkadan taramada sağ ve sol kalça eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. Ön ve arka taramalar birlikte değerlendirilerek kamera eğimi düzeltilir. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin seviye farkı olarak raporlanır. Bacak boyu farkı veya fonksiyonel nedenlerle ilişkili olabilir. Not: Model kalça eklem merkezini tahmin eder; krista iliaka, SIAS ve SIPS noktaları ölçülmez. Pelvik oblikliğin kesin değerlendirmesi için palpasyon ve bacak boyu ölçümü gerekir."
     },
     knee_symmetry: {
         title: "Diz Simetrisi (Knee Symmetry)",
-        desc: "Diz Simetrisi, frontal düzlemde her iki diz eklem merkezinin (patella / tibiofemoral eklem aralığı) transvers zemin paraleline göre seviye ve yükseklik dengesini gösterir. Sağ ve sol diz referans noktalarını birleştiren hattın yatay eksene göre oluşturduğu açısal sapma hesaplanır. 2° üzerindeki seviye farkları; alt ekstremite uzunluk farkları, tek taraflı ayak pronasyonu/supinasyonu veya dizdeki açısal deformiteler (genu valgum/varum asimetrisi) ile ilişkili kinetik zincir disfonksiyonlarını yansıtır."
+        desc: "Önden ve arkadan taramada sağ ve sol diz eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin seviye farkı olarak raporlanır; bacak uzunluk farkıyla ilişkili olabilir. Diz noktaları arasındaki mesafe kısa olduğu için küçük nokta kaymaları dereceye büyük yansır; bu nedenle tek taramada görülen fark diğer taramada doğrulanmadıkça bulgu sayılmaz. Not: Bu ölçüm dizlerin içe/dışa açılanmasını (valgus/varus) göstermez; dinamik diz hizası için Squat (FPPA) testi kullanılmalıdır."
     },
     forward_head: {
         title: "Baş Öne Eğikliği (Kulak–Omuz Hizası)",

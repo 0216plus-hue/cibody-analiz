@@ -89,9 +89,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "Karekod",
             download_pdf: "PDF İndir",
             new_analysis: "Yeni Analiz Başlat",
-            stat_quality: "Genel Ölçüm Kalitesi",
+            stat_quality: "Genel Postür Skoru",
             stat_findings: "Tespit Edilen Bulgu",
-            stat_stability: "Postür Stabilize Endeksi",
+            stat_stability: "Postür Hizalama Endeksi",
             tag_front: "ÖN CEPHE",
             tag_back: "ARKA CEPHE",
             tag_left: "SOL YAN",
@@ -259,9 +259,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "QR Code",
             download_pdf: "Download PDF",
             new_analysis: "Start New Analysis",
-            stat_quality: "Measurement Quality",
+            stat_quality: "Overall Posture Score",
             stat_findings: "Detected Findings",
-            stat_stability: "Posture Stability Index",
+            stat_stability: "Posture Alignment Index",
             tag_front: "FRONT VIEW",
             tag_back: "BACK VIEW",
             tag_left: "LEFT SIDE",
@@ -429,9 +429,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "QR-код",
             download_pdf: "Скачать PDF",
             new_analysis: "Новый анализ",
-            stat_quality: "Качество измерений",
+            stat_quality: "Общая оценка осанки",
             stat_findings: "Выявленные отклонения",
-            stat_stability: "Индекс стабильности",
+            stat_stability: "Индекс выравнивания осанки",
             tag_front: "ВИД СПЕРЕДИ",
             tag_back: "ВИД СЗАДИ",
             tag_left: "ЛЕВЫЙ БОК",
@@ -599,9 +599,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "رمز QR",
             download_pdf: "تحميل PDF",
             new_analysis: "بدء تحليل جديد",
-            stat_quality: "جودة القياس العامة",
+            stat_quality: "الدرجة العامة للقوام",
             stat_findings: "النتائج المكتشفة",
-            stat_stability: "مؤشر ثبات القوام",
+            stat_stability: "مؤشر محاذاة القوام",
             tag_front: "منظر أمامي",
             tag_back: "منظر خلفي",
             tag_left: "جانب أيسر",
@@ -769,9 +769,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "QR-Code",
             download_pdf: "PDF herunterladen",
             new_analysis: "Neue Analyse starten",
-            stat_quality: "Messqualität",
+            stat_quality: "Gesamt-Haltungswert",
             stat_findings: "Festgestellte Befunde",
-            stat_stability: "Haltungsstabilitätsindex",
+            stat_stability: "Haltungs-Ausrichtungsindex",
             tag_front: "FRONTALANSICHT",
             tag_back: "RÜCKANSICHT",
             tag_left: "LINKE SEITE",
@@ -939,9 +939,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "Code QR",
             download_pdf: "Télécharger PDF",
             new_analysis: "Nouvelle analyse",
-            stat_quality: "Qualité de mesure",
+            stat_quality: "Score postural global",
             stat_findings: "Anomalies détectées",
-            stat_stability: "Indice de stabilité posturale",
+            stat_stability: "Indice d'alignement postural",
             tag_front: "VUE DE FACE",
             tag_back: "VUE DE DOS",
             tag_left: "CÔTÉ GAUCHE",
@@ -1109,9 +1109,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "Código QR",
             download_pdf: "Descargar PDF",
             new_analysis: "Iniciar nuevo análisis",
-            stat_quality: "Calidad de medición",
+            stat_quality: "Puntuación postural global",
             stat_findings: "Hallazgos detectados",
-            stat_stability: "Índice de estabilidad postural",
+            stat_stability: "Índice de alineación postural",
             tag_front: "VISTA FRONTAL",
             tag_back: "VISTA POSTERIOR",
             tag_left: "LADO IZQUIERDO",
@@ -1279,9 +1279,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "Codice QR",
             download_pdf: "Scarica PDF",
             new_analysis: "Nuova analisi",
-            stat_quality: "Qualità di misurazione",
+            stat_quality: "Punteggio posturale globale",
             stat_findings: "Anomalie rilevate",
-            stat_stability: "Indice di stabilità posturale",
+            stat_stability: "Indice di allineamento posturale",
             tag_front: "VISTA FRONTALE",
             tag_back: "VISTA POSTERIORE",
             tag_left: "LATO SINISTRO",
@@ -1449,9 +1449,9 @@ const I18N_TRANSLATIONS = {
             qrcode: "Código QR",
             download_pdf: "Transferir PDF",
             new_analysis: "Iniciar nova análise",
-            stat_quality: "Qualidade da medição",
+            stat_quality: "Pontuação postural global",
             stat_findings: "Achados detetados",
-            stat_stability: "Índice de estabilidade postural",
+            stat_stability: "Índice de alinhamento postural",
             tag_front: "VISTA FRONTAL",
             tag_back: "VISTA TRASEIRA",
             tag_left: "LADO ESQUERDO",
@@ -12352,8 +12352,9 @@ function translateText(text, targetLang = currentLang) {
     if (!trimmed) return text;
 
     // A. Birebir eşleşme
-    if (I18N_PHRASES[trimmed] && I18N_PHRASES[trimmed][targetLang]) {
-        const translated = I18N_PHRASES[trimmed][targetLang];
+    // Bir dilde karşılık yoksa İngilizceye düşer (Türkçe göstermez)
+    if (I18N_PHRASES[trimmed] && (I18N_PHRASES[trimmed][targetLang] || I18N_PHRASES[trimmed].en)) {
+        const translated = I18N_PHRASES[trimmed][targetLang] || I18N_PHRASES[trimmed].en;
         return text.replace(trimmed, translated);
     }
 
@@ -13125,3 +13126,292 @@ if (typeof module !== 'undefined' && module.exports) {
         t, translateText, translateSpineReportMarkdown, setLanguage, getCurrentLanguage, applyTranslations, translateDom, I18N_LANGUAGES, I18N_PHRASES
     };
 }
+
+// Postür raporu metinleri (v2): İngilizce; diğer dillerde karşılık yoksa İngilizce gösterilir
+Object.assign(I18N_PHRASES, {
+ "Sağ ve sol omuz eklemleri arasındaki yükseklik farkıdır. Kas dengesizliği, postüral alışkanlıklar veya skolyoz gibi nedenlerle ilişkili olabilir; nedenin belirlenmesi için klinik muayene gerekir.": {
+  "en": "Height difference between the right and left shoulder joints. It may be associated with muscle imbalance, postural habits or scoliosis; a clinical examination is required to determine the cause."
+ },
+ "Bir omzunuz diğerinden biraz daha yukarıda duruyor. Hep aynı omuza çanta asmak veya tek yana yaslanarak oturmak gibi alışkanlıklarla ilişkili olabilir.": {
+  "en": "One of your shoulders sits slightly higher than the other. This may be associated with habits such as always carrying a bag on the same shoulder or leaning to one side when sitting."
+ },
+ "Sağ ve sol kalça eklemleri arasındaki yükseklik farkıdır; pelvisin bir tarafının daha yüksekte olabileceğini düşündürür. Bacak boyu farkı veya kas dengesizliğiyle ilişkili olabilir. Not: Krista iliaka, SIAS ve SIPS noktaları ölçülmez; kesin değerlendirme için palpasyon ve bacak boyu ölçümü gerekir.": {
+  "en": "Height difference between the right and left hip joints; it suggests that one side of the pelvis may be higher. It may be associated with leg length discrepancy or muscle imbalance. Note: The iliac crest, ASIS and PSIS are not measured; a definitive assessment requires palpation and leg length measurement."
+ },
+ "Yürüyüşte asimetri olasılığı": {
+  "en": "Possible gait asymmetry"
+ },
+ "Yandan bakıldığında kulağın omuz ekleminin önünde konumlanmasıdır (ileri baş postürü). Not: Bu ölçüm boyun eğriliğini (servikal lordoz) doğrudan ölçmez; klinik kraniovertebral açı (CVA) ile birebir aynı değildir.": {
+  "en": "The ear is positioned in front of the shoulder joint when viewed from the side (forward head posture). Note: This measurement does not directly assess the cervical curve (cervical lordosis) and is not identical to the clinical craniovertebral angle (CVA)."
+ },
+ "Boyun arka kaslarında ve üst trapezde artan statik yük": {
+  "en": "Increased static load on the posterior neck muscles and upper trapezius"
+ },
+ "Suboksipital bölgede gerginlik": {
+  "en": "Tension in the suboccipital region"
+ },
+ "Uzun süreli ekran kullanımıyla ilişkili boyun-omuz yakınmaları": {
+  "en": "Neck and shoulder complaints associated with prolonged screen use"
+ },
+ "Başınız omuz hizanızın biraz önünde duruyor. Telefona veya bilgisayara uzun süre eğilerek bakmak gibi alışkanlıklarla ilişkili olabilir ve boyun-omuz kaslarına ek yük bindirebilir.": {
+  "en": "Your head sits slightly in front of your shoulder line. This may be associated with habits such as looking down at a phone or computer for long periods and can put extra load on the neck and shoulder muscles."
+ },
+ "Gövde Eğimi": {
+  "en": "Trunk Inclination"
+ },
+ "Yandan bakıldığında omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır; gövdenin bütün olarak öne veya geriye eğik durduğunu gösterir. Not: Bu ölçüm sırt eğriliğini (torakal kifozu) doğrudan ölçmez.": {
+  "en": "Deviation from vertical of the line joining the shoulder and hip joints in the side view; it shows whether the trunk as a whole leans forward or backward. Note: This measurement does not directly assess the curvature of the upper back (thoracic kyphosis)."
+ },
+ "Ağırlık merkezinin öne veya arkaya kayması": {
+  "en": "Forward or backward shift of the centre of mass"
+ },
+ "Öne eğimde bel ve kalça ekstansörlerinde yük artışı": {
+  "en": "Increased load on the lumbar and hip extensors when leaning forward"
+ },
+ "Ayakta durma ve denge stratejisinde değişiklik": {
+  "en": "Change in standing and balance strategy"
+ },
+ "Kalça fleksörleri, Pektoraller (öne eğimde)": {
+  "en": "Hip flexors, pectorals (when leaning forward)"
+ },
+ "Gluteus maximus, Sırt ekstansörleri": {
+  "en": "Gluteus maximus, back extensors"
+ },
+ "Duvara yaslanarak postür farkındalığı": {
+  "en": "Posture awareness against a wall"
+ },
+ "Kalça fleksör (psoas) germe": {
+  "en": "Hip flexor (psoas) stretch"
+ },
+ "Yandan bakıldığında gövdeniz hafifçe öne (veya geriye) eğik duruyor. Uzun süre aynı pozisyonda oturmak ve kalça önü kaslarının kısalması buna yol açabilir.": {
+  "en": "Viewed from the side, your trunk leans slightly forward (or backward). Sitting in the same position for long periods and tightness of the front hip muscles may contribute to this."
+ },
+ "Sağ ve sol diz eklemleri arasındaki yükseklik farkıdır; bacak uzunluk farkı, pelvik seviye farkı veya ayak basış asimetrisiyle ilişkili olabilir. Not: Bu ölçüm dizlerin içe/dışa açılanmasını (valgus/varus, Q açısı) değerlendirmez; dinamik diz hizası için Squat (FPPA) testi kullanılmalıdır.": {
+  "en": "Height difference between the right and left knee joints; it may be associated with leg length discrepancy, pelvic level difference or asymmetric foot loading. Note: This measurement does not assess inward/outward knee angulation (valgus/varus, Q angle); the Squat (FPPA) test should be used for dynamic knee alignment."
+ },
+ "Alt ekstremitede asimetrik yük dağılımı": {
+  "en": "Asymmetric load distribution in the lower limbs"
+ },
+ "Pelvis ve bel bölgesinde telafi edici yüklenme": {
+  "en": "Compensatory loading of the pelvis and lower back"
+ },
+ "Yürüyüşte adım asimetrisi olasılığı": {
+  "en": "Possible step asymmetry during gait"
+ },
+ "Dizlerinizin yüksekliği arasında küçük bir fark var. Bacak uzunluğu farkı, ayak basışı veya ağırlığı tek bacağa verme alışkanlığıyla ilişkili olabilir.": {
+  "en": "There is a small difference in the height of your knees. This may be associated with leg length difference, foot loading or a habit of putting your weight on one leg."
+ },
+ "Vücut Dikey Hizası": {
+  "en": "Vertical Body Alignment"
+ },
+ "Yandan bakıldığında kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır; vücudun bütün olarak öne ya da geriye yaslandığını (sway) gösterir. Not: Leğen kemiğinin öne/arkaya dönmesini (pelvik tilt) ölçmez; pelvik tilt için SIAS–SIPS noktaları gerekir.": {
+  "en": "Deviation from vertical of the line joining the ear and hip joint in the side view; it shows whether the body as a whole leans forward or backward (sway). Note: It does not measure forward/backward rotation of the pelvis (pelvic tilt); pelvic tilt requires the ASIS and PSIS landmarks."
+ },
+ "Yerçekimi hattının ayak bileğine göre öne/arkaya kayması": {
+  "en": "Forward/backward shift of the line of gravity relative to the ankle"
+ },
+ "Bel ve kalça çevresi kaslarında sürekli kasılma": {
+  "en": "Sustained contraction of the lower back and hip muscles"
+ },
+ "Ayakta uzun süre durmada çabuk yorulma": {
+  "en": "Early fatigue during prolonged standing"
+ },
+ "Kalça fleksörleri, Baldır kasları": {
+  "en": "Hip flexors, calf muscles"
+ },
+ "Gluteus maximus, Derin karın kasları": {
+  "en": "Gluteus maximus, deep abdominal muscles"
+ },
+ "Ayna karşısında dik duruş farkındalığı": {
+  "en": "Upright posture awareness in front of a mirror"
+ },
+ "Karın içi basınç / core aktivasyonu": {
+  "en": "Intra-abdominal pressure / core activation"
+ },
+ "Yandan bakıldığında vücudunuz bütün olarak hafifçe öne (veya geriye) yaslanmış duruyor. Ayakta dururken ağırlığınızı parmak uçlarına ya da topuklara vermekten kaynaklanabilir.": {
+  "en": "Viewed from the side, your body as a whole leans slightly forward (or backward). This may result from shifting your weight onto your toes or heels when standing."
+ },
+ "Omuz hareketlerinde zorlanma": {
+  "en": "Strain during shoulder movements"
+ },
+ "Bel bölgesinde tek taraflı zorlanma": {
+  "en": "One-sided strain in the lower back"
+ },
+ "Bir bacağı kısa hissetme eğilimi": {
+  "en": "Tendency to feel that one leg is shorter"
+ },
+ "Boyun ve üst sırt ağrısı": {
+  "en": "Neck and upper back pain"
+ },
+ "Gerilim tipi baş ağrısı eğilimi": {
+  "en": "Tendency toward tension-type headaches"
+ },
+ "Üst sırtta yuvarlaklaşma eğilimi": {
+  "en": "Tendency toward rounding of the upper back"
+ },
+ "Kolu yukarı kaldırırken omuzda zorlanma": {
+  "en": "Shoulder strain when raising the arm overhead"
+ },
+ "Gövde Öne/Geri Eğimi": {
+  "en": "Trunk Forward/Backward Inclination"
+ },
+ "Bel ve sırt kaslarında çabuk yorulma": {
+  "en": "Early fatigue of the lower and upper back muscles"
+ },
+ "Ağırlık merkezinin kayması": {
+  "en": "Shift of the centre of mass"
+ },
+ "Uzun süre ayakta durmada ağrı": {
+  "en": "Pain during prolonged standing"
+ },
+ "Diz Seviye Farkı": {
+  "en": "Knee Level Difference"
+ },
+ "Bir bacağa daha fazla yük binmesi": {
+  "en": "More load on one leg"
+ },
+ "Kalça ve bel bölgesinde telafi edici zorlanma": {
+  "en": "Compensatory strain in the hip and lower back"
+ },
+ "Uzun süre ayakta durma ve yürümede yorgunluk": {
+  "en": "Fatigue during prolonged standing and walking"
+ },
+ "Vücut Dikey Hizasında Sapma (Öne/Geri Yaslanma)": {
+  "en": "Deviation in Vertical Body Alignment (Forward/Backward Lean)"
+ },
+ "Bel ve kalça çevresinde zorlanma": {
+  "en": "Strain around the lower back and hips"
+ },
+ "Denge ve duruş dayanıklılığında azalma": {
+  "en": "Reduced postural endurance and balance"
+ },
+ "Uzun süre ayakta durmada yorgunluk": {
+  "en": "Fatigue during prolonged standing"
+ },
+ "Genel Postür Skoru": {
+  "en": "Overall Posture Score"
+ },
+ "Takip amaçlı bir göstergedir: 100 puandan, normal sınırı aşan her bulgunun sapma derecesinin 0,7 katı düşülür (önden/arkadan sınır 2°, yandan sınır 5°). Aynı kişinin zaman içindeki değişimini izlemek için kullanılır. Standart bir klinik ölçek değildir ve tek başına tanı amacıyla yorumlanmamalıdır.": {
+  "en": "A monitoring indicator: from 100 points, 0.7 times the deviation of each finding that exceeds the normal limit is subtracted (front/back limit 2°, side limit 5°). It is used to track changes in the same person over time. It is not a standardised clinical scale and should not be interpreted on its own for diagnosis."
+ },
+ "Normal sınırı aşan ölçüm sayısıdır. Önden/arkadan taramada omuz, kalça veya diz seviye farkının 2° ve üzeri olması; yandan taramada baş, gövde veya vücut hizasındaki sapmanın 5°'yi aşması bulgu sayılır. Ön ve arka (veya sol ve sağ yan) taramaların ortak sonucu kullanılır; yalnızca tek taramada görülüp diğerinde doğrulanmayan sapmalar bulgu sayılmaz. Bulgu bir tanı değildir; klinik muayene ile değerlendirilmelidir.": {
+  "en": "Number of measurements exceeding the normal limit. A shoulder, hip or knee level difference of 2° or more in the front/back scans, or a deviation of more than 5° in head, trunk or body alignment in the side scans, counts as a finding. The combined result of the front and back (or left and right side) scans is used; deviations seen in only one scan and not confirmed in the other are not counted. A finding is not a diagnosis and should be evaluated by clinical examination."
+ },
+ "Postür Hizalama Endeksi": {
+  "en": "Posture Alignment Index"
+ },
+ "Ölçülen altı parametrenin (omuz, kalça, diz seviyesi; baş, gövde ve vücut hizası) normal sınıra göre ne kadar hizalı olduğunun ortalamasıdır. Normal sınır içindeki her parametre %100 alır; sınırı aştıkça puanı doğrusal olarak düşer ve sınırın 3 katında %0 olur (önden/arkadan sınır 2°, yandan sınır 5°). Endeks, ölçülebilen parametrelerin ortalamasıdır. Statik duruş hizasını gösterir; denge veya hareket sırasındaki stabilite ölçümü değildir.": {
+  "en": "The average of how well each of the six measured parameters (shoulder, hip and knee level; head, trunk and body alignment) is aligned relative to its normal limit. Each parameter within the normal limit scores 100%; beyond the limit its score decreases linearly, reaching 0% at three times the limit (front/back limit 2°, side limit 5°). The index is the average of the parameters that could be measured. It reflects static standing alignment; it is not a measure of balance or of stability during movement."
+ },
+ "Omuz Simetrisi (Shoulder Symmetry)": {
+  "en": "Shoulder Symmetry"
+ },
+ "Önden ve arkadan taramada sağ ve sol omuz eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. Ön ve arka taramalar birlikte değerlendirilerek kamera eğimi düzeltilir. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin omuz seviye farkı olarak raporlanır ve yüksek olan taraf belirtilir. Kas dengesizliği, postüral alışkanlık veya skolyoz gibi nedenlerle ilişkili olabilir; ayırıcı tanı için klinik muayene gerekir. Not: Model omuz eklem merkezini tahmin eder; akromiyon palpasyonuyla yapılan ölçümle birebir aynı değildir.": {
+  "en": "The angle to the horizontal of the line joining the right and left shoulder joint points in the front and back scans. Camera tilt is corrected by evaluating the front and back scans together. Below 1° is reported as symmetrical, 1–2° as normal variation, and 2° or more as a marked shoulder level difference, with the higher side indicated. It may be associated with muscle imbalance, postural habits or scoliosis; differential diagnosis requires clinical examination. Note: The model estimates the shoulder joint centre; this is not identical to a measurement made by palpating the acromion."
+ },
+ "Kalça Simetrisi (Pelvic Symmetry)": {
+  "en": "Hip Symmetry (Pelvic Symmetry)"
+ },
+ "Önden ve arkadan taramada sağ ve sol kalça eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. Ön ve arka taramalar birlikte değerlendirilerek kamera eğimi düzeltilir. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin seviye farkı olarak raporlanır. Bacak boyu farkı veya fonksiyonel nedenlerle ilişkili olabilir. Not: Model kalça eklem merkezini tahmin eder; krista iliaka, SIAS ve SIPS noktaları ölçülmez. Pelvik oblikliğin kesin değerlendirmesi için palpasyon ve bacak boyu ölçümü gerekir.": {
+  "en": "The angle to the horizontal of the line joining the right and left hip joint points in the front and back scans. Camera tilt is corrected by evaluating the front and back scans together. Below 1° is reported as symmetrical, 1–2° as normal variation, and 2° or more as a marked level difference. It may be associated with leg length discrepancy or functional causes. Note: The model estimates the hip joint centre; the iliac crest, ASIS and PSIS are not measured. A definitive assessment of pelvic obliquity requires palpation and leg length measurement."
+ },
+ "Diz Simetrisi (Knee Symmetry)": {
+  "en": "Knee Symmetry"
+ },
+ "Önden ve arkadan taramada sağ ve sol diz eklemi noktalarını birleştiren çizginin yatayla yaptığı açıdır. 1°'nin altı simetrik, 1–2° normal varyasyon, 2° ve üzeri belirgin seviye farkı olarak raporlanır; bacak uzunluk farkıyla ilişkili olabilir. Diz noktaları arasındaki mesafe kısa olduğu için küçük nokta kaymaları dereceye büyük yansır; bu nedenle tek taramada görülen fark diğer taramada doğrulanmadıkça bulgu sayılmaz. Not: Bu ölçüm dizlerin içe/dışa açılanmasını (valgus/varus) göstermez; dinamik diz hizası için Squat (FPPA) testi kullanılmalıdır.": {
+  "en": "The angle to the horizontal of the line joining the right and left knee joint points in the front and back scans. Below 1° is reported as symmetrical, 1–2° as normal variation, and 2° or more as a marked level difference; it may be associated with leg length discrepancy. Because the distance between the knee points is short, small point shifts produce large changes in degrees; therefore a difference seen in one scan is not counted as a finding unless confirmed in the other scan. Note: This measurement does not show inward/outward knee angulation (valgus/varus); the Squat (FPPA) test should be used for dynamic knee alignment."
+ },
+ "Baş Öne Eğikliği (Kulak–Omuz Hizası)": {
+  "en": "Forward Head (Ear–Shoulder Alignment)"
+ },
+ "Yan taramada omuz ile kulağı birleştiren çizginin dikeyden sapmasıdır; + değer başın omuz hattının önünde, − değer gerisinde olduğunu gösterir. Sol ve sağ yan taramaların değerleri birleştirilerek kamera eğimi otomatik düzeltilir. ±5°’nin üzerinde öne sapma ileri baş postürü (forward head) ile ilişkilendirilir. Not: Klinik kraniovertebral açı (CVA) tragus–C7 arasından ölçülür; bu değer yaklaşık bir göstergedir ve takip amaçlı yorumlanmalıdır.": {
+  "en": "Deviation from vertical of the line joining the shoulder and ear in the side scan; a positive value means the head is in front of the shoulder line, a negative value behind it. Camera tilt is corrected automatically by combining the left and right side scans. A forward deviation of more than 5° is associated with forward head posture. Note: The clinical craniovertebral angle (CVA) is measured between the tragus and C7; this value is an approximate indicator and should be interpreted for monitoring purposes."
+ },
+ "Yan taramada omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Gövdenin bütün olarak öne ya da geriye eğik durduğunu gösterir. Sol ve sağ yan taramalar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: İki noktadan sırt eğriliği (torakal kifoz) ölçülemez; bu değer kifoz yerine gövde eğimini gösterir. Normal duruşta değer 0°’a yakındır; ±5°’nin üzeri dikkat gerektirir.": {
+  "en": "Deviation from vertical of the line joining the shoulder and hip joint in the side scan (+ forward, − backward). It shows whether the trunk as a whole leans forward or backward. Camera tilt is corrected automatically by combining the left and right side scans. Important: Upper back curvature (thoracic kyphosis) cannot be measured from two points; this value shows trunk inclination rather than kyphosis. In normal posture the value is close to 0°; more than ±5° warrants attention."
+ },
+ "Vücut Dikey Hizası (Kulak–Kalça)": {
+  "en": "Vertical Body Alignment (Ear–Hip)"
+ },
+ "Yan taramada kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Vücudun bütün olarak öne veya geriye yaslanmasını (postüral sway) gösterir. Sol ve sağ yan taramalar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: Bu değer pelvik tilt değildir; leğen kemiğinin öne/arkaya dönmesi SIAS ve SIPS noktaları gerektirir ve kullanılan modelde bu noktalar yoktur.": {
+  "en": "Deviation from vertical of the line joining the ear and hip joint in the side scan (+ forward, − backward). It shows whether the body as a whole leans forward or backward (postural sway). Camera tilt is corrected automatically by combining the left and right side scans. Important: This value is not pelvic tilt; forward/backward rotation of the pelvis requires the ASIS and PSIS landmarks, which the model used does not provide."
+ },
+ "sol hafif yüksek": {
+  "en": "left slightly higher"
+ },
+ "sağ hafif yüksek": {
+  "en": "right slightly higher"
+ },
+ "Sol Yüksek": {
+  "en": "Left Higher"
+ },
+ "Sağ Yüksek": {
+  "en": "Right Higher"
+ },
+ "arka taramada doğrulanmadı": {
+  "en": "not confirmed in the back scan"
+ },
+ "ön taramada doğrulanmadı": {
+  "en": "not confirmed in the front scan"
+ },
+ "diğer yan taramada doğrulanmadı": {
+  "en": "not confirmed in the other side scan"
+ },
+ "hizada": {
+  "en": "aligned"
+ },
+ "normal": {
+  "en": "normal"
+ },
+ "önde": {
+  "en": "forward"
+ },
+ "geride": {
+  "en": "backward"
+ },
+ "öne eğik": {
+  "en": "forward lean"
+ },
+ "geriye eğik": {
+  "en": "backward lean"
+ },
+ "geriye": {
+  "en": "backward"
+ },
+ "Kamera eğik olabilir": {
+  "en": "Camera may be tilted"
+ },
+ "kamera açısını kontrol edin": {
+  "en": "check the camera angle"
+ },
+ "Ölçülemedi – noktalar bulunamadı": {
+  "en": "Could not be measured – points not found"
+ },
+ "Kulak noktası bulunamadı – turuncu noktayı taramada kulağın üzerine sürükleyin": {
+  "en": "Ear point not found – drag the orange point onto the ear in the scan"
+ },
+ "Bu taramada hastanın sağ tarafı kameraya dönük; Sol Yan taramasında sol taraf kameraya dönük olmalı": {
+  "en": "In this scan the patient's right side faces the camera; in the Left Side scan the left side should face the camera"
+ },
+ "Bu taramada hastanın sol tarafı kameraya dönük; Sağ Yan taramasında sağ taraf kameraya dönük olmalı": {
+  "en": "In this scan the patient's left side faces the camera; in the Right Side scan the right side should face the camera"
+ },
+ "Hastanın baktığı yön taramadan belirlenemedi; öne/geriye yönünü kontrol edin": {
+  "en": "The patient's facing direction could not be determined from the scan; check the forward/backward direction"
+ },
+ "Nokta konumu kaydedildi": {
+  "en": "Point position saved"
+ },
+ "Nokta konumu kaydedilemedi, lütfen tekrar deneyin": {
+  "en": "Point position could not be saved, please try again"
+ },
+ "Nokta konumu kaydedilemedi: analiz kaydı bulunamadı": {
+  "en": "Point position could not be saved: analysis record not found"
+ },
+ "Sapma derecesi": {
+  "en": "Deviation level"
+ },
+ "sol ve sağ yan arasında {d}° fark var; noktaları kontrol edin veya taramayı tekrarlayın": {
+  "en": "{d}° difference between the left and right side scans; check the points or repeat the scan"
+ }
+});
