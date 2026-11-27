@@ -824,14 +824,24 @@ function _sideAngle(lo, up, facing, dims){
     const v = Math.atan2((up.x - lo.x) * facing, lo.y - up.y) * 180 / Math.PI;
     return { v, s: _angSigma(lo, up, dims) };
 }
-// Hastanın baktığı yön (görüntüde): burun/göz ile görünen kulak arasındaki fark; yoksa çekim yönünden varsayılan
-function _detectFacing(kpts, view){
-    const ear = view === 'left' ? kpts.left_ear : kpts.right_ear;
-    if (ear) for (const n of ['nose', 'left_eye', 'right_eye']) {
-        const p = kpts[n];
-        if (p && p.confidence >= 0.5 && Math.abs(p.x - ear.x) > 5) return Math.sign(p.x - ear.x);
+// Hastanın baktığı yön (görüntüde): +1 sağa, −1 sola. Birden çok ipucu oylanır:
+// yüz (burun/göz) ↔ kulak, yüz ↔ omuz, öne uzatılmış kollar (bilek ↔ omuz). Hiçbiri net değilse null.
+function _detectFacing(kpts){
+    const c = p => p ? (p.confidence == null ? 1 : p.confidence) : 0;
+    const best = names => names.map(n => kpts[n]).filter(p => c(p) >= 0.5).sort((a, b) => c(b) - c(a))[0] || null;
+    const avg = names => { const ps = names.map(n => kpts[n]).filter(p => c(p) >= 0.3); return ps.length ? { x: ps.reduce((a, p) => a + p.x, 0) / ps.length, y: ps.reduce((a, p) => a + p.y, 0) / ps.length } : null; };
+    const sh = avg(['left_shoulder', 'right_shoulder']), hip = avg(['left_hip', 'right_hip']);
+    const L = (sh && hip) ? Math.hypot(sh.x - hip.x, sh.y - hip.y) : 100;
+    const face = best(['nose', 'left_eye', 'right_eye']), ear = best(['left_ear', 'right_ear']);
+    let vote = 0;
+    if (face && ear && Math.abs(face.x - ear.x) > 0.05 * L) vote += 3 * Math.sign(face.x - ear.x);
+    if (face && sh && Math.abs(face.x - sh.x) > 0.15 * L) vote += 2 * Math.sign(face.x - sh.x);
+    if (sh) for (const n of ['left_wrist', 'right_wrist']) {
+        const w = kpts[n];
+        // Eller öne uzatılmışsa güçlü ipucu; kollar sarkıkken de eller genelde vücudun biraz önündedir (zayıf ipucu)
+        if (c(w) >= 0.5 && Math.abs(w.x - sh.x) > 0.2 * L) vote += (Math.abs(w.y - sh.y) < 0.6 * L ? 2 : 1) * Math.sign(w.x - sh.x);
     }
-    return view === 'left' ? -1 : 1;
+    return vote ? Math.sign(vote) : null;
 }
 // Yan görünümde kameraya dönük taraf: güven değeri yüksek olan taraf (iki taraf asla karıştırılmaz)
 function _sideSet(kpts){
@@ -841,34 +851,61 @@ function _sideSet(kpts){
     return { ear: g('ear'), shoulder: g('shoulder'), hip: g('hip') };
 }
 function _mergePair(a, b){
-    if (a && b) return { v: (a.v + b.v) / 2, s: Math.hypot(a.s, b.s) / 2, raw: [a.v, b.v], corrected: true };
+    if (a && b) return { v: (a.v + b.v) / 2, s: Math.hypot(a.s, b.s) / 2, corrected: true };
     const x = a || b;
-    return x ? { v: x.v, s: x.s, raw: a ? [a.v, null] : [null, b.v], corrected: false } : null;
+    return x ? { v: x.v, s: x.s, corrected: false } : null;
+}
+// Kamera eğimi: aynı fotoğraftaki tüm çizgilere aynı açıyla yansır. Karşılıklı iki fotoğrafın farkından
+// ortak bir eğim bulunur (ağırlıklı ortalama) ve her fotoğraf kendi değerinden bu eğim çıkarılarak düzeltilir.
+// Böylece her kart kendi fotoğrafının (düzeltilmiş) değerini gösterir; ortalamaları birleşik sonuçtur.
+function _pairRoll(A, B, metrics){
+    let s = 0, w = 0;
+    for (const m of metrics) { const a = A && A[m], b = B && B[m]; if (a && b) { const ww = 1 / (a.s * a.s + b.s * b.s); s += ww * (b.v - a.v) / 2; w += ww; } }
+    return w ? s / w : null;
+}
+function _applyRoll(set, metrics, r){
+    const o = {};
+    for (const m of metrics) { const x = set && set[m]; o[m] = x ? { v: x.v + r, s: x.s } : null; }
+    return o;
 }
 function computePostureMetrics(state){
     const ok = v => state[v] && !state[v].error && state[v].keypoints;
     const dims = v => ({ w: state[v].width || 1000, h: state[v].height || 1000 });
-    const out = { frontal: {}, sagittal: {}, roll: {} };
+    const out = { frontal: {}, sagittal: {}, roll: {}, view: {}, earEstimated: {}, facingUnsure: {} };
+    const FM = ['shoulder', 'hip', 'knee'], SM = ['head', 'trunk', 'body'];
     const fr = {};
     for (const view of ['front', 'back']) if (ok(view)) {
         const k = state[view].keypoints, d = dims(view);
         fr[view] = { shoulder: _frontalTilt(k, 'shoulder', view, d), hip: _frontalTilt(k, 'hip', view, d), knee: _frontalTilt(k, 'knee', view, d) };
     }
-    for (const m of ['shoulder', 'hip', 'knee']) out.frontal[m] = _mergePair(fr.front && fr.front[m], fr.back && fr.back[m]);
-    if (fr.front && fr.back) {               // kamera eğimi (bilgi amaçlı): omuz ve kalçadan, uzunlukla ağırlıklı
-        let s = 0, w = 0;
-        for (const m of ['shoulder', 'hip']) { const a = fr.front[m], b = fr.back[m]; if (a && b) { const ww = a.len + b.len; s += ww * (b.v - a.v) / 2; w += ww; } }
-        if (w) out.roll.frontal = Math.abs(s / w);
+    for (const m of FM) out.frontal[m] = _mergePair(fr.front && fr.front[m], fr.back && fr.back[m]);
+    const rf = (fr.front && fr.back) ? _pairRoll(fr.front, fr.back, FM) : null;
+    if (rf != null) out.roll.frontal = Math.abs(rf);
+    if (fr.front) out.view.front = _applyRoll(fr.front, FM, rf || 0);
+    if (fr.back) out.view.back = _applyRoll(fr.back, FM, -(rf || 0));
+
+    // Bakış yönü: net tespit > karşı yan görünümün tersi > varsayılan (sol yanda sola, sağ yanda sağa)
+    const face = {};
+    for (const view of ['left', 'right']) if (ok(view)) face[view] = state[view]._facingSure ? state[view]._facing : null;
+    for (const view of ['left', 'right']) if (ok(view) && face[view] == null) {
+        const other = view === 'left' ? 'right' : 'left';
+        if (face[other] != null && state[other]._facingSure) face[view] = -face[other];
+        else { face[view] = state[view]._facing || (view === 'left' ? -1 : 1); out.facingUnsure[view] = true; }
     }
     const sd = {};
     for (const view of ['left', 'right']) if (ok(view)) {
-        const k = state[view].keypoints, d = dims(view);
-        const f = state[view]._facing || (view === 'left' ? -1 : 1);
+        const k = state[view].keypoints, d = dims(view), f = face[view];
         const P = _sideSet(k);
-        sd[view] = { head: _sideAngle(P.shoulder, P.ear, f, d), trunk: _sideAngle(P.hip, P.shoulder, f, d), body: _sideAngle(P.hip, P.ear, f, d) };
+        const est = !!(P.ear && P.ear.estimated);
+        out.earEstimated[view] = est;
+        const ear = est ? null : P.ear;
+        sd[view] = { head: _sideAngle(P.shoulder, ear, f, d), trunk: _sideAngle(P.hip, P.shoulder, f, d), body: _sideAngle(P.hip, ear, f, d) };
     }
-    for (const m of ['head', 'trunk', 'body']) out.sagittal[m] = _mergePair(sd.left && sd.left[m], sd.right && sd.right[m]);
-    if (sd.left && sd.right && sd.left.body && sd.right.body) out.roll.sagittal = Math.abs(sd.right.body.v - sd.left.body.v) / 2;
+    for (const m of SM) out.sagittal[m] = _mergePair(sd.left && sd.left[m], sd.right && sd.right[m]);
+    const rs = (sd.left && sd.right) ? _pairRoll(sd.left, sd.right, SM) : null;
+    if (rs != null) out.roll.sagittal = Math.abs(rs);
+    if (sd.left) out.view.left = _applyRoll(sd.left, SM, rs || 0);
+    if (sd.right) out.view.right = _applyRoll(sd.right, SM, -(rs || 0));
     return out;
 }
 // [ENGINE-END]
@@ -910,50 +947,53 @@ function refreshAllCanvases() {
         if (a < r.s) label = _t('Simetrik') + ' – ' + _t('ölçüm hassasiyeti içinde');
         else if (a >= 2 && a >= 1.5 * r.s) { cls = 'text-red-600'; label = _t(side) + ' ' + _t('Yüksek'); finding = true; }
         else label = _t('Normal') + ' – ' + _t(side.toLowerCase()) + ' ' + _t('hafif yüksek');
-        const note = r.corrected
-            ? `${_t('ham')}: ${_t('ön')} ${deg(r.raw[0])} ${_t(sideWord(r.raw[0]))} · ${_t('arka')} ${deg(r.raw[1])} ${_t(sideWord(r.raw[1]))} → ${_t('kamera eğimi düzeltildi')}`
-            : _t('Tek görünüm: kamera eğimi düzeltilemedi (önden ve arkadan fotoğraf birlikte gerekir)');
-        return { text: `${deg(r.v)} ±${r.s.toFixed(1)}° (${label})`, cls, note, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
+        return { text: `${deg(r.v)} ±${r.s.toFixed(1)}° (${label})`, cls, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
     };
     // Yandan: + = öne
     const sagittal = (r, posWord, negWord, threshold, onlyForward) => {
         if (!r) return null;
         const a = Math.abs(r.v), dir = r.v >= 0 ? posWord : negWord;
         const strong = a > threshold && a >= 1.5 * r.s && (!onlyForward || r.v > 0);
-        const note = r.corrected
-            ? `${_t('ham')}: ${_t('sol yan')} ${r.raw[0] >= 0 ? '+' : '−'}${deg(r.raw[0])} · ${_t('sağ yan')} ${r.raw[1] >= 0 ? '+' : '−'}${deg(r.raw[1])} → ${_t('kamera eğimi düzeltildi')}`
-            : _t('Tek görünüm: kamera eğimi düzeltilemedi (sol ve sağ yan fotoğraf birlikte gerekir)');
-        return { text: `${deg(r.v)} ${_t(dir)} ±${r.s.toFixed(1)}°`, cls: strong ? 'text-red-600' : 'text-green-600', note, finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
+        return { text: `${deg(r.v)} ${_t(dir)} ±${r.s.toFixed(1)}°`, cls: strong ? 'text-red-600' : 'text-green-600', finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
     };
+    const SAG = { head: ['önde', 'geride', 5, true], trunk: ['öne eğik', 'geriye eğik', 5, false], body: ['öne', 'geriye', 5, false] };
+    // Birleşik sonuçlar (bulgular ve skor için)
     const F = { shoulder: frontal(M.frontal.shoulder), hip: frontal(M.frontal.hip), knee: frontal(M.frontal.knee) };
-    const S = {
-        head:  sagittal(M.sagittal.head,  'önde', 'geride', 5, true),
-        trunk: sagittal(M.sagittal.trunk, 'öne eğik', 'geriye eğik', 5, false),
-        body:  sagittal(M.sagittal.body,  'öne', 'geriye', 5, false),
-    };
-    const rollLine = (r) => {
-        if (r == null) return '';
-        const warn = r > 3;
-        return `<div class="py-2 text-[11px] leading-tight ${warn ? 'text-red-600 font-bold' : 'text-slate-400'}"><i class="fa-solid fa-camera mr-1"></i>${_t('Kamera eğimi otomatik düzeltildi')}: ${r.toFixed(1)}°${warn ? ' – ' + _t('kamera belirgin eğik, kontrol edin') : ''}</div>`;
-    };
-    const frontalHtml = () => {
+    const S = {};
+    for (const m in SAG) S[m] = sagittal(M.sagittal[m], ...SAG[m]);
+    // Kamera yalnızca belirgin eğikse uyarı (normalde hiçbir şey yazmaz)
+    const rollLine = (r) => (r == null || r <= 3) ? '' :
+        `<div class="py-2 text-[11px] leading-tight text-red-600 font-bold"><i class="fa-solid fa-camera mr-1"></i>${_t('Kamera eğik olabilir')} (${r.toFixed(1)}°) – ${_t('kamera açısını kontrol edin')}</div>`;
+    const missRow = (label, info, msg) => `<div class="flex flex-col py-2 gap-1 border-b border-slate-100"><span class="whitespace-nowrap text-slate-500 flex items-center">${label}${infoBtn(info)}</span> <span class="font-bold text-sm leading-tight text-amber-600">${msg}</span></div>`;
+    // Her kart kendi fotoğrafının (kamera eğimi düzeltilmiş) değerini gösterir
+    const frontalHtml = (view) => {
+        const V = M.view[view] || {};
+        const rows = [['Omuz Simetrisi', 'shoulder_symmetry', 'shoulder'], ['Kalça Simetrisi', 'hip_symmetry', 'hip'], ['Diz Simetrisi', 'knee_symmetry', 'knee']];
         let h = '';
-        if (F.shoulder) h += row(_t('Omuz Simetrisi'), 'shoulder_symmetry', F.shoulder.text, F.shoulder.cls, F.shoulder.note);
-        if (F.hip) h += row(_t('Kalça Simetrisi'), 'hip_symmetry', F.hip.text, F.hip.cls, F.hip.note);
-        if (F.knee) h += row(_t('Diz Simetrisi'), 'knee_symmetry', F.knee.text, F.knee.cls, F.knee.note);
+        for (const [label, info, m] of rows) {
+            const r = frontal(V[m]);
+            h += r ? row(_t(label), info, r.text, r.cls) : missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
+        }
         return h + rollLine(M.roll.frontal);
     };
-    const sagittalHtml = () => {
+    const sagittalHtml = (view) => {
+        const V = M.view[view] || {};
+        const rows = [['Baş Öne Eğikliği', 'forward_head', 'head'], ['Gövde Eğimi', 'thoracic_kyphosis', 'trunk'], ['Vücut Dikey Hizası', 'pelvic_tilt', 'body']];
         let h = '';
-        if (S.head) h += row(_t('Baş Öne Eğikliği'), 'forward_head', S.head.text, S.head.cls, S.head.note);
-        if (S.trunk) h += row(_t('Gövde Eğimi'), 'thoracic_kyphosis', S.trunk.text, S.trunk.cls, S.trunk.note);
-        if (S.body) h += row(_t('Vücut Dikey Hizası'), 'pelvic_tilt', S.body.text, S.body.cls, S.body.note);
+        for (const [label, info, m] of rows) {
+            const r = sagittal(V[m], ...SAG[m]);
+            if (r) h += row(_t(label), info, r.text, r.cls);
+            else if (m !== 'trunk' && M.earEstimated[view]) h += missRow(_t(label), info, _t('Kulak noktası bulunamadı – turuncu noktayı fotoğrafta kulağın üzerine sürükleyin'));
+            else h += missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
+        }
+        if (M.facingUnsure[view])
+            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t('Hastanın baktığı yön fotoğraftan belirlenemedi; öne/geriye yönünü kontrol edin')}</div>`;
         return h + rollLine(M.roll.sagittal);
     };
-    if (usable.front) document.getElementById('table_front').innerHTML = frontalHtml();
-    if (usable.back) document.getElementById('table_back').innerHTML = frontalHtml();
-    if (usable.left) document.getElementById('table_left').innerHTML = sagittalHtml();
-    if (usable.right) document.getElementById('table_right').innerHTML = sagittalHtml();
+    if (usable.front) document.getElementById('table_front').innerHTML = frontalHtml('front');
+    if (usable.back) document.getElementById('table_back').innerHTML = frontalHtml('back');
+    if (usable.left) document.getElementById('table_left').innerHTML = sagittalHtml('left');
+    if (usable.right) document.getElementById('table_right').innerHTML = sagittalHtml('right');
 
     // 3) Bulgular: her ölçüm tek kez (birleşik değerden); üstüne yazma ve çift sayma yok
     let findings = new Map();
@@ -1248,8 +1288,10 @@ function setupDragEvents(canvasId, viewType) {
 
         const origX = mouseX / scale;
         const origY = mouseY / scale;
-        state.keypoints[draggedPointKey].x = origX;
-        state.keypoints[draggedPointKey].y = origY;
+        const dp = state.keypoints[draggedPointKey];
+        dp.x = origX; dp.y = origY;
+        if (dp.estimated) { delete dp.estimated; dp.manual = true; }   // terapist yerleştirdi: artık gerçek nokta
+        if (dp.confidence == null || dp.confidence < 0.9) dp.confidence = 0.9;
 
         const zPanel = document.getElementById('zoomPanel');
         const zCanvas = document.getElementById('zoomCanvas');
@@ -1337,8 +1379,11 @@ function drawCanvas(canvasId, imgId, analysisData, viewType) {
     const kpts = analysisData.keypoints;
     let results = {};
 
-    if ((viewType === 'left' || viewType === 'right') && analysisData._facing == null) {
-        analysisData._facing = _detectFacing(kpts, viewType);   // burun/göz silinmeden önce bakış yönünü kaydet
+    if ((viewType === 'left' || viewType === 'right') && analysisData._facingSure == null) {
+        // burun/göz/bilek silinmeden önce bakış yönünü kaydet (eski kayıtlardaki değer, net tespit yoksa korunur)
+        const f = _detectFacing(kpts);
+        if (f != null) { analysisData._facing = f; analysisData._facingSure = true; }
+        else analysisData._facingSure = false;
     }
     if (viewType === 'left') {
         for (let key in kpts) if (key.startsWith('right_')) kpts[key] = null;
@@ -1346,6 +1391,17 @@ function drawCanvas(canvasId, imgId, analysisData, viewType) {
     } else if (viewType === 'right') {
         for (let key in kpts) if (key.startsWith('left_')) kpts[key] = null;
         kpts.right_eye = null; kpts.nose = null; kpts.right_elbow = null; kpts.right_wrist = null;
+    }
+    // Yan görünümde kulak bulunamadıysa tahmini bir nokta koy; terapist sürükleyerek doğru yere taşır.
+    // Tahmini nokta ölçüme girmez; taşındığında gerçek nokta olur.
+    if (viewType === 'left' || viewType === 'right') {
+        const ek = viewType + '_ear', sh = kpts[viewType + '_shoulder'], hp = kpts[viewType + '_hip'];
+        const ear = kpts[ek], okp = p => p && (p.confidence == null || p.confidence >= 0.3);
+        if (!okp(ear) && okp(sh) && okp(hp)) {
+            const L = Math.hypot(sh.x - hp.x, sh.y - hp.y);
+            kpts[ek] = ear ? { x: ear.x, y: ear.y, confidence: 0.35, estimated: true }          // modelin zayıf tahmini
+                           : { x: sh.x, y: sh.y - 0.41 * L, confidence: 0.35, estimated: true }; // vücut oranından
+        }
     }
 
     function drawLine(p1, p2, color="cyan", lineWidth=2) {
@@ -1443,9 +1499,10 @@ function drawCanvas(canvasId, imgId, analysisData, viewType) {
         if(point && point.confidence > 0.3) {
             ctx.beginPath();
             const isThisDragged = (isDragging && currentDragView === viewType && draggedPointKey === key);
-            ctx.arc(point.x * scale, point.y * scale, isThisDragged ? 6 : 3, 0, 2 * Math.PI);
-            ctx.fillStyle = isThisDragged ? "#fbbf24" : "#fef08a"; // Yellow neon
+            ctx.arc(point.x * scale, point.y * scale, isThisDragged ? 6 : (point.estimated ? 5 : 3), 0, 2 * Math.PI);
+            ctx.fillStyle = isThisDragged ? "#fbbf24" : (point.estimated ? "#f97316" : "#fef08a"); // tahmini: turuncu
             ctx.fill();
+            if (point.estimated && !isThisDragged) { ctx.lineWidth = 2; ctx.strokeStyle = "#ffffff"; ctx.stroke(); }
             if(isThisDragged) {
                 ctx.shadowBlur = 10; ctx.shadowColor = "#fbbf24"; ctx.fill(); ctx.shadowBlur = 0;
             }
