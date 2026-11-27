@@ -3490,23 +3490,21 @@ function startScanCountdown() {
 // ═══════════════════════════════════════════════════
 
 const POSTURE_REF_SVG = {
-  right: `
-    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
-      
+  right: `    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       <circle cx="110" cy="46" r="22" fill="none" stroke="#0ea5e9" stroke-width="3"/>
+      <line x1="131" y1="44" x2="139" y2="50" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
       <line x1="110" y1="68" x2="110" y2="290" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
-      <line x1="110" y1="100" x2="170" y2="100" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
-      
-      
+      <line x1="110" y1="92" x2="122" y2="140" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+      <line x1="122" y1="140" x2="127" y2="184" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="290" x2="136" y2="290" stroke="#0ea5e9" stroke-width="3" stroke-linecap="round"/>
     </svg>`,
-  left: `
-    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
-      
+  left: `    <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
       <circle cx="110" cy="46" r="22" fill="none" stroke="#a855f7" stroke-width="3"/>
+      <line x1="89" y1="44" x2="81" y2="50" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
       <line x1="110" y1="68" x2="110" y2="290" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
-      <line x1="110" y1="100" x2="50" y2="100" stroke="#c084fc" stroke-width="3" stroke-linecap="round"/>
-      
-      
+      <line x1="110" y1="92" x2="98" y2="140" stroke="#c084fc" stroke-width="3" stroke-linecap="round"/>
+      <line x1="98" y1="140" x2="93" y2="184" stroke="#c084fc" stroke-width="3" stroke-linecap="round"/>
+      <line x1="110" y1="290" x2="84" y2="290" stroke="#a855f7" stroke-width="3" stroke-linecap="round"/>
     </svg>`,
   front: `
     <svg viewBox="0 -30 220 380" xmlns="http://www.w3.org/2000/svg" style="max-height:250px;width:auto">
@@ -3548,8 +3546,8 @@ function showRefGuide(view) {
         svgEl.innerHTML = POSTURE_REF_SVG[view];
         if (view === 'front') { label.innerHTML = 'Kollar ve bacaklar hafif açık<br>Kameraya bakın'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> ÖN CEPHE'; }
         else if (view === 'back') { label.innerHTML = 'Kollar ve bacaklar hafif açık<br>Kameraya sırtınızı dönün'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> ARKA CEPHE'; }
-        else if (view === 'right') { label.innerHTML = 'Kollar öne doğru uzatılmış<br>Sağ profiliniz kameraya dönük olsun'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> SAĞ YAN CEPHE'; }
-        else if (view === 'left') { label.innerHTML = 'Kollar öne doğru uzatılmış<br>Sol profiliniz kameraya dönük olsun'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> SOL YAN CEPHE'; }
+        else if (view === 'right') { label.innerHTML = 'Kollar yanda, serbest sarkık<br>Sağ profiliniz kameraya dönük olsun'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> SAĞ YAN CEPHE'; }
+        else if (view === 'left') { label.innerHTML = 'Kollar yanda, serbest sarkık<br>Sol profiliniz kameraya dönük olsun'; title.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-400"></i> SOL YAN CEPHE'; }
         
         panel.classList.remove('hidden');
     } else {

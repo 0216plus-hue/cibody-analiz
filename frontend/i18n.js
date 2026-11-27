@@ -9660,25 +9660,25 @@ const I18N_PHRASES = {
     "it": "Braccia e gambe leggermente divaricate<br>Guardare la telecamera",
     "pt": "Braços e pernas ligeiramente afastados<br>Olhe para a câmara"
   },
-  "Kollar öne doğru uzatılmış Sağ profiliniz kameraya dönük olsun": {
-    "en": "Arms extended forward, face right profile to camera",
-    "ru": "Руки вытянуты вперед, правый профиль к камере",
-    "ar": "امد الذراعين للأمام، واجعل الجانب الأيمن مواجهًا للكاميرا",
-    "de": "Arme nach vorne gestreckt, rechtes Profil zur Kamera",
-    "fr": "Bras tendus vers l'avant, profil droit face à la caméra",
-    "es": "Brazos extendidos hacia adelante, perfil derecho a la cámara",
-    "it": "Braccia tese in avanti, profilo destro rivolto alla telecamera",
-    "pt": "Braços estendidos para a frente, perfil direito virado para a câmara"
+  "Kollar yanda, serbest sarkık Sağ profiliniz kameraya dönük olsun": {
+    "en": "Arms relaxed at the sides, face right profile to camera",
+    "ru": "Руки свободно опущены вдоль тела, правый профиль к камере",
+    "ar": "اترك الذراعين مسترخيتين على الجانبين، واجعل الجانب الأيمن مواجهًا للكاميرا",
+    "de": "Arme locker seitlich hängend, rechtes Profil zur Kamera",
+    "fr": "Bras relâchés le long du corps, profil droit face à la caméra",
+    "es": "Brazos relajados a los lados, perfil derecho a la cámara",
+    "it": "Braccia rilassate lungo i fianchi, profilo destro rivolto alla telecamera",
+    "pt": "Braços relaxados ao lado do corpo, perfil direito virado para a câmara"
   },
-  "Kollar öne doğru uzatılmış<br>Sağ profiliniz kameraya dönük olsun": {
-    "en": "Arms extended forward<br>Right profile facing camera",
-    "ru": "Руки вытянуты вперед<br>Правый профиль к камере",
-    "ar": "امد الذراعين للأمام<br>اجعل الجانب الأيمن مواجهًا للكاميرا",
-    "de": "Arme nach vorne gestreckt<br>Rechtes Profil zur Kamera",
-    "fr": "Bras tendus vers l'avant<br>Profil droit face à la caméra",
-    "es": "Brazos extendidos hacia adelante<br>Perfil derecho a la cámara",
-    "it": "Braccia tese in avanti<br>Profilo destro rivolto alla telecamera",
-    "pt": "Braços estendidos para a frente<br>Perfil direito virado para a câmara"
+  "Kollar yanda, serbest sarkık<br>Sağ profiliniz kameraya dönük olsun": {
+    "en": "Arms relaxed at the sides<br>Right profile facing camera",
+    "ru": "Руки свободно опущены вдоль тела<br>Правый профиль к камере",
+    "ar": "اترك الذراعين مسترخيتين على الجانبين<br>اجعل الجانب الأيمن مواجهًا للكاميرا",
+    "de": "Arme locker seitlich hängend<br>Rechtes Profil zur Kamera",
+    "fr": "Bras relâchés le long du corps<br>Profil droit face à la caméra",
+    "es": "Brazos relajados a los lados<br>Perfil derecho a la cámara",
+    "it": "Braccia rilassate lungo i fianchi<br>Profilo destro rivolto alla telecamera",
+    "pt": "Braços relaxados ao lado do corpo<br>Perfil direito virado para a câmara"
   },
   "Kollar ve bacaklar hafif açık Kameraya sırtınızı dönün": {
     "en": "Arms and legs slightly apart, turn back to the camera",
@@ -9700,25 +9700,25 @@ const I18N_PHRASES = {
     "it": "Braccia e gambe leggermente divaricate<br>Dare le spalle alla telecamera",
     "pt": "Braços e pernas ligeiramente afastados<br>Vire as costas para a câmara"
   },
-  "Kollar öne doğru uzatılmış Sol profiliniz kameraya dönük olsun": {
-    "en": "Arms extended forward, face left profile to camera",
-    "ru": "Руки вытянуты вперед, левый профиль к камере",
-    "ar": "امد الذراعين للأمام، واجعل الجانب الأيسر مواجهًا للكاميرا",
-    "de": "Arme nach vorne gestreckt, linkes Profil zur Kamera",
-    "fr": "Bras tendus vers l'avant, profil gauche face à la caméra",
-    "es": "Brazos extendidos hacia adelante, perfil izquierdo a la cámara",
-    "it": "Braccia tese in avanti, profilo sinistro rivolto alla telecamera",
-    "pt": "Braços estendidos para a frente, perfil esquerdo virado para a câmara"
+  "Kollar yanda, serbest sarkık Sol profiliniz kameraya dönük olsun": {
+    "en": "Arms relaxed at the sides, face left profile to camera",
+    "ru": "Руки свободно опущены вдоль тела, левый профиль к камере",
+    "ar": "اترك الذراعين مسترخيتين على الجانبين، واجعل الجانب الأيسر مواجهًا للكاميرا",
+    "de": "Arme locker seitlich hängend, linkes Profil zur Kamera",
+    "fr": "Bras relâchés le long du corps, profil gauche face à la caméra",
+    "es": "Brazos relajados a los lados, perfil izquierdo a la cámara",
+    "it": "Braccia rilassate lungo i fianchi, profilo sinistro rivolto alla telecamera",
+    "pt": "Braços relaxados ao lado do corpo, perfil esquerdo virado para a câmara"
   },
-  "Kollar öne doğru uzatılmış<br>Sol profiliniz kameraya dönük olsun": {
-    "en": "Arms extended forward<br>Left profile facing camera",
-    "ru": "Руки вытянуты вперед<br>Левый профиль к камере",
-    "ar": "امد الذراعين للأمام<br>اجعل الجانب الأيسر مواجهًا للكاميرا",
-    "de": "Arme nach vorne gestreckt<br>Linkes Profil zur Kamera",
-    "fr": "Bras tendus vers l'avant<br>Profil gauche face à la caméra",
-    "es": "Brazos extendidos hacia adelante<br>Perfil izquierdo a la cámara",
-    "it": "Braccia tese in avanti<br>Profilo sinistro rivolto alla telecamera",
-    "pt": "Braços estendidos para a frente<br>Perfil esquerdo virado para a câmara"
+  "Kollar yanda, serbest sarkık<br>Sol profiliniz kameraya dönük olsun": {
+    "en": "Arms relaxed at the sides<br>Left profile facing camera",
+    "ru": "Руки свободно опущены вдоль тела<br>Левый профиль к камере",
+    "ar": "اترك الذراعين مسترخيتين على الجانبين<br>اجعل الجانب الأيسر مواجهًا للكاميرا",
+    "de": "Arme locker seitlich hängend<br>Linkes Profil zur Kamera",
+    "fr": "Bras relâchés le long du corps<br>Profil gauche face à la caméra",
+    "es": "Brazos relajados a los lados<br>Perfil izquierdo a la cámara",
+    "it": "Braccia rilassate lungo i fianchi<br>Profilo sinistro rivolto alla telecamera",
+    "pt": "Braços relaxados ao lado do corpo<br>Perfil esquerdo virado para a câmara"
   },
   "Bağlantı başarılı! Sensörü başlatmak için butona basınız.": {
     "en": "Connection successful! Press the button to start the sensor.",
