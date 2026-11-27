@@ -228,7 +228,7 @@ function comparePosture(r1, r2, d1Str, d2Str) {
     renderComparisonVisuals(`
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mb-6">
             <h4 class="font-black text-slate-800 text-sm mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-camera text-indigo-600"></i> Görsel Postür Fotoğraf Karşılaştırması (Ön & Yan Duruş)
+                <i class="fa-solid fa-camera text-indigo-600"></i> Görsel Postür Tarama Karşılaştırması (Ön & Yan Duruş)
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 1. Analiz -->

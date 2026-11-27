@@ -2800,15 +2800,15 @@ const I18N_PHRASES = {
     "it": "Importante:",
     "pt": "Importante:"
   },
-  "Bu rapor bir tıbbi teşhis değildir. Sistem, taranan fotoğraflardaki anatomik referans noktalarını ölçerek biyomekanik bir ön değerlendirme sunar. Ölçümler tarama kalitesine bağlı tahminlerdir ve bağımsız klinik doğrulama sürecinden geçmemiştir. Nihai değerlendirme ve tedavi kararı için lütfen bir hekime başvurun.": {
-    "en": "This report is not a medical diagnosis. The system provides a preliminary biomechanical assessment by measuring anatomical landmarks in the scanned photos. Measurements are estimates dependent on scan quality and have not undergone independent clinical validation. Please consult a physician for final assessment and treatment decisions.",
-    "ru": "Данный отчёт не является медицинским диагнозом. Система проводит предварительную биомеханическую оценку, измеряя анатомические ориентиры на отсканированных фотографиях. Измерения являются оценочными, зависят от качества сканирования и не прошли независимую клиническую валидацию. Для окончательной оценки и принятия решения о лечении обратитесь к врачу.",
-    "ar": "هذا التقرير ليس تشخيصاً طبياً. يقدّم النظام تقييماً أولياً ميكانيكياً حيوياً من خلال قياس النقاط المرجعية التشريحية في الصور الممسوحة. القياسات تقديرات تعتمد على جودة المسح ولم تخضع لعملية تحقق سريري مستقلة. يُرجى مراجعة الطبيب للتقييم النهائي وقرار العلاج.",
-    "de": "Dieser Bericht stellt keine medizinische Diagnose dar. Das System misst anatomische Referenzpunkte auf den gescannten Fotos und liefert eine biomechanische Voreinschätzung. Die Messungen sind von der Scanqualität abhängige Schätzungen und wurden keiner unabhängigen klinischen Validierung unterzogen. Für die endgültige Beurteilung und Therapieentscheidung wenden Sie sich bitte an einen Arzt.",
-    "fr": "Ce rapport ne constitue pas un diagnostic médical. Le système fournit une pré-évaluation biomécanique en mesurant les repères anatomiques sur les photos scannées. Les mesures sont des estimations dépendant de la qualité du scan et n'ont pas fait l'objet d'une validation clinique indépendante. Pour l'évaluation finale et la décision thérapeutique, veuillez consulter un médecin.",
-    "es": "Este informe no constituye un diagnóstico médico. El sistema ofrece una evaluación biomecánica preliminar midiendo los puntos de referencia anatómicos en las fotografías escaneadas. Las mediciones son estimaciones que dependen de la calidad del escaneo y no han pasado por un proceso de validación clínica independiente. Para la evaluación final y la decisión terapéutica, consulte a un médico.",
-    "it": "Questo report non costituisce una diagnosi medica. Il sistema fornisce una valutazione biomeccanica preliminare misurando i punti di repere anatomici nelle foto acquisite. Le misurazioni sono stime dipendenti dalla qualità della scansione e non sono state sottoposte a validazione clinica indipendente. Per la valutazione finale e le decisioni terapeutiche, consultare un medico.",
-    "pt": "Este relatório não é um diagnóstico médico. O sistema apresenta uma avaliação biomecânica preliminar medindo os pontos de referência anatómicos nas fotografias digitalizadas. As medições são estimativas dependentes da qualidade da digitalização e não passaram por um processo de validação clínica independente. Para a avaliação final e decisão terapêutica, consulte um médico."
+  "Bu rapor bir tıbbi teşhis değildir. Sistem, taramadaki anatomik referans noktalarını ölçerek biyomekanik bir ön değerlendirme sunar. Ölçümler tarama kalitesine bağlı tahminlerdir ve bağımsız klinik doğrulama sürecinden geçmemiştir. Nihai değerlendirme ve tedavi kararı için lütfen bir hekime başvurun.": {
+    "en": "This report is not a medical diagnosis. The system provides a preliminary biomechanical assessment by measuring anatomical landmarks in the scan. Measurements are estimates dependent on scan quality and have not undergone independent clinical validation. Please consult a physician for final assessment and treatment decisions.",
+    "ru": "Данный отчёт не является медицинским диагнозом. Система проводит предварительную биомеханическую оценку, измеряя анатомические ориентиры на данных сканирования. Измерения являются оценочными, зависят от качества сканирования и не прошли независимую клиническую валидацию. Для окончательной оценки и принятия решения о лечении обратитесь к врачу.",
+    "ar": "هذا التقرير ليس تشخيصاً طبياً. يقدّم النظام تقييماً أولياً ميكانيكياً حيوياً من خلال قياس النقاط المرجعية التشريحية في بيانات المسح. القياسات تقديرات تعتمد على جودة المسح ولم تخضع لعملية تحقق سريري مستقلة. يُرجى مراجعة الطبيب للتقييم النهائي وقرار العلاج.",
+    "de": "Dieser Bericht stellt keine medizinische Diagnose dar. Das System misst anatomische Referenzpunkte im Scan und liefert eine biomechanische Voreinschätzung. Die Messungen sind von der Scanqualität abhängige Schätzungen und wurden keiner unabhängigen klinischen Validierung unterzogen. Für die endgültige Beurteilung und Therapieentscheidung wenden Sie sich bitte an einen Arzt.",
+    "fr": "Ce rapport ne constitue pas un diagnostic médical. Le système fournit une pré-évaluation biomécanique en mesurant les repères anatomiques sur le scan. Les mesures sont des estimations dépendant de la qualité du scan et n'ont pas fait l'objet d'une validation clinique indépendante. Pour l'évaluation finale et la décision thérapeutique, veuillez consulter un médecin.",
+    "es": "Este informe no constituye un diagnóstico médico. El sistema ofrece una evaluación biomecánica preliminar midiendo los puntos de referencia anatómicos en el escaneo. Las mediciones son estimaciones que dependen de la calidad del escaneo y no han pasado por un proceso de validación clínica independiente. Para la evaluación final y la decisión terapéutica, consulte a un médico.",
+    "it": "Questo report non costituisce una diagnosi medica. Il sistema fornisce una valutazione biomeccanica preliminare misurando i punti di repere anatomici nella scansione. Le misurazioni sono stime dipendenti dalla qualità della scansione e non sono state sottoposte a validazione clinica indipendente. Per la valutazione finale e le decisioni terapeutiche, consultare un medico.",
+    "pt": "Este relatório não é um diagnóstico médico. O sistema apresenta uma avaliação biomecânica preliminar medindo os pontos de referência anatómicos na digitalização. As medições são estimativas dependentes da qualidade da digitalização e não passaram por um processo de validação clínica independente. Para a avaliação final e decisão terapêutica, consulte um médico."
   },
   "Genel Ölçüm Kalitesi": {
     "en": "Overall Measurement Quality",
@@ -6630,15 +6630,15 @@ const I18N_PHRASES = {
     "it": "Error de renderizado:",
     "pt": "Erro de renderizado:"
   },
-  "En az 1 fotoğraf yükleyin.": {
-    "en": "Upload at least 1 photo.",
-    "ru": "Загрузите хотя бы 1 фотографию.",
-    "ar": "ارفع صورة واحدة على الأقل.",
-    "de": "Laden Sie mindestens 1 Foto hoch.",
-    "fr": "Importez au moins 1 photo.",
-    "es": "Cargue al menos 1 foto.",
-    "it": "Cargue al menos 1 foto.",
-    "pt": "Cargue ao menos 1 foto."
+  "En az 1 tarama ekleyin.": {
+    "en": "Add at least 1 scan.",
+    "ru": "Добавьте хотя бы 1 сканирование.",
+    "ar": "أضف مسحاً واحداً على الأقل.",
+    "de": "Fügen Sie mindestens 1 Scan hinzu.",
+    "fr": "Ajoutez au moins 1 scan.",
+    "es": "Añada al menos 1 escaneo.",
+    "it": "Aggiungi almeno 1 scansione.",
+    "pt": "Adicione pelo menos 1 digitalização."
   },
   "Sunucu hatası": {
     "en": "Server error",
@@ -6650,15 +6650,15 @@ const I18N_PHRASES = {
     "it": "Error del servidor",
     "pt": "Erro do servidor"
   },
-  "İnsan tespit edilemedi. Tam boy fotoğraf yükleyin.": {
-    "en": "No person detected. Upload a full-body photo.",
-    "ru": "Человек не обнаружен. Загрузите фото в полный рост.",
-    "ar": "تعذّر اكتشاف شخص. ارفع صورة كاملة للجسم.",
-    "de": "Keine Person erkannt. Laden Sie ein Ganzkörperfoto hoch.",
-    "fr": "Aucune personne détectée. Importez une photo en pied.",
-    "es": "No se detectó ninguna persona. Cargue una foto de cuerpo entero.",
-    "it": "Non se detectó ninguna persona. Cargue una foto de cuerpo entero.",
-    "pt": "Não se detectó ninguna persona. Cargue una foto de cuerpo entero."
+  "Kişi tespit edilemedi. Taramayı tam boy olacak şekilde tekrarlayın.": {
+    "en": "No person detected. Repeat the scan with the full body in view.",
+    "ru": "Человек не обнаружен. Повторите сканирование в полный рост.",
+    "ar": "تعذّر اكتشاف شخص. أعد المسح بحيث يظهر الجسم كاملاً.",
+    "de": "Keine Person erkannt. Wiederholen Sie den Scan mit dem ganzen Körper.",
+    "fr": "Aucune personne détectée. Refaites le scan en pied.",
+    "es": "No se detectó ninguna persona. Repita el escaneo de cuerpo entero.",
+    "it": "Nessuna persona rilevata. Ripeti la scansione a figura intera.",
+    "pt": "Nenhuma pessoa detetada. Repita a digitalização de corpo inteiro."
   },
   "Analiz Hatası:": {
     "en": "Analysis Error:",
@@ -7800,15 +7800,15 @@ const I18N_PHRASES = {
     "it": "Non se puede acceder a la cámara",
     "pt": "Não se puede acceder a la cámara"
   },
-  "fotoğrafı kaydedildi!": {
-    "en": "photo saved!",
-    "ru": "фото сохранено!",
-    "ar": "تم حفظ الصورة!",
-    "de": "Foto gespeichert!",
-    "fr": "photo enregistrée !",
-    "es": "¡foto guardada!",
-    "it": "¡foto guardada!",
-    "pt": "¡foto guardada!"
+  "taraması kaydedildi!": {
+    "en": "scan saved!",
+    "ru": "сканирование сохранено!",
+    "ar": "تم حفظ المسح!",
+    "de": "Scan gespeichert!",
+    "fr": "scan enregistré !",
+    "es": "¡escaneo guardado!",
+    "it": "scansione salvata!",
+    "pt": "digitalização guardada!"
   },
   "Tarama başlandı. Lütfen hareketsiz durun.": {
     "en": "Scan started. Please stand still.",

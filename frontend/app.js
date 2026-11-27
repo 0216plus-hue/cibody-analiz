@@ -464,7 +464,7 @@ function updateAnalysisHistoryDropdown() {
     
     selects.forEach(selectEl => {
         if (!selectEl) return;
-        selectEl.innerHTML = `<option value="">-- ${_t('Yeni Analiz / Fotoğraf Yükle')} --</option>`;
+        selectEl.innerHTML = `<option value="">-- ${_t('Yeni Analiz / Yeni Tarama')} --</option>`;
         if (!currentPatientAnalyses || currentPatientAnalyses.length === 0) return;
         currentPatientAnalyses.forEach((analysis, index) => {
             const dateStr = formatAppDate(analysis.created_at, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
@@ -719,7 +719,7 @@ async function runPostureAnalysis() {
     const l = document.getElementById('img_left').files[0];
     const r = document.getElementById('img_right').files[0];
 
-    if(!f && !b && !l && !r) return showToast("En az 1 fotoğraf yükleyin.");
+    if(!f && !b && !l && !r) return showToast("En az 1 tarama ekleyin.");
     
     if(f) formData.append('front_image', await compressImage(f));
     if(b) formData.append('back_image', await compressImage(b));
@@ -740,7 +740,7 @@ async function runPostureAnalysis() {
         const allErrors = uploadedViews.length > 0 && uploadedViews.every(v => data.analysis[v].error);
         if(allErrors) {
             const firstErr = uploadedViews.map(v => data.analysis[v]?.error).find(e=>e);
-            throw new Error('YOLO: ' + (firstErr || 'İnsan tespit edilemedi. Tam boy fotoğraf yükleyin.'));
+            throw new Error('YOLO: ' + (firstErr || 'Kişi tespit edilemedi. Taramayı tam boy olacak şekilde tekrarlayın.'));
         }
         
         await loadPatientData(currentPatientId); // Yeniden yükle — await ile bekle
@@ -983,11 +983,11 @@ function refreshAllCanvases() {
         for (const [label, info, m] of rows) {
             const r = sagittal(V[m], ...SAG[m]);
             if (r) h += row(_t(label), info, r.text, r.cls);
-            else if (m !== 'trunk' && M.earEstimated[view]) h += missRow(_t(label), info, _t('Kulak noktası bulunamadı – turuncu noktayı fotoğrafta kulağın üzerine sürükleyin'));
+            else if (m !== 'trunk' && M.earEstimated[view]) h += missRow(_t(label), info, _t('Kulak noktası bulunamadı – turuncu noktayı taramada kulağın üzerine sürükleyin'));
             else h += missRow(_t(label), info, _t('Ölçülemedi – noktalar bulunamadı'));
         }
         if (M.facingUnsure[view])
-            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t('Hastanın baktığı yön fotoğraftan belirlenemedi; öne/geriye yönünü kontrol edin')}</div>`;
+            h += `<div class="py-2 text-[11px] leading-tight text-amber-600"><i class="fa-solid fa-circle-exclamation mr-1"></i>${_t('Hastanın baktığı yön taramadan belirlenemedi; öne/geriye yönünü kontrol edin')}</div>`;
         return h + rollLine(M.roll.sagittal);
     };
     if (usable.front) document.getElementById('table_front').innerHTML = frontalHtml('front');
@@ -3404,7 +3404,7 @@ function capturePhoto() {
         globalPostureState[stateKey] = file;
 
         closeScanner();
-        showToast('✅ ' + VIEW_LABELS[view] + ' fotoğrafı kaydedildi!');
+        showToast('✅ ' + VIEW_LABELS[view] + ' taraması kaydedildi!');
     }, 'image/jpeg', 0.95);
 }
 
@@ -3617,15 +3617,15 @@ const POSTURE_METRIC_INFO = {
     },
     forward_head: {
         title: "Baş Öne Eğikliği (Kulak–Omuz Hizası)",
-        desc: "Yan fotoğrafta omuz ile kulağı birleştiren çizginin dikeyden sapmasıdır; + değer başın omuz hattının önünde, − değer gerisinde olduğunu gösterir. Sol ve sağ yan fotoğrafların değerleri birleştirilerek kamera eğimi otomatik düzeltilir. ±5°’nin üzerinde öne sapma ileri baş postürü (forward head) ile ilişkilendirilir. Not: Klinik kraniovertebral açı (CVA) tragus–C7 arasından ölçülür; bu değer yaklaşık bir göstergedir ve takip amaçlı yorumlanmalıdır."
+        desc: "Yan taramada omuz ile kulağı birleştiren çizginin dikeyden sapmasıdır; + değer başın omuz hattının önünde, − değer gerisinde olduğunu gösterir. Sol ve sağ yan taramaların değerleri birleştirilerek kamera eğimi otomatik düzeltilir. ±5°’nin üzerinde öne sapma ileri baş postürü (forward head) ile ilişkilendirilir. Not: Klinik kraniovertebral açı (CVA) tragus–C7 arasından ölçülür; bu değer yaklaşık bir göstergedir ve takip amaçlı yorumlanmalıdır."
     },
     thoracic_kyphosis: {
         title: "Gövde Öne/Geri Eğimi",
-        desc: "Yan fotoğrafta omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Gövdenin bütün olarak öne ya da geriye eğik durduğunu gösterir. Sol ve sağ yan fotoğraflar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: İki noktadan sırt eğriliği (torakal kifoz) ölçülemez; bu değer kifoz yerine gövde eğimini gösterir. Normal duruşta değer 0°’a yakındır; ±5°’nin üzeri dikkat gerektirir."
+        desc: "Yan taramada omuz ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Gövdenin bütün olarak öne ya da geriye eğik durduğunu gösterir. Sol ve sağ yan taramalar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: İki noktadan sırt eğriliği (torakal kifoz) ölçülemez; bu değer kifoz yerine gövde eğimini gösterir. Normal duruşta değer 0°’a yakındır; ±5°’nin üzeri dikkat gerektirir."
     },
     pelvic_tilt: {
         title: "Vücut Dikey Hizası (Kulak–Kalça)",
-        desc: "Yan fotoğrafta kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Vücudun bütün olarak öne veya geriye yaslanmasını (postüral sway) gösterir. Sol ve sağ yan fotoğraflar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: Bu değer pelvik tilt değildir; leğen kemiğinin öne/arkaya dönmesi SIAS ve SIPS noktaları gerektirir ve kullanılan modelde bu noktalar yoktur."
+        desc: "Yan taramada kulak ile kalça eklemini birleştiren çizginin dikeyden sapmasıdır (+ öne, − geriye). Vücudun bütün olarak öne veya geriye yaslanmasını (postüral sway) gösterir. Sol ve sağ yan taramalar birleştirilerek kamera eğimi otomatik düzeltilir. Önemli: Bu değer pelvik tilt değildir; leğen kemiğinin öne/arkaya dönmesi SIAS ve SIPS noktaları gerektirir ve kullanılan modelde bu noktalar yoktur."
     },
     spine_kyphosis: {
         title: "Kifoz Açısı (Thoracic Kyphosis)",
