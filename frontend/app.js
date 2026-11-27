@@ -1578,7 +1578,7 @@ async function runSpineAnalysis() {
     const sideFile = sideInput && sideInput.files ? sideInput.files[0] : null;
 
     if (!backFile && !sideFile) {
-        alert('Lütfen en az bir fotoğraf yükleyin (Arka veya Yan profil).');
+        alert('Lütfen en az bir tarama ekleyin (Arka veya Yan profil).');
         return;
     }
 

@@ -3170,15 +3170,15 @@ const I18N_PHRASES = {
     "it": ". Indossare abiti aderenti o lasciare la schiena scoperta.",
     "pt": ". A roupa deve ser justa ou as costas devem estar descobertas."
   },
-  "📸 Arka Fotoğraf (Koronal)": {
-    "en": "📸 Posterior Photo (Coronal)",
-    "ru": "📸 Фото сзади (фронтальная плоскость)",
-    "ar": "📸 الصورة الخلفية (إكليلية)",
-    "de": "📸 Rückenfoto (koronal)",
-    "fr": "📸 Photo de dos (Coronal)",
-    "es": "📸 Foto posterior (coronal)",
-    "it": "📸 Foto Posteriore (Coronale)",
-    "pt": "📸 Fotografia Posterior (Coronal)"
+  "📸 Arka Tarama (Koronal)": {
+    "en": "📸 Posterior Scan (Coronal)",
+    "ru": "📸 Сканирование сзади (фронтальная плоскость)",
+    "ar": "📸 المسح الخلفي (إكليلي)",
+    "de": "📸 Rückenscan (koronal)",
+    "fr": "📸 Scan de dos (Coronal)",
+    "es": "📸 Escaneo posterior (coronal)",
+    "it": "📸 Scansione Posteriore (Coronale)",
+    "pt": "📸 Digitalização Posterior (Coronal)"
   },
   "Boyun bitişi, en çıkıntılı kemik": {
     "en": "Base of the neck, most prominent vertebra",
@@ -3220,15 +3220,15 @@ const I18N_PHRASES = {
     "it": "Inizio del coccige",
     "pt": "Início do cóccix"
   },
-  "📸 Yan Fotoğraf (Sagital)": {
-    "en": "📸 Lateral Photo (Sagittal)",
-    "ru": "📸 Фото сбоку (сагиттальная плоскость)",
-    "ar": "📸 الصورة الجانبية (سهمية)",
-    "de": "📸 Seitenfoto (sagittal)",
-    "fr": "📸 Photo de profil (Sagittal)",
-    "es": "📸 Foto lateral (sagital)",
-    "it": "📸 Foto Laterale (Sagittale)",
-    "pt": "📸 Fotografia Lateral (Sagital)"
+  "📸 Yan Tarama (Sagital)": {
+    "en": "📸 Lateral Scan (Sagittal)",
+    "ru": "📸 Сканирование сбоку (сагиттальная плоскость)",
+    "ar": "📸 المسح الجانبي (سهمي)",
+    "de": "📸 Seitenscan (sagittal)",
+    "fr": "📸 Scan de profil (Sagittal)",
+    "es": "📸 Escaneo lateral (sagital)",
+    "it": "📸 Scansione Laterale (Sagittale)",
+    "pt": "📸 Digitalização Lateral (Sagital)"
   },
   "EAM:": {
     "en": "EAM:",
@@ -7460,15 +7460,15 @@ const I18N_PHRASES = {
     "it": "Seleccione primero un paciente.",
     "pt": "Seleccione primero un paciente."
   },
-  "Lütfen en az bir fotoğraf yükleyin (Arka veya Yan profil).": {
-    "en": "Please upload at least one photo (Posterior or Lateral profile).",
-    "ru": "Пожалуйста, загрузите хотя бы одну фотографию (задний или боковой профиль).",
-    "ar": "يُرجى رفع صورة واحدة على الأقل (المنظر الخلفي أو الجانبي).",
-    "de": "Bitte laden Sie mindestens ein Foto hoch (Rücken- oder Seitenprofil).",
-    "fr": "Veuillez importer au moins une photo (profil de dos ou latéral).",
-    "es": "Cargue al menos una foto (perfil posterior o lateral).",
-    "it": "Cargue al menos una foto (perfil posterior o lateral).",
-    "pt": "Cargue ao menos una foto (perfil posterior ou lateral)."
+  "Lütfen en az bir tarama ekleyin (Arka veya Yan profil).": {
+    "en": "Please add at least one scan (Posterior or Lateral profile).",
+    "ru": "Пожалуйста, добавьте хотя бы одно сканирование (задний или боковой профиль).",
+    "ar": "يُرجى إضافة مسح واحد على الأقل (المنظر الخلفي أو الجانبي).",
+    "de": "Bitte fügen Sie mindestens einen Scan hinzu (Rücken- oder Seitenprofil).",
+    "fr": "Veuillez ajouter au moins un scan (profil de dos ou latéral).",
+    "es": "Añada al menos un escaneo (perfil posterior o lateral).",
+    "it": "Aggiungi almeno una scansione (profilo posteriore o laterale).",
+    "pt": "Adicione pelo menos uma digitalização (perfil posterior ou lateral)."
   },
   "Analiz hatası:": {
     "en": "Analysis error:",
