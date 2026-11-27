@@ -844,14 +844,16 @@ def update_analysis_notes(analysis_id: int, payload: NoteUpdate,
 def update_analysis_data(analysis_id: int, payload: AnalysisDataUpdate,
                           db: Session = Depends(get_db),
                           current_user: models.User = Depends(get_current_user)):
-    analysis = db.query(models.PostureAnalysis).filter(models.PostureAnalysis.id == analysis_id).first()
-    if not analysis:
-        raise HTTPException(status_code=404, detail="Analiz bulunamadı")
-    # Hastanın mevcut uzmana ait olduğunu doğrula
-    patient = db.query(models.Patient).filter(models.Patient.id == analysis.patient_id, models.Patient.user_id == current_user.id).first()
-    if not patient:
-        raise HTTPException(status_code=403, detail="Yetkisiz işlem")
-    
+    # Diğer uçlarla aynı yetki kuralı (hasta sahibi veya süper yönetici)
+    analysis = _verify_record_access(models.PostureAnalysis, analysis_id, current_user, db)
+    if len(payload.data) > 2_000_000:
+        raise HTTPException(status_code=413, detail="Veri çok büyük")
+    try:
+        parsed = json.loads(payload.data)
+        if not isinstance(parsed, dict):
+            raise ValueError
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Geçersiz veri")
     analysis.analysis_data = payload.data
     db.commit()
     return {"status": "success"}

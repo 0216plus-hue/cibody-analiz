@@ -939,22 +939,23 @@ function refreshAllCanvases() {
     const deg = x => Math.abs(x).toFixed(1) + '°';
     const sideWord = v => v > 0 ? 'sol' : 'sağ';
 
-    // Önden/arkadan: + = hastanın solu yüksek
+    // Önden/arkadan: + = hastanın solu yüksek.  <1° simetrik · 1–2° normal (hafif) · ≥2° belirgin (bulgu)
     const frontal = (r) => {
         if (!r) return null;
         const a = Math.abs(r.v), side = r.v > 0 ? 'Sol' : 'Sağ';
         let cls = 'text-green-600', label, finding = false;
-        if (a < r.s) label = _t('Simetrik') + ' – ' + _t('ölçüm hassasiyeti içinde');
-        else if (a >= 2 && a >= 1.5 * r.s) { cls = 'text-red-600'; label = _t(side) + ' ' + _t('Yüksek'); finding = true; }
-        else label = _t('Normal') + ' – ' + _t(side.toLowerCase()) + ' ' + _t('hafif yüksek');
-        return { text: `${deg(r.v)} ±${r.s.toFixed(1)}° (${label})`, cls, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
+        if (a < 1) label = _t('Simetrik');
+        else if (a < 2) label = _t('Normal') + ' – ' + _t(side.toLowerCase()) + ' ' + _t('hafif yüksek');
+        else { cls = 'text-red-600'; label = _t(side) + ' ' + _t('Yüksek'); finding = true; }
+        return { text: `${deg(r.v)} (${label})`, cls, finding, measure: `${deg(r.v)} (${_t(side)} ${_t('Yüksek')})` };
     };
-    // Yandan: + = öne
+    // Yandan: + = öne.  Eşiğin üstü belirgin (bulgu)
     const sagittal = (r, posWord, negWord, threshold, onlyForward) => {
         if (!r) return null;
         const a = Math.abs(r.v), dir = r.v >= 0 ? posWord : negWord;
-        const strong = a > threshold && a >= 1.5 * r.s && (!onlyForward || r.v > 0);
-        return { text: `${deg(r.v)} ${_t(dir)} ±${r.s.toFixed(1)}°`, cls: strong ? 'text-red-600' : 'text-green-600', finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
+        const strong = a > threshold && (!onlyForward || r.v > 0);
+        const label = a < 1 ? _t('Düz') : `${_t(dir)}${strong ? '' : ' – ' + _t('normal sınırda')}`;
+        return { text: `${deg(r.v)} (${label})`, cls: strong ? 'text-red-600' : 'text-green-600', finding: strong, measure: `${deg(r.v)} ${_t(dir)}` };
     };
     const SAG = { head: ['önde', 'geride', 5, true], trunk: ['öne eğik', 'geriye eğik', 5, false], body: ['öne', 'geriye', 5, false] };
     // Birleşik sonuçlar (bulgular ve skor için)
@@ -1331,15 +1332,24 @@ function setupDragEvents(canvasId, viewType) {
         
         // Otomatik kaydet
         if(currentAnalysisId && globalPostureState) {
+            const payload = JSON.stringify(globalPostureState);
             try {
-                await authFetch(`/api/posture/${currentAnalysisId}/data`, {
+                const res = await authFetch(`/api/posture/${currentAnalysisId}/data`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: JSON.stringify(globalPostureState) })
+                    body: JSON.stringify({ data: payload })
                 });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                // Hafızadaki kopyayı da güncelle (başka analize geçip dönünce eski hâli gelmesin)
+                const cached = (currentPatientAnalyses || []).find(a => a.id === currentAnalysisId);
+                if (cached) cached.analysis_data = payload;
+                showToast('✅ ' + (window.translateText || (s => s))('Nokta konumu kaydedildi'));
             } catch(e) {
                 console.error("Nokta konumu kaydedilemedi:", e);
+                showToast('⚠️ ' + (window.translateText || (s => s))('Nokta konumu kaydedilemedi, lütfen tekrar deneyin'));
             }
+        } else if (globalPostureState) {
+            showToast('⚠️ ' + (window.translateText || (s => s))('Nokta konumu kaydedilemedi: analiz kaydı bulunamadı'));
         }
     };
 
